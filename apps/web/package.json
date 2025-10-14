@@ -6,6 +6,7 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
+    "plop" : "cross-env NODE_OPTIONS='--import tsx' plop --plopfile=plopfile.ts",
     "lint": "eslint",
     "test": "vitest --environment jsdom",
     "typecheck": "tsc --noEmit"
@@ -32,9 +33,12 @@
     "@types/node": "^24.7.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "cross-env": "^10.1.0",
     "eslint": "^9",
     "eslint-config-next": "15.5.5",
     "jsdom": "^27.0.0",
+    "plop": "^4.0.4",
+    "tsx": "^4.20.6",
     "typescript": "^5",
     "vitest": "^3.2.4"
   }
