@@ -1,6 +1,6 @@
-import { runJob } from '@executor/runJob';
+import { runJob } from '@letsrunit/executor';
 import { Storage } from '@google-cloud/storage';
-import { Job } from '@core/types';
+import { Job } from '@letsrunit/core/types';
 
 const runId = process.env.RUN_ID!;
 const inputUri = process.env.INPUT_URI!;
