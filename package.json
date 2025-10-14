@@ -1,4 +1,8 @@
 {
   "name": "letsrunit",
-  "packageManager": "yarn@4.10.3"
+  "packageManager": "yarn@4.10.3",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
 }
