@@ -1,0 +1,14 @@
+[
+  {
+    "origin": [
+      "https://your-app-domain"
+    ],
+    "method": [
+      "GET"
+    ],
+    "responseHeader": [
+      "Content-Type"
+    ],
+    "maxAgeSeconds": 3600
+  }
+]

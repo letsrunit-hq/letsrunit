@@ -1,0 +1,19 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: worker
+spec:
+  template:
+    spec:
+      serviceAccountName: worker-sa@${PROJECT}.iam.gserviceaccount.com
+      containers:
+        - image: gcr.io/cloudrun/placeholder
+          env:
+            - name: GCP_PROJECT
+              value: ${PROJECT}
+            - name: GCP_REGION
+              value: ${REGION}
+            - name: ARTIFACT_BUCKET
+              value: ${BUCKET}
+      containerConcurrency: 1
+      timeoutSeconds: 60

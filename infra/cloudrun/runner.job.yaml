@@ -1,0 +1,24 @@
+apiVersion: run.googleapis.com/v1
+kind: Job
+metadata:
+  name: runner
+spec:
+  template:
+    template:
+      serviceAccountName: runner-sa@${PROJECT}.iam.gserviceaccount.com
+      containers:
+        - name: runner
+          image: ${REGION}-docker.pkg.dev/${PROJECT}/runner/runner:latest
+          env:
+            - name: GCP_PROJECT
+              value: ${PROJECT}
+            - name: GCP_REGION
+              value: ${REGION}
+            - name: ARTIFACT_BUCKET
+              value: ${BUCKET}
+          resources:
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+      taskCount: 1
+      timeoutSeconds: 600
