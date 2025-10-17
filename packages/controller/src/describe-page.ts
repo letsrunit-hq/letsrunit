@@ -12,7 +12,7 @@ export async function describePage(page: PageLike): Promise<string> {
 
   return [
     '---',
-    toYaml(info).trim(),
+    toYaml(info, { lineWidth: 0 }).trim(),
     '---',
     '',
     markdown

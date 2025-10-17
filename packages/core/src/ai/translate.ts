@@ -1,7 +1,7 @@
 import ISO6391 from 'iso-639-1';
-import type { JSONValue, Cache } from '@/types';
-import { hash } from '@/utils/hash';
-import { cached, dummyCache } from '@/cache';
+import type { JSONValue, Cache } from '#types';
+import { hash } from '#utils';
+import { cached, dummyCache } from '#cache';
 import { generate } from "./generate";
 
 const PROMPT_TEXT = `Translate the text from English to {lang}.`

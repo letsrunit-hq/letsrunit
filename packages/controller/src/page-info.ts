@@ -5,8 +5,6 @@ import metascraperImage from 'metascraper-image';
 import metascraperLang from 'metascraper-lang';
 import metascraperLogo from 'metascraper-logo';
 import metascraperLogoFavicon from 'metascraper-logo-favicon';
-import metascraperAuthor from 'metascraper-author';
-import metascraperPublisher from 'metascraper-publisher';
 import metascraperUrl from 'metascraper-url';
 import { PageLike, PageInfo } from '@letsrunit/core/types';
 
@@ -16,8 +14,6 @@ const scrape = metascraper([
   metascraperImage(),
   metascraperLogo(),
   metascraperLogoFavicon(),
-  metascraperAuthor(),
-  metascraperPublisher(),
   metascraperLang(),
   metascraperUrl(),
 ]);
@@ -31,14 +27,12 @@ export async function extractPageInfo(page: PageLike): Promise<PageInfo> {
   const meta = await scrape({ html, url });
 
   return {
+    url: meta.url || url,
     title: meta.title || (page.title ? await page.title() : undefined),
-    description: meta.description?.replace(/\n+/, ' ') || undefined,
+    description: meta.description || undefined,
     image: meta.image || undefined,
     favicon: meta.logo || undefined,
-    author: meta.author || undefined,
-    publisher: meta.publisher || undefined,
     lang: meta.lang || undefined,
-    url: meta.url || url
   };
 }
 

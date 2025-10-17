@@ -1,4 +1,4 @@
-import type { Cache } from '@/types';
+import type { Cache } from '#types';
 
 export const dummyCache: Cache<any> = {
   has: () => false,

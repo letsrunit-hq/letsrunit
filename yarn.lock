@@ -1237,13 +1237,11 @@ __metadata:
     "@types/node": "npm:^24.7.2"
     "@types/turndown": "npm:^5.0.5"
     metascraper: "npm:^5.49.4"
-    metascraper-author: "npm:^5.49.2"
     metascraper-description: "npm:^5.49.2"
     metascraper-image: "npm:^5.49.2"
     metascraper-lang: "npm:^5.49.2"
     metascraper-logo: "npm:^5.49.2"
     metascraper-logo-favicon: "npm:^5.49.2"
-    metascraper-publisher: "npm:^5.49.2"
     metascraper-title: "npm:^5.49.2"
     metascraper-url: "npm:^5.49.2"
     playwright: "npm:^1.56.0"
@@ -6499,15 +6497,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"metascraper-author@npm:^5.49.2":
-  version: 5.49.2
-  resolution: "metascraper-author@npm:5.49.2"
-  dependencies:
-    "@metascraper/helpers": "npm:5.49.2"
-  checksum: 10c0/f66248a69725a40b042dc032a3eca0df68a713bd5a4c9852c67ba1734e27f31894165b25df200cf397fa53f8bfb853b6c46599b8d01619839b753f3f32ccf7f6
-  languageName: node
-  linkType: hard
-
 "metascraper-description@npm:^5.49.2":
   version: 5.49.2
   resolution: "metascraper-description@npm:5.49.2"
@@ -6554,15 +6543,6 @@ __metadata:
     "@metascraper/helpers": "npm:5.49.2"
     lodash: "npm:~4.17.21"
   checksum: 10c0/01a372be7ac52951c7e52e9f6c4c83ecc46fa275c380cdd4d4fb2de30582f78cdfa9d2a91afde848e93a40743b38748388ca1cc545e381efbb47e0038678d4ea
-  languageName: node
-  linkType: hard
-
-"metascraper-publisher@npm:^5.49.2":
-  version: 5.49.2
-  resolution: "metascraper-publisher@npm:5.49.2"
-  dependencies:
-    "@metascraper/helpers": "npm:5.49.2"
-  checksum: 10c0/d6a8285d5f192f30020822a6d1cf1d6695aeaf837d8c8f172346f33c750457bd195a8a84fe1c7baf50578409f4c9dae6161d8e2e77570cfd0ea17de66b68414f
   languageName: node
   linkType: hard
 
