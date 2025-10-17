@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import * as fs from 'node:fs/promises';
-import { FileCache } from '@/cache';
+import { FileCache } from '#cache';
 
 async function makeTempDir(prefix: string = 'file-cache') {
   return await fs.mkdtemp(path.join(os.tmpdir(), prefix));

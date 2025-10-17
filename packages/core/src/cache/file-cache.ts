@@ -1,6 +1,6 @@
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
-import type { Cache } from '@/types';
+import type { Cache } from '#types';
 
 function sanitizeKey(key: string): string {
   return key.replace(/[\/|:]/g, '-');

@@ -3,19 +3,17 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
+  "imports": {
+    "#ai": "./src/ai/index.ts",
+    "#cache": "./src/cache/index.ts",
+    "#types": "./src/types/index.ts",
+    "#utils": "./src/utils/index.ts"
+  },
   "exports": {
-    "./ai": {
-      "default": "./src/ai/index.ts"
-    },
-    "./cache": {
-      "default": "./src/cache/index.ts"
-    },
-    "./types": {
-      "default": "./src/types/index.ts"
-    },
-    "./utils": {
-      "default": "./src/utils/index.ts"
-    }
+    "./ai": "./src/ai/index.ts",
+    "./cache": "./src/cache/index.ts",
+    "./types": "./src/types/index.ts",
+    "./utils": "./src/utils/index.ts"
   },
   "packageManager": "yarn@4.10.3",
   "dependencies": {

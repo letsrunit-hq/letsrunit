@@ -155,6 +155,7 @@ Language has been changed to English
 * If two identical roles appear without clear labels, prefer the **closest stable attribute** (id, data-testid, aria-label) with a minimal CSS selector.
 * Omit components that are clearly not visibility (e.g., cookie banner has \`hidden\` class).
 * If content is purely decorative, omit it.
+* Omit mega footers — large site footers with navigation and resource links.
 
 ## Final constraints
 
