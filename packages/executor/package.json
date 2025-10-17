@@ -1,6 +1,5 @@
 {
   "name": "@letsrunit/executor",
-  "version": "0.0.1",
   "private": true,
   "main": "src/index.ts",
   "packageManager": "yarn@4.10.3",

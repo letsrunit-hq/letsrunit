@@ -1,8 +1,12 @@
 {
   "name": "@letsrunit/core",
-  "version": "0.0.1",
   "private": true,
   "type": "module",
+  "scripts": {
+    "lint": "eslint",
+    "test": "vitest --environment jsdom",
+    "typecheck": "tsc --noEmit"
+  },
   "imports": {
     "#ai": "./src/ai/index.ts",
     "#cache": "./src/cache/index.ts",
