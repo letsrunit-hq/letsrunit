@@ -10,4 +10,3 @@ export const pubsub = new PubSub();
 export const ARTIFACT_BUCKET = process.env.ARTIFACT_BUCKET!;
 export const PROJECT = process.env.GCP_PROJECT!;
 export const REGION = process.env.GCP_REGION ?? 'europe-west4';
-

@@ -1,0 +1,25 @@
+{
+  "name": "cli",
+  "private": true,
+  "packageManager": "yarn@4.10.3",
+  "engines": {
+    "node": ">=18.18"
+  },
+  "bin": {
+    "letsrunit": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsup src/index.ts --dts --format esm --clean --banner.js='#!/usr/bin/env node'",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@letsrunit/executor": "workspace:*",
+    "commander": "^14.0.1"
+  }
+}
