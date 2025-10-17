@@ -1,7 +1,11 @@
 {
   "name": "@letsrunit/controller",
-  "version": "0.0.1",
   "private": true,
+  "scripts": {
+    "lint": "eslint",
+    "test": "vitest --environment jsdom",
+    "typecheck": "tsc --noEmit"
+  },
   "packageManager": "yarn@4.10.3",
   "main": "src/index.ts",
   "dependencies": {
