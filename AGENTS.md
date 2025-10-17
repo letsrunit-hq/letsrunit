@@ -72,7 +72,7 @@ yarn workspaces foreach -pt run test
 Testing is done with **vitest**.
 
 * For `web` tests are located next to the source file.
-* For all other workspaces tests are located in the `test` directory.
+* For all other workspaces tests are located in the `tests` directory.
 
 All source files should be tested. We're aiming for 100% code coverage. If particular code explicitly can't be tested,
 use `/* v8 ignore next [lines] */` or `/* v8 ignore start */`.
