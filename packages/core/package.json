@@ -7,6 +7,9 @@
     "./ai": {
       "default": "./src/ai/index.ts"
     },
+    "./cache": {
+      "default": "./src/cache/index.ts"
+    },
     "./types": {
       "default": "./src/types/index.ts"
     },

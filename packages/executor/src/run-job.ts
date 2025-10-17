@@ -19,8 +19,6 @@ export default async function runJob(
   job: Job,
   opts: RunJobOptions = {},
 ): Promise<Result> {
-  const artifactSink = opts.artifactSink ?? (async () => {});
-
   const browser = await launch();
 
   try {
@@ -29,7 +27,11 @@ export default async function runJob(
     const lang = await extractLang(page);
     const tr = trFn(lang || 'en', opts);
 
-    await suppressInterferences(page, { translate: tr }).catch(() => {});
+    try {
+      await suppressInterferences(page, { translate: tr });
+    } catch (e) {
+      console.error(e);
+    }
 
     const staticPage = await snapshot(page, { title: true });
 

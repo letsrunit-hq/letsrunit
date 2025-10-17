@@ -1,7 +1,7 @@
 import ISO6391 from 'iso-639-1';
-import type { JSONValue, Cache } from '../types';
-import { hash } from '../utils/hash';
-import { cached, dummyCache } from '../cache';
+import type { JSONValue, Cache } from '@/types';
+import { hash } from '@/utils/hash';
+import { cached, dummyCache } from '@/cache';
 import { generate } from "./generate";
 
 const PROMPT_TEXT = `Translate the text from English to {lang}.`
@@ -34,8 +34,8 @@ export async function translate<T extends JSONValue>(
   const cacheKey = hash(str) + `:en:${lang}`;
 
   return cached<T>(cache, cacheKey, async () => {
-    const prompt = options.prompt ??
-      (isString ? PROMPT_TEXT : PROMPT_JSON).replace('{lang}', ISO6391.getName(lang) || lang);
+    const prompt = (options.prompt ?? (isString ? PROMPT_TEXT : PROMPT_JSON))
+      .replaceAll('{lang}', ISO6391.getName(lang) || lang);
 
     const translated = await generate(prompt, str, { model: 'small' });
 
