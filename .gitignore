@@ -8,5 +8,8 @@
 node_modules
 .pnp.*
 
+# Build and test
+coverage
+
 # Runtime files
 .letsrunit

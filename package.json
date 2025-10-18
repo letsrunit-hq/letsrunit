@@ -3,24 +3,17 @@
   "packageManager": "yarn@4.10.3",
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "packages/@types/*"
   ],
   "scripts": {
     "cli": "yarn workspace cli dev"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
-    "@types/node": "^24.7.2",
     "eslint": "^9.37.0",
     "eslint-config-next": "^15.5.5",
     "eslint-config-prettier": "^10.1.8",
-    "prettier": "^3.6.2",
-    "tsup": "^8.5.0",
-    "tsx": "^4.20.6",
-    "typescript": "^5.9.3",
-    "vitest": "^3.2.4"
-  },
-  "dependencies": {
-    "@letsrunit/core": "workspace:^"
+    "prettier": "^3.6.2"
   }
 }

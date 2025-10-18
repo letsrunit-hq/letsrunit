@@ -5,6 +5,15 @@ export default defineConfig({
     include: [
       'tests/**/*.test.ts',
     ],
+    coverage: {
+      include: [
+        'src/**/*.ts'
+      ],
+      exclude: [
+        '**/index.ts',
+        'src/types/**/*.ts',
+      ],
+    },
   }
 });
 
