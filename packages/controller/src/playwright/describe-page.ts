@@ -1,5 +1,5 @@
-import { scrubHtml } from './utils/scrub-html';
-import { htmlToStructuredMarkdown } from './utils/structured-markdown';
+import { scrubHtml } from './scrub-html';
+import { htmlToStructuredMarkdown } from './structured-markdown';
 import { extractPageInfo } from './page-info';
 import { PageLike } from '@letsrunit/core/types';
 import { stringify as toYaml } from 'yaml';

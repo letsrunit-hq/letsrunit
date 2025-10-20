@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { scrubHtml } from '../../src/utils/scrub-html';
+import { scrubHtml } from '../../src/playwright/scrub-html';
 import type { PageLike } from '@letsrunit/core/types';
 
 function mockPage(html: string, url = 'https://example.com'): PageLike {
