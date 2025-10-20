@@ -8,6 +8,8 @@ export async function waitForIdle(page: Page, timeoutMs = 1500) {
 export async function waitForMeta(page: Page, timeoutMs = 1500) {
   await waitForIdle(page);
 
+  page.getByRole('navigation');
+
   await page.waitForFunction(() => {
     const head = document.head;
     if (!head) return false;

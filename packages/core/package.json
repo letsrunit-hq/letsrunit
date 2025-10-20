@@ -3,7 +3,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "lint": "eslint",
     "test": "vitest run",
     "test:cov": "vitest run --coverage",
     "typecheck": "tsc --noEmit"
