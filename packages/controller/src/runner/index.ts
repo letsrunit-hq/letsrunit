@@ -1,4 +1,9 @@
 export { runner } from './dsl';
 
-// Register all step definitions
+// Register custom parameter types
+import './parameters';
+
+// Register step definitions
+import './steps/browse';
+import './steps/screenshot';
 import './steps/browse';

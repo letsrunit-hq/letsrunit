@@ -3,28 +3,21 @@ import { Pickle, SourceMediaType } from '@cucumber/messages';
 import {
   CucumberExpression,
   Expression,
-  ParameterType,
   ParameterTypeRegistry,
   RegularExpression,
 } from '@cucumber/cucumber-expressions';
-import { compileLocator } from '@letsrunit/gherkin';
-import { Page } from '@playwright/test';
 
-export type World = { page: Page, [_: string]: any };
-export type StepHandler = (world: World, ...args: any[]) => Promise<void> | void;
+type World = { cleanup?: () => void | Promise<void>; [_: string]: any}
+export type StepHandler<T> = (world: T, ...args: any[]) => Promise<void> | void;
 
 type StepType = 'Given' | 'When' | 'Then';
-type Compiled = { type: StepType, expr: Expression; fn: StepHandler; source: string };
+type Compiled<T> = { type: StepType, expr: Expression; fn: StepHandler<T>; source: string };
 
-export class Runner {
+export class Runner<TWorld extends World> {
   public readonly registry = new ParameterTypeRegistry();
-  public readonly defs: Compiled[] = [];
+  public readonly defs: Compiled<TWorld>[] = [];
 
-  constructor() {
-    this.defineCustomParameterTypes();
-  }
-
-  define(type: StepType, expression: string | RegExp, fn: StepHandler) {
+  defineStep(type: StepType, expression: string | RegExp, fn: StepHandler<TWorld>) {
     const expr =
       typeof expression === 'string'
         ? new CucumberExpression(expression, this.registry)
@@ -53,7 +46,7 @@ export class Runner {
     return pickles;
   }
 
-  async run(feature: string, worldFactory: () => Promise<World> | World) {
+  async run(feature: string, worldFactory: () => Promise<TWorld> | TWorld): Promise<TWorld> {
     const pickles = this.compile(feature);
     if (pickles.length > 1) {
       throw new Error('Multiple scenarios not supported')
@@ -68,7 +61,7 @@ export class Runner {
         const m = this.match(text);
         if (!m) throw new Error(`Undefined step: ${text}`);
 
-        // DocString/DataTable als laatste arg
+        // DocString/DataTable
         let extra: any | undefined;
         if (step.argument?.docString) {
           extra = step.argument.docString.content;
@@ -83,32 +76,5 @@ export class Runner {
     }
 
     return world;
-  }
-
-  private defineCustomParameterTypes() {
-    this.registry.defineParameterType(
-      new ParameterType<string>(
-        'locator',
-        /(\w+)(?: +"(?:[^"\\]+|\\.)*"| +\/(?:[^\/\\]+|\\.)*\/| *#[\w-]+)?|`.+`(?: +with(?:out|in)? +(\w+)(?: +"(?:[^"\\]+|\\.)*"| +\/(?:[^\/\\]+|\\.)*\/| *#[\w-]+)?|`.+`)*/,
-        String,
-        (locator: string) => compileLocator(locator),
-        false,
-      )
-    );
-    this.registry.defineParameterType(
-      new ParameterType<string | number | boolean>(
-        'scalar',
-        /true|false|"(.*?)"|-?\d+(?:\.\d+)?/,
-        null,
-        (value: string, str: string): string | number | boolean => {
-          if (str) return str;
-          if (value === 'true' || value === 'false') return value === 'true';
-          if (!isNaN(Number(value))) return Number(value);
-
-          throw new Error("Unexpected value");
-        },
-        false,
-      ),
-    );
   }
 }
