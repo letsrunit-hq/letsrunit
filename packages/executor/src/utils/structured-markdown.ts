@@ -1,4 +1,4 @@
-import { generate } from 'packages/ai/src';
+import { generate } from '@letsrunit/ai';
 
 const PROMPT = `You convert raw HTML into **compact Markdown** annotated with a small set of **custom blocks** and **Playwright selectors**. Your output is consumed by agents to drive Playwright; keep it predictable.
 

@@ -1,5 +1,5 @@
 import { generateMessages } from '@cucumber/gherkin';
-import { Pickle, SourceMediaType } from '@cucumber/messages';
+import { IdGenerator, Pickle, SourceMediaType } from '@cucumber/messages';
 import {
   CucumberExpression,
   Expression,
@@ -35,6 +35,7 @@ export class Runner<TWorld extends World> {
 
   compile(feature: string, uri = 'inline.feature') {
     const envelopes = generateMessages(feature, uri, SourceMediaType.TEXT_X_CUCUMBER_GHERKIN_PLAIN, {
+      newId: () => IdGenerator.uuid().toString(),
       includeGherkinDocument: true,
       includePickles: true,
       includeSource: false,

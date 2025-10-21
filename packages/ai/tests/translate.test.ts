@@ -1,7 +1,7 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { translate } from '../src';
 import { hash } from '../src/utils/hash';
-import { mockGenerateText } from '../src/generate';
+import { mockGenerateFunctions } from '../src/generate';
 
 // Local mock for generateText injected via mockGenerateText
 const generateTextMock = vi.fn<any>();
@@ -9,7 +9,7 @@ let restore: (() => void) | undefined;
 
 beforeEach(() => {
   generateTextMock.mockReset();
-  restore = mockGenerateText(generateTextMock as any);
+  restore = mockGenerateFunctions(generateTextMock as any);
 });
 
 afterEach(() => {

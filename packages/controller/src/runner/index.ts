@@ -4,6 +4,6 @@ export { runner } from './dsl';
 import './parameters';
 
 // Register step definitions
-import './steps/browse';
+import './steps/navigation';
 import './steps/screenshot';
-import './steps/browse';
+import './steps/navigation';
