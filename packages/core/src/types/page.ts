@@ -1,12 +1,3 @@
-import { MaybeAsync } from './util';
-
-// Must match a Playwright Page
-export interface PageLike {
-  content: MaybeAsync<() => string>;
-  url: () => string;
-  title?: MaybeAsync<() => string>;
-}
-
 export interface PageInfo {
   /** Page title (from <title> or meta tags) */
   title?: string;

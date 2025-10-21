@@ -1,5 +1,4 @@
 import { Job, JSONValue, Result } from '@letsrunit/core/types';
-import { launch, browse, suppressInterferences, describePage, snapshot, extractLang } from '@letsrunit/controller';
 import { Cache } from '@letsrunit/core/types';
 import { translate } from '@letsrunit/core/ai';
 
@@ -19,31 +18,9 @@ export default async function runJob(
   job: Job,
   opts: RunJobOptions = {},
 ): Promise<Result> {
-  const browser = await launch();
+  const steps: string[] = [
+    'Given'
+  ];
 
-  try {
-    const page = await browse(browser, job.target);
-
-    const lang = await extractLang(page);
-    const tr = trFn(lang || 'en', opts);
-
-    try {
-      await suppressInterferences(page, { translate: tr });
-    } catch (e) {
-      console.error(e);
-    }
-
-    const staticPage = await snapshot(page, { title: true });
-
-    const pageContent = await describePage(staticPage);
-    console.log(pageContent);
-
-  } catch (error) {
-    console.error(error);
-    return { status: 'error' };
-  } finally {
-    await browser.close();
-  }
-
-  return { status: 'success' };
+  return { status: 'error' }
 }

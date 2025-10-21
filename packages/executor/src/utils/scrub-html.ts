@@ -7,8 +7,6 @@
 // - Does NOT change tag names, does NOT unwrap containers, does NOT reorder content
 
 import { JSDOM } from 'jsdom';
-import { Page } from '@playwright/test';
-import { PageLike } from '@letsrunit/core/types';
 
 export type SemanticScrubOptions = {
   /** Remove nodes that look hidden/inert by attributes. Default: true */
@@ -83,10 +81,13 @@ const ALWAYS_DROP = [
 /**
  * Scrub HTML conservatively for LLMs without destroying semantics.
  */
-export async function scrubHtml(page: PageLike, opts: SemanticScrubOptions = {}): Promise<string> {
+export async function scrubHtml(
+  { html, url }: { html: string, url: string },
+  opts: SemanticScrubOptions = {},
+): Promise<string> {
   const o = { ...DEFAULTS, ...opts };
 
-  const dom = new JSDOM(await page.content(), { url: page.url() });
+  const dom = new JSDOM(html, { url });
   const doc = dom.window.document;
 
   // 1) Optionally remove <head>
@@ -118,7 +119,7 @@ export async function scrubHtml(page: PageLike, opts: SemanticScrubOptions = {})
     const all = [...doc.body.querySelectorAll<HTMLElement>('*')];
     for (const el of all) {
       // Iterate over a copy because we'll mutate attributes
-      for (const { name, value } of [...el.attributes]) {
+      for (const { name } of [...el.attributes]) {
         const lower = name.toLowerCase();
         if (lower.startsWith('on')) {
           // Remove event handler attributes
