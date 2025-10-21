@@ -12,7 +12,7 @@ export async function run(feature: string, options: Options = {}) {
 
   try {
     const { page } = await runner.run(feature, async (): Promise<World> => {
-      const page = await browse(browser);
+      const page = await browse(browser, options);
       return { page };
     });
 
