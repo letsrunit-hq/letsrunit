@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import * as fs from 'node:fs/promises';
@@ -9,9 +9,13 @@ async function makeTempDir(prefix: string = 'file-cache') {
 }
 
 function filePath(dir: string, key: string) {
-  const safe = key.replace(/[\/|:]/g, '-');
+  const safe = key.replace(/[\\/|:]/g, '-');
   return path.join(dir, `${safe}.json`);
 }
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe('fsCache', () => {
   it('returns undefined and false when key is missing', async () => {
@@ -54,5 +58,15 @@ describe('fsCache', () => {
 
     await cache.set('msg', 'hello' as any);
     expect(await cache.get('msg')).toBe('hello');
+  });
+
+  it('rethrows unexpected fs errors when reading', async () => {
+    const dir = await makeTempDir();
+    const cache = new FileCache(dir);
+    const error = Object.assign(new Error('filesystem down'), { code: 'EACCES' });
+
+    vi.spyOn(fs, 'readFile').mockRejectedValue(error);
+
+    await expect(cache.get('any')).rejects.toBe(error);
   });
 });
