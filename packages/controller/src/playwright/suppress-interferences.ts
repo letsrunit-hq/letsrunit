@@ -1,26 +1,13 @@
 import { Page } from "@playwright/test";
 import { sleep } from '@letsrunit/core/utils';
-
-const translationPrompt = `Given a JSON object where each key represents a button intent (accept, reject, close) and the
- values are English examples of button texts, generate a similar JSON object for {lang}. For each key, provide a list of
- natural phrases that native speakers might use for buttons with the same intent. Do not translate literally; adapt
- culturally and contextually. The list may have more or fewer items than the original. Keep the same JSON structure and
- return valid JSON.`
-
-const defaultTranslations = {
-  accept: ['accept', 'accept all', 'agree', 'allow', 'allow all', 'ok', 'okay', 'got it', 'continue', 'save & accept'],
-  reject: ['reject', 'reject all', 'decline', 'deny', 'only necessary', 'essential only', 'continue without cookies',
-    'no thanks'],
-  close: ['close', 'cancel', 'dismiss', 'not now', 'no thanks', 'later', '×'],
-};
-
-type Translations = typeof defaultTranslations;
+import * as translations from "../translations";
+import { getTranslations } from '../translations';
 
 type Options = {
   timeoutMs?: number;     // max sweep time
   preferReject?: boolean; // click "Reject"/"Decline" where possible
   verbose?: boolean;
-  translate?: (input: Translations, prompt: string) => Promise<Translations>;
+  lang?: string;
 };
 
 interface TrRegExps {
@@ -202,7 +189,6 @@ async function sweepOverlays(page: Page, regex: TrRegExps): Promise<boolean> {
 export async function suppressInterferences(page: Page, opts: Options = {}) {
   const timeoutMs = opts.timeoutMs ?? 4000;
   const preferReject = opts.preferReject ?? false;
-  const translations = opts.translate ? await opts.translate(defaultTranslations, translationPrompt) : defaultTranslations;
 
   const pollIntervalMs = 120;           // how often we probe when nothing happened
   const settleAfterActionMs = 300;      // give the DOM time to settle after a click
@@ -213,10 +199,11 @@ export async function suppressInterferences(page: Page, opts: Options = {}) {
   const endAt = Date.now() + timeoutMs;
 
   // Build regexes from translations so callers can provide i18n
+  const { accept, reject, close } = getTranslations(opts.lang ?? 'en');
   const regex = {
-    accept: buildRegexFromTranslations(translations.accept, { anchorWhole: true }),
-    reject: buildRegexFromTranslations(translations.reject, { anchorWhole: true }),
-    close: buildRegexFromTranslations(translations.close, { anchorWhole: false }),
+    accept: buildRegexFromTranslations(accept, { anchorWhole: true }),
+    reject: buildRegexFromTranslations(reject, { anchorWhole: true }),
+    close: buildRegexFromTranslations(close, { anchorWhole: false }),
   };
 
   let actions = 0;

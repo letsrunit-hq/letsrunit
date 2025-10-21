@@ -1,1 +1,1 @@
-export { compileLocator } from './locator/compile';
+export * from './parameters';
