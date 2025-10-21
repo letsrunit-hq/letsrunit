@@ -14,5 +14,5 @@ export async function run(feature: string) {
 }
 
 export function listSteps() {
-
+  return runner.defs.map((def) => `${def.type} ${def.expr}`);
 }

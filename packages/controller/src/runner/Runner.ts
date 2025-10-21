@@ -17,8 +17,8 @@ type StepType = 'Given' | 'When' | 'Then';
 type Compiled = { type: StepType, expr: Expression; fn: StepHandler; source: string };
 
 export class Runner {
-  private registry = new ParameterTypeRegistry();
-  private defs: Compiled[] = [];
+  public readonly registry = new ParameterTypeRegistry();
+  public readonly defs: Compiled[] = [];
 
   constructor() {
     this.defineCustomParameterTypes();
@@ -110,6 +110,5 @@ export class Runner {
         false,
       ),
     );
-
   }
 }
