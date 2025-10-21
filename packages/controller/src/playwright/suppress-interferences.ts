@@ -1,6 +1,5 @@
-import { Page } from "@playwright/test";
-import { sleep } from '@letsrunit/core/src';
-import * as translations from "../translations";
+import type { Page } from '@playwright/test';
+import { sleep } from '../utils/sleep';
 import { getTranslations } from '../translations';
 
 type Options = {

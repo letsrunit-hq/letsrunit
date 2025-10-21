@@ -1,7 +1,6 @@
 import { Command } from "commander";
-import { Job } from 'packages/executor/src/types';
 import { runJob } from '@letsrunit/executor';
-import { FileCache } from '@letsrunit/core/cache';
+import type { Job } from '@letsrunit/executor';
 
 const program = new Command();
 
@@ -16,9 +15,7 @@ program
   .option("-v, --verbose", "Enable verbose logging", false)
   .action(async (target: string, opts: { verbose: boolean }) => {
     const job: Job = { target };
-    const cache = (type: string) => new FileCache(`.letsrunit/cache/${type}`);
-
-    const result = await runJob(job, { cache });
+    const result = await runJob(job, { headless: false });
 
     process.exit(result.status === 'error' ? 1 : 0);
   });

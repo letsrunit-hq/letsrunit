@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Page } from '@playwright/test';
-import * as waitModule from '../src/wait';
+import * as waitModule from '../../src/playwright/wait';
 
 const { waitForIdle, waitForMeta } = waitModule;
 
@@ -13,7 +13,7 @@ afterEach(() => {
 describe('waitForIdle', () => {
   it('waits for DOM content loaded and network idle states with the provided timeout', async () => {
     const waitForLoadState = vi
-      .fn<Parameters<Page['waitForLoadState']>, ReturnType<Page['waitForLoadState']>>()
+      .fn()
       .mockResolvedValueOnce(undefined)
       .mockResolvedValueOnce(undefined);
 
@@ -28,7 +28,7 @@ describe('waitForIdle', () => {
 
   it('swallows network idle wait errors', async () => {
     const waitForLoadState = vi
-      .fn<Parameters<Page['waitForLoadState']>, ReturnType<Page['waitForLoadState']>>()
+      .fn()
       .mockResolvedValueOnce(undefined)
       .mockRejectedValueOnce(new Error('network idle timed out'));
 

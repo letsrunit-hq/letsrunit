@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 export async function waitForIdle(page: Page, timeoutMs = 1500) {
   await page.waitForLoadState('domcontentloaded');

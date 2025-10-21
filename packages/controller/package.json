@@ -1,9 +1,10 @@
 {
   "name": "@letsrunit/controller",
   "private": true,
+  "type": "module",
   "scripts": {
-    "test": "vitest --environment jsdom",
-    "test:cov": "vitest --environment jsdom run --coverage",
+    "test": "vitest run --environment jsdom",
+    "test:cov": "vitest run --environment jsdom --coverage",
     "typecheck": "tsc --noEmit"
   },
   "packageManager": "yarn@4.10.3",
@@ -21,6 +22,7 @@
   "devDependencies": {
     "@types/node": "^24.7.2",
     "@types/turndown": "^5.0.5",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
   }
 }
