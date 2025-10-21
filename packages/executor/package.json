@@ -5,7 +5,6 @@
   "packageManager": "yarn@4.10.3",
   "dependencies": {
     "@letsrunit/controller": "workspace:*",
-    "@letsrunit/core": "workspace:*",
     "playwright": "^1.56.0"
   },
   "devDependencies": {
