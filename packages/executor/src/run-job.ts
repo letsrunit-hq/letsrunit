@@ -1,26 +1,22 @@
-import { Job, JSONValue, Result } from '@letsrunit/core/types';
-import { Cache } from '@letsrunit/core/types';
-import { translate } from '@letsrunit/core/ai';
+import { Job, Result } from './types';
+import { run } from '@letsrunit/controller';
 
 interface RunJobOptions {
-  artifactSink?: (name: string, data: Buffer) => Promise<void>,
-  cache?: Cache | ((type: string) => Cache);
-}
-
-const defaultCache: Cache = new Map();
-
-function trFn(lang: string, opts: RunJobOptions) {
-  const cache = (typeof opts.cache === 'function' ? opts.cache('translations') : opts.cache) ?? defaultCache;
-  return <T extends JSONValue>(input: T, prompt?: string): Promise<T> => translate<T>(input, lang, { cache, prompt });
+  headless?: boolean;
 }
 
 export default async function runJob(
   job: Job,
   opts: RunJobOptions = {},
 ): Promise<Result> {
+  // TODO split target in baseUrl and page.
+
   const steps: string[] = [
-    'Given'
+    "Given I'm on the homepage",
+    "And all popups are closed"
   ];
+
+  await run(steps.join("\n"), { headless: opts.headless, baseURL: job.target })
 
   return { status: 'error' }
 }

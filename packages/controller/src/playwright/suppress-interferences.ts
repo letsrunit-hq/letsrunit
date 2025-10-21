@@ -1,5 +1,5 @@
 import { Page } from "@playwright/test";
-import { sleep } from '@letsrunit/core/utils';
+import { sleep } from '@letsrunit/core/src';
 import * as translations from "../translations";
 import { getTranslations } from '../translations';
 

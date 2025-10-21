@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { Job } from '@letsrunit/core/types';
+import { Job } from 'packages/executor/src/types';
 import { runJob } from '@letsrunit/executor';
 import { FileCache } from '@letsrunit/core/cache';
 
