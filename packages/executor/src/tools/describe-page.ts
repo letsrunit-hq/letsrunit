@@ -1,7 +1,8 @@
 import { scrubHtml } from '../utils/scrub-html';
 import { htmlToStructuredMarkdown } from '../utils/structured-markdown';
 import { stringify as toYaml } from 'yaml';
-import { PageInfo } from 'src/types';
+import type { PageInfo } from '../types';
+
 import metascraper, { MetascraperOptions } from 'metascraper';
 import metascraperTitle from 'metascraper-title';
 import metascraperDescription from 'metascraper-description';

@@ -3,8 +3,8 @@ import { compileLocator } from './locator';
 
 export function booleanParameter(trueValue: string, falseValue: string, regexp?: RegExp): ParameterType<boolean> {
   return new ParameterType<boolean>(
-    `${trueValue}|${falseValue}`,
-    regexp ?? new RegExp(`${trueValue}|${falseValue}`, 'i'),
+    `${trueValue}${falseValue}`,
+    regexp ?? new RegExp(`${trueValue}|${falseValue}`),
     Boolean,
     (value: string): boolean => value === trueValue,
     true

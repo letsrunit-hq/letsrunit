@@ -7,7 +7,7 @@ interface Options extends BrowserContextOptions {
   headless?: boolean;
 }
 
-export async function run(feature: string, options: Options = {}) {
+export async function run(feature: string, options: Options = {}): Promise<{ url: string, html: string }> {
   const browser = await chromium.launch({ headless: options.headless ?? true });
 
   try {
@@ -18,7 +18,7 @@ export async function run(feature: string, options: Options = {}) {
 
     return {
       url: page.url(),
-      content: await page.content(),
+      html: await page.content(),
     };
   } finally {
     await browser.close();
