@@ -73,6 +73,7 @@ const PROMPT = `You convert raw HTML into **compact Markdown** annotated with a 
 
 * Represent each item as one bullet. If item has a price, use the pipe \`|\` separator. Eg \`* Product Name | €12,99 [(role=button)]\`
 * Use hints for additional information. Eg \`{ui=ribbon text="Only 1 left"}\`.
+* If a grid item can be used as a link, it must be presented as a link (e.g. \`[Shoes](/cat/shoes)\`)
 
 ## Tone & brevity
 
@@ -88,9 +89,9 @@ const PROMPT = `You convert raw HTML into **compact Markdown** annotated with a 
 \`\`\`
 ::: nav [(css=app-navbar mat-toolbar)] {ui=navbar}
 * Open sidenav [(role=button)]
-* Home [(role=button)]
+* [Home](/)
 * Search [(role=textbox)]
-* Account [(role=button)]
+* [Account](/my-account)
 * Language [(role=button)]
 :::
 
@@ -112,8 +113,8 @@ OWASP Juice Shop is probably the most modern and sophisticated insecure web appl
 :::
 
 ::: grid [(css=app-search-result .mat-grid-list)] {ui=product-grid}
-* Apple Juice (1000ml) | 1.99¤ [(role=button)]
-* Best Juice Shop Salesman Artwork | 5000¤ [(role=button)] {ui=ribbon text="Only 1 left"}
+* [Apple Juice (1000ml) | €1.99](/prod/245)
+* [Best Juice Shop Salesman Artwork | €5000](/prod/984) {ui=ribbon text="Only 1 left"}
 :::
 
 ::: nav [(css=mat-paginator)] {ui=pagination}
@@ -146,9 +147,27 @@ Language has been changed to English
 * Gift wishes (optional) [(role=textbox)] {ui=textarea}
 ::::
 
-[Create page] [(role=button)] {ui=button variant=primary}
+Create page [(role=button)] {ui=button variant=primary}
 :::
 \`\`\`
+
+## Examples of incorrect outputs
+
+### Invalid link
+
+\`\`\`
+Foo Bar | €13,19 (/prod/5832)
+\`\`\`
+
+This is not a valid markdown link because the square brackets are missing.
+
+### Locator used instead of link
+
+\`\`\`
+Green Bike [(css=a[href="/prod/3452"])]
+\`\`\`
+
+This should be presented as markdown link \`[Green Bike](/prod/3452)\`.
 
 ## Issue handling & ambiguity
 
@@ -162,7 +181,8 @@ Language has been changed to English
 * Output **Markdown only**, no explanations.
 * Use **only** the allowed block types.
 * **Never** include HTML in the output. E.g. \`_Foo Bar_\` instead of \`<p class="italic">Foo Bar</p>\`.
-* Ensure **each block has exactly one block-level selector** \`[(css=...)]\`.
+* Ensure **each block has exactly one block-level selector**.
+* Links must be presented as markdown link. It's **forbidden** to use a locator for an href like \`[(css=a[href*="..."])]\`).
 * For items inside blocks, attach at most **one selector** unless a brief CSS fallback is strictly necessary.
 `;
 
