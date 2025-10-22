@@ -47,13 +47,13 @@ export class Runner<TWorld extends World> {
     return pickles;
   }
 
-  async run(feature: string, worldFactory: () => Promise<TWorld> | TWorld): Promise<TWorld> {
+  async run(feature: string, worldFactory: TWorld | (() => Promise<TWorld> | TWorld)): Promise<TWorld> {
     const pickles = this.compile(feature);
     if (pickles.length > 1) {
       throw new Error('Multiple scenarios not supported')
     }
 
-    const world = await worldFactory();
+    const world = typeof worldFactory === 'function' ? await worldFactory() : worldFactory;
     const pickle = pickles[0];
 
     try {

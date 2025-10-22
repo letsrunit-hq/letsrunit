@@ -4,6 +4,8 @@ import { ParameterType } from '@cucumber/cucumber-expressions'
 
 export interface World {
   page: Page;
+  lang?: string;
+  [_: string]: any;
 }
 
 export const runner = new Runner<World>();

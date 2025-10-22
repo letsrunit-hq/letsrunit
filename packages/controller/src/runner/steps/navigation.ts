@@ -1,14 +1,20 @@
-import { Given } from '../dsl';
+import { Given, World } from '../dsl';
 import { suppressInterferences } from '../../playwright/suppress-interferences';
+import { waitForIdle } from '../../playwright/wait';
+import { getLang } from '../../utils/get-lang';
 
-Given("I'm on the homepage", async ({ page }) => {
-  await page.goto('/', { waitUntil: 'networkidle' });
-});
+async function openPage(world: World, path: string): Promise<void> {
+  const { page } = world;
 
-Given("I'm on page {string}", async ({ page }, path: string) => {
-  await page.goto(path, { waitUntil: 'networkidle' });
-});
+  await page.goto(path);
+  await waitForIdle(page);
 
-Given("All popups are closed", async ({ page }) => {
-  await suppressInterferences(page);
+  world.lang = await getLang(page) || undefined;
+}
+
+Given("I'm on the homepage", async (world) => openPage(world, '/'));
+Given("I'm on page {string}", openPage);
+
+Given("all popups are closed", async ({ page, lang }) => {
+  await suppressInterferences(page, { lang });
 });
