@@ -58,7 +58,10 @@ RawChars
 // Role-first: role or special (field, image, text)
 RoleWithOpt
   = base:RoleSel id:IdSuffix?
-    { return addId({ type:"Selector", mode:"role", role: base.role, name: base.name }, id); }
+    {
+      const s = { type: "Selector", mode: "role", role: base.role, name: base.name };
+      return addId(s, id ?? null);
+    }
 
 // Role selection rules with disambiguation:
 // - If the identifier is a known role keyword (button, link, field, image, text), it's a role.
@@ -75,7 +78,10 @@ KnownRole
 // Tag-first (e.g. div, section, button)
 TagWithOpt
   = t:TagSel id:IdSuffix?
-    { return addId({ type:"Selector", mode:"tag", tag: t }, id); }
+    {
+      const s = { type: "Selector", mode: "tag", tag: t };
+      return addId(s, id ?? null);
+    }
 
 TagSel
   = Ident

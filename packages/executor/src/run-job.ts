@@ -1,11 +1,14 @@
 import { Job, Result } from './types';
 import { Controller } from '@letsrunit/controller';
-import { describePage } from './tools/describe-page';
-import { feature } from './utils/feature';
-import { explorePage } from './explore/explore';
+import { describePage } from './explore/describe';
+import { writeFeature } from './utils/feature';
+import { observePage } from './explore/observe';
+import { determineStory } from './explore/determine';
+import { Journal, NoSkink } from '@letsrunit/journal';
 
 interface RunJobOptions {
   headless?: boolean;
+  journal?: Journal;
 }
 
 export default async function runJob(
@@ -16,20 +19,28 @@ export default async function runJob(
 
   const steps: string[] = [
     "Given I'm on the homepage",
-    "Given all popups are closed"
+    "And all popups are closed"
   ];
 
+  const journal = opts.journal ?? new Journal(new NoSkink());
   const controller = await Controller.launch({ headless: opts.headless, baseURL: job.target });
 
   try {
-    const page = await controller.run(feature("Explore", steps), );
+    const page = await controller.run(writeFeature("Explore", steps));
 
     const content = await describePage(page);
-    console.log(content);
+    const { actions, ...appInfo } = await observePage(content);
 
-    const purpose = await explorePage(content);
+    for (const action of actions) {
+      const story = await determineStory({
+        controller,
+        page: { ...page, content },
+        action,
+        appInfo,
+      });
 
-    console.log(purpose);
+      break; // For test
+    }
 
     return { status: 'success' };
   } finally {
