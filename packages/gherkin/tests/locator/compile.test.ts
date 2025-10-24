@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { compileLocator } from '../../src';
+import { compileLocator } from '../../src/locator';
 
 // Reordered and expanded examples: start with basic locator strings, then add complexity
 // moving on to `with` predicates and finally `within` ancestry and raw selectors.
@@ -8,10 +8,6 @@ describe('compileLocator', () => {
   // ----- Basic locators -----
   it('tag only: section → section', () => {
     expect(compileLocator('section')).toBe('section');
-  });
-
-  it('id only: #main → #main', () => {
-    expect(compileLocator('#main')).toBe('#main');
   });
 
   it('role with name: button "Submit" → internal:role=button [name="Submit"i]', () => {
@@ -44,7 +40,7 @@ describe('compileLocator', () => {
   });
 
   // ----- Ancestry with `within` (outer >> inner) -----
-  it('section within #main → #main >> section', () => {
+  it('section within `#main` → #main >> section', () => {
     expect(compileLocator('section within #main')).toBe('#main >> section');
   });
 

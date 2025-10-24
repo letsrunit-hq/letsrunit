@@ -5,5 +5,3 @@ import './parameters';
 
 // Register step definitions
 import './steps/navigation';
-import './steps/screenshot';
-import './steps/navigation';

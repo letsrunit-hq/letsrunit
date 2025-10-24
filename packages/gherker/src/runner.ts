@@ -14,8 +14,16 @@ type StepType = 'Given' | 'When' | 'Then';
 type Compiled<T> = { type: StepType, expr: Expression; fn: StepHandler<T>; source: string };
 
 export class Runner<TWorld extends World> {
-  public readonly registry = new ParameterTypeRegistry();
-  public readonly defs: Compiled<TWorld>[] = [];
+  private _registry = new ParameterTypeRegistry();
+  private _defs: Compiled<TWorld>[] = [];
+
+  get registry(): ParameterTypeRegistry {
+    return this._registry;
+  }
+
+  get defs(): Compiled<TWorld>[] {
+    return this._defs;
+  }
 
   defineStep(type: StepType, expression: string | RegExp, fn: StepHandler<TWorld>) {
     const expr =
@@ -77,5 +85,10 @@ export class Runner<TWorld extends World> {
     }
 
     return world;
+  }
+
+  reset() {
+    this._registry = new ParameterTypeRegistry();
+    this._defs = [];
   }
 }

@@ -58,11 +58,11 @@ From these inputs, extract the following:
 * Ignore cookie banners, privacy policies, and legal links; never list them as user actions.
 `;
 
-export const ExplorationOutputSchema = z.object({
+export const ObservationOutputSchema = z.object({
   purpose: z
     .string()
     .describe("Concise sentence describing the primary purpose of a user visiting the site/app (max ~50 words)."),
-  login_available: z
+  loginAvailable: z
     .boolean()
     .describe("True if login or sign-up is visible on the page; otherwise false."),
   actions: z
@@ -76,8 +76,8 @@ export const ExplorationOutputSchema = z.object({
     .describe("List of 1-5 main things a first-time visitor can do without logging in."),
 });
 
-export type ExplorationOutput = z.infer<typeof ExplorationOutputSchema>;
+export type ObservationOutput = z.infer<typeof ObservationOutputSchema>;
 
-export async function explorePage(page: string): Promise<ExplorationOutput> {
-  return await generate(PROMPT, page, { schema: ExplorationOutputSchema });
+export async function observePage(page: string): Promise<ObservationOutput> {
+  return await generate(PROMPT, page, { schema: ObservationOutputSchema });
 }

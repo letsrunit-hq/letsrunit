@@ -1,4 +1,4 @@
-export function feature(description: string, steps: string[]) {
+export function writeFeature(description: string, steps: string[]) {
   return [
     `Feature: ${description}`.trim(),
     '',

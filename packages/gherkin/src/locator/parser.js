@@ -216,10 +216,16 @@ function peg$parse(input, options) {
   function peg$f5(p) {    return { incl: true, p };  }
   function peg$f6(p) {    return { incl: false, p };  }
   function peg$f7(s) {    return { type: "Selector", mode: "raw", raw: s.trim() };  }
-  function peg$f8(base, id) {    return addId({ type:"Selector", mode:"role", role: base.role, name: base.name }, id);  }
+  function peg$f8(base, id) {
+    const s = { type: "Selector", mode: "role", role: base.role, name: base.name };
+    return addId(s, id ?? null);
+  }
   function peg$f9(r, n) {    return { role: r, name: n ?? null };  }
   function peg$f10(r, n) {    return { role: r, name: n };  }
-  function peg$f11(t, id) {    return addId({ type:"Selector", mode:"tag", tag: t }, id);  }
+  function peg$f11(t, id) {
+    const s = { type: "Selector", mode: "tag", tag: t };
+    return addId(s, id ?? null);
+  }
   function peg$f12(i) {    return { type:"Selector", mode:"idonly", id: "#"+i };  }
   function peg$f13(i) {    return "#"+i;  }
   function peg$f14(sel) {    return { type: "HasDescendant", selector: sel };  }

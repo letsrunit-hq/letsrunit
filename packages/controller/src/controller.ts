@@ -32,6 +32,7 @@ export class Controller {
   }
 }
 
-export function listSteps() {
-  return runner.defs.map((def) => `${def.type} ${def.expr}`);
+export function listSteps(type?: 'Given' | 'When' | 'Then') {
+  const defs = type ? runner.defs.filter((def) => def.type === type) : runner.defs;
+  return defs.map((def) => `${def.type} ${def.expr}`);
 }
