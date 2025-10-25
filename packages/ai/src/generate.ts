@@ -2,6 +2,7 @@ import * as ai from 'ai';
 import { getModel } from './models';
 import { wrapAISDK } from "langsmith/experimental/vercel";
 import * as z from 'zod';
+import { ModelMessage } from 'ai';
 
 let { generateText, generateObject } = wrapAISDK(ai);
 
@@ -24,7 +25,7 @@ interface GenerateOptions<T extends z.Schema | undefined = undefined> {
 
 export async function generate<T extends z.Schema | undefined = undefined>(
   system: string,
-  prompt: string,
+  prompt: string | ModelMessage[],
   opts: GenerateOptions<T> = {},
 ): Promise<T extends z.Schema ? z.infer<Exclude<T, undefined>> : string> {
   const arg = {
@@ -33,8 +34,8 @@ export async function generate<T extends z.Schema | undefined = undefined>(
     prompt,
     providerOptions: {
       openai: {
-        reasoningEffort: opts.reasoningEffort ?? 'low'
-      }
+        reasoningEffort: opts.reasoningEffort ?? 'low',
+      },
     },
   };
 

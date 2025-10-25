@@ -2,10 +2,6 @@ import { ParameterType } from '@cucumber/cucumber-expressions';
 import { compileLocator } from './locator';
 import { KeyCombo, parseKeyCombo } from './keys/parse-key-combo';
 
-function enumToName(values: readonly string[]): string {
-  return values.map((v) => v.replace(/[^A-Za-z0-9_]/g, '_')).join('|');
-}
-
 function enumToRegexp(values: readonly string[]) {
   return new RegExp(values.map((v) => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'));
 }
@@ -19,7 +15,7 @@ export function booleanParameter(trueValue: string, falseValue: string, regexp?:
     true
   );
 
-  (param as any).name = enumToName([trueValue, falseValue]); // The `|` is not allowed in the name, but we really want to use it.
+  (param as any).name = [trueValue, falseValue].join('|'); // The `|` is not allowed in the name, but we really want to use it.
 
   return param;
 }
@@ -33,7 +29,7 @@ export function enumParameter<const T extends readonly string[]>(values: T, rege
     true
   );
 
-  (param as any).name = enumToName(values); // The `|` is not allowed in the name, but we really want to use it.
+  (param as any).name = values.join('|'); // The `|` is not allowed in the name, but we really want to use it.
 
   return param;
 }
