@@ -3,10 +3,12 @@ import { browse } from './playwright/browser';
 import { snapshot } from './playwright/snapshot';
 import type { World } from './runner/dsl';
 import type { Snapshot } from './types';
-import { type Browser, type BrowserContextOptions, chromium } from '@playwright/test';
+import { createFieldEngine } from '@letsrunit/gherkin';
+import { type Browser, type BrowserContextOptions, chromium, selectors } from '@playwright/test';
 
 interface Options extends BrowserContextOptions {
   headless?: boolean;
+  debug?: boolean;
 }
 
 export class Controller {
@@ -16,8 +18,16 @@ export class Controller {
   ) {}
 
   static async launch(options: Options = {}): Promise<Controller> {
+    await selectors.register('field', createFieldEngine);
+
     const browser = await chromium.launch({ headless: options.headless ?? true });
     const page = await browse(browser, options);
+
+    if (options.debug) {
+      page.on('console', msg => {
+        console.log('[page]', msg.type(), msg.text());
+      });
+    }
 
     return new Controller(browser, { page });
   }
@@ -30,9 +40,9 @@ export class Controller {
   async close(): Promise<void> {
     await this.browser.close();
   }
-}
 
-export function listSteps(type?: 'Given' | 'When' | 'Then') {
-  const defs = type ? runner.defs.filter((def) => def.type === type) : runner.defs;
-  return defs.map((def) => `${def.type} ${def.expr}`);
+  listSteps(type?: 'Given' | 'When' | 'Then') {
+    const defs = type ? runner.defs.filter((def) => def.type === type) : runner.defs;
+    return defs.map((def) => `${def.type} ${def.expr.source}`);
+  }
 }

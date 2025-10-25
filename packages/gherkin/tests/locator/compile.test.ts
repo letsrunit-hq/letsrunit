@@ -14,8 +14,8 @@ describe('compileLocator', () => {
     expect(compileLocator('button "Submit"')).toBe('internal:role=button [name="Submit"i]');
   });
 
-  it('field: field "Email" → internal:label="Email"i', () => {
-    expect(compileLocator('field "Email"')).toBe('internal:label="Email"i');
+  it('field: field "Email" → field="Email"i', () => {
+    expect(compileLocator('field "Email"')).toBe('field="Email"i');
   });
 
   it('image: image "Hero" → internal:attr=[alt="Hero"i]', () => {
@@ -52,7 +52,7 @@ describe('compileLocator', () => {
 
   it('field "Email" within form #signup → form#signup >> internal:label="Email"i', () => {
     expect(compileLocator('field "Email" within form #signup')).toBe(
-      'form#signup >> internal:label="Email"i'
+      'form#signup >> field="Email"i'
     );
   });
 

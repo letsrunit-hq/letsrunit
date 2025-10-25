@@ -3,17 +3,17 @@ import { LanguageModel } from 'ai';
 
 type LanguageModelV2 = Exclude<LanguageModel, string>;
 
-let modelLarge: LanguageModelV2 = openai('gpt-5');
-let modelMedium: LanguageModelV2 = openai('gpt-5-mini');
-let modelSmall: LanguageModelV2 = openai('gpt-5-nano');
+const modelGpt5 = openai('gpt-5');
+const modelGpt5Mini = openai('gpt-5-mini');
+const modelGpt5Nano = openai('gpt-5-nano');
 
 export function getModel(type: 'large' | 'medium' | 'small' = 'medium'): LanguageModelV2 {
   switch (type) {
     case 'large':
-      return modelLarge;
+      return modelGpt5;
     case 'medium':
-      return modelMedium;
+      return modelGpt5Mini;
     case 'small':
-      return modelSmall;
+      return modelGpt5Nano;
   }
 }
