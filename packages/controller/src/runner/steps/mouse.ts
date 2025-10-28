@@ -18,13 +18,13 @@ async function press(el: Locator, action: MouseAction) {
   }
 }
 
-When("I {click|double-click|right-click|hover} the {locator}", async ({ page }, action: MouseAction, selector: string) => {
+When("I {click|double-click|right-click|hover} {locator}", async ({ page }, action: MouseAction, selector: string) => {
   const el = page.locator(selector);
   await press(el, action);
 });
 
 When(
-  "I {click|double-click|right-click|hover} the {locator} while holding {keys}",
+  "I {click|double-click|right-click|hover} {locator} while holding {keys}",
   async ({ page }, action: MouseAction, selector: string, combo: KeyCombo) => {
     const el = page.locator(selector);
     const keys = [...combo.modifiers, combo.key];

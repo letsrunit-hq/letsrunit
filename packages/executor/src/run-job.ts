@@ -21,8 +21,6 @@ export default async function runJob(
   const steps: string[] = [
     "Given I'm on the homepage",
     'And all popups are closed',
-    'When I fill field "Zoek" with "lego"',
-    'And I click the button "Zoeken"',
   ];
 
   const journal = opts.journal ?? new Journal(new NoSkink());
@@ -31,12 +29,12 @@ export default async function runJob(
   try {
     const page = await controller.run(writeFeature("Explore", steps));
 
-    if (!opts.journal) {
+    /*if (!opts.journal) {
       await sleep(10000);
       return { status: 'success' }; // Early exit for testing
-    }
+    }*/
 
-    const content = await describePage(page);
+    const content = await describePage(page, 'html');
     const { actions, ...appInfo } = await observePage(content);
 
     for (const action of actions) {

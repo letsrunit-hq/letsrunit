@@ -1,9 +1,10 @@
 import { ParameterType } from '@cucumber/cucumber-expressions';
-import { compileLocator } from './locator';
+import { compileLocator, locatorRegexp } from './locator';
 import { KeyCombo, parseKeyCombo } from './keys/parse-key-combo';
 
 function enumToRegexp(values: readonly string[]) {
-  return new RegExp(values.map((v) => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'));
+  const satinized = values.map((v) => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  return new RegExp(`(${satinized.join('|')})`);
 }
 
 export function booleanParameter(trueValue: string, falseValue: string, regexp?: RegExp): ParameterType<boolean> {
@@ -51,10 +52,17 @@ export function valueParameter(name = 'value'): ParameterType<string | number> {
 export function locatorParameter(name = 'locator'): ParameterType<string> {
   return new ParameterType<string>(
     name,
-    /(.+)/,
+    locatorRegexp,
     String,
-    (locator: string) => compileLocator(locator),
-    false,
+    (locator: string) => {
+      try {
+        return compileLocator(locator);
+      } catch (e) {
+        console.error(e);
+        return locator;
+      }
+    },
+    false
   );
 }
 

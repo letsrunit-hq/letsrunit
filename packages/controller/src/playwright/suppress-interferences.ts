@@ -3,10 +3,15 @@ import { sleep } from '../utils/sleep';
 import { getTranslations } from '../translations';
 
 type Options = {
-  timeoutMs?: number;     // max sweep time
-  preferReject?: boolean; // click "Reject"/"Decline" where possible
+  timeoutMs?: number;            // max sweep time
+  preferReject?: boolean;        // click "Reject"/"Decline" where possible
+  lang?: string;                 // Interface language, used for accept/reject/close button texts
+  pollIntervalMs?: number;       // how often we probe when nothing happened
+  settleAfterActionMs?: number;  // give the DOM time to settle after a click
+  quietPeriodMs?: number;        // stop if nothing happened for this long
+  minSweepMs?: number;           // always sweep at least this long (to catch late banners)
+  maxActions?: number;           // safety: don't click forever on re-spawning modals
   verbose?: boolean;
-  lang?: string;
 };
 
 interface TrRegExps {
@@ -189,11 +194,11 @@ export async function suppressInterferences(page: Page, opts: Options = {}) {
   const timeoutMs = opts.timeoutMs ?? 4000;
   const preferReject = opts.preferReject ?? false;
 
-  const pollIntervalMs = 120;           // how often we probe when nothing happened
-  const settleAfterActionMs = 300;      // give the DOM time to settle after a click
-  const quietPeriodMs = 800;            // stop if nothing happened for this long
-  const minSweepMs = 500;               // always sweep at least this long (to catch late banners)
-  const maxActions = 6;                 // safety: don't click forever on re-spawning modals
+  const pollIntervalMs = opts.pollIntervalMs ?? 120;
+  const settleAfterActionMs = opts.settleAfterActionMs ?? 300;
+  const quietPeriodMs = opts.quietPeriodMs ?? 800;
+  const minSweepMs = opts.minSweepMs ?? 500;
+  const maxActions = opts.maxActions ?? 6;
 
   const endAt = Date.now() + timeoutMs;
 

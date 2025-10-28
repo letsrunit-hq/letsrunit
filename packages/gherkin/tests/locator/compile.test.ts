@@ -14,6 +14,10 @@ describe('compileLocator', () => {
     expect(compileLocator('button "Submit"')).toBe('internal:role=button [name="Submit"i]');
   });
 
+  it('role with name: the button "Submit" → internal:role=button [name="Submit"i]', () => {
+    expect(compileLocator('the button "Submit"')).toBe('internal:role=button [name="Submit"i]');
+  });
+
   it('field: field "Email" → field="Email"i', () => {
     expect(compileLocator('field "Email"')).toBe('field="Email"i');
   });
@@ -29,6 +33,11 @@ describe('compileLocator', () => {
   // ----- Predicates with `with` / `without` -----
   it('link without text "Ad" → internal:role=link >> internal:has-not="internal:text=\"Ad\"i"', () => {
     expect(compileLocator('link without text "Ad"')).toBe(
+      'internal:role=link >> internal:has-not="internal:text=\"Ad\"i"',
+    );
+  });
+  it('the link without the text "Ad" → internal:role=link >> internal:has-not="internal:text=\"Ad\"i"', () => {
+    expect(compileLocator('the link without the text "Ad"')).toBe(
       'internal:role=link >> internal:has-not="internal:text=\"Ad\"i"',
     );
   });
