@@ -1,6 +1,7 @@
 import { Controller, Snapshot } from '@letsrunit/controller';
 import { generate } from '@letsrunit/ai';
 import { writeFeature } from '../utils/feature';
+import { describePage } from './describe';
 
 const PROMPT = `You're a QA tester, tasked with writing BDD tests in gherkin.
 
@@ -12,7 +13,7 @@ For now, only focus on the \`When\` steps. The following steps are available:
 # Customer parameter types:
 
 * \`{locator}\` - Defines a target element (and optional scope) in natural language
-* \`{foo|bar}\` - Choose one of the available options.
+* \`{foo|bar}\` - Choose one of the available options. Example: {foo|bar} → foo
 * \`{keys}\` - A key or key combination (in double quotes). Examples: "A", "CTRL + S"
 * \`{values}\` - A string (in double quotes) or number. Examples: "Hello", 10, -22.5
 
@@ -41,6 +42,11 @@ Examples:
 
 Add one or more steps to accomplish the user story of the feature. Only add steps based on what's available on
 this page.
+
+Hints:
+- Prefer readable locators, like \`field "Name"\` above raw Playwright locators
+- Use \'link\' for an \`<a>\` element, even if displayed as button
+- Fill an \`<input>\` and not the surrounding \`<span>\` or \`<div>\`
 `;
 
 interface DetermineStoryOptions {
@@ -55,13 +61,12 @@ interface DetermineStoryOptions {
 
 export async function determineStory({ controller, page, feature, appInfo }: DetermineStoryOptions) {
   const system = PROMPT.replace('{steps}', controller.listSteps('When').map((s) => ` - ${s}`).join("\n"));
-  console.log(system);
-  console.log(feature);
+  let content = page.content ?? await describePage(page, 'html');
 
   do {
     const messages = [
       { role: 'assistant' as const, content: feature },
-      { role: 'user' as const, content: page.content! },
+      { role: 'user' as const, content },
     ]
 
     const response = await generate(system, messages);
@@ -72,6 +77,7 @@ export async function determineStory({ controller, page, feature, appInfo }: Det
     const next = writeFeature('Continue', newSteps);
     console.log(next);
 
-    await controller.run(next);
+    const nextPage = await controller.run(next);
+    content = await describePage(nextPage, 'html');
   } while (true);
 }

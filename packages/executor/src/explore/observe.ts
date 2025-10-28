@@ -8,7 +8,7 @@ Your task is to **understand the site’s purpose** and **list what a new visito
 ## Inputs
 
 * YAML front matter containing optional info such as title, description, canonical URL and language.
-* Markdown version of the HTML page, annotated with Playwright-style locator hints.
+* {contentType}
 
 You must rely **only** on what is visible in these inputs.
 Do **not invent** pages, features, or actions that aren’t clearly present or implied.
@@ -79,5 +79,12 @@ export const ObservationOutputSchema = z.object({
 export type ObservationOutput = z.infer<typeof ObservationOutputSchema>;
 
 export async function observePage(page: string): Promise<ObservationOutput> {
-  return await generate(PROMPT, page, { schema: ObservationOutputSchema });
+  const isHtml = page.trim().startsWith('<');
+  const contentType = isHtml ?
+    'A scrubbed HTML body' :
+    'Markdown version of the HTML page, annotated with Playwright-style locator hints.';
+
+  const prompt = PROMPT.replace('{contentType}', contentType);
+
+  return await generate(prompt, page, { schema: ObservationOutputSchema });
 }

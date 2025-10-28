@@ -160,17 +160,20 @@ async function extractPageInfo(options: MetascraperOptions): Promise<PageInfo> {
   };
 }
 
-export async function describePage(page: { url: string, html: string }): Promise<string> {
+export async function describePage(
+  page: { url: string, html: string },
+  contentType: 'markdown' | 'html' = 'markdown',
+): Promise<string> {
   const info = await extractPageInfo(page);
 
   const html = await scrubHtml(page);
-  const markdown = await generate(PROMPT, html, { model: 'medium' })
+  const content = contentType === 'markdown' ? await generate(PROMPT, html, { model: 'medium' }) : html;
 
   return [
     '---',
     toYaml(info, { lineWidth: 0 }).trim(),
     '---',
     '',
-    markdown
+    content
   ].join('\n');
 }

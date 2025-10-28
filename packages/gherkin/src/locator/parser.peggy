@@ -57,7 +57,7 @@ RawChars
 
 // Role-first: role or special (field, image, text)
 RoleWithOpt
-  = base:RoleSel id:IdSuffix?
+  = TheOpt? base:RoleSel id:IdSuffix?
     {
       const s = { type: "Selector", mode: "role", role: base.role, name: base.name };
       return addId(s, id ?? null);
@@ -77,7 +77,7 @@ KnownRole
 
 // Tag-first (e.g. div, section, button)
 TagWithOpt
-  = t:TagSel id:IdSuffix?
+  = TheOpt? t:TagSel id:IdSuffix?
     {
       const s = { type: "Selector", mode: "tag", tag: t };
       return addId(s, id ?? null);
@@ -101,6 +101,9 @@ Predicate
   = sel:Selector { return { type: "HasDescendant", selector: sel }; }
 
 // ---------- Lexical ----------
+
+TheOpt
+  = "the"i ![a-zA-Z] _
 
 Ident
   = $([a-zA-Z_][a-zA-Z0-9_-]*)

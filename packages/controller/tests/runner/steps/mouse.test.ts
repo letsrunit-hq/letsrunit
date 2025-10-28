@@ -22,15 +22,15 @@ describe('steps/mouse (runner)', () => {
     const feature = `
       Feature: Mouse
         Scenario: basic actions
-          When I hover the #btn
-          And I click the #a
-          And I double-click the #b
-          And I right-click the #c
+          When I hover the button "start"
+          And I click #a
+          And I double-click #b
+          And I right-click #c
     `;
 
     await runner.run(feature, { page } as any);
 
-    expect(page.locator).toHaveBeenCalledWith('#btn');
+    expect(page.locator).toHaveBeenCalledWith('internal:role=button [name="start"i]');
     expect(hover).toHaveBeenCalledWith({ timeout: 2500 });
 
     expect(page.locator).toHaveBeenCalledWith('#a');
@@ -56,7 +56,7 @@ describe('steps/mouse (runner)', () => {
     const feature = `
       Feature: Mouse with keys
         Scenario: with modifiers
-          When I click the #x while holding 'Alt+Shift+K'
+          When I click #x while holding 'Alt+Shift+K'
     `;
 
     await runner.run(feature, { page } as any);
