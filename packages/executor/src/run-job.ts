@@ -5,7 +5,6 @@ import { writeFeature } from './utils/feature';
 import { observePage } from './explore/observe';
 import { determineStory } from './explore/determine';
 import { Journal, NoSkink } from '@letsrunit/journal';
-import { sleep } from '@letsrunit/controller/src/utils/sleep';
 
 interface RunJobOptions {
   headless?: boolean;
@@ -27,12 +26,7 @@ export default async function runJob(
   const controller = await Controller.launch({ headless: opts.headless, baseURL: job.target });
 
   try {
-    const page = await controller.run(writeFeature("Explore", steps));
-
-    /*if (!opts.journal) {
-      await sleep(10000);
-      return { status: 'success' }; // Early exit for testing
-    }*/
+    const page = await controller.run(writeFeature("Explore", '', steps));
 
     const content = await describePage(page, 'html');
     const { actions, ...appInfo } = await observePage(content);
@@ -41,7 +35,10 @@ export default async function runJob(
       const story = await determineStory({
         controller,
         page: { ...page, content },
-        feature: writeFeature(action, steps),
+        feature: {
+          name: action,
+          steps,
+        },
         appInfo,
       });
 

@@ -6,7 +6,7 @@ import type { Snapshot } from './types';
 import { createFieldEngine } from '@letsrunit/gherkin';
 import { type Browser, type BrowserContextOptions, chromium, selectors } from '@playwright/test';
 
-interface Options extends BrowserContextOptions {
+export interface Options extends BrowserContextOptions {
   headless?: boolean;
   debug?: boolean;
 }
@@ -29,7 +29,7 @@ export class Controller {
       });
     }
 
-    return new Controller(browser, { page });
+    return new Controller(browser, { page, options });
   }
 
   async run(feature: string): Promise<Snapshot> {
@@ -41,8 +41,7 @@ export class Controller {
     await this.browser.close();
   }
 
-  listSteps(type?: 'Given' | 'When' | 'Then') {
-    const defs = type ? runner.defs.filter((def) => def.type === type) : runner.defs;
-    return defs.map((def) => `${def.type} ${def.expr.source}`);
+  listSteps() {
+    return runner.defs.map((def) => `${def.type} ${def.expr.source}`);
   }
 }
