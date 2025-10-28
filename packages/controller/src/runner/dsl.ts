@@ -1,9 +1,10 @@
 import { Runner, StepHandler } from '@letsrunit/gherker';
-import { Page } from '@playwright/test';
+import { type BrowserContextOptions, Page } from '@playwright/test';
 import { ParameterType } from '@cucumber/cucumber-expressions'
 
 export interface World {
   page: Page;
+  options?: BrowserContextOptions;
   lang?: string;
   [_: string]: any;
 }

@@ -1,13 +1,17 @@
 import { Controller, Snapshot } from '@letsrunit/controller';
 import { generate } from '@letsrunit/ai';
-import { writeFeature } from '../utils/feature';
+import { deltaSteps, parseFeature, writeFeature } from '../utils/feature';
 import { describePage } from './describe';
 
 const PROMPT = `You're a QA tester, tasked with writing BDD tests in gherkin.
 
 You output partial a Gherkin feature. The user will provide page content. You will write a new feature scenario.
 
-For now, only focus on the \`When\` steps. The following steps are available:
+In this order:
+ 1. Add a \`Then\` step asserting the change (optional).
+ 2. Add one or more \`When\` steps to perform the next actions.
+
+The following steps are available:
 {steps}
 
 # Customer parameter types:
@@ -47,12 +51,17 @@ Hints:
 - Prefer readable locators, like \`field "Name"\` above raw Playwright locators
 - Use \'link\' for an \`<a>\` element, even if displayed as button
 - Fill an \`<input>\` and not the surrounding \`<span>\` or \`<div>\`
+- By default fill all required fields when filling out a form. If no fields are marked as required, assume all are required.
 `;
 
 interface DetermineStoryOptions {
   controller: Controller;
   page: Snapshot & { content?: string };
-  feature: string;
+  feature: {
+    name: string;
+    description?: string;
+    steps: string[];
+  }
   appInfo?: {
     purpose: string;
     loginAvailable: boolean;
@@ -60,24 +69,31 @@ interface DetermineStoryOptions {
 }
 
 export async function determineStory({ controller, page, feature, appInfo }: DetermineStoryOptions) {
-  const system = PROMPT.replace('{steps}', controller.listSteps('When').map((s) => ` - ${s}`).join("\n"));
+  const stepDefinitions = controller.listSteps().filter((s) => !s.startsWith('Given'));
+  const system = PROMPT.replace('{steps}', stepDefinitions.map((s) => ` - ${s}`).join("\n"));
   let content = page.content ?? await describePage(page, 'html');
+
+  const steps = [...feature.steps];
+  console.log(writeFeature(feature.name, feature.description, steps));
 
   do {
     const messages = [
-      { role: 'assistant' as const, content: feature },
+      { role: 'assistant' as const, content: writeFeature(feature.name, feature.description, steps) },
       { role: 'user' as const, content },
     ]
 
     const response = await generate(system, messages);
-    const newSteps = response.split('\n').map((s) => s.trim());
+    const { steps: responseSteps } = parseFeature(response);
+    const newSteps = deltaSteps(steps, responseSteps);
 
     if (newSteps.length === 0) break;
 
-    const next = writeFeature('Continue', newSteps);
+    const next = writeFeature('Continue', '', newSteps);
     console.log(next);
 
     const nextPage = await controller.run(next);
     content = await describePage(nextPage, 'html');
+
+    steps.push(...newSteps);
   } while (true);
 }

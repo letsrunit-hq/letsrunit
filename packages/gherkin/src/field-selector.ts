@@ -72,9 +72,17 @@ export const createFieldEngine = () => ({
       }
 
       // 2) <label for="...">
-      const id = (el as HTMLElement).id;
+      let id = (el as HTMLElement).id;
+      if (!id) { // support parent div/span id when element lacks one
+        const p = el.parentElement as HTMLElement | null;
+        if (p && (p.tagName === 'DIV' || p.tagName === 'SPAN') && p.id) {
+          id = p.id;
+        }
+      }
       if (id) {
-        const forLabels = Array.from(root.querySelectorAll<HTMLLabelElement>(`label[for="${CSS.escape(id)}"]`));
+        const forLabels = Array.from(
+          root.querySelectorAll<HTMLLabelElement>(`label[for="${CSS.escape(id)}"]`),
+        );
         forLabels.forEach((l) => texts.push(l.textContent ?? ''));
       }
 
