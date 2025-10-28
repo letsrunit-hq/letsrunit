@@ -3,14 +3,35 @@ import { IdGenerator, SourceMediaType } from '@cucumber/messages';
 
 const newId = IdGenerator.uuid();
 
-export function writeFeature(name: string, description: string | undefined, steps: string[]) {
-  return [
+export interface Feature {
+  name: string;
+  description?: string;
+  background?: string[];
+  steps: string[];
+}
+
+export function writeFeature({ name, description, background, steps }: Feature): string {
+  const lines = [
     `Feature: ${name}`.trim(),
     '',
-    ...(description ? description.split('\n').map((s) => `  ${s.trim()}`).join('\n') : []),
-    '  Scenario:',
-    steps.map((s) => `    ${s}`).join('\n'),
-  ].join('\n');
+  ];
+
+  if (description) {
+    lines.push(
+      ...description.split('\n').map((s) => `  ${s.trim()}`),
+      '',
+    );
+  }
+
+  if (background && background.length > 0) {
+    lines.push('  Background:');
+    lines.push(...background.map((s) => `  ${s}`));
+  }
+
+  lines.push('  Scenario:'),
+  lines.push(...steps.map((s) => `    ${s}`));
+
+  return lines.join('\n');
 }
 
 // Wrap steps in a minimal feature/scenario so the parser accepts it
@@ -31,7 +52,7 @@ function wrapIfNeeded(input: string): string {
   ].join('\n');
 }
 
-export function parseFeature(input: string): { name: string; description: string; steps: string[] } {
+export function parseFeature(input: string): Feature {
   const source = wrapIfNeeded(input);
 
   const envelopes = generateMessages(

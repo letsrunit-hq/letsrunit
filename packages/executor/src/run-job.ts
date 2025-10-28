@@ -26,7 +26,7 @@ export default async function runJob(
   const controller = await Controller.launch({ headless: opts.headless, baseURL: job.target });
 
   try {
-    const page = await controller.run(writeFeature("Explore", '', steps));
+    const page = await controller.run(writeFeature({ name: "Explore", steps }));
 
     const content = await describePage(page, 'html');
     const { actions, ...appInfo } = await observePage(content);
@@ -37,7 +37,8 @@ export default async function runJob(
         page: { ...page, content },
         feature: {
           name: action,
-          steps,
+          background: steps,
+          steps: [],
         },
         appInfo,
       });
