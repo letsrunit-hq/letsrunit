@@ -6,7 +6,7 @@ import type { Snapshot } from './types';
 import { createFieldEngine } from '@letsrunit/gherkin';
 import { type Browser, type BrowserContextOptions, chromium, selectors } from '@playwright/test';
 
-export interface Options extends BrowserContextOptions {
+export interface ControllerOptions extends BrowserContextOptions {
   headless?: boolean;
   debug?: boolean;
 }
@@ -17,7 +17,7 @@ export class Controller {
     private world: World,
   ) {}
 
-  static async launch(options: Options = {}): Promise<Controller> {
+  static async launch(options: ControllerOptions = {}): Promise<Controller> {
     await selectors.register('field', createFieldEngine);
 
     const browser = await chromium.launch({ headless: options.headless ?? true });
@@ -41,7 +41,8 @@ export class Controller {
     await this.browser.close();
   }
 
-  listSteps() {
-    return runner.defs.map((def) => `${def.type} ${def.expr.source}`);
+  listSteps(type?: 'Given' | 'When' | 'Then'): string[] {
+    const defs = type ? runner.defs.filter((def) => def.type === type) : runner.defs;
+    return defs.map((def) => `${def.type} ${def.expr.source}`);
   }
 }
