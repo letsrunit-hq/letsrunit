@@ -2,7 +2,7 @@ import { runner } from './runner';
 import { browse } from './playwright/browser';
 import { snapshot } from './playwright/snapshot';
 import type { World } from './runner/dsl';
-import type { Snapshot } from './types';
+import type { Result } from './types';
 import { createFieldEngine } from '@letsrunit/gherkin';
 import { type Browser, type BrowserContextOptions, chromium, selectors } from '@playwright/test';
 
@@ -32,9 +32,11 @@ export class Controller {
     return new Controller(browser, { page, options });
   }
 
-  async run(feature: string): Promise<Snapshot> {
-    await runner.run(feature, this.world);
-    return await snapshot(this.world.page);
+  async run(feature: string): Promise<Result> {
+    const { world: _, ...result } = await runner.run(feature, this.world);
+    const page = await snapshot(this.world.page);
+
+    return { ...result, page };
   }
 
   async close(): Promise<void> {

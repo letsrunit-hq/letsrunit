@@ -1,7 +1,7 @@
 import { When } from '../dsl';
 import { Locator } from '@playwright/test';
 import type { KeyCombo } from '@letsrunit/gherkin';
-import { waitForIdle } from '../../playwright/wait';
+import { waitAfterInteraction } from '../../playwright/wait';
 import { locator } from '../../playwright/locator';
 
 const TIMEOUT = 500;
@@ -24,7 +24,7 @@ When("I {click|double-click|right-click|hover} {locator}", async ({ page }, acti
   const el = await locator(page, selector);
   await press(el, action);
 
-  await waitForIdle(page);
+  await waitAfterInteraction(page, el);
 });
 
 When(
@@ -37,7 +37,7 @@ When(
     await press(el, action);
     for (const m of keys.reverse()) await page.keyboard.up(m);
 
-    await waitForIdle(page);
+    await waitAfterInteraction(page, el);
   },
 );
 

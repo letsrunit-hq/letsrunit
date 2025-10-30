@@ -2,8 +2,9 @@ import { Given, Then, World } from '../dsl';
 import { suppressInterferences } from '../../playwright/suppress-interferences';
 import { waitForIdle } from '../../playwright/wait';
 import { getLang } from '../../utils/get-lang';
-import { splitUrl } from '../../utils/split-url';
+import { pathRegexp, splitUrl } from '../../utils/split-url';
 import { expect } from '@playwright/test';
+import { eventually } from '../../utils/sleep';
 
 async function openPage(world: World, path: string): Promise<void> {
   const { page } = world;
@@ -26,13 +27,19 @@ Given("all popups are closed", async ({ page, lang }) => {
   await suppressInterferences(page, { lang });
 });
 
-Then("I see that I'm on page {string}", async ({ page, options }, path: string): Promise<void> => {
-  await page.waitForLoadState('load');
+Then("I should be on page {string}", (world, expectedPath: string) => eventually(async () => {
+  const { page } = world;
+  const { path: actualPath } = splitUrl(page.url());
 
-  if (path.includes(':')) {
-    expect(page.url()).toEqual(path);
+  if (expectedPath.includes(':')) {
+    const { regexp, names } = pathRegexp(expectedPath);
+
+    expect(actualPath, `Expected path ${actualPath} to match pattern ${expectedPath}`).toMatch(regexp);
+
+    const match = actualPath.match(regexp);
+    world.params = Object.fromEntries(names.map((name, i) => [name, decodeURIComponent(match![i + 1])]));
   } else {
-    const { path: actualPath } = splitUrl(page.url());
-    expect(actualPath).toEqual(actualPath);
+    expect(actualPath).toEqual(expectedPath);
+    world.params = {};
   }
-}, 'hidden');
+}), 'hidden');

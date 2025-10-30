@@ -1,10 +1,11 @@
 import { Snapshot } from '../types';
 import { Page } from '@playwright/test';
 import { sleep } from '../utils/sleep';
+import { waitForDomIdle } from './wait';
 
 export async function snapshot(page: Page): Promise<Snapshot> {
   await sleep(500);
-  await page.waitForLoadState('domcontentloaded');
+  await waitForDomIdle(page);
 
   const [ url, html, screenshot ] = await Promise.all([
     page.url(),
