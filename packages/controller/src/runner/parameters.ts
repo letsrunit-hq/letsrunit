@@ -6,6 +6,7 @@ defineParameterType(valueParameter());
 defineParameterType(keysParameter());
 
 defineParameterType(booleanParameter('visible', 'hidden'));
+defineParameterType(booleanParameter('see', 'dont see', /((?:don'?t )?see)/));
 defineParameterType(booleanParameter('enabled', 'disabled', /((?:en|dis)abled)/));
 defineParameterType(booleanParameter('checked', 'unchecked', /((?:un)?checked)/));
 defineParameterType(booleanParameter('contains', 'not contains', /((?:not )?contains)/));

@@ -25,10 +25,9 @@ Structure:
   locator := withExpr ( "within" selector )*
   withExpr := selector ( ("with" | "without") predicate )*
   predicate := selector
-  selector := \`raw\` | role[#id]? | tag[#id]? | #id
+  selector := \`raw\` | role | tag
   role := (button|link|field|image|text|IDENT) ["name"]?
   tag := IDENT
-  #id := "#" IDENT
   "name" := visible text in quotes
   \`raw\` := a raw Playwright locator in backticks
 
@@ -36,8 +35,8 @@ Examples:
  - button "Submit"
  - field "Email"
  - section with text "Price"
- - #checkout
  - button "Pay" within form #order
+ - \`#checkout\`
  - \`css=.btn-primary >> nth(0)\`
 
 # Output
@@ -51,7 +50,8 @@ Hints:
 - Do not add more \`When\` steps after clicking on a link for the current page
 - Keep defaults unless specifically instructed otherwise.
 - Ensure that a selector resolves to exactly one element to prevent a strict violation in Playwright
-- Do not include raw parameter placeholders like \`{string}\` in the output 
+- **Do not** include raw parameter placeholders like \`{check|uncheck}\` in the output
+- Use the Dutch locale for number and date formatting
 `;
 
 interface DetermineStoryOptions {
@@ -101,7 +101,7 @@ export async function determineStory({ controller, page, feature }: DetermineSto
     const next = writeFeature({ name: 'Continue', steps: newSteps });
     console.log(next);
 
-    const nextPage = await controller.run(next);
+    const { page: nextPage } = await controller.run(next);
     content = await describePage(nextPage, 'html');
 
     steps.push(...newSteps);

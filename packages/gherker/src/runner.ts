@@ -1,17 +1,7 @@
 import { generateMessages } from '@cucumber/gherkin';
-import { IdGenerator, Pickle, SourceMediaType } from '@cucumber/messages';
-import {
-  CucumberExpression,
-  Expression,
-  ParameterTypeRegistry,
-  RegularExpression,
-} from '@cucumber/cucumber-expressions';
-
-type World = { cleanup?: () => void | Promise<void>; [_: string]: any}
-export type StepHandler<T> = (world: T, ...args: any[]) => Promise<void> | void;
-
-type StepType = 'Given' | 'When' | 'Then';
-type Compiled<T> = { type: StepType, expr: Expression; fn: StepHandler<T>; source: string, comment?: string };
+import { IdGenerator, Pickle, PickleStep, SourceMediaType } from '@cucumber/messages';
+import { CucumberExpression, ParameterTypeRegistry, RegularExpression, } from '@cucumber/cucumber-expressions';
+import { Compiled, Result, StepHandler, StepType, World } from './types';
 
 export class Runner<TWorld extends World> {
   private _registry = new ParameterTypeRegistry();
@@ -55,7 +45,7 @@ export class Runner<TWorld extends World> {
     return pickles;
   }
 
-  async run(feature: string, worldFactory: TWorld | (() => Promise<TWorld> | TWorld)): Promise<TWorld> {
+  async run(feature: string, worldFactory: TWorld | (() => Promise<TWorld> | TWorld)): Promise<Result<TWorld>> {
     const pickles = this.compile(feature);
     if (pickles.length > 1) {
       throw new Error('Multiple scenarios not supported')
@@ -63,28 +53,44 @@ export class Runner<TWorld extends World> {
 
     const world = typeof worldFactory === 'function' ? await worldFactory() : worldFactory;
     const pickle = pickles[0];
+    let completed = 0;
+    let error: Error | undefined;
 
     try {
       for (const step of pickle.steps) {
-        const text = step.text;
-        const m = this.match(text);
-        if (!m) throw new Error(`Undefined step: ${text}`);
-
-        // DocString/DataTable
-        let extra: any | undefined;
-        if (step.argument?.docString) {
-          extra = step.argument.docString.content;
-        } else if (step.argument?.dataTable) {
-          extra = step.argument.dataTable.rows.map((r) => r.cells.map((c) => c.value));
-        }
-
-        await m.d.fn(world, ...m.values, ...(extra !== undefined ? [extra] : []));
+        await this.runStep(world, step);
+        completed++;
       }
+    } catch (e) {
+      error = e as Error;
     } finally {
       if (typeof world.cleanup === 'function') await world.cleanup();
     }
 
-    return world;
+    const steps = pickle.steps.map((step, i) => ({
+      text: step.text,
+      status: completed > i ? 'success' : (completed === i ? 'failure' : undefined) as
+        'success' | 'failure' | undefined,
+    }));
+
+    return { world, status: !error ? 'success' : 'failure', steps, reason: error };
+  }
+
+  private async runStep(world: TWorld, step: PickleStep) {
+    const text = step.text;
+    const m = this.match(text);
+
+    if (!m) throw new Error(`Undefined step: ${text}`);
+
+    // DocString/DataTable
+    let extra: any | undefined;
+    if (step.argument?.docString) {
+      extra = step.argument.docString.content;
+    } else if (step.argument?.dataTable) {
+      extra = step.argument.dataTable.rows.map((r) => r.cells.map((c) => c.value));
+    }
+
+    await m.d.fn(world, ...m.values, ...(extra !== undefined ? [extra] : []));
   }
 
   reset() {
