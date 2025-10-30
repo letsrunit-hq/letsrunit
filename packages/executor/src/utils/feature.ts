@@ -24,12 +24,17 @@ export function writeFeature({ name, description, background, steps }: Feature):
   }
 
   if (background && background.length > 0) {
-    lines.push('  Background:');
-    lines.push(...background.map((s) => `  ${s}`));
+    lines.push(
+      '  Background:',
+      ...background.map((s) => `    ${s}`),
+      '',
+    );
   }
 
-  lines.push('  Scenario:'),
-  lines.push(...steps.map((s) => `    ${s}`));
+  lines.push(
+    '  Scenario:',
+    ...steps.map((s) => `    ${s}`),
+  );
 
   return lines.join('\n');
 }

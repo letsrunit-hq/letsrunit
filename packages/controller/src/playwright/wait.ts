@@ -1,11 +1,11 @@
 import type { Page } from '@playwright/test';
 
-export async function waitForIdle(page: Page, timeoutMs = 1500) {
+export async function waitForIdle(page: Page, timeoutMs = 2500) {
   await page.waitForLoadState('domcontentloaded');
   try { await page.waitForLoadState('networkidle', { timeout: timeoutMs }); } catch {}
 }
 
-export async function waitForMeta(page: Page, timeoutMs = 1500) {
+export async function waitForMeta(page: Page, timeoutMs = 2500) {
   await waitForIdle(page);
 
   page.getByRole('navigation');

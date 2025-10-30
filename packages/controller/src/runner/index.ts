@@ -4,9 +4,9 @@ export { runner } from './dsl';
 import './parameters';
 
 // Register step definitions
+import './steps/dummy';
 import './steps/form';
 import './steps/keyboard';
-import './steps/misc';
 import './steps/mouse';
 import './steps/navigation';
 import './steps/wait';

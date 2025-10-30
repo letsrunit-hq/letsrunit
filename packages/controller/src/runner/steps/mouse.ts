@@ -1,8 +1,10 @@
 import { When } from '../dsl';
 import { Locator } from '@playwright/test';
 import type { KeyCombo } from '@letsrunit/gherkin';
+import { waitForIdle } from '../../playwright/wait';
+import { locator } from '../../playwright/locator';
 
-const TIMEOUT = 2500;
+const TIMEOUT = 500;
 
 type MouseAction = 'click' | 'double-click' | 'right-click' | 'hover';
 
@@ -19,23 +21,27 @@ async function press(el: Locator, action: MouseAction) {
 }
 
 When("I {click|double-click|right-click|hover} {locator}", async ({ page }, action: MouseAction, selector: string) => {
-  const el = page.locator(selector);
+  const el = await locator(page, selector);
   await press(el, action);
+
+  await waitForIdle(page);
 });
 
 When(
   "I {click|double-click|right-click|hover} {locator} while holding {keys}",
   async ({ page }, action: MouseAction, selector: string, combo: KeyCombo) => {
-    const el = page.locator(selector);
+    const el = await locator(page, selector);
     const keys = [...combo.modifiers, combo.key];
 
     for (const m of keys) await page.keyboard.down(m);
     await press(el, action);
     for (const m of keys.reverse()) await page.keyboard.up(m);
+
+    await waitForIdle(page);
   },
 );
 
 When("I scroll {locator} into view", async ({ page }, selector: string) => {
-  const el = page.locator(selector);
+  const el = await locator(page, selector);
   await el.scrollIntoViewIfNeeded({ timeout: TIMEOUT });
 });

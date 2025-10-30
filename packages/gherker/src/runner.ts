@@ -11,7 +11,7 @@ type World = { cleanup?: () => void | Promise<void>; [_: string]: any}
 export type StepHandler<T> = (world: T, ...args: any[]) => Promise<void> | void;
 
 type StepType = 'Given' | 'When' | 'Then';
-type Compiled<T> = { type: StepType, expr: Expression; fn: StepHandler<T>; source: string };
+type Compiled<T> = { type: StepType, expr: Expression; fn: StepHandler<T>; source: string, comment?: string };
 
 export class Runner<TWorld extends World> {
   private _registry = new ParameterTypeRegistry();
@@ -25,12 +25,12 @@ export class Runner<TWorld extends World> {
     return this._defs;
   }
 
-  defineStep(type: StepType, expression: string | RegExp, fn: StepHandler<TWorld>) {
+  defineStep(type: StepType, expression: string | RegExp, fn: StepHandler<TWorld>, comment?: string) {
     const expr =
       typeof expression === 'string'
         ? new CucumberExpression(expression, this.registry)
         : new RegularExpression(expression, this.registry);
-    this.defs.push({ type, expr, fn, source: String(expression) });
+    this.defs.push({ type, expr, fn, source: String(expression), comment });
   }
 
   private match(text: string) {
