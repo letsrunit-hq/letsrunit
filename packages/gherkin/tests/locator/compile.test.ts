@@ -50,23 +50,23 @@ describe('compileLocator', () => {
 
   // ----- Ancestry with `within` (outer >> inner) -----
   it('section within `#main` → #main >> section', () => {
-    expect(compileLocator('section within #main')).toBe('#main >> section');
+    expect(compileLocator('section within `#main`')).toBe('#main >> section');
   });
 
   it('button "Submit" within form #checkout → form#checkout >> internal:role=button [name="Submit"i]', () => {
-    expect(compileLocator('button "Submit" within form #checkout')).toBe(
+    expect(compileLocator('button "Submit" within `form#checkout`')).toBe(
       'form#checkout >> internal:role=button [name="Submit"i]'
     );
   });
 
   it('field "Email" within form #signup → form#signup >> internal:label="Email"i', () => {
-    expect(compileLocator('field "Email" within form #signup')).toBe(
+    expect(compileLocator('field "Email" within `form#signup`')).toBe(
       'form#signup >> field="Email"i'
     );
   });
 
   it('section within form #main → form#main >> section', () => {
-    expect(compileLocator('section within form #main')).toBe('form#main >> section');
+    expect(compileLocator('section within `form#main`')).toBe('form#main >> section');
   });
 
   it('section with text "Hello" within `css=.foo >> nth(2)`', () => {

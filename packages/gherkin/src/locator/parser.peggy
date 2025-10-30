@@ -1,23 +1,14 @@
 // Locator grammar
 // Supports:
-// - role/tag (#id optional)
+// - role/tag
 // - field / image / text special cases
-// - id-only selectors
 // - raw locators in backticks
 // - with / without / within
 //
 // Example:
-//   button "Submit" within form #checkout
-//   section with button "submit" within #main
+//   button "Submit" within `form#checkout`
+//   section with button "submit" within `#main`
 //   section without text "ads" within `css=.foo >> nth(2)`
-
-{
-  function addId(selector, id) {
-    if (!id) return selector;
-    selector.id = id;
-    return selector;
-  }
-}
 
 Start
   = _ e:Expr _ { return e; }
@@ -44,9 +35,8 @@ WithPart
 
 Selector
   = RawSel
-  / RoleWithOpt
-  / TagWithOpt
-  / IdOnly
+  / RoleSelFull
+  / TagSelFull
 
 // Raw Playwright locator in backticks
 RawSel
@@ -56,12 +46,9 @@ RawChars
   = $([^`]*)
 
 // Role-first: role or special (field, image, text)
-RoleWithOpt
-  = TheOpt? base:RoleSel id:IdSuffix?
-    {
-      const s = { type: "Selector", mode: "role", role: base.role, name: base.name };
-      return addId(s, id ?? null);
-    }
+RoleSelFull
+  = TheOpt? base:RoleSel
+    { return { type: "Selector", mode: "role", role: base.role, name: base.name }; }
 
 // Role selection rules with disambiguation:
 // - If the identifier is a known role keyword (button, link, field, image, text), it's a role.
@@ -76,24 +63,12 @@ KnownRole
   = "button"i / "link"i / "field"i / "image"i / "text"i
 
 // Tag-first (e.g. div, section, button)
-TagWithOpt
-  = TheOpt? t:TagSel id:IdSuffix?
-    {
-      const s = { type: "Selector", mode: "tag", tag: t };
-      return addId(s, id ?? null);
-    }
+TagSelFull
+  = TheOpt? t:TagSel
+    { return { type: "Selector", mode: "tag", tag: t }; }
 
 TagSel
   = Ident
-
-// #id as standalone selector (e.g., within #main)
-IdOnly
-  = "#" i:Ident
-    { return { type:"Selector", mode:"idonly", id: "#"+i }; }
-
-// Optional #id suffix (e.g., form #login)
-IdSuffix
-  = _ "#" i:Ident { return "#"+i; }
 
 // ---------- Predicates ----------
 

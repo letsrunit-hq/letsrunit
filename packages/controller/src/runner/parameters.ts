@@ -8,7 +8,7 @@ defineParameterType(keysParameter());
 defineParameterType(booleanParameter('visible', 'hidden'));
 defineParameterType(booleanParameter('enabled', 'disabled', /((?:en|dis)abled)/));
 defineParameterType(booleanParameter('checked', 'unchecked', /((?:un)?checked)/));
-defineParameterType(booleanParameter('contain', 'not contain', /((?:not )?contain)/));
+defineParameterType(booleanParameter('contains', 'not contains', /((?:not )?contains)/));
 
 defineParameterType(booleanParameter('check', 'uncheck', /((?:un)?check)/));
 defineParameterType(booleanParameter('focus', 'blur'));

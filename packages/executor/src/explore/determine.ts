@@ -7,12 +7,6 @@ const PROMPT = `You're a QA tester, tasked with writing BDD tests in gherkin.
 
 You output partial a Gherkin feature. The user will provide page content. You will write a new feature scenario.
 
-{{#continue}}
-In this order:
- 1. Add a \`Then\` step asserting the change (optional).
- 2. Add one or more \`When\` steps to perform the next actions.
-{{/continue}}
-
 The following steps are available:
 {{#steps}}
   - {{.}}
@@ -51,12 +45,13 @@ Examples:
 Add one or more steps to accomplish the user story of the feature. Only add steps based on what's available on
 this page.
 
-If there are no more steps to add write \`Then I'm done\`. This can never be combined with other steps.
-
 Hints:
-- Prefer readable locators, like \`field "Name"\` above raw Playwright locators
+- Prefer readable locators, like \`field "Name"\` or \`switch "Approve"\` above raw Playwright locators
 - Use \'link\' for an \`<a>\` element, even if displayed as button
-- Do not add steps after clicking on a link
+- Do not add more \`When\` steps after clicking on a link for the current page
+- Keep defaults unless specifically instructed otherwise.
+- Ensure that a selector resolves to exactly one element to prevent a strict violation in Playwright
+- Do not include raw parameter placeholders like \`{string}\` in the output 
 `;
 
 interface DetermineStoryOptions {
@@ -69,9 +64,13 @@ interface DetermineStoryOptions {
   }
 }
 
+function sanitizeResponse(response: string) {
+  return response.replace(/`raw=([^`]+)`/g, '`$1`');
+}
+
 export async function determineStory({ controller, page, feature }: DetermineStoryOptions) {
   const whenSteps = controller.listSteps('When');
-  //const thenSteps = controller.listSteps('Then');
+  const thenSteps = [] as string[];//controller.listSteps('Then');
 
   let runCount = 0;
   let content = page.content ?? await describePage(page, 'html');
@@ -89,13 +88,14 @@ export async function determineStory({ controller, page, feature }: DetermineSto
       template: PROMPT,
       vars: {
         continue: false,
-        steps: whenSteps,
+        steps: [...whenSteps, ...thenSteps],
       },
     };
 
     const response = await generate(system, messages);
+    const sanitized = sanitizeResponse(response);
 
-    const { steps: responseSteps } = parseFeature(response);
+    const { steps: responseSteps } = parseFeature(sanitized);
     const newSteps = deltaSteps(steps, responseSteps);
 
     const next = writeFeature({ name: 'Continue', steps: newSteps });
