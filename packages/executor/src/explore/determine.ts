@@ -1,6 +1,6 @@
-import { Controller, Snapshot } from '@letsrunit/controller';
+import { Controller, type Snapshot } from '@letsrunit/controller';
 import { generate } from '@letsrunit/ai';
-import { deltaSteps, type Feature, parseFeature, writeFeature } from '../utils/feature';
+import { deltaSteps, type Feature, parseFeature, writeFeature } from '@letsrunit/gherkin';
 import { describePage } from './describe';
 
 const PROMPT = `You're a QA tester, tasked with writing BDD tests in gherkin.

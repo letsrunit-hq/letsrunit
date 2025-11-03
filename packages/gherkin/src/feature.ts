@@ -81,8 +81,16 @@ export function parseFeature(input: string): Feature {
   const scenario = firstScenarioChild?.scenario;
   if (!scenario) return { name: '', description: feature.description, steps: [] };
 
+  let currentKeyword = 'Given';
+
   const steps = (scenario.steps ?? []).map((s) => {
-    const keyword = (s.keyword || '').trim();
+    let keyword = (s.keyword || '').trim();
+    if (keyword.toLowerCase() === 'and' || keyword === '*') {
+      keyword = currentKeyword;
+    } else {
+      currentKeyword = keyword;
+    }
+
     const text = s.text?.trim() || '';
     let result = `${keyword} ${text}`.trim();
 

@@ -30,7 +30,7 @@ describe('Journal', () => {
     expect(sink.published.length).toBe(1);
     const entry = sink.published[0];
     expect(entry.timestamp).toBe(FIXED_TIME);
-    expect(entry.level).toBe('info');
+    expect(entry.type).toBe('info');
     expect(entry.message).toBe('Hello world');
   });
 
@@ -56,7 +56,7 @@ describe('Journal', () => {
     await journal.warn('w');
     await journal.error('e');
 
-    expect(sink.published.map((e) => e.level)).toEqual(['debug', 'info', 'warn', 'error']);
+    expect(sink.published.map((e) => e.type)).toEqual(['debug', 'info', 'warn', 'error']);
     expect(sink.published.map((e) => e.message)).toEqual(['d', 'i', 'w', 'e']);
     expect(sink.published.every((e) => e.timestamp === FIXED_TIME)).toBe(true);
   });

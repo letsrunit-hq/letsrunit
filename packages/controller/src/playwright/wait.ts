@@ -119,7 +119,7 @@ export async function waitAfterInteraction(
       waitUntilEnabled(page, target, settleTimeout).catch(() => {}),
       target.waitFor({ state: 'hidden', timeout: settleTimeout }).catch(() => {}),
       target.waitFor({ state: 'detached', timeout: settleTimeout }).catch(() => {}),
-      waitForUrlChange(page, prevUrl, settleTimeout).then(() => console.log('url')).catch(() => {}),
+      waitForUrlChange(page, prevUrl, settleTimeout).catch(() => {}),
     ]);
     await sleep(100); // Grace periode for redirect
     await waitForDomIdle(page, { quietMs }).catch(() => {});
