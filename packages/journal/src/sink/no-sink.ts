@@ -1,6 +1,6 @@
-import type { Sink, JournalEntry } from '../types';
+import type { Sink } from '../types';
 
 /* v8 ignore start */
-export class NoSkink implements Sink {
-  async publish(_entry: JournalEntry): Promise<void> {}
+export class NoSink implements Sink {
+  async publish(): Promise<void> {}
 }

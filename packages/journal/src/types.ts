@@ -1,11 +1,11 @@
 export interface JournalEntry {
   timestamp: number;
-  level: 'debug' | 'info' | 'warn' | 'error';
+  type: 'debug' | 'info' | 'title' | 'warn' | 'error' | 'prepare' | 'success' | 'failure';
   message: string;
   artifacts: string[];
   meta: Record<string, any>;
 }
 
 export interface Sink {
-  publish(entry: JournalEntry): Promise<void>
+  publish(...entries: JournalEntry[]): Promise<void>
 }

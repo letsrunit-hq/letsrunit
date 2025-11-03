@@ -1,10 +1,10 @@
-import { Job, Result } from './types';
+import type { Job, Result } from './types';
 import { Controller } from '@letsrunit/controller';
 import { describePage } from './explore/describe';
-import { writeFeature } from './utils/feature';
+import { writeFeature } from '@letsrunit/gherkin';
 import { observePage } from './explore/observe';
 import { determineStory } from './explore/determine';
-import { Journal, NoSkink } from '@letsrunit/journal';
+import { Journal } from '@letsrunit/journal';
 
 interface RunJobOptions {
   headless?: boolean;
@@ -22,8 +22,8 @@ export default async function runJob(
     'And all popups are closed',
   ];
 
-  const journal = opts.journal ?? new Journal(new NoSkink());
-  const controller = await Controller.launch({ headless: opts.headless, baseURL: job.target });
+  const journal = opts.journal ?? Journal.nil();
+  const controller = await Controller.launch({ headless: opts.headless, baseURL: job.target, journal });
 
   try {
     const { page } = await controller.run(writeFeature({ name: "Explore", steps }));

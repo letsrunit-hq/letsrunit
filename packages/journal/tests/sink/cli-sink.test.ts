@@ -5,7 +5,7 @@ import type { JournalEntry } from '../../src';
 function makeEntry(partial: Partial<JournalEntry> = {}): JournalEntry {
   return {
     timestamp: Date.now(),
-    level: 'info',
+    type: 'info',
     message: 'Hello',
     artifacts: [],
     meta: {},
@@ -26,22 +26,22 @@ describe('CliSink', () => {
     });
 
     it('debug -> bright black (gray)', async () => {
-      await sink.publish(makeEntry({ level: 'debug' }));
+      await sink.publish(makeEntry({ type: 'debug' }));
       expect(out).toContain('\u001b[90m');
     });
 
     it('warn -> yellow', async () => {
-      await sink.publish(makeEntry({ level: 'warn' }));
+      await sink.publish(makeEntry({ type: 'warn' }));
       expect(out).toContain('\u001b[33m');
     });
 
     it('error -> red', async () => {
-      await sink.publish(makeEntry({ level: 'error' }));
+      await sink.publish(makeEntry({ type: 'error' }));
       expect(out).toContain('\u001b[31m');
     });
 
     it('info -> no specific color', async () => {
-      await sink.publish(makeEntry({ level: 'info' }));
+      await sink.publish(makeEntry({ type: 'info' }));
       expect(out).not.toContain('\u001b[90m');
       expect(out).not.toContain('\u001b[33m');
       expect(out).not.toContain('\u001b[31m');
@@ -88,14 +88,14 @@ describe('CliSink', () => {
       let out = '';
       const stream = { write: (s: string) => { out += s; } } as any;
 
-      await new CliSink({ stream, verbosity: 0 }).publish(makeEntry({ level: 'debug' }));
+      await new CliSink({ stream, verbosity: 0 }).publish(makeEntry({ type: 'debug' }));
       expect(out).toBe('');
-      await new CliSink({ stream, verbosity: 1 }).publish(makeEntry({ level: 'debug' }));
+      await new CliSink({ stream, verbosity: 1 }).publish(makeEntry({ type: 'debug' }));
       expect(out).toBe('');
-      await new CliSink({ stream, verbosity: 2 }).publish(makeEntry({ level: 'debug' }));
+      await new CliSink({ stream, verbosity: 2 }).publish(makeEntry({ type: 'debug' }));
       expect(out).not.toBe('');
       out = '';
-      await new CliSink({ stream, verbosity: 3 }).publish(makeEntry({ level: 'debug' }));
+      await new CliSink({ stream, verbosity: 3 }).publish(makeEntry({ type: 'debug' }));
       expect(out).not.toBe('');
     });
 
@@ -103,9 +103,9 @@ describe('CliSink', () => {
       let out = '';
       const stream = { write: (s: string) => { out += s; } } as any;
 
-      await new CliSink({ stream, verbosity: 0 }).publish(makeEntry({ level: 'info' }));
+      await new CliSink({ stream, verbosity: 0 }).publish(makeEntry({ type: 'info' }));
       expect(out).toBe('');
-      await new CliSink({ stream, verbosity: 1 }).publish(makeEntry({ level: 'info' }));
+      await new CliSink({ stream, verbosity: 1 }).publish(makeEntry({ type: 'info' }));
       expect(out).not.toBe('');
     });
 
@@ -114,14 +114,14 @@ describe('CliSink', () => {
       const stream = { write: (s: string) => { out += s; } } as any;
       const sink = new CliSink({ stream, verbosity: 0 });
 
-      await sink.publish(makeEntry({ level: 'debug' }));
-      await sink.publish(makeEntry({ level: 'info' }));
+      await sink.publish(makeEntry({ type: 'debug' }));
+      await sink.publish(makeEntry({ type: 'info' }));
       expect(out).toBe('');
 
-      await sink.publish(makeEntry({ level: 'warn' }));
+      await sink.publish(makeEntry({ type: 'warn' }));
       expect(out).not.toBe('');
       out = '';
-      await sink.publish(makeEntry({ level: 'error' }));
+      await sink.publish(makeEntry({ type: 'error' }));
       expect(out).not.toBe('');
     });
   });

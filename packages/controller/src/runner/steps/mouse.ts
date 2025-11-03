@@ -4,7 +4,7 @@ import type { KeyCombo } from '@letsrunit/gherkin';
 import { waitAfterInteraction } from '../../playwright/wait';
 import { locator } from '../../playwright/locator';
 
-const TIMEOUT = 500;
+const TIMEOUT = 2500;
 
 type MouseAction = 'click' | 'double-click' | 'right-click' | 'hover';
 

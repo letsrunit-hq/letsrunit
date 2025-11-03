@@ -3,18 +3,21 @@ import { browse } from './playwright/browser';
 import { snapshot } from './playwright/snapshot';
 import type { World } from './runner/dsl';
 import type { Result } from './types';
-import { createFieldEngine } from '@letsrunit/gherkin';
+import { createFieldEngine, parseFeature } from '@letsrunit/gherkin';
 import { type Browser, type BrowserContextOptions, chromium, selectors } from '@playwright/test';
+import { Journal } from '@letsrunit/journal';
 
 export interface ControllerOptions extends BrowserContextOptions {
   headless?: boolean;
   debug?: boolean;
+  journal?: Journal;
 }
 
 export class Controller {
   private constructor(
     private browser: Browser,
     private world: World,
+    private journal: Journal,
   ) {}
 
   static async launch(options: ControllerOptions = {}): Promise<Controller> {
@@ -29,14 +32,43 @@ export class Controller {
       });
     }
 
-    return new Controller(browser, { page, options });
+    const journal = options.journal ?? Journal.nil();
+
+    return new Controller(browser, { page, options }, journal);
   }
 
   async run(feature: string): Promise<Result> {
-    const { world: _, ...result } = await runner.run(feature, this.world);
+    await this.logFeature(feature);
+
+    const { world: _, ...result } = await runner.run(
+      feature,
+      this.world,
+      async (step, status, reason) => {
+        await this.journal.batch()
+          .log(step, { type: status })
+          .error(reason?.message)
+          .flush();
+      },
+    );
     const page = await snapshot(this.world.page);
 
     return { ...result, page };
+  }
+
+  private async logFeature(feature: string): Promise<void> {
+    const journal = this.journal.batch();
+    const { name, description, steps } = parseFeature(feature);
+
+    try {
+      journal.title(name);
+      if (description) journal.info(description);
+
+      for (const step of steps) {
+        journal.prepare(step);
+      }
+    } finally {
+      await journal.flush();
+    }
   }
 
   async close(): Promise<void> {

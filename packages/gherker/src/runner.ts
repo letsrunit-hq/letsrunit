@@ -3,6 +3,8 @@ import { IdGenerator, Pickle, PickleStep, SourceMediaType } from '@cucumber/mess
 import { CucumberExpression, ParameterTypeRegistry, RegularExpression, } from '@cucumber/cucumber-expressions';
 import { Compiled, Result, StepHandler, StepType, World } from './types';
 
+type StepHook = (step: string, status: 'success' | 'failure', reason?: Error) => void | Promise<void>;
+
 export class Runner<TWorld extends World> {
   private _registry = new ParameterTypeRegistry();
   private _defs: Compiled<TWorld>[] = [];
@@ -24,11 +26,16 @@ export class Runner<TWorld extends World> {
   }
 
   private match(text: string) {
-    for (const d of this.defs) {
-      const args = d.expr.match(text);
-      if (args) return { d, values: args.map((a) => a.getValue(null)) };
+    for (const def of this.defs) {
+      const args = def.expr.match(text);
+      if (args) return { def, values: args.map((a) => a.getValue(null)) };
     }
     return null;
+  }
+
+  private stepToString(step: PickleStep): string {
+    const def = this.defs.find(({ expr }) => !!expr.match(step.text));
+    return def ? `${def.type} ${step.text}` : step.text;
   }
 
   compile(feature: string, uri = 'inline.feature') {
@@ -45,7 +52,11 @@ export class Runner<TWorld extends World> {
     return pickles;
   }
 
-  async run(feature: string, worldFactory: TWorld | (() => Promise<TWorld> | TWorld)): Promise<Result<TWorld>> {
+  async run(
+    feature: string,
+    worldFactory: TWorld | (() => Promise<TWorld> | TWorld),
+    onStep?: StepHook,
+  ): Promise<Result<TWorld>> {
     const pickles = this.compile(feature);
     if (pickles.length > 1) {
       throw new Error('Multiple scenarios not supported')
@@ -56,16 +67,19 @@ export class Runner<TWorld extends World> {
     let completed = 0;
     let error: Error | undefined;
 
-    try {
-      for (const step of pickle.steps) {
+    for (const step of pickle.steps) {
+      try {
         await this.runStep(world, step);
         completed++;
+      } catch (e) {
+        error = e as Error;
+        break;
+      } finally {
+        await onStep?.(this.stepToString(step),  error ? 'failure' : 'success', error);
       }
-    } catch (e) {
-      error = e as Error;
-    } finally {
-      if (typeof world.cleanup === 'function') await world.cleanup();
     }
+
+    if (typeof world.cleanup === 'function') await world.cleanup();
 
     const steps = pickle.steps.map((step, i) => ({
       text: step.text,
@@ -78,9 +92,9 @@ export class Runner<TWorld extends World> {
 
   private async runStep(world: TWorld, step: PickleStep) {
     const text = step.text;
-    const m = this.match(text);
+    const match = this.match(text);
 
-    if (!m) throw new Error(`Undefined step: ${text}`);
+    if (!match) throw new Error(`Undefined step: ${text}`);
 
     // DocString/DataTable
     let extra: any | undefined;
@@ -90,7 +104,7 @@ export class Runner<TWorld extends World> {
       extra = step.argument.dataTable.rows.map((r) => r.cells.map((c) => c.value));
     }
 
-    await m.d.fn(world, ...m.values, ...(extra !== undefined ? [extra] : []));
+    await match.def.fn(world, ...match.values, ...(extra !== undefined ? [extra] : []));
   }
 
   reset() {

@@ -21,5 +21,8 @@
   "dependencies": {
     "@letsrunit/executor": "workspace:*",
     "commander": "^14.0.1"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.6"
   }
 }
