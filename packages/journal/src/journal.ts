@@ -4,8 +4,8 @@ import { JournalBatch } from './journal-batch';
 
 type Options = Partial<Pick<JournalEntry, 'artifacts' | 'meta'>>;
 
-export class Journal {
-  constructor(private sink: Sink) {}
+export class Journal<TSink extends Sink = Sink> {
+  constructor(readonly sink: TSink) {}
 
   async log(message: string, options: Options & { type: JournalEntry['type'] }): Promise<void> {
     const entry: JournalEntry = {
@@ -21,6 +21,19 @@ export class Journal {
 
   batch() {
     return new JournalBatch(this.sink);
+  }
+
+  async do<T>(message: string, callback: () => T | Promise<T>): Promise<T> {
+    try {
+      await this.prepare(message);
+      const result = await callback();
+      await this.success(message);
+
+      return result;
+    } catch (e) {
+      await this.failure(message);
+      throw e;
+    }
   }
 
   async debug(message: string, options: Options = {}): Promise<void> {

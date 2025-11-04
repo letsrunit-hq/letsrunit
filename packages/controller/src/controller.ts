@@ -57,13 +57,13 @@ export class Controller {
 
   private async logFeature(feature: string): Promise<void> {
     const journal = this.journal.batch();
-    const { name, description, steps } = parseFeature(feature);
+    const { name, description, background, steps } = parseFeature(feature);
 
     try {
-      journal.title(name);
+      if (name) journal.title(name);
       if (description) journal.info(description);
 
-      for (const step of steps) {
+      for (const step of [...(background ?? []), ...steps]) {
         journal.prepare(step);
       }
     } finally {

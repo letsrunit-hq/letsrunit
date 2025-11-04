@@ -1,2 +1,2 @@
-export { default as runJob } from './run-job';
+export { default as explore } from './explore';
 export * from './types';

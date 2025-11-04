@@ -6,11 +6,12 @@ const newId = IdGenerator.uuid();
 export interface Feature {
   name: string;
   description?: string;
+  comment?: string;
   background?: string[];
   steps: string[];
 }
 
-export function writeFeature({ name, description, background, steps }: Feature): string {
+export function writeFeature({ name, description, comment, background, steps }: Feature): string {
   const lines = [
     `Feature: ${name}`.trim(),
     '',
@@ -35,6 +36,14 @@ export function writeFeature({ name, description, background, steps }: Feature):
     '  Scenario:',
     ...steps.map((s) => `    ${s}`),
   );
+
+
+  if (comment) {
+    lines.push(
+      '',
+      `  # ${comment}`
+    );
+  }
 
   return lines.join('\n');
 }
