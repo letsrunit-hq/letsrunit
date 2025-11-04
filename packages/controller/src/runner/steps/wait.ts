@@ -10,6 +10,7 @@ Then(
     const el = await locator(page, selector);
     await expectOrNot(el, visible).toBeVisible({ timeout: WAIT_TIMEOUT });
   },
+  'hidden'
 );
 
 Then(
@@ -19,4 +20,5 @@ Then(
     const childElement = el.locator(child);
     await expectOrNot(childElement, contain).toBeAttached({ timeout: WAIT_TIMEOUT });
   },
+  'hidden'
 );

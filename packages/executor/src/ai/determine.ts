@@ -2,6 +2,7 @@ import { Controller, type Snapshot } from '@letsrunit/controller';
 import { generate } from '@letsrunit/ai';
 import { deltaSteps, type Feature, parseFeature, writeFeature } from '@letsrunit/gherkin';
 import { describePage } from './describe';
+import * as z from 'zod';
 
 const PROMPT = `You're a QA tester, tasked with writing BDD tests in gherkin.
 
@@ -44,6 +45,8 @@ Examples:
 Add one or more steps to accomplish the user story of the feature. Only add steps based on what's available on
 this page.
 
+Or call the tool 'publish' when the feature is done, as specified by the user.
+
 Hints:
 - Prefer readable locators, like \`field "Name"\` or \`switch "Approve"\` above raw Playwright locators
 - Use \'link\' for an \`<a>\` element, even if displayed as button
@@ -64,19 +67,28 @@ interface DetermineStoryOptions {
   }
 }
 
+export const tools = {
+  publish: {
+    description: "Publish the feature. Call this when the feature is completed. It's not possible to add steps" +
+      " after publication",
+    inputSchema: z.object({}),
+  },
+};
+
 function sanitizeResponse(response: string) {
   return response.replace(/`raw=([^`]+)`/g, '`$1`');
 }
 
 export async function determineStory({ controller, page, feature }: DetermineStoryOptions) {
   const whenSteps = controller.listSteps('When');
-  const thenSteps = [] as string[];//controller.listSteps('Then');
 
   let runCount = 0;
   let content = page.content ?? await describePage(page, 'html');
+  let currentUrl = page.url;
 
   const steps = [...feature.steps];
-  console.log(writeFeature({ ...feature, steps }));
+
+  await controller.run(writeFeature(feature));
 
   do {
     const messages = [
@@ -88,23 +100,31 @@ export async function determineStory({ controller, page, feature }: DetermineSto
       template: PROMPT,
       vars: {
         continue: false,
-        steps: [...whenSteps, ...thenSteps],
+        steps: whenSteps,
       },
     };
 
-    const response = await generate(system, messages);
+    const response = await generate(system, messages, { tools });
+    if (!response) break;
+
     const sanitized = sanitizeResponse(response);
 
     const { steps: responseSteps } = parseFeature(sanitized);
     const newSteps = deltaSteps(steps, responseSteps);
 
-    const next = writeFeature({ name: 'Continue', steps: newSteps });
-    console.log(next);
+    const next = writeFeature({ name: '', steps: newSteps });
 
     const { page: nextPage } = await controller.run(next);
     content = await describePage(nextPage, 'html');
 
+    if (nextPage.url !== currentUrl) {
+      newSteps.push(`Then I should be on page "${nextPage.url}"`);
+      currentUrl = nextPage.url;
+    } else {
+      // TODO: Determine if something significant has changed on the page.
+    }
+
     steps.push(...newSteps);
     runCount++;
-  } while (steps[steps.length - 1].trim().toLowerCase() !== "then i'm done");
+  } while (true);
 }

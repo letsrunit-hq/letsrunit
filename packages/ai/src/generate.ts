@@ -2,7 +2,7 @@ import * as ai from 'ai';
 import { getModel } from './models';
 import { wrapAISDK } from "langsmith/experimental/vercel";
 import * as z from 'zod';
-import { ModelMessage } from 'ai';
+import { ModelMessage, ToolSet } from 'ai';
 import Mustache from "mustache";
 
 Mustache.escape = (text: string) => text;
@@ -24,6 +24,7 @@ interface GenerateOptions<T extends z.Schema | undefined = undefined> {
   model?: 'large' | 'medium' | 'small';
   reasoningEffort?: 'minimal' | 'low' | 'medium';
   schema?: T;
+  tools?: ToolSet;
 }
 
 export async function generate<T extends z.Schema | undefined = undefined>(
@@ -31,6 +32,10 @@ export async function generate<T extends z.Schema | undefined = undefined>(
   prompt: string | ModelMessage[],
   opts: GenerateOptions<T> = {},
 ): Promise<T extends z.Schema ? z.infer<Exclude<T, undefined>> : string> {
+  if (opts.tools && opts.schema) {
+    throw new Error("It's not possible to pass both a schema and tools");
+  }
+
   if (typeof system === 'object') {
     system = Mustache.render(system.template, system.vars);
   }
@@ -50,7 +55,7 @@ export async function generate<T extends z.Schema | undefined = undefined>(
     const result = await generateObject({ ...arg, schema: opts.schema });
     return result.object as any;
   } else {
-    const result = await generateText(arg);
+    const result = await generateText({ ...arg, tools: opts.tools });
     return result.text as any;
   }
 }

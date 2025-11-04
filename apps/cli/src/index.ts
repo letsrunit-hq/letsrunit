@@ -1,8 +1,8 @@
 import { Command } from "commander";
-import { runJob } from '@letsrunit/executor';
-import type { Job } from '@letsrunit/executor';
+import { explore } from '@letsrunit/executor';
 import runTest from '@letsrunit/executor/src/run-test';
 import { CliSink, Journal } from '@letsrunit/journal';
+import { runExplore } from './run-explore';
 
 const program = new Command();
 
@@ -17,13 +17,21 @@ program
   .version("0.1.0");
 
 program
-  .command("run")
+  .command("explore")
   .argument("<target>", "Target URL or project")
   .option("-v, --verbose", "Enable verbose logging", false)
   .option("-s, --silent", "Only output errors", false)
   .action(async (target: string, opts: { verbose: boolean, silent: boolean }) => {
-    const job: Job = { target };
-    const result = await runJob(job, { headless: false, journal: createJournal(opts) });
+    const journal = createJournal(opts);
+
+    const result = await explore(
+      target,
+      { headless: false, journal },
+      async (...args) => {
+        journal.sink.endSection();
+        await runExplore(...args);
+      }
+    );
 
     process.exit(result.status === 'error' ? 1 : 0);
   });
@@ -34,8 +42,7 @@ program
   .option("-v, --verbose", "Enable verbose logging", false)
   .option("-s, --silent", "Only output errors", false)
   .action(async (target: string, opts: { verbose: boolean, silent: boolean }) => {
-    const job: Job = { target };
-    await runTest(job, { headless: false, journal: createJournal(opts) });
+    await runTest(target, { headless: false, journal: createJournal(opts) });
   });
 
 program.parse();

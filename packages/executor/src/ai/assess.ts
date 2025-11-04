@@ -35,6 +35,7 @@ From these inputs, extract the following:
    * Never include following links to external websites as actions.
    * If only one valid user-initiated action is presented, return only that one. If there are two, return two — do not add filler.
    * Do not guess actions based on generic labels like “Start” or “More info” unless context makes the action clear.
+   * The action description must be a full user story and not "Start doing ...".
 
 ## Example output
 
@@ -43,9 +44,21 @@ From these inputs, extract the following:
   "purpose": "Buy and manage running gear through an online store.",
   "login_available": true,
   "actions": [
-    "Buy a pair of running shoes",
-    "Browse available running gear and compare different models",
-    "Sign up for a new customer account"
+    {
+      "name": "Buy running shoes",
+      "description": "Select a suitable pair of running shoes, choose a size, and complete checkout with online payment.",
+      "done": "The scenario is done when the order confirmation is displayed."
+    },
+    {
+      "name": "Compare running gear",
+      "description": "Browse the catalog, filter products by category or price, and compare multiple running gear models side by side.",
+      "done": "The scenario is done when a comparison summary is visible."
+    },
+    {
+      "name": "Create customer account",
+      "description": "Register as a new customer by entering personal details, choosing a password, and confirming via email or SMS.",
+      "done": "The scenario is done when the user is logged into their new account."
+    }
   ]
 }
 \`\`\`
@@ -55,10 +68,24 @@ From these inputs, extract the following:
 * The "purpose" and "actions" fields must always be written in English, regardless of the site language.
 * If you're uncertain about an action, omit it rather than make assumptions.
 * You are a neutral observer — not a marketer or advocate.
-* Ignore cookie banners, privacy policies, and legal links; never list them as user actions.
+* Ignore cookie banners, privacy policies, terms & conditions, and legal links; never list them as user actions.
 `;
 
-export const ObservationOutputSchema = z.object({
+export const ActionSchema = z.object({
+  name: z
+    .string()
+    .describe("A short name of the user action, 8–15 words long."),
+  description: z
+    .string()
+    .describe("The full (expected) user story following the initial action, max ~50 words."),
+  done: z
+    .string()
+    .describe('"The scenario is done when ...", max ~20 words.'),
+});
+
+export type Action = z.infer<typeof ActionSchema>;
+
+export const AssessmentSchema = z.object({
   purpose: z
     .string()
     .describe("Concise sentence describing the primary purpose of a user visiting the site/app (max ~50 words)."),
@@ -67,18 +94,16 @@ export const ObservationOutputSchema = z.object({
     .describe("True if login or sign-up is visible on the page; otherwise false."),
   actions: z
     .array(
-      z
-        .string()
-        .describe("A specific user action visible or implied on the page, 12–20 words long.")
+      ActionSchema.describe("A specific user action that can can be started from the page."),
     )
     .min(1, "At least 1 action required")
     .max(5, "No more than 5 actions allowed")
     .describe("List of 1-5 main things a first-time visitor can do without logging in."),
 });
 
-export type ObservationOutput = z.infer<typeof ObservationOutputSchema>;
+export type Assessment = z.infer<typeof AssessmentSchema>;
 
-export async function observePage(page: string): Promise<ObservationOutput> {
+export async function assessPage(page: string): Promise<Assessment> {
   const isHtml = page.trim().startsWith('<');
   const contentType = isHtml ?
     'A scrubbed HTML body' :
@@ -86,5 +111,5 @@ export async function observePage(page: string): Promise<ObservationOutput> {
 
   const prompt = PROMPT.replace('{contentType}', contentType);
 
-  return await generate(prompt, page, { schema: ObservationOutputSchema });
+  return await generate(prompt, page, { schema: AssessmentSchema, model: 'large', reasoningEffort: 'medium' });
 }

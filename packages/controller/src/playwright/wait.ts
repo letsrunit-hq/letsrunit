@@ -121,7 +121,7 @@ export async function waitAfterInteraction(
       target.waitFor({ state: 'detached', timeout: settleTimeout }).catch(() => {}),
       waitForUrlChange(page, prevUrl, settleTimeout).catch(() => {}),
     ]);
-    await sleep(100); // Grace periode for redirect
+    await sleep(1000); // Grace periode for redirect
     await waitForDomIdle(page, { quietMs }).catch(() => {});
     return;
   }

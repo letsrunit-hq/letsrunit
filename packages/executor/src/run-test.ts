@@ -1,4 +1,3 @@
-import { Job } from './types';
 import { Controller } from '@letsrunit/controller';
 import { writeFeature } from '@letsrunit/gherkin';
 import { Journal, NoSink } from '@letsrunit/journal';
@@ -9,7 +8,7 @@ interface RunTestOptions {
 }
 
 export default async function runTest(
-  job: Job,
+  target: string,
   opts: RunTestOptions = {},
 ): Promise<void> {
   // TODO split target in baseUrl and page.
@@ -32,7 +31,7 @@ export default async function runTest(
   ];
 
   const journal = opts.journal ?? new Journal(new NoSink());
-  const controller = await Controller.launch({ headless: opts.headless, baseURL: job.target, journal });
+  const controller = await Controller.launch({ headless: opts.headless, baseURL: target, journal });
 
   try {
     await controller.run(writeFeature({ name: "Explore", steps }));

@@ -45,10 +45,14 @@ export class CliSink implements Sink {
       if (entry.type === 'debug' && this.verbosity < 2) continue;
       if (entry.type !== 'error' && this.verbosity < 1) continue;
 
-      if (entry.type === 'title') this.entries = [];
+      if (entry.type === 'title') this.endSection();
 
       this.replace(entry) || this.append(entry);
     }
+  }
+
+  endSection() {
+    this.entries = [];
   }
 
   private replace(entry: JournalEntry): boolean {

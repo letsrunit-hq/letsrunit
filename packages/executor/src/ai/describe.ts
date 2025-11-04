@@ -1,26 +1,8 @@
 import { scrubHtml } from '../utils/scrub-html';
 import { stringify as toYaml } from 'yaml';
-import type { PageInfo } from '../types';
 import { generate } from '@letsrunit/ai';
-
-import metascraper, { MetascraperOptions } from 'metascraper';
-import metascraperTitle from 'metascraper-title';
-import metascraperDescription from 'metascraper-description';
-import metascraperImage from 'metascraper-image';
-import metascraperLogo from 'metascraper-logo';
-import metascraperLogoFavicon from 'metascraper-logo-favicon';
-import metascraperLang from 'metascraper-lang';
-import metascraperUrl from 'metascraper-url';
-
-const scrape = metascraper([
-  metascraperTitle(),
-  metascraperDescription(),
-  metascraperImage(),
-  metascraperLogo(),
-  metascraperLogoFavicon(),
-  metascraperLang(),
-  metascraperUrl(),
-]);
+import { extractPageInfo } from '../utils/page-info';
+import type { PageInfo } from '../types';
 
 const PROMPT = `Convert raw HTML into compact Markdown using a limited set of custom blocks and Playwright selectors. The output feeds agents for Playwright and must be consistent.
 
@@ -147,24 +129,11 @@ Inside \`::: form\`:
 * Never use locator for an \`href\`.
 `;
 
-async function extractPageInfo(options: MetascraperOptions): Promise<PageInfo> {
-  const meta = await scrape(options);
-
-  return {
-    url: meta.url || options.url,
-    title: meta.title || undefined,
-    description: meta.description || undefined,
-    image: meta.image || undefined,
-    favicon: meta.logo || undefined,
-    lang: meta.lang || undefined,
-  };
-}
-
 export async function describePage(
-  page: { url: string, html: string },
+  page: { url: string, html: string, info?: PageInfo },
   contentType: 'markdown' | 'html' = 'markdown',
 ): Promise<string> {
-  const info = await extractPageInfo(page);
+  const info = page.info ?? await extractPageInfo(page);
 
   const html = await scrubHtml(page);
   const content = contentType === 'markdown' ? await generate(PROMPT, html, { model: 'medium' }) : html;
