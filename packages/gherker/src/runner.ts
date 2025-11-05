@@ -1,28 +1,46 @@
 import { generateMessages } from '@cucumber/gherkin';
 import { IdGenerator, Pickle, PickleStep, SourceMediaType } from '@cucumber/messages';
-import { CucumberExpression, ParameterTypeRegistry, RegularExpression, } from '@cucumber/cucumber-expressions';
-import { Compiled, Result, StepHandler, StepType, World } from './types';
+import {
+  CucumberExpression,
+  ParameterType,
+  ParameterTypeRegistry,
+  RegularExpression,
+} from '@cucumber/cucumber-expressions';
+import type { StepDefinition, Result, StepHandler, StepType, World } from './types';
+import { ParameterTypeDefinition, sanitizeStepDefinition } from '@letsrunit/gherkin';
 
 type StepHook = (step: string, status: 'success' | 'failure', reason?: Error) => void | Promise<void>;
 
 export class Runner<TWorld extends World> {
-  private _registry = new ParameterTypeRegistry();
-  private _defs: Compiled<TWorld>[] = [];
+  private _registry = new ParameterTypeRegistry(); // Private instead of readonly, because `reset()`
+  private _defs: StepDefinition<TWorld>[] = [];
 
   get registry(): ParameterTypeRegistry {
     return this._registry;
   }
 
-  get defs(): Compiled<TWorld>[] {
+  get defs(): StepDefinition<TWorld>[] {
     return this._defs;
   }
 
   defineStep(type: StepType, expression: string | RegExp, fn: StepHandler<TWorld>, comment?: string) {
     const expr =
       typeof expression === 'string'
-        ? new CucumberExpression(expression, this.registry)
+        ? new CucumberExpression(sanitizeStepDefinition(expression), this.registry)
         : new RegularExpression(expression, this.registry);
     this.defs.push({ type, expr, fn, source: String(expression), comment });
+  }
+
+  defineParameterType(type: ParameterTypeDefinition<unknown>) {
+    const paramType = new ParameterType(
+      type.name,
+      type.regexp,
+      null,
+      type.transformer,
+      type.useForSnippets
+    );
+
+    this._registry.defineParameterType(paramType);
   }
 
   private match(text: string) {

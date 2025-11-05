@@ -5,7 +5,7 @@ import { writeFeature } from '@letsrunit/gherkin';
 import { type Assessment, type Action, assessPage } from './ai/assess';
 import { determineStory } from './ai/determine';
 import { Journal } from '@letsrunit/journal';
-import { splitUrl } from './utils/split-url';
+import { splitUrl } from '@letsrunit/utils';
 import { extractPageInfo } from './utils/page-info';
 
 interface ExploreOptions {

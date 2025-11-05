@@ -1,8 +1,10 @@
-import { Controller, type Snapshot } from '@letsrunit/controller';
+import { Controller } from '@letsrunit/controller';
 import { generate } from '@letsrunit/ai';
 import { deltaSteps, type Feature, parseFeature, writeFeature } from '@letsrunit/gherkin';
-import { describePage } from './describe';
+import type { Snapshot } from '@letsrunit/playwright';
+import { splitUrl } from '@letsrunit/utils';
 import * as z from 'zod';
+import { describePage } from './describe';
 
 const PROMPT = `You're a QA tester, tasked with writing BDD tests in gherkin.
 
@@ -118,7 +120,8 @@ export async function determineStory({ controller, page, feature }: DetermineSto
     content = await describePage(nextPage, 'html');
 
     if (nextPage.url !== currentUrl) {
-      newSteps.push(`Then I should be on page "${nextPage.url}"`);
+      const { path } = splitUrl(nextPage.url);
+      newSteps.push(`Then I should be on page "${path}"`);
       currentUrl = nextPage.url;
     } else {
       // TODO: Determine if something significant has changed on the page.
