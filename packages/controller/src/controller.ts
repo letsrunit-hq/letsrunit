@@ -1,8 +1,6 @@
 import { runner } from './runner';
-import { browse } from './playwright/browser';
-import { snapshot } from './playwright/snapshot';
-import type { World } from './runner/dsl';
-import type { Result } from './types';
+import { browse, snapshot } from '@letsrunit/playwright';
+import type { Result, World } from './types';
 import { createFieldEngine, parseFeature } from '@letsrunit/gherkin';
 import { type Browser, type BrowserContextOptions, chromium, selectors } from '@playwright/test';
 import { Journal } from '@letsrunit/journal';

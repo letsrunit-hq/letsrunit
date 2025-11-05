@@ -10,18 +10,12 @@
   "packageManager": "yarn@4.10.3",
   "main": "src/index.ts",
   "dependencies": {
-    "@letsrunit/gherker": "workspace:*",
-    "@letsrunit/gherkin": "workspace:*",
-    "@mozilla/readability": "^0.6.0",
+    "@letsrunit/bdd": "workspace:*",
     "@playwright/test": "^1.56.1",
-    "metascraper": "^5.49.4",
-    "metascraper-lang": "^5.49.2",
-    "turndown": "^7.2.1",
     "zod": "^4.1.12"
   },
   "devDependencies": {
     "@types/node": "^24.7.2",
-    "@types/turndown": "^5.0.5",
     "typescript": "^5.9.3",
     "vitest": "^3.2.4"
   }

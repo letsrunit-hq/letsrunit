@@ -1,3 +1,3 @@
 export * from './controller';
-export { splitUrl } from './utils/split-url';
+export { splitUrl } from '../../utils/src/split-url';
 export * from './types';
