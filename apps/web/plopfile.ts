@@ -23,7 +23,7 @@ export type {{pascalCase name}}Props = {
 };
 
 export function {{pascalCase name}}({ className, children }: {{pascalCase name}}Props) {
-  return <div className={className}>{{pascalCase name}}{{'{{'}}children && <>: </>{{'}}'}{children}</div>;
+  return <div className={className}>{{pascalCase name}}{children ? <>: {children}</> : null}</div>;
 }
 
 export default {{pascalCase name}};`,
