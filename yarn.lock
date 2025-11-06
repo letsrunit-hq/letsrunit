@@ -1650,6 +1650,7 @@ __metadata:
     "@letsrunit/controller": "workspace:*"
     "@letsrunit/utils": "workspace:*"
     "@types/node": "npm:^24.8.1"
+    iso-639-1: "npm:^3.1.5"
     metascraper-description: "npm:^5.49.5"
     metascraper-image: "npm:^5.49.5"
     metascraper-logo: "npm:^5.49.5"

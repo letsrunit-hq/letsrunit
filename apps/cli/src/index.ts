@@ -21,15 +21,16 @@ program
   .argument("<target>", "Target URL or project")
   .option("-v, --verbose", "Enable verbose logging", false)
   .option("-s, --silent", "Only output errors", false)
-  .action(async (target: string, opts: { verbose: boolean, silent: boolean }) => {
+  .option("-o, --save <path>", "Path to save .feature file", '')
+  .action(async (target: string, opts: { verbose: boolean, silent: boolean, save: string }) => {
     const journal = createJournal(opts);
 
     const result = await explore(
       target,
       { headless: false, journal },
-      async (...args) => {
+      async (info, actions) => {
         journal.sink.endSection();
-        await runExplore(...args);
+        await runExplore(info, actions, opts.save);
       }
     );
 
