@@ -1,4 +1,6 @@
 import { explore } from '@letsrunit/executor';
+import { writeFeature } from '@letsrunit/gherkin';
+import * as fs from 'node:fs/promises';
 
 type ProcessCallback = Parameters<typeof explore>[2];
 type AppInfo = Parameters<ProcessCallback>[0];
@@ -52,10 +54,10 @@ async function readOption(limit: number): Promise<number> {
   }
 }
 
-export async function runExplore(info: AppInfo, actions: Actions) {
+export async function runExplore(info: AppInfo, actions: Actions, storagePath?: string) {
   const { stdout } = process;
 
-  while (true) {
+  while (actions.length > 0) {
     stdout.write(`\n\x1b[1m${info.title}\x1b[0m\n`);
     stdout.write('What do you want to test? Choose one of the following options:\n');
 
@@ -68,6 +70,13 @@ export async function runExplore(info: AppInfo, actions: Actions) {
     if (opt < 0) return;
 
     stdout.write('\n');
-    await actions[opt].run();
+    const feature = await actions[opt].run();
+
+    actions.splice(opt, 1);
+
+    if (storagePath) {
+      // TODO: Get a descriptive filename.
+      await fs.writeFile(storagePath + `/test-${Date.now()}.feature`, writeFeature(feature));
+    }
   }
 }

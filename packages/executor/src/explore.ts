@@ -1,9 +1,9 @@
 import type { PageInfo, Result } from './types';
 import { Controller } from '@letsrunit/controller';
-import { describePage } from './ai/describe';
-import { writeFeature } from '@letsrunit/gherkin';
-import { type Assessment, type Action, assessPage } from './ai/assess';
-import { determineStory } from './ai/determine';
+import { describePage } from './ai/describe-page';
+import { type Feature, writeFeature } from '@letsrunit/gherkin';
+import { type Assessment, type Action, assessPage } from './ai/assess-page';
+import { generateFeature } from './ai/generate-feature';
 import { Journal } from '@letsrunit/journal';
 import { splitUrl } from '@letsrunit/utils';
 import { extractPageInfo } from './utils/page-info';
@@ -14,7 +14,7 @@ interface ExploreOptions {
 }
 
 type AppInfo = PageInfo & Omit<Assessment, 'actions'>;
-type PreparedAction = Action & { run: () => Promise<void> };
+type PreparedAction = Action & { run: () => Promise<Feature> };
 
 export default async function explore(
   target: string,
@@ -47,9 +47,9 @@ export default async function explore(
 
     const preparedActions = actions.map((action) => ({
       ...action,
-      run: () => determineStory({
+      run: () => generateFeature({
         controller,
-        page,
+        page: { ...page, lang: pageInfo.lang },
         feature: {
           ...action,
           comment: action.done,

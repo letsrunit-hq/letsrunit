@@ -4,7 +4,7 @@ import { IdGenerator, SourceMediaType } from '@cucumber/messages';
 const newId = IdGenerator.uuid();
 
 export interface Feature {
-  name: string;
+  name?: string;
   description?: string;
   comment?: string;
   background?: string[];
@@ -13,7 +13,7 @@ export interface Feature {
 
 export function writeFeature({ name, description, comment, background, steps }: Feature): string {
   const lines = [
-    `Feature: ${name}`.trim(),
+    `Feature: ${name ?? ''}`.trim(),
     '',
   ];
 
@@ -45,7 +45,7 @@ export function writeFeature({ name, description, comment, background, steps }: 
     );
   }
 
-  return lines.join('\n');
+  return lines.join('\n') + '\n';
 }
 
 // Wrap steps in a minimal feature/scenario so the parser accepts it

@@ -1,12 +1,10 @@
 export const createFieldEngine = () => ({
   // Helper: compile matcher from `field=...` body
-  _compileMatcher(body: string, exact: boolean): (s: string | null | undefined) => boolean {
+  _compileMatcher(body: string): (s: string | null | undefined) => boolean {
     const trimmed = body.trim();
 
     // Support /regex/flags
     if (trimmed.startsWith('/') && trimmed.lastIndexOf('/') > 0) {
-      if (exact) return () => false;
-
       const last = trimmed.lastIndexOf('/');
       const pattern = trimmed.slice(1, last);
       const flags = trimmed.slice(last + 1);
@@ -14,12 +12,10 @@ export const createFieldEngine = () => ({
       return (s) => !!s && re.test(s);
     }
 
-    // Default: substring match (always case-insensitive)
-    const needle = trimmed.replace(/^"(.*)"(i?)$/, '$1').toLowerCase();
+    const sanitize = (s: string) => s.toLowerCase().replace(/[^\w\s]+/, '').replace(/\s{2,}/g, ' ').trim();
+    const needle = sanitize(trimmed.replace(/^"(.*)"(i?)$/, '$1'));
 
-    return exact
-      ? ((s) => s?.toLowerCase().trim() === needle)
-      : ((s) => !!s && s.toLowerCase().includes(needle));
+    return ((s) => !!s && sanitize(s) === needle);
   },
 
   // Single match (Playwright will call this in some contexts)
@@ -30,8 +26,7 @@ export const createFieldEngine = () => ({
 
   // All matches
   queryAll(root: Element | Document, body: string): Element[] {
-    const match = this._compileMatcher(body, false);
-    const exact = this._compileMatcher(body, true);
+    const match = this._compileMatcher(body);
 
     // Candidate controls: native fields + common ARIA widgets
     const candidates = Array.from(
@@ -101,7 +96,11 @@ export const createFieldEngine = () => ({
         if (extAriaLabel) texts.push(extAriaLabel);
       }
 
-      // 5) native placeholder on <input>/<textarea>, and some custom widgets mirror it as an attribute
+      // 5) field name
+      const name = el.getAttribute('name');
+      if (name) texts.push(name);
+
+      // 6) native placeholder on <input>/<textarea>, and some custom widgets mirror it as an attribute
       const ph = (el as HTMLInputElement).placeholder ?? el.getAttribute('placeholder');
       if (ph) texts.push(ph);
 
@@ -112,7 +111,6 @@ export const createFieldEngine = () => ({
     return candidates
       .map((el) => ({ el, texts: textFor(el) }))
       .filter(({ texts }) => texts.some(match))
-      .sort((a, b) => Number(b.texts.some(exact)) - Number(a.texts.some(exact)))
       .map(({ el }) => el);
   },
 });

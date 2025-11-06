@@ -1,13 +1,16 @@
 import { locator } from '@letsrunit/playwright';
 import { When } from './wrappers';
+import { sleep } from '@letsrunit/utils';
 
 const TIMEOUT = 500;
+const DELAY = 500;
 
 export const fill = When(
   "I fill {locator} with {value}",
   async ({ page }, selector: string, value: string | number) => {
     const el = await locator(page, selector);
     await el.fill(String(value), { timeout: TIMEOUT });
+    await sleep(DELAY);
   }
 );
 
@@ -21,6 +24,7 @@ export const type = When(
   async ({ page }, value: string, selector: string) => {
     const el = await locator(page, selector);
     await el.pressSequentially(value, { delay: 200, timeout: TIMEOUT });
+    await sleep(DELAY);
   },
   "Use with caution; prefer `fill` above `type`",
 );
@@ -32,6 +36,8 @@ export const select = When("I select {string} in {locator}", async ({ page }, va
   if (result.length === 0) {
     throw new Error(`Option "${value}" not found in select ${selector}`);
   }
+
+  await sleep(DELAY);
 });
 
 export const check = When("I {check|uncheck} {locator}", async ({ page }, check: boolean, selector: string) => {
@@ -42,6 +48,8 @@ export const check = When("I {check|uncheck} {locator}", async ({ page }, check:
   } else {
     await el.uncheck({ timeout: TIMEOUT });
   }
+
+  await sleep(DELAY);
 }, 'For checkbox input or switch component');
 
 export const focus = When("I {focus|blur} {locator}", async ({ page }, focus: boolean, selector: string) => {
