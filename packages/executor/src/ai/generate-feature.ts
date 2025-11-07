@@ -87,9 +87,6 @@ export const tools: ToolSet = {
   publish: {
     description: "Publish the feature.",
     inputSchema: z.object({}),
-    execute: () => {
-      return 'done';
-    }
   },
 };
 

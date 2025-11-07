@@ -1,86 +1,111 @@
 import * as z from "zod";
 import { generate } from '@letsrunit/ai';
 
-const PROMPT = `You are exploring a website or webapp **for the very first time**.
-You have **no account**, **no cookies**, and **no prior knowledge** of what it does.
-Your task is to **understand the site’s purpose** and **list what a new visitor can do** based solely on the page content and metadata.
+const PROMPT = `You are exploring a website or webapp **for the very first time** — with **no account**, **no cookies**, and **no prior knowledge** of what it does.
+
+Your task is to **understand the purpose** of the site and list what a **new visitor can do** based only on visible content and metadata.
+
+---
 
 ## Inputs
 
-* YAML front matter containing optional info such as title, description, canonical URL and language.
-* {contentType}
+* YAML front matter with optional fields such as title, description, canonical URL, and language.
+* \`{contentType}\`: main visible page content.
 
-You must rely **only** on what is visible in these inputs.
-Do **not invent** pages, features, or actions that aren’t clearly present or implied.
+You must rely **strictly** on these inputs.
+Do **not invent** features, flows, or pages that aren’t clearly present or implied.
 
-## actions
+---
 
-From these inputs, extract the following:
+## Actions to Perform
 
-1. **Purpose** — What is the primary purpose of a user visiting this website/webapp?
-   * Present a concise, plain-English sentence
-   * Use natural language, not marketing slogans.
-   * Max 50 words.
+Extract the following:
 
-2. **Login Availability** — detect whether any form of login or sign-up exists.
-   * Return \`true\` if you find elements like *Sign in*, *Log in*, *Sign up*, *Create account*, or OAuth buttons.
-   * Otherwise \`false\`.
+1. **Purpose**
 
-3. **actions** — list 1 to 5 concrete things a new visitor can do **without logging in**, based on visible CTAs, navigation, or text.
-   * Use verbs and be concrete (e.g., "Try a live demo", "Buy a the first product listed under 'Deals'", "Browse the course catalog").
-   * Do not include vague or passive actions like "Learn more" or "Buy and choose from millions of products listed".
-   * Reading the current page or static content is not an action.
-   * Prefer CTAs and buttons over links in the footer or legal sections.
-   * Never include privacy policies, cookie notices, or terms & conditions as actions.
-   * Never include following links to external websites as actions.
-   * If only one valid user-initiated action is presented, return only that one. If there are two, return two — do not add filler.
-   * Do not guess actions based on generic labels like “Start” or “More info” unless context makes the action clear.
-   * The action description must be a full user story and not "Start doing ...".
+   * A concise sentence describing the core purpose of the site or web app.
+   * Use plain, natural language — no slogans, no fluff.
+   * Example: \`"Buy and manage running gear through an online store."\`
 
-## Example output
+2. **Login Availability**
+
+   * Return \`true\` if elements like *Sign in*, *Log in*, *Sign up*, *Create account*, or OAuth buttons are found.
+   * Otherwise, return \`false\`.
+
+3. **Actions (1 to 5)**
+
+   * List concrete, **user-completable** actions that a new visitor can take **without logging in**.
+   * Each action must have:
+
+     * \`name\`: A short, verb-led action (e.g., \`"Create a newborn visit page"\`).
+     * \`description\`: A **specific**, **realistic** scenario that can be completed without login.
+     * \`done\`: A statement describing when the task is considered complete by the user.
+
+---
+
+## Writing Rules
+
+✓ Use **direct verbs**:
+  • "Create a page"
+  • "Buy a product"
+  • "Compare items"
+  • "Book an appointment"
+✘ **Do NOT** use weak, vague verbs like:
+  • "Start creating..."
+  • "Learn more"
+  • "Get started"
+  • "Access features"
+
+✓ Actions must be **clearly described** and **user-completable**
+✘ Do NOT pad with vague or incomplete flows like "Start exploring"
+✘ Do NOT include static reading as an action (e.g., reading About pages)
+✘ Do NOT infer features based on UI labels unless clearly described
+
+✓ Respect the maximum of 5 actions — **not approximate**
+✘ Do NOT add filler actions to reach 5 — return only valid actions
+
+✓ **All outputs must be in English**, regardless of site language
+
+✓ NEVER include:
+  • Cookie banners
+  • Privacy policies
+  • Legal links
+  • External link actions
+
+---
+
+### Example Output
 
 \`\`\`json
 {
-  "purpose": "Buy and manage running gear through an online store.",
+  "purpose": "Create and share visit schedules for newborns.",
   "login_available": true,
   "actions": [
     {
-      "name": "Buy running shoes",
-      "description": "Select a suitable pair of running shoes, choose a size, and complete checkout with online payment.",
-      "done": "The scenario is done when the order confirmation is displayed."
+      "name": "Create a newborn visit page",
+      "description": "Set up a personalized visit page and generate a unique shareable link for guests to book time slots.",
+      "done": "The page is created and the link is visible to the user."
     },
     {
-      "name": "Compare running gear",
-      "description": "Browse the catalog, filter products by category or price, and compare multiple running gear models side by side.",
-      "done": "The scenario is done when a comparison summary is visible."
-    },
-    {
-      "name": "Create customer account",
-      "description": "Register as a new customer by entering personal details, choosing a password, and confirming via email or SMS.",
-      "done": "The scenario is done when the user is logged into their new account."
+      "name": "Preview the visit schedule",
+      "description": "View the visit schedule as it appears to guests, including booked and available time slots.",
+      "done": "The preview page is shown."
     }
   ]
 }
 \`\`\`
-
-## Constraints
-
-* The "purpose" and "actions" fields must always be written in English, regardless of the site language.
-* If you're uncertain about an action, omit it rather than make assumptions.
-* You are a neutral observer — not a marketer or advocate.
-* Ignore cookie banners, privacy policies, terms & conditions, and legal links; never list them as user actions.
 `;
 
 export const ActionSchema = z.object({
   name: z
     .string()
-    .describe("A short name of the user action, 8–15 words long."),
+    .describe("A short name of the user action (8–15 words)"),
   description: z
     .string()
-    .describe("The full (expected) user story following the initial action, max ~50 words."),
+    .describe("The full (expected) user story following the initial action (10-40 words)"),
   done: z
     .string()
-    .describe('"The scenario is done when ...", max ~20 words.'),
+    .describe('"The scenario is done when ..." (10-20 words)'),
 });
 
 export type Action = z.infer<typeof ActionSchema>;
@@ -88,7 +113,7 @@ export type Action = z.infer<typeof ActionSchema>;
 export const AssessmentSchema = z.object({
   purpose: z
     .string()
-    .describe("Concise sentence describing the primary purpose of a user visiting the site/app (max ~50 words)."),
+    .describe("Concise sentence describing the primary purpose of a user visiting the site/app (25-50 words)"),
   loginAvailable: z
     .boolean()
     .describe("True if login or sign-up is visible on the page; otherwise false."),
