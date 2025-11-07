@@ -52,7 +52,7 @@ export default function Home() {
           <div className={styles.grid}>
             <div className={styles.card}>
               <i className={`pi pi-sitemap ${styles.cardIcon}`} aria-hidden="true"></i>
-              <h3>Gherkin, generated.</h3>
+              <h3>E2E tests, generated<span>.</span></h3>
               <p>
                 Point us at your staging site. We map flows, identify critical
                 paths and draft clean Gherkin scenarios you can commit on day one.
@@ -60,7 +60,7 @@ export default function Home() {
             </div>
             <div className={styles.card}>
               <i className={`pi pi-list-check ${styles.cardIcon}`} aria-hidden="true"></i>
-              <h3>Reproduce, report, recover.</h3>
+              <h3>Reproduce, report, recover<span>.</span></h3>
               <p>
                 Turn vague “it’s broken” into precise, repeatable steps with
                 screenshots, traces and a ready‑to‑run failing test attached.
@@ -68,7 +68,7 @@ export default function Home() {
             </div>
             <div className={styles.card}>
               <i className={`pi pi-lightbulb ${styles.cardIcon}`} aria-hidden="true"></i>
-              <h3>BDD clarity on red builds.</h3>
+              <h3>BDD clarity on red builds<span>.</span></h3>
               <p>
                 When a spec fails, we explain the why — which step, which rule,
                 and the state the app was in — so you can fix, not forage.

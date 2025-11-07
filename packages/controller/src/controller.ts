@@ -15,7 +15,7 @@ export class Controller {
   private constructor(
     private browser: Browser,
     private world: World,
-    private journal: Journal,
+    readonly journal: Journal,
   ) {}
 
   static async launch(options: ControllerOptions = {}): Promise<Controller> {

@@ -26,7 +26,7 @@ export const type = When(
     await el.pressSequentially(value, { delay: 200, timeout: TIMEOUT });
     await sleep(DELAY);
   },
-  "Use with caution; prefer `fill` above `type`",
+  "hidden",
 );
 
 export const select = When("I select {string} in {locator}", async ({ page }, value: string, selector: string) => {
