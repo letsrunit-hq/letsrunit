@@ -46,7 +46,7 @@ async function readOption(limit: number): Promise<number> {
     const opt = key >= '0' && key <= '9' ? Number(key) : null;
 
     if (!opt || opt > limit) {
-      process.stdout.write('Invalid option selected\n');
+      process.stdout.write('\x1b[33mInvalid option selected\x1b[0m\n');
       continue;
     }
 
