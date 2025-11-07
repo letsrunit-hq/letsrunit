@@ -11,12 +11,21 @@ export async function locator(page: Page, selector: string): Promise<Locator> {
 
   // Try to extract role and name from a selector like:
   //   role=switch[name="Adres tonen"i]
-  const match = selector.match(/^role=(\w+)\s*\[name="([^"]+)"i?](.*)$/i);
-  if (match) {
-    const [, role, name, rest] = match;
+  const matchRole = selector.match(/^role=(\w+)\s*\[name="([^"]+)"i?](.*)$/i);
+  if (matchRole) {
+    const [, role, name, rest] = matchRole;
     const fallbackSelector = `text=${name} >> .. >> role=${role}${rest}`;
     const fallback = page.locator(fallbackSelector);
 
+    if (await fallback.count()) return fallback;
+  }
+
+  // Try alternatives if field is not found
+  const matchField = selector.match(/^field="([^"]+)"i?$/i);
+  if (matchField) {
+    const [, field] = matchField;
+
+    const fallback = page.locator(`#${field} > input`);
     if (await fallback.count()) return fallback;
   }
 

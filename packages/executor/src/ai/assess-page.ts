@@ -78,34 +78,40 @@ Extract the following:
 
 \`\`\`json
 {
-  "purpose": "Create and share visit schedules for newborns.",
+  "purpose": "Buy and manage running gear through an online store.",
   "login_available": true,
   "actions": [
     {
-      "name": "Create a newborn visit page",
-      "description": "Set up a personalized visit page and generate a unique shareable link for guests to book time slots.",
-      "done": "The page is created and the link is visible to the user."
+      "name": "Buy running shoes",
+      "description": "Select a suitable pair of running shoes, choose a size, and complete checkout with online payment.",
+      "done": "The order confirmation is displayed."
     },
     {
-      "name": "Preview the visit schedule",
-      "description": "View the visit schedule as it appears to guests, including booked and available time slots.",
-      "done": "The preview page is shown."
+      "name": "Compare running gear models",
+      "description": "Browse the catalog, filter products by category or price, and compare multiple running gear models side by side.",
+      "done": "A comparison summary is visible."
+    },
+    {
+      "name": "Use size guide to determine shoe size",
+      "description": "Open the size guide from a product page to determine the correct shoe size before purchase.",
+      "done": "The size guide is displayed with sizing information."
     }
   ]
 }
+
 \`\`\`
 `;
 
 export const ActionSchema = z.object({
   name: z
     .string()
-    .describe("A short name of the user action (8–15 words)"),
+    .describe("A short name of the user action (3–8 words)"),
   description: z
     .string()
-    .describe("The full (expected) user story following the initial action (10-40 words)"),
+    .describe("The full (expected) user story following the initial action (10-30 words)"),
   done: z
     .string()
-    .describe('"The scenario is done when ..." (10-20 words)'),
+    .describe("A short statement describing the visible or logical end condition confirming successful completion (8–15 words)."),
 });
 
 export type Action = z.infer<typeof ActionSchema>;
@@ -113,7 +119,7 @@ export type Action = z.infer<typeof ActionSchema>;
 export const AssessmentSchema = z.object({
   purpose: z
     .string()
-    .describe("Concise sentence describing the primary purpose of a user visiting the site/app (25-50 words)"),
+    .describe("Concise sentence describing the primary purpose of a user visiting the site/app (20-50 words)"),
   loginAvailable: z
     .boolean()
     .describe("True if login or sign-up is visible on the page; otherwise false."),

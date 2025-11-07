@@ -7,6 +7,7 @@ import * as z from 'zod';
 import type { ToolSet } from 'ai';
 import { describePage } from './describe-page';
 import ISO6391 from 'iso-639-1';
+import { statusSymbol } from '@letsrunit/utils';
 
 const PROMPT = `You're a QA tester, tasked with writing BDD tests in Gherkin format for a feature.
 
@@ -16,9 +17,10 @@ You will receive the page content from the user. Your job is to:
 
 ## Completion Criteria
 
-Only call \`publish()\` if the **user goal has been met**, based on the scenario description. You must:
+Only call \`publish()\` if the **user goal has been met**, based on the definition of done described in the scenario.
+You must:
 1. Verify that all actions required to achieve the user story are complete.
-2. Confirm the presence of a final UI state (e.g. confirmation message, generated link, visible output).
+2. Confirm the presence of a final UI state (e.g. confirmation message, generated link, visible output) in the HTML.
 
 **If these conditions are not met, do NOT call \`publish()\` yet. Continue adding relevant \`When\` steps.**
 
@@ -70,7 +72,6 @@ For a feature like "Create a personal newborn visit invitation and booking page"
 - A button is clicked to generate the page
 - A shareable link is visible on screen
 Only then may you call \`publish()\`.
-
 `;
 
 interface Options {
@@ -94,59 +95,96 @@ function sanitizeResponse(response: string) {
   return response.replace(/`raw=([^`]+)`/g, '`$1`');
 }
 
+async function generateNextSteps(
+  system: { template: string, vars: { [key: string]: any } },
+  feature: Feature,
+  steps: string[],
+  content: string,
+  userMessage: string | null
+): Promise<string[]> {
+  const messages = [
+    { role: 'assistant' as const, content: writeFeature({ ...feature, steps }) },
+    { role: 'user' as const, content },
+  ];
+
+  const response = await generate(system, messages, { tools, model: 'medium', reasoningEffort: 'low' });
+  if (!response) return [];
+
+  const sanitized = sanitizeResponse(response);
+  const { steps: responseSteps } = parseFeature(sanitized);
+  const newSteps = deltaSteps(steps, responseSteps);
+
+  if (newSteps.length === 0) {
+    console.warn("No new steps. Should have called `publish` tool")
+  }
+
+  return newSteps;
+}
+
+function determineThenSteps(nextPage: Snapshot, currentUrl: string): string[] {
+  if (nextPage.url !== currentUrl) {
+    const { path } = splitUrl(nextPage.url);
+    return [`Then I should be on page "${path}"`];
+  }
+
+  // TODO: Determine if something significant has changed on the page.
+  return [];
+}
+
 export async function generateFeature({ controller, page, feature }: Options): Promise<Feature> {
   const whenSteps = controller.listSteps('When');
 
   let runCount = 0;
   let content = page.content ?? await describePage(page, 'html');
   let currentUrl = page.url;
+  let userMessage: string | null = null;
   const language = page.lang && (ISO6391.getName(page.lang.substring(0, 2)) || page.lang);
 
+  const system = {
+    template: PROMPT,
+    vars: {
+      steps: whenSteps,
+      language,
+    },
+  };
   const steps = [...feature.steps];
 
-  await controller.run(writeFeature(feature));
+  await controller.run(writeFeature({ ...feature, steps: feature.background ?? [], background: undefined }));
 
   do {
-    const messages = [
-      { role: 'assistant' as const, content: writeFeature({ ...feature, steps }) },
-      { role: 'user' as const, content },
-    ];
+    runCount++;
+    const nextSteps = await generateNextSteps(system, feature, steps, content, userMessage);
+    if (nextSteps.length === 0) break;
 
-    const system = {
-      template: PROMPT,
-      vars: {
-        steps: whenSteps,
-        language,
-      },
-    };
+    const next = writeFeature({ name: 'continue', steps: nextSteps });
+    const { page: nextPage, status, steps: runSteps, reason: runFailure } = await controller.run(next);
 
-    const response = await generate(system, messages, { tools, model: 'medium', reasoningEffort: 'low' });
-    if (!response) break;
+    // If the run failed for the first time; try again
+    if (status === 'failure' && userMessage === null) {
+      userMessage = [
+        ...runSteps.map((s) => `${statusSymbol(s.status)} ${s.text}`),
+        '',
+        runFailure,
+      ].join('\n');
+      continue;
+    }
 
-    const sanitized = sanitizeResponse(response);
-
-    const { steps: responseSteps } = parseFeature(sanitized);
-    const newSteps = deltaSteps(steps, responseSteps);
-    if (newSteps.length === 0) {
-      console.warn("No new steps. Should have called `publish` tool")
+    // If the run failed for the second time in a row
+    if (status === 'failure') {
+      steps.push(...runSteps.filter((s) => s.status === 'success').map(({text}) => text));
+      await controller.journal.error("Failed to generate feature, because the run failed twice in a row");
       break;
     }
 
-    const next = writeFeature({ steps: newSteps });
-
-    const { page: nextPage } = await controller.run(next);
     content = await describePage(nextPage, 'html');
 
-    if (nextPage.url !== currentUrl) {
-      const { path } = splitUrl(nextPage.url);
-      newSteps.push(`Then I should be on page "${path}"`);
-      currentUrl = nextPage.url;
-    } else {
-      // TODO: Determine if something significant has changed on the page.
-    }
+    steps.push(
+      ...nextSteps,
+      ...determineThenSteps(nextPage, currentUrl),
+    );
+    userMessage = null;
+    currentUrl = nextPage.url;
 
-    steps.push(...newSteps);
-    runCount++;
   } while (true);
 
   return { ...feature, steps, comment: undefined };

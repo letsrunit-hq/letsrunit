@@ -52,7 +52,7 @@ export default async function explore(
         page: { ...page, lang: pageInfo.lang },
         feature: {
           ...action,
-          comment: action.done,
+          comment: `Definition of done: ${action.done}`,
           background: steps,
           steps: [],
         },

@@ -1,7 +1,7 @@
 import type { Sink, JournalEntry } from '../types';
 import { cursorUp, cursorLeft, eraseDown } from 'ansi-escapes';
 import YAML from 'yaml';
-import { statusSymbol } from '../utils/status-symbol';
+import { statusSymbol } from '@letsrunit/utils';
 
 interface CliSinkOptions {
   stream?: NodeJS.WriteStream;
