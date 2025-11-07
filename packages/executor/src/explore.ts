@@ -32,13 +32,15 @@ export default async function explore(
   const controller = await Controller.launch({ headless: opts.headless, baseURL: base, journal });
 
   try {
-    const { page } = await controller.run(writeFeature({ name: "Explore website", steps }));
+    const { page } = await controller.run(writeFeature({ name: `Explore website "${base}"`, steps }));
     const pageInfo = await extractPageInfo(page);
 
     const content = await journal.do(
       `Reading page "${pageInfo.title ?? pageInfo.url}"`,
       () => describePage({ ...page, info: pageInfo }, 'markdown'),
     );
+
+    await journal.debug(content);
 
     const { actions, ...appInfo } = await journal.do(
       'Determining user stories',
