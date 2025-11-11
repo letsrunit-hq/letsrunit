@@ -50,21 +50,16 @@ The interaction follows this loop:
 assistant: Gherkin feature
 user: HTML page snapshot
 assistant: add new \`When\` steps if needed
-user: more HTML (or no change)
+user: new HTML page snapshot or BDD run error
 assistant: continue or call \`publish()\` if scenario goal is met
 
 Do not add \`Given\` or \`Then\` steps.
+Do not output the current feature without adding steps
 
 📌 **Special Rules**:
-- Do not add further steps once a \`link\` is clicked (indicating page navigation).
-- Do not add steps for elements that are not (yet) visible on the page.
+- Do not add further steps once a \`link\` is clicked (indicating page navigation)
+- Do not add \`When\` steps for elements that are not visible (yet)
 {{#language}}- Use the {{language}} locale for number and date formatting{{/language}}
-
-📌 **Example Completion Criteria**:
-- For "Buy a pair of running shoes", ensure that payment is completed and a confirmation appears.
-- For "Sign up for a customer account", ensure that a welcome message or user dashboard is shown.
-- For "Start a monthly subscription", ensure that the account page shows an active subscription.
-Only then may you call \`publish()\`.
 `;
 
 interface Options {
