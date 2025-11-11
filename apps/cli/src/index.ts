@@ -6,9 +6,15 @@ import { runExplore } from './run-explore';
 
 const program = new Command();
 
-function createJournal({ verbose, silent }: { verbose: boolean, silent: boolean }) {
+interface JournalOptions {
+  verbose: boolean;
+  silent: boolean;
+  artifactPath?: string;
+}
+
+function createJournal({ verbose, silent, artifactPath }: JournalOptions) {
   const verbosity = verbose ? 3 : silent ? 0 : 1;
-  return new Journal(new CliSink({ verbosity }));
+  return new Journal(new CliSink({ verbosity, artifactPath }));
 }
 
 program
@@ -23,7 +29,7 @@ program
   .option("-s, --silent", "Only output errors", false)
   .option("-o, --save <path>", "Path to save .feature file", '')
   .action(async (target: string, opts: { verbose: boolean, silent: boolean, save: string }) => {
-    const journal = createJournal(opts);
+    const journal = createJournal({ ...opts, artifactPath: opts.save });
 
     const result = await explore(
       target,

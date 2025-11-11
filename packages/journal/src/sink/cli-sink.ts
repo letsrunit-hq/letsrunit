@@ -2,10 +2,13 @@ import type { Sink, JournalEntry } from '../types';
 import { cursorUp, cursorLeft, eraseDown } from 'ansi-escapes';
 import YAML from 'yaml';
 import { statusSymbol } from '@letsrunit/utils';
+import { File } from 'node:buffer';
+import * as fs from 'node:fs/promises';
 
 interface CliSinkOptions {
   stream?: NodeJS.WriteStream;
   verbosity?: number;
+  artifactPath?: string;
 }
 
 function colorize(type: JournalEntry['type'], text: string): string {
@@ -32,12 +35,14 @@ function colorize(type: JournalEntry['type'], text: string): string {
 export class CliSink implements Sink {
   public readonly stream: NodeJS.WriteStream;
   public readonly verbosity: number;
+  public readonly artifactPath: string | undefined;
 
   private entries: JournalEntry[] = [];
 
   constructor(options: CliSinkOptions = {}) {
     this.stream = options.stream ?? process.stdout;
     this.verbosity = options.verbosity ?? 1;
+    this.artifactPath = options.artifactPath;
   }
 
   async publish(...entries: JournalEntry[]): Promise<void> {
@@ -48,6 +53,8 @@ export class CliSink implements Sink {
       if (entry.type === 'title') this.endSection();
 
       this.replace(entry) || this.append(entry);
+
+      await this.storeArtifacts(entry.artifacts);
     }
   }
 
@@ -95,10 +102,6 @@ export class CliSink implements Sink {
     }
 
     if (this.verbosity >= 3) {
-      if (entry.artifacts?.length) {
-        const list = entry.artifacts.map((a) => `- ${a}`);
-        lines.push(colorize('debug', `[Artifacts]\n${list}`));
-      }
       if (entry.meta && Object.values(entry.meta).length && Object.keys(entry.meta).length) {
         const yaml = YAML.stringify(entry.meta).trimEnd();
         lines.push(colorize('debug', `[Meta]\n${yaml}`));
@@ -106,5 +109,14 @@ export class CliSink implements Sink {
     }
 
     return lines.join('\n');
+  }
+
+  private async storeArtifacts(artifacts: File[]) {
+    if (!this.artifactPath || artifacts.length === 0) return;
+
+    for (const artifact of artifacts) {
+      const data = await artifact.bytes();
+      await fs.writeFile(`${this.artifactPath}/${artifact.name}`, data);
+    }
   }
 }

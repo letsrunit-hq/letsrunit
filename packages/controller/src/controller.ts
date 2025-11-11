@@ -2,9 +2,10 @@ import { runner } from './runner';
 import { browse, snapshot } from '@letsrunit/playwright';
 import type { Result, World } from './types';
 import { createFieldEngine, parseFeature } from '@letsrunit/gherkin';
-import { type Browser, type BrowserContextOptions, chromium, selectors } from '@playwright/test';
+import { type Browser, type BrowserContextOptions, chromium, PageScreenshotOptions, selectors } from '@playwright/test';
 import { Journal } from '@letsrunit/journal';
 import { ParsedStep } from '@letsrunit/gherker/src/types';
+import { File } from 'node:buffer';
 
 export interface ControllerOptions extends BrowserContextOptions {
   headless?: boolean;
@@ -43,8 +44,11 @@ export class Controller {
       feature,
       this.world,
       async (step, status, reason) => {
+        const artifacts: File[] = [];
+        if (status === 'success') artifacts.push(await this.screenshot());
+
         await this.journal.batch()
-          .log(step, { type: status })
+          .log(step, { type: status, artifacts })
           .error(reason?.message)
           .flush();
       },
@@ -59,6 +63,11 @@ export class Controller {
     const valid = steps.every((step) => !!step.def);
 
     return { valid, steps };
+  }
+
+  async screenshot(options?: PageScreenshotOptions): Promise<File> {
+    const buffer = await this.world.page.screenshot(options);
+    return new File([buffer], `screenshot-${Date.now()}.png`, { type: 'image/png' });
   }
 
   private async logFeature(feature: string): Promise<void> {
