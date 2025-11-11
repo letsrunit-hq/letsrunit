@@ -6,7 +6,7 @@ import {
   ParameterTypeRegistry,
   RegularExpression,
 } from '@cucumber/cucumber-expressions';
-import type { StepDefinition, Result, StepHandler, StepType, World } from './types';
+import { StepDefinition, Result, StepHandler, StepType, World, ParsedStep } from './types';
 import { ParameterTypeDefinition, sanitizeStepDefinition } from '@letsrunit/gherkin';
 
 type StepHook = (step: string, status: 'success' | 'failure', reason?: Error) => void | Promise<void>;
@@ -56,7 +56,7 @@ export class Runner<TWorld extends World> {
     return def ? `${def.type} ${step.text}` : step.text;
   }
 
-  compile(feature: string, uri = 'inline.feature') {
+  private compile(feature: string, uri = 'inline.feature') {
     const envelopes = generateMessages(feature, uri, SourceMediaType.TEXT_X_CUCUMBER_GHERKIN_PLAIN, {
       newId: () => IdGenerator.uuid().toString(),
       includeGherkinDocument: true,
@@ -68,6 +68,25 @@ export class Runner<TWorld extends World> {
       .map((e) => e.pickle!) as Pickle[];
     if (!pickles.length) throw new Error('No scenarios found');
     return pickles;
+  }
+
+  parse(feature: string): ParsedStep[]  {
+    const pickles = this.compile(feature);
+    if (pickles.length > 1) {
+      throw new Error('Multiple scenarios not supported')
+    }
+
+    const pickle = pickles[0];
+
+    return pickle.steps.map((step) => {
+      const match = this.match(step.text);
+
+      return {
+        text: step.text,
+        def: match?.def ? `${match?.def.type} ${match?.def.source}` : undefined,
+        values: match?.values,
+      };
+    });
   }
 
   async run(

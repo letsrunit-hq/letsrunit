@@ -11,7 +11,7 @@ export interface Feature {
   steps: string[];
 }
 
-export function writeFeature({ name, description, comment, background, steps }: Feature): string {
+export function makeFeature({ name, description, comment, background, steps }: Feature): string {
   const lines = [
     `Feature: ${name ?? ''}`.trim(),
     '',
