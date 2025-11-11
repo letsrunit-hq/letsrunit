@@ -84,6 +84,6 @@ export class Controller {
   listSteps(type?: 'Given' | 'When' | 'Then'): string[] {
     return runner.defs
       .filter((def) => def.comment !== 'hidden' && (!type || def.type === type))
-      .map((def) => `${def.type} ${def.expr.source}` + (def.comment ? `  # ${def.comment}` : ''));
+      .map((def) => `${def.type} ${def.source}` + (def.comment ? `  # ${def.comment}` : ''));
   }
 }

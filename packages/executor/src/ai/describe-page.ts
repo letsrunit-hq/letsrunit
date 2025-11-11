@@ -26,7 +26,8 @@ const PROMPT = `Convert raw HTML into compact Markdown using a limited set of cu
 #### Inside blocks
 
 * Use basic Markdown: headings, bullets, links, images.
-* Prefer flat structure. Nest only when necessary (longer fences, eg \`:::: grid\` inside \`::: section\`).
+* Use longer fences to nest blocks, eg \`:::: form\` inside \`::: section\`.
+* Prefer flat structure.
 
 ## UI hints
 
