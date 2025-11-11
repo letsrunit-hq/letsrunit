@@ -56,4 +56,12 @@ export class JournalBatch {
   failure(message: string | undefined, options: Options = {}): JournalBatch {
     return this.log(message, { ...options, type: 'failure' });
   }
+
+  each<T>(items: Array<T>, fn: (journal: JournalBatch, item: T) => void): JournalBatch {
+    for (const item of items) {
+      fn(this, item);
+    }
+
+    return this;
+  }
 }

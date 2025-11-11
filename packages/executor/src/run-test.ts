@@ -1,5 +1,5 @@
 import { Controller } from '@letsrunit/controller';
-import { writeFeature } from '@letsrunit/gherkin';
+import { makeFeature } from '@letsrunit/gherkin';
 import { Journal, NoSink } from '@letsrunit/journal';
 
 interface RunTestOptions {
@@ -34,7 +34,7 @@ export default async function runTest(
   const controller = await Controller.launch({ headless: opts.headless, baseURL: target, journal });
 
   try {
-    await controller.run(writeFeature({ name: "Explore", steps }));
+    await controller.run(makeFeature({ name: "Explore", steps }));
   } finally {
     await controller.close();
   }

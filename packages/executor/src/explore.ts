@@ -1,7 +1,7 @@
 import type { PageInfo, Result } from './types';
 import { Controller } from '@letsrunit/controller';
 import { describePage } from './ai/describe-page';
-import { type Feature, writeFeature } from '@letsrunit/gherkin';
+import { type Feature, makeFeature } from '@letsrunit/gherkin';
 import { type Assessment, type Action, assessPage } from './ai/assess-page';
 import { generateFeature } from './ai/generate-feature';
 import { Journal } from '@letsrunit/journal';
@@ -32,7 +32,7 @@ export default async function explore(
   const controller = await Controller.launch({ headless: opts.headless, baseURL: base, journal });
 
   try {
-    const { page } = await controller.run(writeFeature({ name: `Explore website "${base}"`, steps }));
+    const { page } = await controller.run(makeFeature({ name: `Explore website "${base}"`, steps }));
     const pageInfo = await extractPageInfo(page);
 
     const content = await journal.do(
@@ -46,6 +46,14 @@ export default async function explore(
       'Determining user stories',
       () => assessPage(content),
     );
+
+    await journal.batch()
+      .debug(Object.entries(appInfo).map(([k, v]) => `${k}: ${v}`).join('\n'))
+      .each(
+        actions,
+        (j, action) => j.debug(`- ${action.name}\n  ${action.description}\n  Definition of done: ${action.done }`),
+      )
+      .flush();
 
     const preparedActions = actions.map((action) => ({
       ...action,

@@ -8,8 +8,6 @@ import { Given, Then } from './wrappers';
 async function openPage(world: World, path: string): Promise<void> {
   const { page } = world;
 
-  if (splitUrl(page.url()).path === path) return; // Already on the page, no implicit reload.
-
   await page.goto(path);
   await waitForIdle(page);
 

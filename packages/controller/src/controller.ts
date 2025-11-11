@@ -4,6 +4,7 @@ import type { Result, World } from './types';
 import { createFieldEngine, parseFeature } from '@letsrunit/gherkin';
 import { type Browser, type BrowserContextOptions, chromium, selectors } from '@playwright/test';
 import { Journal } from '@letsrunit/journal';
+import { ParsedStep } from '@letsrunit/gherker/src/types';
 
 export interface ControllerOptions extends BrowserContextOptions {
   headless?: boolean;
@@ -51,6 +52,13 @@ export class Controller {
     const page = await snapshot(this.world.page);
 
     return { ...result, page };
+  }
+
+  validate(feature: string): { valid: boolean, steps: ParsedStep[] } {
+    const steps = runner.parse(feature);
+    const valid = steps.every((step) => !!step.def);
+
+    return { valid, steps };
   }
 
   private async logFeature(feature: string): Promise<void> {

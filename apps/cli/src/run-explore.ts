@@ -1,5 +1,5 @@
 import { explore } from '@letsrunit/executor';
-import { writeFeature } from '@letsrunit/gherkin';
+import { makeFeature } from '@letsrunit/gherkin';
 import * as fs from 'node:fs/promises';
 
 type ProcessCallback = Parameters<typeof explore>[2];
@@ -76,7 +76,7 @@ export async function runExplore(info: AppInfo, actions: Actions, storagePath?: 
 
     if (storagePath) {
       // TODO: Get a descriptive filename.
-      await fs.writeFile(storagePath + `/test-${Date.now()}.feature`, writeFeature(feature));
+      await fs.writeFile(storagePath + `/test-${Date.now()}.feature`, makeFeature(feature));
     }
   }
 }
