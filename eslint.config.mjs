@@ -25,8 +25,15 @@ export default [
   // Next-specific rules for web
   ...compat.extends("next/core-web-vitals", "next/typescript").map(cfg => ({
     ...cfg,
-    files: ["apps/web/**/*.{js,jsx,ts,tsx}"]
+    files: ["apps/web/**/*.{ts,tsx}"]
   })),
+
+  {
+    files: ["**/*.test.ts"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off"
+    }
+  },
 
   eslintConfigPrettier
 ];

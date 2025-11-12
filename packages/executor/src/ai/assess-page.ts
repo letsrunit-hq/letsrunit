@@ -15,8 +15,6 @@ Your task is to **understand the purpose** of the site and list what a **new vis
 You must rely **strictly** on these inputs.
 Do **not invent** features, flows, or pages that aren’t clearly present or implied.
 
----
-
 ## Actions to Perform
 
 Extract the following:
@@ -34,14 +32,13 @@ Extract the following:
 
 3. **Actions (1 to 5)**
 
-   * List concrete, **user-completable** actions that a new visitor can take **without logging in**.
+   * List **only** actions that a **new visitor can initiate directly** from the visible content — without logging in or navigating to other pages.
+   * Ignore descriptions of multi-step processes unless **step 1 is clearly user-initiable on the current page**.
    * Each action must have:
 
-     * \`name\`: A short, verb-led action (e.g., \`"Create a newborn visit page"\`).
-     * \`description\`: A **specific**, **realistic** scenario that can be completed without login.
-     * \`done\`: A statement describing when the task is considered complete by the user.
-
----
+     * \`name\`: A short, verb-led label (e.g., \`"Create a newborn visit page"\`).
+     * \`description\`: A clear, realistic scenario that **begins and ends on the current page** or with a **clear visible CTA**.
+     * \`done\`: When the visitor would consider the task complete **on this page or immediately after clicking**.
 
 ## Writing Rules
 
@@ -72,8 +69,6 @@ Extract the following:
   • Legal links
   • External link actions
 
----
-
 ### Example Output
 
 \`\`\`json
@@ -98,7 +93,6 @@ Extract the following:
     }
   ]
 }
-
 \`\`\`
 `;
 
