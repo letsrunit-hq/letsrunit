@@ -1,10 +1,6 @@
-import { explore } from '@letsrunit/executor';
+import type { AppInfo, Action } from '@letsrunit/executor';
 import { makeFeature } from '@letsrunit/gherkin';
 import * as fs from 'node:fs/promises';
-
-type ProcessCallback = Parameters<typeof explore>[2];
-type AppInfo = Parameters<ProcessCallback>[0];
-type Actions = Parameters<ProcessCallback>[1];
 
 function disableEcho() {
   process.stdout.write('\x1B[?25l'); // hide cursor (optional)
@@ -54,7 +50,7 @@ async function readOption(limit: number): Promise<number> {
   }
 }
 
-export async function runExplore(info: AppInfo, actions: Actions, storagePath?: string) {
+export async function runExplore(info: AppInfo, actions: Action[], storagePath?: string) {
   const { stdout } = process;
 
   while (actions.length > 0) {

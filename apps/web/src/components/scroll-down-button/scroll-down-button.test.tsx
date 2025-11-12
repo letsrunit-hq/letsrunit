@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { ScrollDownButton } from './ScrollDownButton';
+import { ScrollDownButton } from './scroll-down-button';
 
 describe('ScrollDownButton', () => {
   it('renders button with icon', () => {

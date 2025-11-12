@@ -13,6 +13,7 @@
   },
   "packageManager": "yarn@4.10.3",
   "dependencies": {
+    "@supabase/supabase-js": "^2.81.1",
     "ansi-escapes": "^7.1.1",
     "yaml": "^2.8.1"
   },

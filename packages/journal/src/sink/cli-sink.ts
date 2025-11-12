@@ -3,12 +3,15 @@ import { cursorUp, cursorLeft, eraseDown } from 'ansi-escapes';
 import YAML from 'yaml';
 import { statusSymbol } from '@letsrunit/utils';
 import { File } from 'node:buffer';
-import * as fs from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
+
+type WriteFile = typeof writeFile;
 
 interface CliSinkOptions {
   stream?: NodeJS.WriteStream;
   verbosity?: number;
   artifactPath?: string;
+  writeFile?: WriteFile;
 }
 
 function colorize(type: JournalEntry['type'], text: string): string {
@@ -36,6 +39,7 @@ export class CliSink implements Sink {
   public readonly stream: NodeJS.WriteStream;
   public readonly verbosity: number;
   public readonly artifactPath: string | undefined;
+  private readonly writeFile: WriteFile;
 
   private entries: JournalEntry[] = [];
 
@@ -43,6 +47,7 @@ export class CliSink implements Sink {
     this.stream = options.stream ?? process.stdout;
     this.verbosity = options.verbosity ?? 1;
     this.artifactPath = options.artifactPath;
+    this.writeFile = options.writeFile ?? writeFile;
   }
 
   async publish(...entries: JournalEntry[]): Promise<void> {
@@ -116,7 +121,7 @@ export class CliSink implements Sink {
 
     for (const artifact of artifacts) {
       const data = await artifact.bytes();
-      await fs.writeFile(`${this.artifactPath}/${artifact.name}`, data);
+      await this.writeFile(`${this.artifactPath}/${artifact.name}`, data);
     }
   }
 }

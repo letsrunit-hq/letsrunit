@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { UrlForm } from './UrlForm';
+import { UrlForm } from './url-form';
 
 describe('UrlForm', () => {
   it('renders input and button and calls onSubmit', () => {

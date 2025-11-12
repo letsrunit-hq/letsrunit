@@ -1,8 +1,8 @@
-import type { PageInfo, Result } from './types';
+import type { AppInfo, Result } from './types';
 import { Controller } from '@letsrunit/controller';
 import { describePage } from './ai/describe-page';
 import { type Feature, makeFeature } from '@letsrunit/gherkin';
-import { type Assessment, type Action, assessPage } from './ai/assess-page';
+import { type Action, assessPage } from './ai/assess-page';
 import { generateFeature } from './ai/generate-feature';
 import { Journal } from '@letsrunit/journal';
 import { splitUrl } from '@letsrunit/utils';
@@ -13,13 +13,12 @@ interface ExploreOptions {
   journal?: Journal;
 }
 
-type AppInfo = PageInfo & Omit<Assessment, 'actions'>;
-type PreparedAction = Action & { run: () => Promise<Feature> };
+export type PreparedAction = Action & { run: () => Promise<Feature> };
 
 export default async function explore(
   target: string,
   opts: ExploreOptions = {},
-  process: (info: AppInfo, actions: PreparedAction[]) => Promise<void>,
+  process: (info: AppInfo, actions: PreparedAction[]) => Promise<any>,
 ): Promise<Result> {
   const { base, path } = splitUrl(target);
 

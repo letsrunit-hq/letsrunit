@@ -110,11 +110,15 @@ function invalidToMessages(
   ];
 }
 
-function failureToMessages(feature: Feature | string, runSteps: Result['steps'], runFailure?: Error): ModelMessage[] {
+async function failureToMessages(feature: Feature | string, result: Result): Promise<ModelMessage[]> {
   const userMessage = [
-    ...runSteps.map((s) => `${statusSymbol(s.status)} ${s.text}`),
+    ...result.steps.map((s) => `${statusSymbol(s.status)} ${s.text}`),
     '',
-    runFailure,
+    result.reason,
+    '',
+    '---',
+    '',
+    await describePage(result.page, 'html'),
   ].join('\n');
 
   return [
@@ -180,13 +184,14 @@ export async function generateFeature({ controller, page, feature }: Options): P
     }
 
     // Run BDD steps
-    const { page: nextPage, status, steps: runSteps, reason: runFailure } = await controller.run(next);
+    const result = await controller.run(next);
+    const { page: nextPage, status, steps: runSteps, reason: runFailure } = result;
 
     steps.push(...runSteps.filter((s) => s.status === 'success').map(({text}) => text));
 
     // The run failed; try again
     if (status === 'failure') {
-      messages.push(...failureToMessages(response!, runSteps, runFailure));
+      messages.push(...(await failureToMessages(response!, result)));
       continue;
     }
 

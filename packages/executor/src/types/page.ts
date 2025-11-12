@@ -26,3 +26,11 @@ export interface PageInfo {
   /** Canonical or resolved page URL */
   url: string;
 }
+
+export interface AppInfo extends PageInfo {
+  /** Application purpose */
+  purpose: string;
+
+  /** Detected login or registration */
+  loginAvailable: boolean;
+}

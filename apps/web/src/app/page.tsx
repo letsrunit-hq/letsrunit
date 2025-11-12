@@ -1,9 +1,9 @@
 import styles from "./page.module.css";
 import Logo from "../assets/logo.svg";
 import Image from "next/image";
-import { UrlForm } from "../components/UrlForm";
-import { ScrollDownButton } from "../components/ScrollDownButton";
-import { BackToTopButton } from "../components/BackToTopButton";
+import { UrlForm } from "../components/url-form";
+import { ScrollDownButton } from "../components/scroll-down-button";
+import { BackToTopButton } from "../components/back-to-top-button";
 
 export default function Home() {
   return (

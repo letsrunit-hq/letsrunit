@@ -3,6 +3,11 @@ import { NodePlopAPI } from "plop";
 export default function (plop: NodePlopAPI) {
   // -------- Helpers --------
   const ensureAppPath = (p) => p.replace(/^\/+|\/+$/g, '');
+  const toKebab = (s: string) => String(s)
+    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+    .replace(/[_\s]+/g, '-')
+    .replace(/-+/g, '-')
+    .toLowerCase();
 
   // -------- React Component --------
   plop.setGenerator('component', {
@@ -14,7 +19,7 @@ export default function (plop: NodePlopAPI) {
     actions: [
       {
         type: 'add',
-        path: '{{baseDir}}/{{pascalCase name}}/{{pascalCase name}}.tsx',
+        path: '{{baseDir}}/{{dashCase name}}/{{dashCase name}}.tsx',
         template: `import React from 'react';
 
 export type {{pascalCase name}}Props = {
@@ -30,10 +35,10 @@ export default {{pascalCase name}};`,
       },
       {
         type: 'add',
-        path: '{{baseDir}}/{{pascalCase name}}/{{pascalCase name}}.test.tsx',
+        path: '{{baseDir}}/{{dashCase name}}/{{dashCase name}}.test.tsx',
         template: `import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { {{pascalCase name}} } from './{{pascalCase name}}';
+import { {{pascalCase name}} } from './{{dashCase name}}';
 
 describe('{{pascalCase name}}', () => {
   it('renders', () => {
@@ -45,8 +50,8 @@ describe('{{pascalCase name}}', () => {
       },
       {
         type: 'add',
-        path: '{{baseDir}}/{{pascalCase name}}/index.ts',
-        template: `export * from './{{pascalCase name}}';`,
+        path: '{{baseDir}}/{{dashCase name}}/index.ts',
+        template: `export * from './{{dashCase name}}';`,
       },
     ],
   });
@@ -58,19 +63,19 @@ describe('{{pascalCase name}}', () => {
     actions: [
       {
         type: 'add',
-        path: 'app/{{dashCase (path)}}/page.tsx',
+        path: 'src/app/{{kebabPath path}}/page.tsx',
         template: `export default function Page() {
-  return <main>{{dashCase (path)}} page</main>;
+  return <main>{{dashCase path}} page</main>;
 }`,
       },
       {
         type: 'add',
-        path: 'app/{{dashCase (path)}}/page.test.tsx',
+        path: 'src/app/{{kebabPath path}}/page.test.tsx',
         template: `import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import Page from './page';
 
-describe('page {{dashCase (path)}}', () => {
+describe('page {{dashCase path}}', () => {
   it('renders', () => {
     render(<Page />);
   });
@@ -86,19 +91,19 @@ describe('page {{dashCase (path)}}', () => {
     actions: [
       {
         type: 'add',
-        path: 'app/{{dashCase (path)}}/layout.tsx',
+        path: 'src/app/{{kebabPath path}}/layout.tsx',
         template: `export default function Layout({ children }: { children: React.ReactNode }) {
-  return <section data-segment="{{dashCase (path)}}">{children}</section>;
+  return <section data-segment="{{appPath path}}">{children}</section>;
 }`,
       },
       {
         type: 'add',
-        path: 'app/{{dashCase (path)}}/layout.test.tsx',
+        path: 'src/app/{{kebabPath path}}/layout.test.tsx',
         template: `import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import Layout from './layout';
 
-describe('layout {{dashCase (path)}}', () => {
+describe('layout {{appPath path}}', () => {
   it('wraps children', () => {
     render(<Layout><div>child</div></Layout>);
   });
@@ -114,7 +119,7 @@ describe('layout {{dashCase (path)}}', () => {
     actions: [
       {
         type: 'add',
-        path: 'app/{{dashCase (path)}}/route.ts',
+        path: 'src/app/{{kebabPath path}}/route.ts',
         template: `export async function GET() {
   return new Response(JSON.stringify({ ok: true }), {
     headers: { 'content-type': 'application/json' },
@@ -123,7 +128,7 @@ describe('layout {{dashCase (path)}}', () => {
       },
       {
         type: 'add',
-        path: 'app/{{dashCase (path)}}/route.test.ts',
+        path: 'src/app/{{kebabPath path}}/route.test.ts',
         template: `import { describe, it, expect } from 'vitest';
 import { GET } from './route';
 
@@ -149,7 +154,7 @@ describe('route {{dashCase (path)}}', () => {
     actions: [
       {
         type: 'add',
-        path: '{{baseDir}}/use{{pascalCase name}}.ts',
+        path: '{{baseDir}}/use-{{dashCase name}}.ts',
         template: `import { useState } from 'react';
 
 export function use{{pascalCase name}}(initial = false) {
@@ -161,10 +166,10 @@ export default use{{pascalCase name}};`,
       },
       {
         type: 'add',
-        path: '{{baseDir}}/use{{pascalCase name}}.test.ts',
+        path: '{{baseDir}}/use-{{dashCase name}}.test.ts',
         template: `import { describe, it, expect } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { use{{pascalCase name}} } from './use{{pascalCase name}}';
+import { use{{pascalCase name}} } from './use-{{dashCase name}}';
 
 describe('use{{pascalCase name}}', () => {
   it('toggles', () => {
@@ -187,7 +192,7 @@ describe('use{{pascalCase name}}', () => {
     actions: [
       {
         type: 'add',
-        path: '{{baseDir}}/{{pascalCase name}}Context.tsx',
+        path: '{{baseDir}}/{{dashCase name}}-context.tsx',
         template: `import React, { createContext, useContext, useState } from 'react';
 
 type {{pascalCase name}}Value = { value: string; setValue: (v: string) => void };
@@ -206,10 +211,10 @@ export function use{{pascalCase name}}() {
       },
       {
         type: 'add',
-        path: '{{baseDir}}/{{pascalCase name}}Context.test.tsx',
+        path: '{{baseDir}}/{{dashCase name}}-context.test.tsx',
         template: `import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { {{pascalCase name}}Provider, use{{pascalCase name}} } from './{{pascalCase name}}Context';
+import { {{pascalCase name}}Provider, use{{pascalCase name}} } from './{{dashCase name}}-context';
 
 function Demo() {
   const { value } = use{{pascalCase name}}();
@@ -236,7 +241,7 @@ describe('{{pascalCase name}}Context', () => {
     actions: [
       {
         type: 'add',
-        path: '{{baseDir}}/{{camelCase name}}.ts',
+        path: '{{baseDir}}/{{dashCase name}}.ts',
         template: `'use server';
 
 export async function {{camelCase name}}(...args: any[]) {
@@ -247,9 +252,9 @@ export async function {{camelCase name}}(...args: any[]) {
       },
       {
         type: 'add',
-        path: '{{baseDir}}/{{camelCase name}}.test.ts',
+        path: '{{baseDir}}/__tests__/{{dashCase name}}.test.ts',
         template: `import { describe, it, expect } from 'vitest';
-import { {{camelCase name}} } from './{{camelCase name}}';
+import { {{camelCase name}} } from '../{{dashCase name}}';
 
 describe('action {{camelCase name}}', () => {
   it('returns ok: true', async () => {
@@ -271,16 +276,16 @@ describe('action {{camelCase name}}', () => {
     actions: [
       {
         type: 'add',
-        path: '{{baseDir}}/{{camelCase name}}.ts',
+        path: '{{baseDir}}/{{dashCase name}}.ts',
         template: `export function {{camelCase name}}(...args: any[]) {
   // implement lib {{camelCase name}}
 }`,
       },
       {
         type: 'add',
-        path: '{{baseDir}}/{{camelCase name}}.test.ts',
+        path: '{{baseDir}}/__tests__/{{dashCase name}}.test.ts',
         template: `import { describe, it, expect } from 'vitest';
-import { {{camelCase name}} } from './{{camelCase name}}';
+import { {{camelCase name}} } from '../{{dashCase name}}';
 
 describe('lib {{camelCase name}}', () => {
   it('is a function', () => {
@@ -291,6 +296,10 @@ describe('lib {{camelCase name}}', () => {
     ],
   });
 
-  // Normalize any path-like prompt
-  plop.setHelper('dashCase', (txt) => ensureAppPath(plop.getHelper('dashCase')(txt)));
+  // Normalize any path-like prompt without overriding default helpers
+  plop.setHelper('appPath', (txt) => ensureAppPath(String(txt)));
+  plop.setHelper('kebabPath', (txt) => {
+    const parts = ensureAppPath(String(txt)).split('/').filter(Boolean);
+    return parts.map((p) => toKebab(p)).join('/');
+  });
 }

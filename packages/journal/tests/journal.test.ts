@@ -25,7 +25,7 @@ describe('Journal', () => {
     const sink = new DummySink();
     const journal = new Journal(sink);
 
-    await journal.log('Hello world');
+    await journal.info('Hello world');
 
     expect(sink.published.length).toBe(1);
     const entry = sink.published[0];

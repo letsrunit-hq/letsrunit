@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { BackToTopButton } from './BackToTopButton';
+import { BackToTopButton } from './back-to-top-button';
 
 describe('BackToTopButton', () => {
   it('renders button', () => {
