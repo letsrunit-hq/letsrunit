@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { JournalEntry } from '../../src';
 import { SupabaseSink } from '../../src/sink/supabase-sink';
 
@@ -38,20 +38,22 @@ describe('SupabaseSink', () => {
   });
 
   it('inserts a log row', async () => {
-    const sink = new SupabaseSink({ client, runId });
+    const sink = new SupabaseSink({ supabase: client, runId });
 
     await sink.publish(makeEntry({ message: 'No files', artifacts: [] }));
 
     expect(fromTableMock).toHaveBeenCalledWith('log_entries');
     expect(insertMock).toHaveBeenCalledTimes(1);
-    expect(insertMock).toBeCalledWith(expect.objectContaining({
-      run_id: runId,
-      type: 'info',
-      message: 'No files',
-      meta: {},
-      artifacts: [],
-      created_at: expect.any(String),
-    }));
+    expect(insertMock).toBeCalledWith(
+      expect.objectContaining({
+        run_id: runId,
+        type: 'info',
+        message: 'No files',
+        meta: {},
+        artifacts: [],
+        created_at: expect.any(String),
+      }),
+    );
 
     // No storage interactions
     expect(storageFromMock).not.toHaveBeenCalled();
@@ -60,7 +62,7 @@ describe('SupabaseSink', () => {
   });
 
   it('uploads artifacts to storage', async () => {
-    const sink = new SupabaseSink({ client, runId, storageBucket: 'logs' });
+    const sink = new SupabaseSink({ supabase: client, runId, bucket: 'logs' });
 
     const bytes = new Uint8Array([1, 2, 3]);
     const artifact: any = { name: 'a.txt', size: bytes.length, bytes: vi.fn().mockResolvedValue(bytes) };
@@ -72,17 +74,17 @@ describe('SupabaseSink', () => {
     expect(uploadMock).toHaveBeenCalledWith(`${runId}/a.txt`, bytes, { upsert: false });
 
     // Insert contains artifacts with public URL
-    expect(insertMock).toBeCalledWith(expect.objectContaining({
-      artifacts: [
-        { name: 'a.txt', url: `https://cdn.example/${runId}/a.txt`, size: bytes.length },
-      ],
-    }));
+    expect(insertMock).toBeCalledWith(
+      expect.objectContaining({
+        artifacts: [{ name: 'a.txt', url: `https://cdn.example/${runId}/a.txt`, size: bytes.length }],
+      }),
+    );
   });
 
   it('skips artifact on upload error and still inserts row', async () => {
     uploadMock.mockResolvedValueOnce({ error: { message: 'fail' } });
 
-    const sink = new SupabaseSink({ client, runId, storageBucket: 'logs' });
+    const sink = new SupabaseSink({ supabase: client, runId, bucket: 'logs' });
 
     const bytes = new Uint8Array([9, 9]);
     const artifact: any = { name: 'bad.bin', size: bytes.length, bytes: vi.fn().mockResolvedValue(bytes) };

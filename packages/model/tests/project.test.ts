@@ -1,10 +1,11 @@
-import { describe, it, expect, vi } from 'vitest';
-import { createProject, updateProject } from '../project';
+import { describe, expect, it } from 'vitest';
+import { createProject, updateProject } from '../src';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 class FakeTableQuery {
-  private table: string;
   public ops: any[];
+  private readonly table: string;
+
   constructor(table: string, ops: any[]) {
     this.table = table;
     this.ops = ops;
@@ -14,7 +15,6 @@ class FakeTableQuery {
     return {} as any;
   }
   update(values: any) {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     return {
       async eq(column: string, value: any) {
@@ -78,7 +78,11 @@ describe('project lib', () => {
   it('updateProject updates only provided fields in snake_case', async () => {
     const supabase = new FakeSupabase() as unknown as SupabaseClient;
 
-    await updateProject('11111111-1111-1111-1111-111111111111', { image: 'https://img', loginAvailable: false }, { supabase });
+    await updateProject(
+      '11111111-1111-1111-1111-111111111111',
+      { image: 'https://img', loginAvailable: false },
+      { supabase },
+    );
 
     const op = (supabase as any).ops.find((o: any) => o.type === 'update' && o.table === 'projects');
     expect(op).toBeTruthy();

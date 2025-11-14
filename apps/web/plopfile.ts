@@ -36,7 +36,8 @@ export default {{pascalCase name}};`,
       {
         type: 'add',
         path: '{{baseDir}}/{{dashCase name}}/{{dashCase name}}.test.tsx',
-        template: `import { describe, it, expect } from 'vitest';
+        template: `import React from 'react';
+import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { {{pascalCase name}} } from './{{dashCase name}}';
 
@@ -64,14 +65,17 @@ describe('{{pascalCase name}}', () => {
       {
         type: 'add',
         path: 'src/app/{{kebabPath path}}/page.tsx',
-        template: `export default function Page() {
+        template: `import React from 'react';
+
+export default function Page() {
   return <main>{{dashCase path}} page</main>;
 }`,
       },
       {
         type: 'add',
         path: 'src/app/{{kebabPath path}}/page.test.tsx',
-        template: `import { describe, it, expect } from 'vitest';
+        template: `import React from 'react';
+import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import Page from './page';
 
@@ -92,14 +96,17 @@ describe('page {{dashCase path}}', () => {
       {
         type: 'add',
         path: 'src/app/{{kebabPath path}}/layout.tsx',
-        template: `export default function Layout({ children }: { children: React.ReactNode }) {
+        template: `import React from 'react';
+
+export default function Layout({ children }: { children: React.ReactNode }) {
   return <section data-segment="{{appPath path}}">{children}</section>;
 }`,
       },
       {
         type: 'add',
         path: 'src/app/{{kebabPath path}}/layout.test.tsx',
-        template: `import { describe, it, expect } from 'vitest';
+        template: `import React from 'react';
+import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import Layout from './layout';
 
@@ -132,7 +139,7 @@ describe('layout {{appPath path}}', () => {
         template: `import { describe, it, expect } from 'vitest';
 import { GET } from './route';
 
-describe('route {{dashCase (path)}}', () => {
+describe('route {{dashCase path}}', () => {
   it('returns ok', async () => {
     const res = await GET();
     expect(res.ok).toBe(true);

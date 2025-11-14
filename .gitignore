@@ -13,3 +13,5 @@ coverage
 
 # Runtime files
 .letsrunit
+.env
+

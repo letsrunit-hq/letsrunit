@@ -1,6 +1,7 @@
 // eslint.config.js (in repo root)
 import { FlatCompat } from "@eslint/eslintrc";
 import eslintConfigPrettier from "eslint-config-prettier";
+import tseslint from "typescript-eslint";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 
@@ -19,21 +20,33 @@ export default [
       "**/coverage/**",
       "**/next-env.d.ts",
       "**/plopfile.ts"
-    ]
+    ],
+  },
+
+  {
+    files: ["**/*.{ts,tsx}"],
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        tsconfigRootDir: __dirname,
+        projectService: true
+      }
+    },
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off"
+    }
   },
 
   // Next-specific rules for web
   ...compat.extends("next/core-web-vitals", "next/typescript").map(cfg => ({
     ...cfg,
-    files: ["apps/web/**/*.{ts,tsx}"]
-  })),
-
-  {
-    files: ["**/*.test.ts"],
+    files: ["apps/web/**/*.{ts,tsx}"],
     rules: {
+      ...cfg.rules,
+      "@next/next/no-html-link-for-pages": "off",
       "@typescript-eslint/no-explicit-any": "off"
     }
-  },
+  })),
 
   eslintConfigPrettier
 ];

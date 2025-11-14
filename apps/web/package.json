@@ -7,13 +7,11 @@
     "start": "next start",
     "plop": "cross-env NODE_OPTIONS='--import tsx' plop --plopfile=plopfile.ts",
     "lint": "eslint",
-    "test": "vitest --environment jsdom",
+    "test": "vitest run --environment jsdom",
+    "test:cov": "vitest run --environment jsdom --coverage",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@google-cloud/firestore": "^7.11.6",
-    "@google-cloud/pubsub": "^5.2.0",
-    "@google-cloud/storage": "^7.17.2",
     "@supabase/supabase-js": "^2.81.1",
     "google-auth-library": "^10.4.0",
     "next": "15.5.5",

@@ -1,7 +1,7 @@
 import styles from "./page.module.css";
 import Logo from "../assets/logo.svg";
 import Image from "next/image";
-import { UrlForm } from "../components/url-form";
+import { ExploreForm } from "../components/explore-form";
 import { ScrollDownButton } from "../components/scroll-down-button";
 import { BackToTopButton } from "../components/back-to-top-button";
 
@@ -23,7 +23,7 @@ export default function Home() {
           <p className={styles.subtitle}>
             Vibe<span>.</span> Run<span>.</span> Test<span>.</span>
           </p>
-          <UrlForm
+          <ExploreForm
             className={styles.formRow}
             inputClassName={styles.input}
             buttonClassName={styles.button}
