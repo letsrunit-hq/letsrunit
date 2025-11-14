@@ -1,29 +1,32 @@
-import type { Sink, JournalEntry } from '../types';
+import type { JournalEntry, Sink } from '../types';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { File } from 'node:buffer';
 
 interface SupabaseSinkOptions {
-  client: SupabaseClient;
+  supabase: SupabaseClient;
   runId: string;
-  storageBucket?: string;
+  tableName: string;
+  bucket?: string;
 }
 
 export class SupabaseSink implements Sink {
   private readonly supabase: SupabaseClient;
   private readonly runId: string;
+  private readonly tableName: string;
   private readonly bucket?: string;
 
   constructor(options: SupabaseSinkOptions) {
-    this.supabase = options.client;
+    this.supabase = options.supabase;
     this.runId = options.runId;
-    this.bucket = options.storageBucket;
+    this.tableName = options.tableName;
+    this.bucket = options.bucket;
   }
 
   async publish(...entries: JournalEntry[]): Promise<void> {
     for (const entry of entries) {
       const artifactList = await this.storeArtifacts(entry.artifacts);
 
-      const { error } = await this.supabase.from('log_entries').insert({
+      const { error } = await this.supabase.from(this.tableName).insert({
         run_id: this.runId,
         type: entry.type,
         message: entry.message,
@@ -52,9 +55,7 @@ export class SupabaseSink implements Sink {
         continue;
       }
 
-      const { data: publicUrl } = this.supabase.storage
-        .from(this.bucket)
-        .getPublicUrl(path);
+      const { data: publicUrl } = this.supabase.storage.from(this.bucket).getPublicUrl(path);
 
       stored.push({
         name: artifact.name,

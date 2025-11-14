@@ -153,7 +153,7 @@ export async function scrubHtml(
     const walker = doc.createTreeWalker(doc, dom.window.NodeFilter.SHOW_COMMENT);
     const toRemove: Comment[] = [];
     let n: Comment | null;
-    // eslint-disable-next-line no-cond-assign
+     
     while ((n = walker.nextNode() as Comment | null)) toRemove.push(n);
     toRemove.forEach((c) => c.parentNode?.removeChild(c));
   }
@@ -206,7 +206,7 @@ function normalizeWhitespace(root: Element) {
   const changes: Text[] = [];
 
   let node: Node | null;
-  // eslint-disable-next-line no-cond-assign
+   
   while ((node = walker.nextNode())) {
     const text = node as Text;
     const parent = text.parentElement;

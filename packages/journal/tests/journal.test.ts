@@ -1,6 +1,6 @@
+import type { Sink, JournalEntry } from '../src';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Journal } from '../src';
-import type { Sink, JournalEntry } from '../src';
 
 class DummySink implements Sink {
   public readonly published: JournalEntry[] = [];
@@ -40,7 +40,7 @@ describe('Journal', () => {
 
     const artifacts = ['file1.txt', 'image.png'];
     const meta = { a: 1, b: 'two' };
-    await journal.log('Has extras', { artifacts, meta });
+    await journal.info('Has extras', { meta });
 
     const entry = sink.published[0];
     expect(entry.artifacts).toEqual(artifacts);
