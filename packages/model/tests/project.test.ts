@@ -42,7 +42,6 @@ describe('project lib', () => {
         title: 'Example',
         description: undefined,
         loginAvailable: true,
-        purpose: 'demo',
       },
       { supabase },
     );
@@ -59,7 +58,6 @@ describe('project lib', () => {
     expect(payload.url).toBe('https://example.com');
     expect(payload.title).toBe('Example');
     expect(payload.login_available).toBe(true);
-    expect(payload.purpose).toBe('demo');
 
     // skipped undefined field
     expect('description' in payload).toBe(false);

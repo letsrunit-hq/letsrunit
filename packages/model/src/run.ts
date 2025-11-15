@@ -1,13 +1,13 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { randomUUID, type UUID } from 'node:crypto';
-import { type RunData, RunSchema, RunStatus } from './types';
+import { type Data, type Run, RunSchema, RunStatus } from './types';
 import { connect } from './supabase';
 import { z } from 'zod';
 import { toData } from './utils/convert';
 
-const CreateRunSchema = RunSchema
-  .pick({ projectId: true, type: true, status: true, target: true })
-  .partial({ status: true });
+const CreateRunSchema = RunSchema.pick({ projectId: true, type: true, status: true, target: true }).partial({
+  status: true,
+});
 
 export async function createRun(
   run: z.infer<typeof CreateRunSchema>,
@@ -37,7 +37,7 @@ export async function updateRunStatus(
   const supabase = opts.supabase ?? connect();
   const { status, error } = typeof result === 'object' ? result : { status: result };
 
-  const data: Partial<RunData> = { status, error };
+  const data: Partial<Data<Run>> = { status, error };
   if (status === 'running') data.started_at = new Date().toISOString();
   if (status === 'success' || status === 'failed') data.finished_at = new Date().toISOString();
 

@@ -1,8 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { randomUUID, type UUID } from 'node:crypto';
 import { connect } from './supabase';
-import { type Project, type ProjectData, ProjectSchema } from './types';
-import { fromData, toData } from './utils/convert';
+import { ProjectSchema } from './types';
+import { toData } from './utils/convert';
 import { z } from 'zod';
 
 const CreateProjectSchema = ProjectSchema.omit({ id: true }).partial().required({ url: true });
@@ -44,11 +44,4 @@ export async function updateProject(
     .eq('id', id);
 
   if (error) throw error;
-}
-
-export async function getProject(projectId: UUID, opts: { supabase?: SupabaseClient } = {}): Promise<Project> {
-  const supabase = opts.supabase ?? connect();
-
-  const data = (await supabase.from('projects').select().eq('id', projectId)) as unknown as ProjectData;
-  return fromData(ProjectSchema)(data);
 }

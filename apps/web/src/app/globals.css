@@ -1,6 +1,4 @@
 :root {
-  --background: #000000;
-  --foreground: #ededed;
   --primary-color: #ff851b !important;
 }
 
@@ -17,10 +15,6 @@ html {
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  background-repeat: repeat;
-  background-image: url('/topography.svg');
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
