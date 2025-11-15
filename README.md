@@ -1,176 +1,74 @@
-# 🧪 LetsRunIt
+# Basejump
 
-AI-assisted website testing with Playwright — built for real-world production automation.
+Basejump adds personal accounts, team accounts, permissions and billing support to Supabase Auth.
 
-This monorepo contains the full LetsRunIt stack:
-- a **Next.js web app** for UI and API access
-- a **Playwright sandbox runner** (Cloud Run Job)
-- a **worker service** that orchestrates jobs via Pub/Sub
-- a set of **shared packages** for logic, orchestration, and schema validation
+[Learn more at usebasejump.com](https://usebasejump.com). Ask questions [on X / Twitter](https://twitter.com/tiniscule)
 
----
+## Features
 
-## 🏗️ Architecture Overview
+- **Personal accounts**: Every user that signs up using Supabase auth automatically gets their own personal account.
+  Billing on personal accounts can be enabled/disabled.
+- **Team accounts**: Team accounts are billable accounts that can be shared by multiple users. Team accounts can be
+  disabled if you only wish to allow personal accounts. Billing on team accounts can also be disabled.
+- **Permissions**: Permissions are handled using RLS, just like you're used to with Supabase. Basejump provides
+  convenience methods that let you restrict access to rows based on a user's account access and role within an account
+- **Billing**: Basejump provides out of the box billing support for Stripe, but you can add your own providers easily.
+  If you do, please consider contributing them so others can benefit!
+- **Testing**: Basejump is fully tested itself, but also provides a suite of testing tools that make it easier to test
+  your own Supabase functions and schema. You can check it out
+  at [database.dev/basejump/supabase_test_helpers](https://database.dev/basejump/supabase_test_helpers). You do not need
+  to be using Basejump to use the testing tools.
 
-```txt
-apps/
-├─ web/        → Next.js frontend + API routes
-│                • In dev: runs Playwright directly for debugging
-│                • In prod: publishes jobs to Pub/Sub
-│
-├─ worker/     → Cloud Run service (Pub/Sub push subscription)
-│                • Receives job messages
-│                • Starts Cloud Run Job (runner) via API
-│
-└─ runner/     → Cloud Run Job container
-                 • Executes Playwright inside an isolated sandbox
-                 • Uploads artifacts (screenshots, traces) to Cloud Storage
+<br/><br/>
 
-packages/
-├─ core/                 → types, zod schemas, shared utils
-├─ controller/           → all Playwright flows & heuristics
-└─ executor/             → shared browser orchestration logic
-````
 
----
+# Quick Start
 
-## ⚙️ Tech Stack
+Check out the getting started guide at [usebasejump.com](https://usebasejump.com).
+<br/>
 
-| Layer         | Technology                         |
-| ------------- | ---------------------------------- |
-| UI & API      | Next.js (React 19, TypeScript)     |
-| Automation    | Playwright v1.47+                  |
-| Cloud Runtime | Google Cloud Run (services + jobs) |
-| Messaging     | Google Pub/Sub                     |
-| Storage       | Google Cloud Storage               |
-| Database      | Firestore (Native mode)            |
-| Dev tooling   | Yarn v4, TypeScript, Vitest        |
-
----
-
-## 💻 Local Development
-
-In development, you can skip Pub/Sub and Cloud Run entirely.
-The `web` app can execute Playwright **directly** for rapid debugging.
-
-### 1. Install dependencies
+## Optional Nextjs starter template
+We've got a fleshed out starter template ready to go for Basejump built using NextJs.  You can install it by running:
 
 ```bash
-yarn install
+yarn create next-app -e https://github.com/usebasejump/basejump-next
 ```
 
-### 2. Run Next.js in dev mode
+Then add your Supabase URL and anon key to your `.env.local` file. There's an example in the `.env.example` file.
 
+> Note: create-next-app forces you to install the template into a nested directory. You can move the contents of the directory to the root of your project if you'd like.
+
+<br/><br/>
+
+## Running tests
+Basejump includes comprehensive pgtap testing for all included functionality - but it's not enabled by default in case that's not your jam. To run the tests, you'll need to add a few dependencies.
+
+#### Install pgtap
+
+```sql
+create extension pgtap with schema extensions;
+```
+
+#### Install dbdev
+Follow the directions at [database.dev](https://database.dev/supabase/dbdev) to install dbdev.
+
+#### Install supabase_test_helpers
+
+```sql
+select dbdev.install('basejump-supabase_test_helpers');
+```
+
+#### Run the tests
 ```bash
-yarn workspace web dev
+supabase test db
 ```
 
-### 3. Enable direct local Playwright execution
+<br/><br/>
 
-Add this to `apps/web/.env.local`:
+## Contributing
 
-```
-DEV_DIRECT_RUN=1
-```
+Yes please! Please submit a PR with your changes to [the basejump github repo](https://github.com/usebasejump/basejump). Please make sure your changes are well tested and documented.
 
-Then POST to:
-
-```
-POST http://localhost:3000/api/jobs
-{
-  "runId": "local-test",
-  "url": "https://example.com"
-}
-```
-
-Artifacts will be saved locally under:
-
-```
-apps/web/tmp/runs/<runId>/artifacts/
-```
-
----
-
-## ☁️ Production Deployment (GCP)
-
-In production, LetsRunIt runs fully sandboxed on Google Cloud:
-
-| Component | GCP Resource      | Notes                                  |
-| --------- | ----------------- | -------------------------------------- |
-| Web       | Cloud Run Service | Public Next.js frontend                |
-| Worker    | Cloud Run Service | Pub/Sub push endpoint                  |
-| Runner    | Cloud Run Job     | Isolated Playwright sandbox            |
-| Messaging | Pub/Sub           | Topic `runs`, subscription `runs-push` |
-| Storage   | Cloud Storage     | Stores screenshots, traces             |
-| Database  | Firestore         | Job metadata and results               |
-
-All infrastructure templates and scripts are under [`infra/`](infra/).
-
-To bootstrap GCP:
-
-```bash
-cd infra
-./scripts/00-enable-apis.sh
-./scripts/01-iam-service-accounts.sh
-./scripts/02-pubsub.sh
-./scripts/03-storage.sh
-./scripts/04-firestore.sh
-```
-
-Deploy:
-
-```bash
-./scripts/10-deploy-app.sh
-./scripts/11-deploy-worker.sh
-./scripts/12-build-deploy-runner.sh
-```
-
----
-
-## 🧩 Packages
-
-| Package                                        | Purpose                                      |
-| ---------------------------------------------- | -------------------------------------------- |
-| [`@letsrunit/core`](packages/core)             | Shared types, Zod schemas, logger            |
-| [`@letsrunit/controller`](packages/controller) | Pure Playwright flow logic                   |
-| [`@letsrunit/executor`](packages/executor)     | Common orchestration of browser/context/page |
-
-These packages are used by both the **web** (for local dev) and **runner** (for production execution), ensuring zero duplicated Playwright logic.
-
----
-
-## 🧠 Dev Tips
-
-* Run any workspace command directly:
-
-  ```bash
-  yarn workspace web dev
-  yarn workspace worker dev
-  yarn workspace runner build
-  ```
-
-* Add a new shared package:
-
-  ```bash
-  mkdir packages/<name> && cd packages/<name>
-  yarn init -y
-  ```
-
-* Lint or typecheck across all:
-
-  ```bash
-  yarn workspaces foreach -pt run typecheck
-  ```
-
----
-
-## 🧰 Requirements
-
-* Node 20+
-* Yarn v4+
-* Google Cloud SDK (for deployment)
-* Playwright browsers installed:
-
-  ```bash
-  npx playwright install
-  ```
+You can contribute in the following places:
+- [Basejump core](https://github.com/usebasejump/basejump)
+- [Basejump edge functions / billing functions](https://github.com/usebasejump/basejump-deno-packages)
