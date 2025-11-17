@@ -313,7 +313,7 @@ create policy "users can view their teammates" on basejump.account_user
     basejump.has_role_on_account(account_id) = true
     );
 
-create policy "Account users can be deleted by owners except primary account owner" on basejump.account_user
+create policy "Account users can be deleted by owners" on basejump.account_user
     for delete
     to authenticated
     using (

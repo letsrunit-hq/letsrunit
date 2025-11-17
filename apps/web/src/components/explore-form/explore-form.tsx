@@ -5,6 +5,7 @@ import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { startExploreRun } from '@/actions/explore';
 import { useRouter } from 'next/navigation';
+import { ensureSignedIn } from '@/libs/auth';
 
 export type UrlFormProps = {
   className?: string;
@@ -27,14 +28,15 @@ export function ExploreForm({
   buttonLabel = 'Run it.',
 }: UrlFormProps) {
   const router = useRouter();
-  const [url, setUrl] = useState('');
+  const [url, setUrl] = useState('http://localhost:8080');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const onSubmitUrl = useCallback(async () => {
     try {
       setIsSubmitting(true);
+      await ensureSignedIn();
       const runId = await startExploreRun(url);
-      await router.push(`/runs/${runId}`);
+      router.push(`/runs/${runId}`);
     } finally {
       // If navigation happens, component may unmount; this is safe.
       setIsSubmitting(false);

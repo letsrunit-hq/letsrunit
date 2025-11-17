@@ -6,9 +6,20 @@ const supabase = connect();
 supabase
   .channel('runs')
   .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'runs' }, async (payload) => {
-    const run = fromData(RunSchema)(payload.new as Data<Run>);
-    if (run.status !== 'queued') return;
+    try {
+      const run = fromData(RunSchema)(payload.new as Data<Run>);
 
-    await handle(run, { supabase });
+      if (run.status !== 'queued') {
+        console.log(`Skipping run "${run.id}" because status is "${run.status}"`)
+        return;
+      }
+
+      console.log(`Received run "${run.id}"`);
+      await handle(run, { supabase });
+    } catch (e) {
+      console.error(`Run "${payload.new.id}" failed`, e);
+    }
   })
-  .subscribe();
+  .subscribe((status) => {
+    console.log(status);
+  });

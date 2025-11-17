@@ -5,6 +5,7 @@ export const ProjectVisibilitySchema = z.enum(['private', 'public']).describe('P
 
 export const ProjectSchema = z.object({
   id: UUIDSchema,
+  accountId: UUIDSchema,
   url: z.url().describe('Canonical URL to the home page'),
   title: z.string().describe('Human-readable web app title'),
   description: z.string().describe('Short description of the web application'),

@@ -1,0 +1,13 @@
+import { connect as supabase } from './supabase/browser';
+import type { SupabaseClient } from '@supabase/supabase-js';
+
+export async function ensureSignedIn(opts: { supabase?: SupabaseClient } = {}) {
+  const client = opts.supabase ?? supabase();
+
+  const { data } = await client.auth.getSession();
+
+  if (!data.session) {
+    const { error, data } = await client.auth.signInAnonymously();
+    if (error) throw error;
+  }
+}

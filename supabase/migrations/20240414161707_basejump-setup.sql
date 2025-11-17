@@ -157,11 +157,11 @@ CREATE OR REPLACE FUNCTION basejump.trigger_set_user_tracking()
 $$
 BEGIN
     if TG_OP = 'INSERT' then
-        NEW.created_by = auth.uid();
-        NEW.updated_by = auth.uid();
+        NEW.created_by := coalesce(auth.uid(), NEW.created_by);
+        NEW.updated_by := coalesce(auth.uid(), NEW.created_by);
     else
-        NEW.updated_by = auth.uid();
-        NEW.created_by = OLD.created_by;
+        NEW.created_by := OLD.created_by;
+        NEW.updated_by := coalesce(auth.uid(), NEW.updated_by);
     end if;
     RETURN NEW;
 END

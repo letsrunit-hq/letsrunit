@@ -3,27 +3,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import Journal from './journal';
 
-// Mock Galleria to avoid PrimeReact internals
-vi.mock('primereact/galleria', () => ({
-  Galleria: (props: any) => (
-    <div data-testid="galleria" data-count={props.value?.length ?? 0}>Galleria</div>
-  ),
-}));
-
-function mockMatchMedia(matches: boolean) {
-  // @ts-expect-error jsdom window
-  window.matchMedia = vi.fn().mockImplementation((query: string) => ({
-    matches,
-    media: query,
-    onchange: null,
-    addListener: vi.fn(), // deprecated
-    removeListener: vi.fn(), // deprecated
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  }));
-}
-
 const baseEntry = {
   meta: {},
   artifacts: [],
@@ -35,50 +14,38 @@ describe('Journal component', () => {
     vi.restoreAllMocks();
   });
 
-  it('renders entries and shows gallery on desktop', () => {
-    mockMatchMedia(false); // not mobile
-
+  it('renders entries in a Timeline with custom markers and no artifacts', () => {
     const data = {
       entries: [
         { id: '1', type: 'prepare', message: 'Doing A', ...baseEntry },
-        { id: '2', type: 'success', message: 'Did A', ...baseEntry, artifacts: [
-          { name: 'screenshot-1.png', url: 'https://cdn/1.png' },
-          { name: 'screenshot-2.png', url: 'https://cdn/2.png' },
-        ] },
+        {
+          id: '2',
+          type: 'success',
+          message: 'Did A',
+          ...baseEntry,
+          artifacts: [
+            { name: 'screenshot-1.png', url: 'https://cdn/1.png' },
+            { name: 'screenshot-2.png', url: 'https://cdn/2.png' },
+          ],
+        },
       ],
     };
 
     render(<Journal data={data} />);
 
-    // Entries list exists
-    const list = screen.getByLabelText('journal-entries');
-    expect(list).toBeInTheDocument();
     // Messages rendered
     expect(screen.getByText('Doing A')).toBeInTheDocument();
     expect(screen.getByText('Did A')).toBeInTheDocument();
 
-    // Gallery visible and receives 2 screenshots
-    const galleria = screen.getByTestId('galleria');
-    expect(galleria).toBeInTheDocument();
-    expect(galleria.getAttribute('data-count')).toBe('2');
-
-    // Status visuals exist: spinner for prepare, success tag
+    // Custom markers via PrimeIcons exist
     expect(document.querySelector('.pi-spinner')).toBeTruthy();
-    expect(screen.getByText('success')).toBeInTheDocument();
-  });
+    expect(document.querySelector('.pi-check')).toBeTruthy();
 
-  it('hides gallery on mobile', () => {
-    mockMatchMedia(true); // mobile
+    // No artifacts are displayed
+    expect(screen.queryByText('screenshot-1.png')).toBeNull();
+    expect(screen.queryByText('screenshot-2.png')).toBeNull();
 
-    const data = {
-      entries: [
-        { id: '1', type: 'info', message: 'Hello', ...baseEntry, artifacts: [ { name: 'screenshot-1.png', url: 'u' } ] },
-      ],
-    };
-
-    render(<Journal data={data} />);
-
-    // Gallery should not be rendered
-    expect(screen.queryByTestId('galleria')).toBeNull();
+    // No card title rendered
+    expect(screen.queryByText('Journal')).toBeNull();
   });
 });

@@ -71,7 +71,7 @@ create policy "Account members can select journal entries via project" on public
   exists (
     select 1
     from public.runs r inner join public.projects p on r.project_id = p.id
-    where p.id = public.journal_entries.run_id
+    where r.id = public.journal_entries.run_id
       and p.account_id in (select basejump.get_accounts_with_role())
   )
   );
@@ -86,7 +86,7 @@ create policy "Anyone can select journal entries of public projects" on public.j
   exists (
     select 1
     from public.runs r inner join public.projects p on r.project_id = p.id
-    where p.id = public.journal_entries.project_id
+    where r.id = public.journal_entries.run_id
       and p.visibility = 'public'::project_visibility
   )
   );

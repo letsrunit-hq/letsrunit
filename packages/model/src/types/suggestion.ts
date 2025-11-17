@@ -11,6 +11,10 @@ export const SuggestionSchema = z.object({
     .describe(
       'A short statement describing the visible or logical end condition confirming successful completion (8–15 words).',
     ),
+  createdAt: z.coerce.date().describe('Timestamp when the suggestion was created'),
+  createdBy: UUIDSchema.nullable().describe('Account id that created the suggestion'),
+  updatedAt: z.coerce.date().describe('Timestamp when the suggestion was updated'),
+  updatedBy: UUIDSchema.nullable().describe('Account id that updated the suggestion'),
 });
 
 export type Suggestion = z.infer<typeof SuggestionSchema>;

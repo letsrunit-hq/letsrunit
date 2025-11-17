@@ -1,16 +1,14 @@
-import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import Page from './page';
 
 vi.mock('../../../actions/journal', () => ({
   getJournal: vi.fn(async () => ({ entries: [] })),
 }));
 
-import Page from './page';
-
 describe('run page', () => {
   it('renders journal', async () => {
-    const ui = await Page({ params: { id: 'test-run' } } as any);
+    const ui = Page();
     render(ui as any);
     // Journal renders an empty list container
     expect(screen.getByLabelText('journal-entries')).toBeInTheDocument();

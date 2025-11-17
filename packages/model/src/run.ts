@@ -1,4 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient, User } from '@supabase/supabase-js';
 import { randomUUID, type UUID } from 'node:crypto';
 import { type Data, type Run, RunSchema, RunStatus } from './types';
 import { connect } from './supabase';
@@ -11,7 +11,7 @@ const CreateRunSchema = RunSchema.pick({ projectId: true, type: true, status: tr
 
 export async function createRun(
   run: z.infer<typeof CreateRunSchema>,
-  opts: { supabase?: SupabaseClient } = {},
+  opts: { supabase?: SupabaseClient, by?: User } = {},
 ): Promise<UUID> {
   const supabase = opts.supabase ?? connect();
   const runId = randomUUID();
@@ -21,7 +21,7 @@ export async function createRun(
     id: runId,
     status: 'queued',
     ...toData(CreateRunSchema)(run),
-    created_at: new Date().toISOString(),
+    created_by: opts.by?.id,
   });
 
   if (error) throw error;

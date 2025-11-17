@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { startExploreRun } from '../explore';
 
@@ -30,8 +30,9 @@ vi.mock('@letsrunit/executor', () => {
 });
 
 class FakeTableQuery {
-  private table: string;
   public ops: any[];
+  private table: string;
+
   constructor(table: string, ops: any[]) {
     this.table = table;
     this.ops = ops;
@@ -67,7 +68,7 @@ describe('explore lib', () => {
   it('runs explore for new project: creates project, inserts run and suggestions, updates run status', async () => {
     const supabase = new FakeSupabase() as unknown as SupabaseClient;
 
-    const runId = await startExploreRun('https://site.test', { supabase, journal: {} as any });
+    const runId = await startExploreRun('https://site.test', { supabase });
 
     // Run is inserted immediately
     const runInsert = (supabase as any).ops.find((o: any) => o.type === 'insert' && o.table === 'runs');
@@ -110,7 +111,7 @@ describe('explore lib', () => {
 
     const projectId = '22222222-2222-2222-2222-222222222222';
 
-    const runId = await startExploreRun('https://site.test', { supabase, journal: {} as any, projectId: projectId as any });
+    const runId = await startExploreRun('https://site.test', { supabase, projectId: projectId as any });
 
     // No project update should occur
     const projectUpdate = (supabase as any).ops.find((o: any) => o.type === 'update' && o.table === 'projects');

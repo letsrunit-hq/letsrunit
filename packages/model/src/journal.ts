@@ -10,7 +10,6 @@ function isScreenshot(name: string): boolean {
 
 export async function getJournal(runId: UUID, opts: { supabase?: SupabaseClient } = {}): Promise<Journal> {
   const supabase = opts.supabase ?? connect();
-  const entryFromData = fromData(JournalEntrySchema);
 
   const { data, error } = await supabase
     .from('journal_entries')
@@ -23,6 +22,12 @@ export async function getJournal(runId: UUID, opts: { supabase?: SupabaseClient 
   }
 
   const raw = (data ?? []) as unknown as JournalEntryData[];
+
+  return journalFromData(runId, raw);
+}
+
+export function journalFromData(runId: UUID, raw: JournalEntryData[]): Journal {
+  const entryFromData = fromData(JournalEntrySchema);
 
   const result: JournalEntry[] = [];
   const prepareEntries = new Map<string, number>();
@@ -55,3 +60,4 @@ export async function getJournal(runId: UUID, opts: { supabase?: SupabaseClient 
 
   return { runId, entries: result };
 }
+
