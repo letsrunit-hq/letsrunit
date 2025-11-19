@@ -1,14 +1,14 @@
-import type { Metadata } from "next";
-import "./globals.css";
+import type { Metadata } from 'next';
+import './globals.css';
 import { PrimeReactProvider } from 'primereact/api';
-import "primereact/resources/themes/lara-light-amber/theme.css";
+import 'primereact/resources/themes/lara-light-amber/theme.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
-import React from "react";
+import React from 'react';
 
 export const metadata: Metadata = {
-  title: "Vibe Testing done right | letsrunit.",
-  description: "Fully automated testing for your web application",
+  title: 'Vibe Testing done right | letsrunit.',
+  description: 'Fully automated testing for your web application',
 };
 
 export default function RootLayout({
@@ -19,9 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <PrimeReactProvider>
-          {children}
-        </PrimeReactProvider>
+        <PrimeReactProvider>{children}</PrimeReactProvider>
       </body>
     </html>
   );

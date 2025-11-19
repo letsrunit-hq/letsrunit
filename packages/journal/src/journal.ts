@@ -1,4 +1,4 @@
-import type { Sink, JournalEntry } from './types';
+import type { JournalEntry, Sink } from './types';
 import { NoSink } from './sink';
 import { JournalBatch } from './journal-batch';
 
@@ -6,6 +6,10 @@ type Options = Partial<Pick<JournalEntry, 'artifacts' | 'meta'>>;
 
 export class Journal<TSink extends Sink = Sink> {
   constructor(readonly sink: TSink) {}
+
+  static nil() {
+    return new Journal(new NoSink());
+  }
 
   async log(message: string, options: Options & { type: JournalEntry['type'] }): Promise<void> {
     const entry: JournalEntry = {
@@ -23,11 +27,17 @@ export class Journal<TSink extends Sink = Sink> {
     return new JournalBatch(this.sink);
   }
 
-  async do<T>(message: string, callback: () => T | Promise<T>): Promise<T> {
+  async do<T>(
+    message: string,
+    callback: () => T | Promise<T>,
+    metaFn?: (result: T) => Record<string, any>,
+  ): Promise<T> {
     try {
       await this.prepare(message);
       const result = await callback();
-      await this.success(message);
+
+      const meta = metaFn?.(result);
+      await this.success(message, { meta });
 
       return result;
     } catch (e) {
@@ -66,9 +76,5 @@ export class Journal<TSink extends Sink = Sink> {
 
   async failure(message: string, options: Options = {}): Promise<void> {
     await this.log(message, { ...options, type: 'failure' });
-  }
-
-  static nil() {
-    return new Journal(new NoSink());
   }
 }

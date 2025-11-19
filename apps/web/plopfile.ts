@@ -1,25 +1,23 @@
-import { NodePlopAPI } from "plop";
+import { NodePlopAPI } from 'plop';
 
 export default function (plop: NodePlopAPI) {
   // -------- Helpers --------
   const ensureAppPath = (p) => p.replace(/^\/+|\/+$/g, '');
-  const toKebab = (s: string) => String(s)
-    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
-    .replace(/[_\s]+/g, '-')
-    .replace(/-+/g, '-')
-    .toLowerCase();
+  const toKebab = (s: string) =>
+    String(s)
+      .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+      .replace(/[_\s]+/g, '-')
+      .replace(/-+/g, '-')
+      .toLowerCase();
 
   // -------- React Component --------
   plop.setGenerator('component', {
     description: 'Create a React component with test',
-    prompts: [
-      { type: 'input', name: 'name', message: 'Component name (e.g. Button):' },
-      { type: 'input', name: 'baseDir', message: 'Base dir:', default: 'src/components' },
-    ],
+    prompts: [{ type: 'input', name: 'name', message: 'Component name (e.g. CommitButton):' }],
     actions: [
       {
         type: 'add',
-        path: '{{baseDir}}/{{dashCase name}}/{{dashCase name}}.tsx',
+        path: '{{resolveBase "src/components"}}/{{dashCase name}}/{{dashCase name}}.tsx',
         template: `import React from 'react';
 
 export type {{pascalCase name}}Props = {
@@ -35,7 +33,7 @@ export default {{pascalCase name}};`,
       },
       {
         type: 'add',
-        path: '{{baseDir}}/{{dashCase name}}/{{dashCase name}}.test.tsx',
+        path: '{{resolveBase "src/components"}}/{{dashCase name}}/{{dashCase name}}.test.tsx',
         template: `import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
@@ -51,7 +49,7 @@ describe('{{pascalCase name}}', () => {
       },
       {
         type: 'add',
-        path: '{{baseDir}}/{{dashCase name}}/index.ts',
+        path: '{{resolveBase "src/components"}}/{{dashCase name}}/index.ts',
         template: `export * from './{{dashCase name}}';`,
       },
     ],
@@ -154,14 +152,11 @@ describe('route {{dashCase path}}', () => {
   // -------- React Hook --------
   plop.setGenerator('hook', {
     description: 'Create a React hook with test',
-    prompts: [
-      { type: 'input', name: 'name', message: 'Hook name without "use" prefix, e.g. Toggle:' },
-      { type: 'input', name: 'baseDir', message: 'Base dir:', default: 'src/hooks' },
-    ],
+    prompts: [{ type: 'input', name: 'name', message: 'Hook name without "use" prefix, e.g. Toggle:' }],
     actions: [
       {
         type: 'add',
-        path: '{{baseDir}}/use-{{dashCase name}}.ts',
+        path: '{{resolveBase "src/hooks"}}/use-{{dashCase name}}.ts',
         template: `import { useState } from 'react';
 
 export function use{{pascalCase name}}(initial = false) {
@@ -173,7 +168,7 @@ export default use{{pascalCase name}};`,
       },
       {
         type: 'add',
-        path: '{{baseDir}}/use-{{dashCase name}}.test.ts',
+        path: '{{resolveBase "src/hooks"}}/__tests__/use-{{dashCase name}}.test.ts',
         template: `import { describe, it, expect } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { use{{pascalCase name}} } from './use-{{dashCase name}}';
@@ -192,14 +187,11 @@ describe('use{{pascalCase name}}', () => {
   // -------- React Context --------
   plop.setGenerator('context', {
     description: 'Create a React context + provider with test',
-    prompts: [
-      { type: 'input', name: 'name', message: 'Context name, e.g. Theme:' },
-      { type: 'input', name: 'baseDir', message: 'Base dir:', default: 'src/context' },
-    ],
+    prompts: [{ type: 'input', name: 'name', message: 'Context name, e.g. Theme:' }],
     actions: [
       {
         type: 'add',
-        path: '{{baseDir}}/{{dashCase name}}-context.tsx',
+        path: '{{resolveBase "src/context"}}/{{dashCase name}}-context.tsx',
         template: `import React, { createContext, useContext, useState } from 'react';
 
 type {{pascalCase name}}Value = { value: string; setValue: (v: string) => void };
@@ -218,7 +210,7 @@ export function use{{pascalCase name}}() {
       },
       {
         type: 'add',
-        path: '{{baseDir}}/{{dashCase name}}-context.test.tsx',
+        path: '{{resolveBase "src/context"}}/{{dashCase name}}-context.test.tsx',
         template: `import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { {{pascalCase name}}Provider, use{{pascalCase name}} } from './{{dashCase name}}-context';
@@ -241,14 +233,11 @@ describe('{{pascalCase name}}Context', () => {
   // -------- Server Action --------
   plop.setGenerator('action', {
     description: 'Create a server action with "use server"',
-    prompts: [
-      { type: 'input', name: 'name', message: 'Action name, e.g. createUser:' },
-      { type: 'input', name: 'baseDir', message: 'Base dir:', default: 'src/actions' },
-    ],
+    prompts: [{ type: 'input', name: 'name', message: 'Action name, e.g. createUser:' }],
     actions: [
       {
         type: 'add',
-        path: '{{baseDir}}/{{dashCase name}}.ts',
+        path: '{{resolveBase "src/actions"}}/{{dashCase name}}.ts',
         template: `'use server';
 
 export async function {{camelCase name}}(...args: any[]) {
@@ -259,7 +248,7 @@ export async function {{camelCase name}}(...args: any[]) {
       },
       {
         type: 'add',
-        path: '{{baseDir}}/__tests__/{{dashCase name}}.test.ts',
+        path: '{{resolveBase "src/actions"}}/__tests__/{{dashCase name}}.test.ts',
         template: `import { describe, it, expect } from 'vitest';
 import { {{camelCase name}} } from '../{{dashCase name}}';
 
@@ -276,21 +265,18 @@ describe('action {{camelCase name}}', () => {
   // -------- Library util --------
   plop.setGenerator('lib', {
     description: 'Create a library util in src/libs',
-    prompts: [
-      { type: 'input', name: 'name', message: 'Lib name, e.g. formatDate:' },
-      { type: 'input', name: 'baseDir', message: 'Base dir:', default: 'src/libs' },
-    ],
+    prompts: [{ type: 'input', name: 'name', message: 'Lib name, e.g. formatDate:' }],
     actions: [
       {
         type: 'add',
-        path: '{{baseDir}}/{{dashCase name}}.ts',
+        path: '{{resolveBase "src/libs"}}/{{dashCase name}}.ts',
         template: `export function {{camelCase name}}(...args: any[]) {
   // implement lib {{camelCase name}}
 }`,
       },
       {
         type: 'add',
-        path: '{{baseDir}}/__tests__/{{dashCase name}}.test.ts',
+        path: '{{resolveBase "src/libs"}}/__tests__/{{dashCase name}}.test.ts',
         template: `import { describe, it, expect } from 'vitest';
 import { {{camelCase name}} } from '../{{dashCase name}}';
 
@@ -308,5 +294,13 @@ describe('lib {{camelCase name}}', () => {
   plop.setHelper('kebabPath', (txt) => {
     const parts = ensureAppPath(String(txt)).split('/').filter(Boolean);
     return parts.map((p) => toKebab(p)).join('/');
+  });
+
+  // Resolve base directory: prefer CLI --baseDir, otherwise use provided default
+  plop.setHelper('resolveBase', function (defaultDir: string, options: any) {
+    const root = options?.data?.root ?? {};
+    // If user provided --baseDir via CLI, use it; else fallback to defaultDir
+    const provided = root.baseDir;
+    return String(provided || defaultDir);
   });
 }

@@ -44,6 +44,7 @@ export default async function explore(
     const { actions, ...appInfo } = await journal.do(
       'Determining user stories',
       () => assessPage(content),
+      (result) => ({ result }),
     );
 
     await journal.batch()

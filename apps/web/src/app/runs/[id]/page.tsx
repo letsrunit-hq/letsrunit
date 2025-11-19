@@ -1,32 +1,25 @@
-'use client';
+import { connect } from '@/libs/supabase/server';
+import { isUUID } from '@letsrunit/utils';
+import { notFound } from 'next/navigation';
+import Screen from './screen';
 
-import React from 'react';
-import { useParams } from 'next/navigation';
-import { useRun } from '@/hooks/use-run';
-import { Journal as JournalView } from '@/components/journal';
-import { WaitingBackground } from '@/components/waiting-background';
-import { QueueStatus } from '@/components/queue-status';
-import styles from './page.module.css';
+export default async function Page(params: Promise<{ id: string }>) {
+  const { id } = await params;
 
-export default function Page() {
-  const { id } = useParams<{ id: string }>();
-  const { run, journal, loading, error } = useRun(id);
-
-  if (loading) return <main className="p-3">Loading…</main>;
-  if (error) return <main className="p-3">Error: {error}</main>;
-
-  if (run?.status === 'queued') {
-    return (
-      <main className={`p-3 ${styles.center}`}>
-        <WaitingBackground />
-        <QueueStatus />
-      </main>
-    );
+  if (!isUUID(id)) {
+    return notFound();
   }
 
-  return (
-    <main className="p-3">
-      {journal && <JournalView data={journal} />}
-    </main>
-  );
+  const supabase = await connect();
+  const { status, data } = await supabase.from('runs').select('id, projectId').eq('id', id).maybeSingle();
+
+  if (status >= 400 && status < 500) {
+    return notFound();
+  }
+
+  if (status > 400) {
+    return; // Error page
+  }
+
+  return <Screen runId={id} projectId={data!.projectId} />;
 }

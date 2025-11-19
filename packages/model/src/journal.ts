@@ -49,6 +49,7 @@ export function journalFromData(runId: UUID, raw: JournalEntryData[]): Journal {
 
       // Replace earlier prepare entry instead of appending the entry
       if (idx !== undefined) {
+        item.duration = item.createdAt.getTime() - result[idx].createdAt.getTime();
         result[idx] = item;
         prepareEntries.delete(e.message);
         continue;

@@ -1,9 +1,15 @@
-import React from 'react';
+'use client';
+
+import React, { JSX } from 'react';
 import { motion } from 'motion/react';
-import styles from './waiting-background.module.css';
+import styles from './animated-background.module.css';
 import AnimatedWave from '../animated-wave/animated-wave';
 
-export function WaitingBackground() {
+interface AnimatedBackgroundProps {
+  waiting?: boolean;
+}
+
+export function AnimatedBackground({ waiting }: AnimatedBackgroundProps): JSX.Element {
   return (
     <div className={styles.container}>
       <svg xmlns="http://www.w3.org/2000/svg">
@@ -27,9 +33,11 @@ export function WaitingBackground() {
         <rect width="100%" height="100%" fill="url(#grid)" />
 
         {/* Animated lines */}
-        <AnimatedWave d="M 0 200 Q 400 100 800 200 T 1600 200" color="#f59e0b" duration={4} />
-        <AnimatedWave d="M 0 400 Q 600 300 1200 400 T 2400 400" color="#fb923c" duration={5} delay={1} />
-        <AnimatedWave d="M 0 600 Q 500 500 1000 600 T 2000 600" color="#fbbf24" duration={4.5} delay={2} />
+        { waiting && <>
+          <AnimatedWave d="M 0 200 Q 400 100 800 200 T 1600 200" color="#f59e0b" duration={4} />
+          <AnimatedWave d="M 0 400 Q 600 300 1200 400 T 2400 400" color="#fb923c" duration={5} delay={1} />
+          <AnimatedWave d="M 0 600 Q 500 500 1000 600 T 2000 600" color="#fbbf24" duration={4.5} delay={2} />
+        </> }
 
         {/* Floating particles */}
         {Array.from({ length: 20 }).map((_, i) => (

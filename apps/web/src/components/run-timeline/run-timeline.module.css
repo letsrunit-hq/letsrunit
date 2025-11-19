@@ -1,0 +1,30 @@
+.stickyBox {
+  position: sticky;
+  top: 2rem; /* replaces top-8 */
+}
+
+.markerBox {
+  width: 1rem; /* 16px to match original marker box */
+  height: 1rem;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+}
+
+.dot {
+  display: inline-block;
+  width: 0.5rem; /* 8px */
+  height: 0.5rem;
+  border-radius: 9999px;
+}
+
+.dotGreen {
+  background-color: var(--green-500);
+}
+
+.dotRedWeak {
+  background-color: var(--red-500);
+  opacity: 0.3;
+}

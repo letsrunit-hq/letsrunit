@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import Page from './page';
+import Screen from './screen';
 
 vi.mock('../../../actions/journal', () => ({
   getJournal: vi.fn(async () => ({ entries: [] })),
@@ -8,7 +8,7 @@ vi.mock('../../../actions/journal', () => ({
 
 describe('run page', () => {
   it('renders journal', async () => {
-    const ui = Page();
+    const ui = Screen({ projectId: '1' as any, runId: '2' as any });
     render(ui as any);
     // Journal renders an empty list container
     expect(screen.getByLabelText('journal-entries')).toBeInTheDocument();

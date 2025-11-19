@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { useRun } from './use-run';
+import { useRun } from '../use-run';
 
 type JournalEntryData = {
   id: string;

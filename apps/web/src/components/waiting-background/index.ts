@@ -1,1 +1,1 @@
-export * from './waiting-background';
+export * from './animated-background';

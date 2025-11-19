@@ -1,0 +1,7 @@
+.screenshotBox {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #ffffff;
+  border: 1px solid var(--surface-border);
+  border-radius: var(--border-radius);
+}

@@ -1,10 +1,10 @@
 import React from 'react';
 import { describe, it } from 'vitest';
 import { render } from '@testing-library/react';
-import { WaitingBackground } from './waiting-background';
+import { AnimatedBackground } from './animated-background';
 
-describe('WaitingBackground', () => {
+describe(AnimatedBackground.name, () => {
   it('renders', () => {
-    render(<WaitingBackground />);
+    render(<AnimatedBackground />);
   });
 });

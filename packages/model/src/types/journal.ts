@@ -19,6 +19,7 @@ export const JournalEntrySchema = z.object({
   createdBy: UUIDSchema.nullable().describe('Account id that created the journal entry'),
   updatedAt: z.coerce.date().describe('Timestamp when the journal entry was updated'),
   updatedBy: UUIDSchema.nullable().describe('Account id that updated the journal entry'),
+  duration: z.number().optional().readonly().describe('Calculated duration in milliseconds'),
 });
 
 export const JournalSchema = z.object({
@@ -31,4 +32,4 @@ export type Artifact = z.infer<typeof ArtifactSchema>;
 export type JournalEntry = z.infer<typeof JournalEntrySchema>;
 export type Journal = z.infer<typeof JournalSchema>;
 
-export type JournalEntryData = Data<JournalEntry>;
+export type JournalEntryData = Data<Omit<JournalEntry, 'duration'>>;
