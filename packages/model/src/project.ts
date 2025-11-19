@@ -4,14 +4,15 @@ import { connect } from './supabase';
 import { type Data, type Project, ProjectSchema } from './types';
 import { fromData, toData } from './utils/convert';
 import { z } from 'zod';
+import { DbError } from './db-error';
 
 const CreateProjectSchema = ProjectSchema.omit({ id: true }).partial().required({ accountId: true, url: true });
 
 export async function getProject(id: string, opts: { supabase?: SupabaseClient } = {}): Promise<Project> {
   const supabase = opts.supabase ?? connect();
 
-  const { data, error } = await supabase.from('projects').select().eq('id', id);
-  if (error) throw error;
+  const { data, status, error } = await supabase.from('projects').select().eq('id', id);
+  if (error) throw new DbError(status, error);
 
   return fromData(ProjectSchema)(data as unknown as Data<Project>);
 }
@@ -23,13 +24,13 @@ export async function createProject(
   const supabase = opts.supabase ?? connect();
   const id = randomUUID();
 
-  const { error } = await supabase.from('projects').insert({
+  const { status, error } = await supabase.from('projects').insert({
     ...toData(CreateProjectSchema)(project),
     id,
     created_by: opts.by?.id,
   });
 
-  if (error) throw error;
+  if (error) throw new DbError(status, error);
 
   return id;
 }
@@ -43,7 +44,7 @@ export async function updateProject(
 ) {
   const supabase = opts.supabase ?? connect();
 
-  const { error } = await supabase
+  const { status, error } = await supabase
     .from('projects')
     .update({
       ...toData(UpdateProjectSchema)(values),
@@ -51,5 +52,5 @@ export async function updateProject(
     })
     .eq('id', id);
 
-  if (error) throw error;
+  if (error) throw new DbError(status, error);
 }

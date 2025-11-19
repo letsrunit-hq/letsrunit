@@ -1,3 +1,4 @@
+export * from './db-error';
 export * from './journal';
 export * from './project';
 export * from './run';

@@ -4,6 +4,7 @@ import { type Data, type Run, RunSchema, RunStatus } from './types';
 import { connect } from './supabase';
 import { z } from 'zod';
 import { toData } from './utils/convert';
+import { DbError } from './db-error';
 
 const CreateRunSchema = RunSchema.pick({ projectId: true, type: true, status: true, target: true }).partial({
   status: true,
@@ -17,14 +18,14 @@ export async function createRun(
   const runId = randomUUID();
 
   // Create a new record for the run
-  const { error } = await supabase.from('runs').insert({
+  const { status, error } = await supabase.from('runs').insert({
     id: runId,
     status: 'queued',
     ...toData(CreateRunSchema)(run),
     created_by: opts.by?.id,
   });
 
-  if (error) throw error;
+  if (error) throw new DbError(status, error);
 
   return runId;
 }
@@ -41,7 +42,6 @@ export async function updateRunStatus(
   if (status === 'running') data.started_at = new Date().toISOString();
   if (status === 'success' || status === 'failed') data.finished_at = new Date().toISOString();
 
-  const { error: e } = await supabase.from('runs').update(data).eq('id', runId);
-
-  if (e) throw e;
+  const { status: qs, error: qe } = await supabase.from('runs').update(data).eq('id', runId);
+  if (qe) throw new DbError(qs, qe);
 }

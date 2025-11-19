@@ -4,6 +4,7 @@ import type { UUID } from 'node:crypto';
 import { toData } from './utils/convert';
 import { z } from 'zod';
 import { connect } from './supabase';
+import { DbError } from './db-error';
 
 const StoreSuggestionSchema = SuggestionSchema.pick({ name: true, description: true, done: true });
 
@@ -16,7 +17,7 @@ export async function storeSuggestions(
   const supabase = opts.supabase || connect();
   const suggestionToData = toData(StoreSuggestionSchema);
 
-  const { error } = await supabase.from('suggestions').insert(
+  const { status, error } = await supabase.from('suggestions').insert(
     suggestions.map((suggestion) => ({
       project_id: projectId,
       run_id: runId,
@@ -25,5 +26,5 @@ export async function storeSuggestions(
     })),
   );
 
-  if (error) throw error;
+  if (error) throw new DbError(status, error);
 }
