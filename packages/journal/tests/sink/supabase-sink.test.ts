@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { JournalEntry } from '../../src';
-import { SupabaseSink } from '../../src/sink/supabase-sink';
+import { type JournalEntry, SupabaseSink } from '../../src';
 
 function makeEntry(partial: Partial<JournalEntry> = {}): JournalEntry {
   return {
@@ -15,6 +14,7 @@ function makeEntry(partial: Partial<JournalEntry> = {}): JournalEntry {
 
 describe('SupabaseSink', () => {
   const runId = 'run-123';
+  let consoleMock: { error: ReturnType<typeof vi.fn> };
   let insertMock: ReturnType<typeof vi.fn>;
   let uploadMock: ReturnType<typeof vi.fn>;
   let getPublicUrlMock: ReturnType<typeof vi.fn>;
@@ -23,6 +23,8 @@ describe('SupabaseSink', () => {
   let client: any;
 
   beforeEach(() => {
+    consoleMock = { error: vi.fn() };
+
     insertMock = vi.fn().mockResolvedValue({ error: null });
     fromTableMock = vi.fn((_table: string) => ({ insert: insertMock }));
 
@@ -38,7 +40,7 @@ describe('SupabaseSink', () => {
   });
 
   it('inserts a log row', async () => {
-    const sink = new SupabaseSink({ supabase: client, runId });
+    const sink = new SupabaseSink({ supabase: client, runId, console: consoleMock });
 
     await sink.publish(makeEntry({ message: 'No files', artifacts: [] }));
 
@@ -62,7 +64,7 @@ describe('SupabaseSink', () => {
   });
 
   it('uploads artifacts to storage', async () => {
-    const sink = new SupabaseSink({ supabase: client, runId, bucket: 'logs' });
+    const sink = new SupabaseSink({ supabase: client, runId, bucket: 'logs', console: consoleMock });
 
     const bytes = new Uint8Array([1, 2, 3]);
     const artifact: any = { name: 'a.txt', size: bytes.length, bytes: vi.fn().mockResolvedValue(bytes) };
@@ -84,7 +86,7 @@ describe('SupabaseSink', () => {
   it('skips artifact on upload error and still inserts row', async () => {
     uploadMock.mockResolvedValueOnce({ error: { message: 'fail' } });
 
-    const sink = new SupabaseSink({ supabase: client, runId, bucket: 'logs' });
+    const sink = new SupabaseSink({ supabase: client, runId, bucket: 'logs', console: consoleMock });
 
     const bytes = new Uint8Array([9, 9]);
     const artifact: any = { name: 'bad.bin', size: bytes.length, bytes: vi.fn().mockResolvedValue(bytes) };

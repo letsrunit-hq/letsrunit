@@ -8184,6 +8184,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lucide-react@npm:^0.554.0":
+  version: 0.554.0
+  resolution: "lucide-react@npm:0.554.0"
+  peerDependencies:
+    react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 10c0/35b11d6f11e4b00047175fcc52f531156be66e5ae7c1f689d0d18bc7bbf06d9e0bf33c767f449e25d99f105acf420399346787491aafe0b55dc68b8d45937e87
+  languageName: node
+  linkType: hard
+
 "luxon@npm:3.7.1":
   version: 3.7.1
   resolution: "luxon@npm:3.7.1"
@@ -10534,20 +10543,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"runner@workspace:apps/runner":
-  version: 0.0.0-use.local
-  resolution: "runner@workspace:apps/runner"
-  dependencies:
-    "@google-cloud/firestore": "npm:^7.11.6"
-    "@google-cloud/storage": "npm:^7.17.2"
-    "@letsrunit/executor": "workspace:*"
-    "@types/node": "npm:^24.7.2"
-    playwright: "npm:^1.56.0"
-    typescript: "npm:^5.9.3"
-    zod: "npm:^4.1.12"
-  languageName: unknown
-  linkType: soft
-
 "rxjs@npm:^7.2.0, rxjs@npm:^7.8.1":
   version: 7.8.2
   resolution: "rxjs@npm:7.8.2"
@@ -12583,6 +12578,7 @@ __metadata:
     cross-env: "npm:^10.1.0"
     google-auth-library: "npm:^10.4.0"
     jsdom: "npm:^27.0.0"
+    lucide-react: "npm:^0.554.0"
     motion: "npm:^12.23.24"
     next: "npm:15.5.5"
     plop: "npm:^4.0.4"
