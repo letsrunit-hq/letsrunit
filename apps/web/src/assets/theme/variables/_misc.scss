@@ -1,0 +1,45 @@
+//inplace
+$inplacePadding: $inputPadding !default;
+$inplaceHoverBg: $hoverBg !default;
+$inplaceTextHoverColor: $shade000 !default;
+
+//progressbar
+$progressBarHeight: 1.5rem !default;
+$progressBarBorder: 0 none !default;
+$progressBarBg: $shade600 !default;
+$progressBarValueBg: $primaryColor !default;
+$progressBarValueTextColor: $primaryTextColor !default;
+
+//badge and tag
+$badgeBg: $primaryColor !default;
+$badgeTextColor: $primaryTextColor !default;
+$badgeMinWidth: 1.5rem !default;
+$badgeHeight: 1.5rem !default;
+$badgeFontWeight: 700 !default;
+$badgeFontSize: 0.75rem !default;
+
+$tagPadding: 0.25rem 0.4rem !default;
+
+//avatar
+$avatarBg: $shade600 !default;
+$avatarTextColor: $textColor !default;
+
+//chip
+$chipBg: $shade600 !default;
+$chipTextColor: $textColor !default;
+$chipBorderRadius: 16px !default;
+$chipFocusBg: $shade500 !default;
+$chipFocusTextColor: $textColor !default;
+
+//scrollTop
+$scrollTopBg: $highlightBg !default;
+$scrollTopHoverBg: scale-color($highlightBg, $alpha: 24%) !default;
+$scrollTopWidth: 3rem !default;
+$scrollTopHeight: 3rem !default;
+$scrollTopBorderRadius: 50% !default;
+$scrollTopFontSize: 1.5rem !default;
+$scrollTopTextColor: $highlightTextColor !default;
+
+//skeleton
+$skeletonBg: rgba(255, 255, 255, 0.06) !default;
+$skeletonAnimationBg: rgba(255, 255, 255, 0.04) !default;

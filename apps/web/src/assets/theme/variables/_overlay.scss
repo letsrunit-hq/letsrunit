@@ -1,0 +1,25 @@
+//overlays
+$overlayContentBorder: 1px solid $shade600 !default;
+$overlayContentBg: $panelContentBg !default;
+$overlayContainerShadow: 0px 11px 15px -7px rgba(0, 0, 0, 0.2),
+0px 24px 38px 3px rgba(0, 0, 0, 0.14), 0px 9px 46px 8px rgba(0, 0, 0, 0.12) !default;
+
+//dialog
+$dialogHeaderBg: $shade800 !default;
+$dialogHeaderBorder: 0 none !default;
+$dialogHeaderTextColor: $shade000 !default;
+$dialogHeaderFontWeight: 700 !default;
+$dialogHeaderFontSize: 1.25rem !default;
+$dialogHeaderPadding: 1.5rem !default;
+$dialogContentPadding: 0 1.5rem 2rem 1.5rem !default;
+$dialogFooterBorder: 0 none !default;
+$dialogFooterPadding: 0 1.5rem 1.5rem 1.5rem !default;
+
+//confirmpopup
+$confirmPopupContentPadding: $panelContentPadding !default;
+$confirmPopupFooterPadding: 0 1.25rem 1.25rem 1.25rem !default;
+
+//tooltip
+$tooltipBg: $shade600 !default;
+$tooltipTextColor: $shade000 !default;
+$tooltipPadding: $inputPadding !default;

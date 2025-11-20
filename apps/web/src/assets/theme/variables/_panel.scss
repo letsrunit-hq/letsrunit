@@ -1,0 +1,104 @@
+//panel
+$panelHeaderBorderColor: $shade600 !default;
+$panelHeaderBorder: 1px solid $shade600 !default;
+$panelHeaderBg: $shade800 !default;
+$panelHeaderTextColor: $shade000 !default;
+$panelHeaderFontWeight: 700 !default;
+$panelHeaderPadding: 1.25rem !default;
+$panelToggleableHeaderPadding: 0.75rem 1.25rem !default;
+
+$panelHeaderHoverBg: $hoverBg !default;
+$panelHeaderHoverBorderColor: $shade600 !default;
+$panelHeaderTextHoverColor: $shade000 !default;
+
+$panelContentBorderColor: $shade600 !default;
+$panelContentBorder: 1px solid $shade600 !default;
+$panelContentBg: $shade800 !default;
+$panelContentEvenRowBg: #1c2532 !default;
+$panelContentTextColor: $shade000 !default;
+$panelContentPadding: 1.25rem !default;
+
+$panelFooterBorder: 1px solid $shade600 !default;
+$panelFooterBg: $shade800 !default;
+$panelFooterTextColor: $shade000 !default;
+$panelFooterPadding: 0.75rem 1.25rem !default;
+
+//accordion
+$accordionSpacing: 4px !default;
+$accordionHeaderBorder: $panelHeaderBorder !default;
+$accordionHeaderBg: $panelHeaderBg !default;
+$accordionHeaderTextColor: $panelHeaderTextColor !default;
+$accordionHeaderFontWeight: $panelHeaderFontWeight !default;
+$accordionHeaderPadding: $panelHeaderPadding !default;
+
+$accordionHeaderHoverBg: $hoverBg !default;
+$accordionHeaderHoverBorderColor: $shade600 !default;
+$accordionHeaderTextHoverColor: $shade000 !default;
+
+$accordionHeaderActiveBg: $panelHeaderBg !default;
+$accordionHeaderActiveBorderColor: $shade600 !default;
+$accordionHeaderTextActiveColor: $shade000 !default;
+
+$accordionHeaderActiveHoverBg: $hoverBg !default;
+$accordionHeaderActiveHoverBorderColor: $shade600 !default;
+$accordionHeaderTextActiveHoverColor: $shade000 !default;
+
+$accordionContentBorder: $panelContentBorder !default;
+$accordionContentBg: $panelContentBg !default;
+$accordionContentTextColor: $panelContentTextColor !default;
+$accordionContentPadding: $panelContentPadding !default;
+
+//tabview
+$tabviewNavBorder: 1px solid $shade600 !default;
+$tabviewNavBorderWidth: 0 0 2px 0 !default;
+$tabviewNavBg: transparent !default;
+
+$tabviewHeaderSpacing: 0 !default;
+$tabviewHeaderBorder: solid $shade600 !default;
+$tabviewHeaderBorderWidth: 0 0 2px 0 !default;
+$tabviewHeaderBorderColor: transparent transparent $shade600 transparent !default;
+$tabviewHeaderBg: $shade800 !default;
+$tabviewHeaderTextColor: $shade100 !default;
+$tabviewHeaderFontWeight: $panelHeaderFontWeight !default;
+$tabviewHeaderPadding: $panelHeaderPadding !default;
+$tabviewHeaderMargin: 0 0 -2px 0 !default;
+
+$tabviewHeaderHoverBg: $shade800 !default;
+$tabviewHeaderHoverBorderColor: $primaryColor !default;
+$tabviewHeaderTextHoverColor: $shade000 !default;
+
+$tabviewHeaderActiveBg: $shade800 !default;
+$tabviewHeaderActiveBorderColor: $primaryColor !default;
+$tabviewHeaderTextActiveColor: $primaryColor !default;
+
+$tabviewContentBorder: 0 none !default;
+$tabviewContentBg: $shade800 !default;
+$tabviewContentTextColor: $shade000 !default;
+$tabviewContentPadding: $panelContentPadding !default;
+
+//scrollpanel
+$scrollPanelTrackBorder: 0 none !default;
+$scrollPanelTrackBg: $shade600 !default;
+
+//card
+$cardBodyPadding: 1.25rem !default;
+$cardTitleFontSize: 1.5rem !default;
+$cardTitleFontWeight: 700 !default;
+$cardSubTitleFontWeight: 400 !default;
+$cardSubTitleColor: $shade100 !default;
+$cardContentPadding: 1.25rem 0 !default;
+$cardFooterPadding: 1.25rem 0 0 0 !default;
+$cardShadow: 0 2px 1px -1px rgba(0, 0, 0, 0.2), 0 1px 1px 0 rgba(0, 0, 0, 0.14),
+0 1px 3px 0 rgba(0, 0, 0, 0.12) !default;
+
+//divider
+$dividerHorizontalMargin: 1.25rem 0 !default;
+$dividerHorizontalPadding: 0 1.25rem !default;
+$dividerVerticalMargin: 0 1.25rem !default;
+$dividerVerticalPadding: 1.25rem 0 !default;
+$dividerSize: 1px !default;
+$dividerColor: $shade600 !default;
+
+//splitter
+$splitterGutterBg: rgba(255, 255, 255, 0.03) !default;
+$splitterGutterHandleBg: $shade600 !default;

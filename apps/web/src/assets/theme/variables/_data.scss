@@ -1,0 +1,106 @@
+//paginator
+$paginatorBg: $shade800 !default;
+$paginatorTextColor: $shade100 !default;
+$paginatorBorder: solid $shade600 !default;
+$paginatorBorderWidth: 1px !default;
+$paginatorPadding: 0.5rem 1rem !default;
+$paginatorElementWidth: $buttonIconOnlyWidth !default;
+$paginatorElementHeight: $buttonIconOnlyWidth !default;
+$paginatorElementBg: transparent !default;
+$paginatorElementBorder: 0 none !default;
+$paginatorElementIconColor: $shade100 !default;
+$paginatorElementHoverBg: $hoverBg !default;
+$paginatorElementHoverBorderColor: transparent !default;
+$paginatorElementIconHoverColor: $shade000 !default;
+$paginatorElementBorderRadius: $borderRadius !default;
+$paginatorElementMargin: 0.143rem !default;
+$paginatorElementPadding: 0 !default;
+
+//table
+$tableHeaderBorder: 1px solid $shade600 !default;
+$tableHeaderBorderWidth: 0 0 1px 0 !default;
+$tableHeaderBg: $shade800 !default;
+$tableHeaderTextColor: $shade100 !default;
+$tableHeaderFontWeight: 700 !default;
+$tableHeaderPadding: 1rem 1rem !default;
+
+$tableHeaderCellPadding: 1rem 1rem !default;
+$tableHeaderCellBg: $shade800 !default;
+$tableHeaderCellTextColor: $shade000 !default;
+$tableHeaderCellFontWeight: 700 !default;
+$tableHeaderCellBorder: 1px solid $shade600 !default;
+$tableHeaderCellBorderWidth: 0 0 1px 0 !default;
+$tableHeaderCellHoverBg: $hoverBg !default;
+$tableHeaderCellTextHoverColor: $shade000 !default;
+$tableHeaderCellIconColor: $shade100 !default;
+$tableHeaderCellIconHoverColor: $shade000 !default;
+$tableHeaderCellHighlightBg: $highlightBg !default;
+$tableHeaderCellHighlightTextColor: $highlightTextColor !default;
+$tableHeaderCellHighlightHoverBg: $highlightBg !default;
+$tableHeaderCellHighlightTextHoverColor: $highlightTextColor !default;
+$tableSortableColumnBadgeSize: 1.143rem !default;
+
+$tableBodyRowBg: $shade800 !default;
+$tableBodyRowTextColor: $shade000 !default;
+$tableBodyRowEvenBg: #1c2532 !default;
+$tableBodyRowHoverBg: $hoverBg !default;
+$tableBodyRowTextHoverColor: $shade000 !default;
+$tableBodyCellBorder: 1px solid $shade600 !default;
+$tableBodyCellBorderWidth: 0 0 1px 0 !default;
+$tableBodyCellPadding: 1rem 1rem !default;
+
+$tableFooterCellPadding: 1rem 1rem !default;
+$tableFooterCellBg: $shade800 !default;
+$tableFooterCellTextColor: $shade000 !default;
+$tableFooterCellFontWeight: 700 !default;
+$tableFooterCellBorder: 1px solid $shade600 !default;
+$tableFooterCellBorderWidth: 0 0 1px 0 !default;
+$tableResizerHelperBg: $primaryColor !default;
+$tableDragHelperBg: rgba($primaryColor, 0.16) !default;
+
+$tableFooterBorder: 1px solid $shade600 !default;
+$tableFooterBorderWidth: 0 0 1px 0 !default;
+$tableFooterBg: $shade800 !default;
+$tableFooterTextColor: $shade000 !default;
+$tableFooterFontWeight: 700 !default;
+$tableFooterPadding: 1rem 1rem !default;
+
+$tableCellContentAlignment: left !default;
+$tableTopPaginatorBorderWidth: 1px 0 1px 0 !default;
+$tableBottomPaginatorBorderWidth: 0 0 1px 0 !default;
+
+$tableScaleSM: 0.5 !default;
+$tableScaleLG: 1.25 !default;
+
+//dataview
+$dataViewContentPadding: 0 !default;
+$dataViewContentBorder: 0 none !default;
+$dataViewListItemBorder: solid $shade600 !default;
+$dataViewListItemBorderWidth: 0 0 1px 0 !default;
+
+//datascroller
+$dataScrollerContentPadding: 0 !default;
+$dataScrollerContentBorder: 0 none !default;
+$dataScrollerListItemBorder: solid $shade600 !default;
+$dataScrollerListItemBorderWidth: 0 0 1px 0 !default;
+
+//tree
+$treeContainerPadding: 0.286rem !default;
+$treeNodePadding: 0.143rem !default;
+$treeNodeContentPadding: 0.5rem !default;
+$treeNodeChildrenPadding: 0 0 0 1rem !default;
+$treeNodeIconColor: $shade100 !default;
+
+//timeline
+$timelineVerticalEventContentPadding: 0 1rem !default;
+$timelineHorizontalEventContentPadding: 1rem 0 !default;
+$timelineEventMarkerWidth: 1rem !default;
+$timelineEventMarkerHeight: 1rem !default;
+$timelineEventMarkerBorderRadius: 50% !default;
+$timelineEventMarkerBorder: 2px solid $primaryColor !default;
+$timelineEventMarkerBackground: $primaryTextColor !default;
+$timelineEventConnectorSize: 2px !default;
+$timelineEventColor: $shade600 !default;
+
+//org chart
+$organizationChartConnectorColor: $shade600 !default;

@@ -1,0 +1,80 @@
+//steps
+$stepsItemBg: transparent !default;
+$stepsItemBorder: 0 none !default;
+$stepsItemTextColor: $shade100 !default;
+$stepsItemNumberWidth: 2rem !default;
+$stepsItemNumberHeight: 2rem !default;
+$stepsItemNumberFontSize: 1.143rem !default;
+$stepsItemNumberColor: $shade000 !default;
+$stepsItemNumberBorderRadius: 50% !default;
+$stepsItemActiveFontWeight: 700 !default;
+
+//menu (e.g. menu, menubar, tieredmenu)
+$menuWidth: 12.5rem !default;
+$menuBg: $shade700 !default;
+$menuBorder: 1px solid $shade600 !default;
+$menuTextColor: $shade000 !default;
+$menuitemPadding: 0.75rem 1.25rem !default;
+$menuitemBorderRadius: 0 !default;
+$menuitemTextColor: $shade000 !default;
+$menuitemIconColor: $shade100 !default;
+$menuitemTextHoverColor: $shade000 !default;
+$menuitemIconHoverColor: $shade000 !default;
+$menuitemHoverBg: $hoverBg !default;
+$menuitemTextFocusColor: $shade000 !default;
+$menuitemIconFocusColor: $shade000 !default;
+$menuitemFocusBg: $shade600 !default;
+$menuitemTextActiveColor: $highlightTextColor !default;
+$menuitemIconActiveColor: $highlightTextColor !default;
+$menuitemActiveBg: $highlightBg !default;
+$menuitemActiveFocusBg: $highlightFocusBg !default;
+$menuitemSubmenuIconFontSize: 0.875rem !default;
+$submenuHeaderMargin: 0 !default;
+$submenuHeaderPadding: 0.75rem 1.25rem !default;
+$submenuHeaderBg: $shade700 !default;
+$submenuHeaderTextColor: $shade000 !default;
+$submenuHeaderBorderRadius: 0 !default;
+$submenuHeaderFontWeight: 700 !default;
+$overlayMenuBg: $menuBg !default;
+$overlayMenuBorder: 1px solid $shade600 !default;
+$overlayMenuShadow: 0 2px 4px -1px rgba(0, 0, 0, 0.2),
+0 4px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12) !default;
+$verticalMenuPadding: 0.25rem 0 !default;
+$menuSeparatorMargin: 0.25rem 0 !default;
+
+$breadcrumbPadding: 1rem !default;
+$breadcrumbBg: $menuBg !default;
+$breadcrumbBorder: $menuBorder !default;
+$breadcrumbItemTextColor: $menuitemTextColor !default;
+$breadcrumbItemIconColor: $menuitemIconColor !default;
+$breadcrumbLastItemTextColor: $menuitemTextColor !default;
+$breadcrumbLastItemIconColor: $menuitemIconColor !default;
+$breadcrumbSeparatorColor: $menuitemTextColor !default;
+
+$horizontalMenuPadding: 0.5rem !default;
+$horizontalMenuBg: $shade700 !default;
+$horizontalMenuBorder: $menuBorder !default;
+$horizontalMenuTextColor: $menuTextColor !default;
+$horizontalMenuRootMenuitemPadding: $menuitemPadding !default;
+$horizontalMenuRootMenuitemBorderRadius: $borderRadius !default;
+$horizontalMenuRootMenuitemTextColor: $menuitemTextColor !default;
+$horizontalMenuRootMenuitemIconColor: $menuitemIconColor !default;
+$horizontalMenuRootMenuitemTextHoverColor: $menuitemTextHoverColor !default;
+$horizontalMenuRootMenuitemIconHoverColor: $menuitemIconHoverColor !default;
+$horizontalMenuRootMenuitemHoverBg: $menuitemHoverBg !default;
+$horizontalMenuRootMenuitemTextActiveColor: $menuitemTextActiveColor !default;
+$horizontalMenuRootMenuitemIconActiveColor: $menuitemIconActiveColor !default;
+$horizontalMenuRootMenuitemActiveBg: $menuitemActiveBg !default;
+
+//dock
+$dockActionWidth: 4rem !default;
+$dockActionHeight: 4rem !default;
+$dockItemPadding: 0.5rem !default;
+$dockItemBorderRadius: $borderRadius !default;
+$dockCurrentItemMargin: 1.5rem !default;
+$dockFirstItemsMargin: 1.3rem !default;
+$dockSecondItemsMargin: 0.9rem !default;
+$dockBg: rgba(255, 255, 255, 0.1) !default;
+$dockBorder: 1px solid rgba(255, 255, 255, 0.2) !default;
+$dockPadding: 0.5rem 0.5rem !default;
+$dockBorderRadius: 0.5rem !default;

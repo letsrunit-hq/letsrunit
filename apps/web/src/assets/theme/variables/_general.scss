@@ -1,0 +1,42 @@
+//global
+$fontFamily: "Inter var", sans-serif !default;
+$fontSize: 1rem !default;
+$fontWeight: normal !default;
+$textColor: $shade000 !default;
+$textSecondaryColor: $shade100 !default;
+$borderRadius: 6px !default;
+$transitionDuration: 0.2s !default;
+$formElementTransition: background-color $transitionDuration,
+color $transitionDuration, border-color $transitionDuration,
+box-shadow $transitionDuration !default;
+$actionIconTransition: background-color $transitionDuration,
+color $transitionDuration, box-shadow $transitionDuration !default;
+$listItemTransition: box-shadow $transitionDuration !default;
+$primeIconFontSize: 1rem !default;
+$divider: 1px solid $shade600 !default;
+$inlineSpacing: 0.5rem !default; //spacing between inline elements
+$disabledOpacity: 0.4 !default; //opacity of a disabled item
+$maskBg: rgba(0, 0, 0, 0.4) !default; //modal mask bg color
+$loadingIconFontSize: 2rem !default;
+$errorColor: #fca5a5 !default;
+
+//scale
+$scaleSM: 0.875 !default;
+$scaleLG: 1.25 !default;
+
+//focus
+$focusOutlineColor: $primaryLightestColor !default;
+$focusOutline: 0 none !default;
+$focusOutlineOffset: 0 !default;
+$focusShadow: 0 0 0 0.2rem $focusOutlineColor !default;
+
+//action icons
+$actionIconWidth: 2rem !default;
+$actionIconHeight: 2rem !default;
+$actionIconBg: transparent !default;
+$actionIconBorder: 0 none !default;
+$actionIconColor: $shade100 !default;
+$actionIconHoverBg: $hoverBg !default;
+$actionIconHoverBorderColor: transparent !default;
+$actionIconHoverColor: $shade000 !default;
+$actionIconBorderRadius: 50% !default;

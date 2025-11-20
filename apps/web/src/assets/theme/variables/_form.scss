@@ -1,0 +1,173 @@
+//input field (e.g. inputtext, spinner, inputmask)
+$inputPadding: 0.75rem 0.75rem !default;
+$inputTextFontSize: 1rem !default;
+$inputBg: $shade900 !default;
+$inputTextColor: $shade000 !default;
+$inputIconColor: $shade100 !default;
+$inputBorder: 1px solid $shade600 !default;
+$inputHoverBorderColor: $primaryColor !default;
+$inputFocusBorderColor: $primaryColor !default;
+$inputErrorBorderColor: $errorColor !default;
+$inputPlaceholderTextColor: $shade100 !default;
+$inputFilledBg: $shade600 !default;
+$inputFilledHoverBg: $inputFilledBg !default;
+$inputFilledFocusBg: $inputFilledBg !default;
+
+//input groups
+$inputGroupBg: $shade800 !default;
+$inputGroupTextColor: $shade100 !default;
+$inputGroupAddOnMinWidth: 3rem !default;
+
+//input lists (e.g. dropdown, autocomplete, multiselect, orderlist)
+$inputListBg: $shade800 !default;
+$inputListTextColor: $shade000 !default;
+$inputListBorder: $inputBorder !default;
+$inputListPadding: 0.75rem 0 !default;
+$inputListItemPadding: 0.75rem 1.25rem !default;
+$inputListItemBg: transparent !default;
+$inputListItemTextColor: $shade000 !default;
+$inputListItemHoverBg: $hoverBg !default;
+$inputListItemTextHoverColor: $shade000 !default;
+$inputListItemTextFocusColor: $shade000 !default;
+$inputListItemFocusBg: $shade600 !default;
+$inputListItemBorder: 0 none !default;
+$inputListItemBorderRadius: 0 !default;
+$inputListItemMargin: 0 !default;
+$inputListItemFocusShadow: inset 0 0 0 0.15rem $focusOutlineColor !default;
+$inputListHeaderPadding: 0.75rem 1.25rem !default;
+$inputListHeaderMargin: 0 !default;
+$inputListHeaderBg: $shade800 !default;
+$inputListHeaderTextColor: $shade000 !default;
+$inputListHeaderBorder: 1px solid $shade600 !default;
+
+//inputs with overlays (e.g. autocomplete, dropdown, multiselect)
+$inputOverlayBg: $inputListBg !default;
+$inputOverlayHeaderBg: $inputListHeaderBg !default;
+$inputOverlayBorder: 1px solid $shade600 !default;
+$inputOverlayShadow: 0 2px 4px -1px rgba(0, 0, 0, 0.2),
+0 4px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12) !default;
+
+//password
+$passwordMeterBg: $shade600 !default;
+$passwordWeakBg: #eb9a9c !default;
+$passwordMediumBg: #ffcf91 !default;
+$passwordStrongBg: #93deac !default;
+
+//checkbox
+$checkboxWidth: 22px !default;
+$checkboxHeight: 22px !default;
+$checkboxBorder: 2px solid $shade600 !default;
+$checkboxIconFontSize: 14px !default;
+$checkboxActiveBorderColor: $primaryColor !default;
+$checkboxActiveBg: $primaryColor !default;
+$checkboxIconActiveColor: $primaryTextColor !default;
+$checkboxActiveHoverBg: $primaryLighterColor !default;
+$checkboxIconActiveHoverColor: $primaryTextColor !default;
+$checkboxActiveHoverBorderColor: $primaryLighterColor !default;
+
+//radiobutton
+$radiobuttonWidth: 22px !default;
+$radiobuttonHeight: 22px !default;
+$radiobuttonBorder: 2px solid $shade600 !default;
+$radiobuttonIconSize: 12px !default;
+$radiobuttonActiveBorderColor: $primaryColor !default;
+$radiobuttonActiveBg: $primaryColor !default;
+$radiobuttonIconActiveColor: $primaryTextColor !default;
+$radiobuttonActiveHoverBg: $primaryLighterColor !default;
+$radiobuttonIconActiveHoverColor: $primaryTextColor !default;
+$radiobuttonActiveHoverBorderColor: $primaryLighterColor !default;
+
+//colorpicker
+$colorPickerPreviewWidth: 2rem !default;
+$colorPickerPreviewHeight: 2rem !default;
+$colorPickerBg: $shade800 !default;
+$colorPickerBorder: 1px solid $shade600 !default;
+$colorPickerHandleColor: $shade000 !default;
+
+//rating
+$ratingIconFontSize: 1.143rem !default;
+$ratingCancelIconColor: #f48fb1 !default;
+$ratingCancelIconHoverColor: #f48fb1 !default;
+$ratingStarIconOffColor: $shade000 !default;
+$ratingStarIconOnColor: $primaryColor !default;
+$ratingStarIconHoverColor: $primaryColor !default;
+
+//slider
+$sliderBg: $shade600 !default;
+$sliderBorder: 0 none !default;
+$sliderHorizontalHeight: 0.286rem !default;
+$sliderVerticalWidth: 0.286rem !default;
+$sliderHandleWidth: 1.143rem !default;
+$sliderHandleHeight: 1.143rem !default;
+$sliderHandleBg: $shade600 !default;
+$sliderHandleBorder: 2px solid $primaryColor !default;
+$sliderHandleBorderRadius: 50% !default;
+$sliderHandleHoverBorderColor: $primaryColor !default;
+$sliderHandleHoverBg: $primaryColor !default;
+$sliderRangeBg: $primaryColor !default;
+
+//calendar
+$calendarTableMargin: 0.5rem 0 !default;
+$calendarPadding: 0.5rem !default;
+$calendarBg: $shade800 !default;
+$calendarInlineBg: $calendarBg !default;
+$calendarTextColor: $shade000 !default;
+$calendarBorder: $inputListBorder !default;
+$calendarOverlayBorder: $inputOverlayBorder !default;
+
+$calendarHeaderPadding: 0.5rem !default;
+$calendarHeaderBg: $shade800 !default;
+$calendarInlineHeaderBg: $calendarBg !default;
+$calendarHeaderBorder: 1px solid $shade600 !default;
+$calendarHeaderTextColor: $shade000 !default;
+$calendarHeaderFontWeight: 700 !default;
+$calendarHeaderCellPadding: 0.5rem !default;
+$calendarMonthYearHeaderHoverTextColor: $primaryColor !default;
+
+$calendarCellDatePadding: 0.5rem !default;
+$calendarCellDateWidth: 2.5rem !default;
+$calendarCellDateHeight: 2.5rem !default;
+$calendarCellDateBorderRadius: 50% !default;
+$calendarCellDateBorder: 1px solid transparent !default;
+$calendarCellDateHoverBg: $hoverBg !default;
+$calendarCellDateTodayBg: transparent !default;
+$calendarCellDateTodayBorderColor: transparent !default;
+$calendarCellDateTodayTextColor: $primaryColor !default;
+
+$calendarButtonBarPadding: 1rem 0 !default;
+$calendarTimePickerPadding: 0.5rem !default;
+$calendarTimePickerElementPadding: 0 0.5rem !default;
+$calendarTimePickerTimeFontSize: 1.25rem !default;
+
+$calendarBreakpoint: 769px !default;
+$calendarCellDatePaddingSM: 0 !default;
+
+//input switch
+$inputSwitchWidth: 3rem !default;
+$inputSwitchHeight: 1.75rem !default;
+$inputSwitchBorderRadius: 30px !default;
+$inputSwitchHandleWidth: 1.25rem !default;
+$inputSwitchHandleHeight: 1.25rem !default;
+$inputSwitchHandleBorderRadius: 50% !default;
+$inputSwitchSliderPadding: 0.25rem !default;
+$inputSwitchSliderOffBg: $shade500 !default;
+$inputSwitchHandleOffBg: $shade100 !default;
+$inputSwitchSliderOffHoverBg: $shade600 !default;
+$inputSwitchSliderOnBg: $primaryColor !default;
+$inputSwitchSliderOnHoverBg: $primaryLightColor !default;
+$inputSwitchHandleOnBg: $primaryTextColor !default;
+
+//upload
+$fileUploadProgressBarHeight: 0.25rem !default;
+$fileUploadContentPadding: 2rem 1rem !default;
+
+//editor
+$editorToolbarBg: $panelHeaderBg !default;
+$editorToolbarBorder: $panelHeaderBorder !default;
+$editorToolbarPadding: $panelHeaderPadding !default;
+$editorToolbarIconColor: $textSecondaryColor !default;
+$editorToolbarIconHoverColor: $textColor !default;
+$editorIconActiveColor: $primaryColor !default;
+$editorContentBorder: $panelContentBorder !default;
+$editorContentBg: $panelContentBg !default;
+
