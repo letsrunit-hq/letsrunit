@@ -15,12 +15,13 @@ CREATE TABLE IF NOT EXISTS public.runs
 (
     id uuid unique NOT NULL DEFAULT uuid_generate_v4() primary key,
     -- Runs belong to a project. RLS is enforced via the owning project's account_id
-    project_id uuid not null references public.projects(id),
+    project_id uuid NOT NULL references public.projects(id),
 
     -- begin fields generated automatically from the template inputs
-    type run_type,
+    feature_id uuid references public.features(id),
+    type run_type NOT NULL,
     target text,
-    status run_status,
+    status run_status NOT NULL,
     error text,
     -- explicitly nullable timestamps for run lifecycle
     started_at timestamp with time zone,

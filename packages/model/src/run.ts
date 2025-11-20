@@ -4,7 +4,7 @@ import { type Data, type Run, RunSchema, RunStatus } from './types';
 import { connect } from './supabase';
 import { z } from 'zod';
 import { toData } from './utils/convert';
-import { DbError } from './db-error';
+import { DBError } from './db-error';
 
 const CreateRunSchema = RunSchema.pick({ projectId: true, type: true, status: true, target: true }).partial({
   status: true,
@@ -12,7 +12,7 @@ const CreateRunSchema = RunSchema.pick({ projectId: true, type: true, status: tr
 
 export async function createRun(
   run: z.infer<typeof CreateRunSchema>,
-  opts: { supabase?: SupabaseClient, by?: User } = {},
+  opts: { supabase?: SupabaseClient; by?: User } = {},
 ): Promise<UUID> {
   const supabase = opts.supabase ?? connect();
   const runId = randomUUID();
@@ -25,7 +25,7 @@ export async function createRun(
     created_by: opts.by?.id,
   });
 
-  if (error) throw new DbError(status, error);
+  if (error) throw new DBError(status, error);
 
   return runId;
 }
@@ -43,5 +43,5 @@ export async function updateRunStatus(
   if (status === 'success' || status === 'failed') data.finished_at = new Date().toISOString();
 
   const { status: qs, error: qe } = await supabase.from('runs').update(data).eq('id', runId);
-  if (qe) throw new DbError(qs, qe);
+  if (qe) throw new DBError(qs, qe);
 }

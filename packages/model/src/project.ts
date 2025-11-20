@@ -4,7 +4,7 @@ import { connect } from './supabase';
 import { type Data, type Project, ProjectSchema } from './types';
 import { fromData, toData } from './utils/convert';
 import { z } from 'zod';
-import { DbError } from './db-error';
+import { DBError } from './db-error';
 
 const CreateProjectSchema = ProjectSchema.omit({ id: true }).partial().required({ accountId: true, url: true });
 
@@ -12,7 +12,7 @@ export async function getProject(id: string, opts: { supabase?: SupabaseClient }
   const supabase = opts.supabase ?? connect();
 
   const { data, status, error } = await supabase.from('projects').select().eq('id', id);
-  if (error) throw new DbError(status, error);
+  if (error) throw new DBError(status, error);
 
   return fromData(ProjectSchema)(data as unknown as Data<Project>);
 }
@@ -30,7 +30,7 @@ export async function createProject(
     created_by: opts.by?.id,
   });
 
-  if (error) throw new DbError(status, error);
+  if (error) throw new DBError(status, error);
 
   return id;
 }
@@ -52,5 +52,5 @@ export async function updateProject(
     })
     .eq('id', id);
 
-  if (error) throw new DbError(status, error);
+  if (error) throw new DBError(status, error);
 }

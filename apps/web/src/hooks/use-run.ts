@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { connect as supabase } from '@/libs/supabase/browser';
-import { type Data, fromData, type Journal, journalFromData, type Run, RunSchema } from '@letsrunit/model';
+import { type Data, DBError, fromData, type Journal, journalFromData, type Run, RunSchema } from '@letsrunit/model';
 import type { UUID } from 'node:crypto';
 
 export interface UseRunOptions {
@@ -33,37 +33,45 @@ export function useRun(id: string | undefined, opts: UseRunOptions = {}) {
     setError(null);
 
     async function fetchRun() {
-      const { data, error: e } = await client!.from('runs').select('*').eq('id', id).single();
+      const { data, status, error } = await client!.from('runs').select('*').eq('id', id).single();
+      if (error) throw new DBError(status, error);
 
-      if (e) setError(e.message);
-      else setRun(data as unknown as Run);
+      return fromData(RunSchema)(data);
     }
 
     async function fetchJournal(): Promise<Journal | undefined> {
-      const { data, error: e } = await client!
+      const { data, status, error } = await client!
         .from('journal_entries')
         .select('*')
         .eq('run_id', id)
         .order('created_at', { ascending: true });
 
-      if (e) throw e;
+      if (error) throw new DBError(status, error);
+
       return journalFromData(id as UUID, data);
     }
 
-    Promise.all([fetchRun(), fetchJournal()])
+    Promise.all([
+      fetchRun().then(setRun),
+      fetchJournal().then(setJournal)
+    ])
       .catch((e) => setError(e?.message ?? String(e)))
       .finally(() => isActive && setLoading(false));
 
     const channel = client.channel(`realtime:run:${id}`);
 
-    channel.on('postgres_changes', { event: '*', schema: 'public', table: 'runs', filter: `id=eq.${id}` }, (payload) => {
-      try {
-        const run = fromData(RunSchema)(payload.new as unknown as Data<Run>);
-        setRun(run);
-      } catch (e: any) {
-        setError(e?.message ?? String(e));
-      }
-    });
+    channel.on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'runs', filter: `id=eq.${id}` },
+      (payload) => {
+        try {
+          const run = fromData(RunSchema)(payload.new as unknown as Data<Run>);
+          setRun(run);
+        } catch (e: any) {
+          setError(e?.message ?? String(e));
+        }
+      },
+    );
 
     channel.on(
       'postgres_changes',

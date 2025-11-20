@@ -6,8 +6,10 @@ export async function ensureSignedIn(opts: { supabase?: SupabaseClient } = {}) {
 
   const { data } = await client.auth.getSession();
 
-  if (!data.session) {
-    const { error, data } = await client.auth.signInAnonymously();
+  console.log(data);
+
+  if (!data.session?.user) {
+    const { error } = await client.auth.signInAnonymously();
     if (error) throw error;
   }
 }

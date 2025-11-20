@@ -8,6 +8,7 @@ export const RunSchema = z.object({
   id: UUIDSchema,
   type: RunTypeSchema.describe('The mode of the run defining the workflow to execute'),
   projectId: UUIDSchema.describe('Identifier of the project this run belongs to'),
+  featureId: UUIDSchema.nullable().describe('The feature that was run'),
   target: z.url().describe('The target URL for the run'),
   status: RunStatusSchema.describe('Current execution status of the run'),
   error: z.string().nullable().describe('Error message in case of an error during the run'),

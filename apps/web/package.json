@@ -15,6 +15,7 @@
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.81.1",
     "google-auth-library": "^10.4.0",
+    "lucide-react": "^0.554.0",
     "motion": "^12.23.24",
     "next": "15.5.5",
     "primeflex": "^4.0.0",

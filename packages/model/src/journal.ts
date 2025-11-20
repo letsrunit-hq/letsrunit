@@ -34,7 +34,7 @@ export function journalFromData(runId: UUID, raw: JournalEntryData[]): Journal {
 
   for (const e of raw) {
     const item = entryFromData(e);
-    item.artifacts = (item.artifacts ?? []).filter((a) => !!a.url && isScreenshot(a.name));
+    item.screenshot = (item.artifacts ?? []).find((a) => !!a.url && isScreenshot(a.name));
 
     if (item.type === 'title') {
       prepareEntries.clear();

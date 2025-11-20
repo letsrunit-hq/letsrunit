@@ -1,7 +1,3 @@
-body {
-  background-color: oklch(.984 .003 247.858);
-}
-
 .container {
   min-height: 100vh;
   width: 100vw;
@@ -54,6 +50,8 @@ body {
 
 .input {
   width: 100%;
+  background-color: #ffffff;
+  color: #4b5563;
 }
 
 .button {
@@ -86,6 +84,8 @@ body {
 /* Below-the-fold */
 .section {
   padding: 6rem 1.5rem 7rem;
+  background-color: oklch(.984 .003 247.858);
+  color: #333333;
 }
 
 .sectionInner {

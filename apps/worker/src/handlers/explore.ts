@@ -6,7 +6,7 @@ export async function startExploreRun(run: Run, { supabase, journal }: HandleOpt
   return await explore(run.target, { journal }, (info, actions) =>
     Promise.all([
       updateProject(run.projectId, info, { supabase }),
-      storeSuggestions(run.projectId, run.id, actions, { supabase }),
+      storeSuggestions(run.projectId, actions, { supabase }),
     ]),
   );
 }

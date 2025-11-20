@@ -3,13 +3,15 @@ import { startExploreRun } from './handlers/explore';
 import { Journal, SupabaseSink } from '@letsrunit/journal';
 import type { HandleOptions } from './types/handle';
 
+const ARTIFACT_BUCKET = process.env.ARTIFACT_BUCKET || 'artifacts';
+
 export async function handle(run: Run, { supabase, journal }: Partial<HandleOptions> = {}): Promise<void> {
   supabase ??= connect();
   journal ??= new Journal(new SupabaseSink({
     supabase,
     runId: run.id,
     tableName: 'journal_entries',
-    bucket: 'artifacts',
+    bucket: ARTIFACT_BUCKET,
   }));
 
   try {

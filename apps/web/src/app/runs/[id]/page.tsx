@@ -2,7 +2,7 @@ import { connect } from '@/libs/supabase/server';
 import { isUUID } from '@letsrunit/utils';
 import { notFound } from 'next/navigation';
 import Screen from './screen';
-import { DbError } from '@letsrunit/model';
+import { DBError } from '@letsrunit/model';
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -15,7 +15,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const { status, data, error } = await supabase.from('runs').select('id, project_id').eq('id', id).maybeSingle();
 
   if (status < 100 || status >= 400) {
-    throw new DbError(status, error); // Server error or bad request
+    throw new DBError(status, error); // Server error or bad request
   }
 
   if (status > 400 && status < 500) {

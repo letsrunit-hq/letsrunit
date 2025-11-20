@@ -1,0 +1,19 @@
+.screenshotBox {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #ffffff;
+  border: 1px solid var(--surface-border);
+  border-radius: var(--border-radius);
+
+  img {
+    max-width: 100%;
+  }
+}
+
+.noImage {
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100%;
+  display: flex;
+}

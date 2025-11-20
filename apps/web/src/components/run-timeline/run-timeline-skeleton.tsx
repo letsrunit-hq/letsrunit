@@ -32,7 +32,7 @@ export function RunTimelineSkeleton() {
   const placeholderEvents = Array.from({ length: 4 }, () => ({ id: cryptoRandomId() }));
 
   return (
-    <div className={styles.stickyBox}>
+    <>
       <div className="mb-4">
         <h2 className="text-color mb-1">Test Steps</h2>
         <Skeleton width="10rem" height="0.875rem" />
@@ -47,11 +47,11 @@ export function RunTimelineSkeleton() {
             <Skeleton width="5rem" height="0.875rem" />
           </div>
           <div className="flex align-items-center gap-2">
-            <span className={`${styles.dot} ${styles.dotRedWeak}`} />
+            <span className={`${styles.dot} ${styles.dotRed}`} />
             <Skeleton width="5rem" height="0.875rem" />
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

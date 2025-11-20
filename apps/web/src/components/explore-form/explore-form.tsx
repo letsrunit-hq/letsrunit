@@ -6,6 +6,7 @@ import { Button } from 'primereact/button';
 import { startExploreRun } from '@/actions/explore';
 import { useRouter } from 'next/navigation';
 import { ensureSignedIn } from '@/libs/auth';
+import { cn } from '@letsrunit/utils';
 
 export type UrlFormProps = {
   className?: string;
@@ -50,7 +51,7 @@ export function ExploreForm({
         onChange={(e) => setUrl((e.target as HTMLInputElement).value)}
         placeholder={placeholder}
         aria-label="website-input"
-        className={`p-inputtext-lg ${inputClassName ?? ''}`.trim()}
+        className={cn('p-inputtext-lg', inputClassName)}
         disabled={isSubmitting}
       />
       <Button

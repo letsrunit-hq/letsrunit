@@ -15,6 +15,7 @@ export const JournalEntrySchema = z.object({
   message: z.string().describe('Primary message content of the entry'),
   meta: z.record(z.string(), z.any()).describe('Additional structured data attached to the entry'),
   artifacts: z.array(ArtifactSchema).describe('Related files or resources linked to the entry'),
+  screenshot: ArtifactSchema.readonly().optional().describe('Screenshot of the entry'),
   createdAt: z.coerce.date().describe('Timestamp when the journal entry was created'),
   createdBy: UUIDSchema.nullable().describe('Account id that created the journal entry'),
   updatedAt: z.coerce.date().describe('Timestamp when the journal entry was updated'),

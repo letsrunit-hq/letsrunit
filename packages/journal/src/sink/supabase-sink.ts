@@ -5,8 +5,9 @@ import { File } from 'node:buffer';
 interface SupabaseSinkOptions {
   supabase: SupabaseClient;
   runId: string;
-  tableName: string;
+  tableName?: string;
   bucket?: string;
+  console?: { error: (...args: any[]) => void };
 }
 
 export class SupabaseSink implements Sink {
@@ -14,12 +15,15 @@ export class SupabaseSink implements Sink {
   private readonly runId: string;
   private readonly tableName: string;
   private readonly bucket?: string;
+  private readonly console: { error: (...args: any[]) => void };
+  private bucketEnsured = false;
 
   constructor(options: SupabaseSinkOptions) {
     this.supabase = options.supabase;
     this.runId = options.runId;
-    this.tableName = options.tableName;
+    this.tableName = options.tableName ?? 'log_entries';
     this.bucket = options.bucket;
+    this.console = options.console || console;
   }
 
   async publish(...entries: JournalEntry[]): Promise<void> {
@@ -35,12 +39,27 @@ export class SupabaseSink implements Sink {
         created_at: new Date().toISOString(),
       });
 
-      if (error) console.error('SupabaseSink insert failed:', error);
+      if (error) {
+        this.console.error('SupabaseSink insert failed:', error);
+      }
+    }
+  }
+
+  private async ensureBucket() {
+    if (!this.bucket || this.bucketEnsured) return;
+
+    try {
+      await this.supabase.storage?.createBucket?.(this.bucket, { public: true });
+      this.bucketEnsured = true;
+    } catch (error) {
+      this.console.error(error);
     }
   }
 
   private async storeArtifacts(artifacts: File[]): Promise<any[]> {
     if (!this.bucket || artifacts.length === 0) return [];
+
+    await this.ensureBucket();
 
     const stored: any[] = [];
 
@@ -51,7 +70,7 @@ export class SupabaseSink implements Sink {
         .upload(path, await artifact.bytes(), { upsert: false });
 
       if (error) {
-        console.error('SupabaseSink upload failed:', error);
+        this.console.error('SupabaseSink upload failed:', error);
         continue;
       }
 

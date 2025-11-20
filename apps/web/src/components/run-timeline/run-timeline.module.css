@@ -1,8 +1,3 @@
-.stickyBox {
-  position: sticky;
-  top: 2rem; /* replaces top-8 */
-}
-
 .markerBox {
   width: 1rem; /* 16px to match original marker box */
   height: 1rem;
@@ -24,7 +19,14 @@
   background-color: var(--green-500);
 }
 
-.dotRedWeak {
+.dotRed {
   background-color: var(--red-500);
-  opacity: 0.3;
+}
+
+.textGreen {
+  color: var(--green-500);
+}
+
+.textRed {
+  color: var(--red-500);
 }
