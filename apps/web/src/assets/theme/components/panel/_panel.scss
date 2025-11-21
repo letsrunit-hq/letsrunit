@@ -1,4 +1,10 @@
 .p-panel {
+    // Base panel look (moved from globals.css)
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    background: var(--surface-card);
+    overflow: hidden;
+
     .p-panel-header {
         border: $panelHeaderBorder;
         padding: $panelHeaderPadding;
@@ -43,5 +49,26 @@
         background: $panelFooterBg;
         color: $panelFooterTextColor;
         border-top: 0 none;
+    }
+
+    // Variants moved from globals.css
+    &.primary {
+        // Border style (dashed/solid) intentionally not defined here
+        background: linear-gradient(
+                0deg,
+                color-mix(in oklab, var(--orange-400, #f59e0b) 6%, transparent),
+                transparent 60%
+            ),
+            var(--surface-card);
+        border-color: color-mix(in oklab, var(--primary-color) 25%, var(--surface-border));
+    }
+
+    &.alt {
+        background: linear-gradient(
+                0deg,
+                color-mix(in oklab, var(--blue-400, #60a5fa) 6%, transparent),
+                transparent 60%
+            ),
+            var(--surface-card);
     }
 }

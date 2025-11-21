@@ -1,22 +1,22 @@
 //panel
-$panelHeaderBorderColor: $shade600 !default;
-$panelHeaderBorder: 1px solid $shade600 !default;
-$panelHeaderBg: $shade800 !default;
+$panelHeaderBorderColor: var(--surface-border) !default;
+$panelHeaderBorder: 0 none !default;
+$panelHeaderBg: transparent !default;
 $panelHeaderTextColor: $shade000 !default;
-$panelHeaderFontWeight: 700 !default;
-$panelHeaderPadding: 1.25rem !default;
+$panelHeaderFontWeight: 600 !default;
+$panelHeaderPadding: 0.875rem 1rem !default;
 $panelToggleableHeaderPadding: 0.75rem 1.25rem !default;
 
 $panelHeaderHoverBg: $hoverBg !default;
 $panelHeaderHoverBorderColor: $shade600 !default;
 $panelHeaderTextHoverColor: $shade000 !default;
 
-$panelContentBorderColor: $shade600 !default;
-$panelContentBorder: 1px solid $shade600 !default;
-$panelContentBg: $shade800 !default;
+$panelContentBorderColor: var(--surface-border) !default;
+$panelContentBorder: 1px solid var(--surface-border) !default;
+$panelContentBg: var(--surface-card) !default;
 $panelContentEvenRowBg: #1c2532 !default;
 $panelContentTextColor: $shade000 !default;
-$panelContentPadding: 1.25rem !default;
+$panelContentPadding: 1rem !default;
 
 $panelFooterBorder: 1px solid $shade600 !default;
 $panelFooterBg: $shade800 !default;

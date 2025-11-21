@@ -18,7 +18,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     throw new DBError(status, error); // Server error or bad request
   }
 
-  if (status > 400 && status < 500) {
+  if (!data || (status > 400 && status < 500)) {
     return notFound(); // Access error or not found
   }
 

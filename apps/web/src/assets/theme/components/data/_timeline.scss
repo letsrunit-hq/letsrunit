@@ -1,6 +1,6 @@
 .p-timeline {
     .p-timeline-event-marker {
-        border: $timelineEventMarkerBorder; 
+        border: $timelineEventMarkerBorder;
         border-radius: $timelineEventMarkerBorderRadius;
         width: $timelineEventMarkerWidth;
         height: $timelineEventMarkerHeight;
@@ -9,6 +9,8 @@
 
     .p-timeline-event-connector {
         background-color: $timelineEventColor;
+        // moved from globals.css
+        margin: 7px 0;
     }
 
     &.p-timeline-vertical {
@@ -32,6 +34,11 @@
             height: $timelineEventConnectorSize;
         }
     }
+}
+
+// moved from globals.css
+.p-timeline-event-separator {
+    margin-top: 2px;
 }
 
 

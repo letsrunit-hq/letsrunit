@@ -1,8 +1,10 @@
 .p-breadcrumb {
-	background: $breadcrumbBg;
-	border: $breadcrumbBorder;
-	border-radius: $borderRadius;
-	padding: $breadcrumbPadding;
+	// moved from globals.css
+	margin-top: 1em;
+		background: $breadcrumbBg;
+		border: $breadcrumbBorder;
+		border-radius: $borderRadius;
+		padding: $breadcrumbPadding;
 
 	.p-breadcrumb-list {
 		li {

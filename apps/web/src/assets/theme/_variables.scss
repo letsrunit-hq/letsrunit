@@ -1,8 +1,8 @@
-$primaryColor: #fbbf24 !default;
-$primaryLightColor: #fcd34d !default;
-$primaryLighterColor: #fde68a !default;
-$primaryLightestColor: rgba(251, 191, 36, 0.2) !default;
-$primaryTextColor: #030712 !default;
+$primaryColor: #ff851b !default;
+$primaryLightColor: #ffa24f !default;      // ~20 percent lighter
+$primaryLighterColor: #ffbe80 !default;    // ~40 percent lighter
+$primaryLightestColor: rgba(255, 133, 27, 0.2) !default;
+$primaryTextColor: #ffffff !default;
 
 $highlightBg: rgba(251, 191, 36, 0.16) !default;
 $highlightTextColor: rgba(255, 255, 255, 0.87) !default;
@@ -20,7 +20,7 @@ $colors: (
   "bluegray": #64748b,
   "purple": #a855f7,
   "red": #ff3d32,
-  "primary": $primaryColor
+  "primary": $primaryColor,
 );
 
 //shades
