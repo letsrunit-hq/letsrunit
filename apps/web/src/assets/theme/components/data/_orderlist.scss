@@ -74,8 +74,16 @@
 
 	&.p-orderlist-striped {
 		.p-orderlist-list {
-			.p-orderlist-item:nth-child(even) {
-				background: $panelContentEvenRowBg;
+      .p-orderlist-item:nth-child(even) {
+        background: $panelContentEvenRowBg;
+
+        &:hover {
+          background: $inputListItemHoverBg;
+        }
+      }
+
+			.p-orderlist-item:nth-child(odd) {
+				background: $panelContentOddRowBg;
 
 				&:hover {
 					background: $inputListItemHoverBg;

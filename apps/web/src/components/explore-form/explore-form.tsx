@@ -57,6 +57,7 @@ export function ExploreForm({
       <Button
         type="submit"
         label={buttonLabel}
+        size="large"
         className={buttonClassName}
         disabled={isSubmitting}
         loading={isSubmitting}

@@ -180,6 +180,9 @@
 	:-ms-input-placeholder {
 		@content;
 	}
+  ::placeholder {
+    @content;
+  }
 }
 
 @mixin scaledPadding($val, $scale) {

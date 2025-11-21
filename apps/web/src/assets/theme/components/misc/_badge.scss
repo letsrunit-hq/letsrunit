@@ -50,28 +50,37 @@
 .p-tag {
     background: $badgeBg;
     color: $badgeTextColor;
-    font-size: $badgeFontSize;
+    font-size: $tagFontSize;
     font-weight: $badgeFontWeight;
     padding: $tagPadding;
-    border-radius: $borderRadius;
+    border-radius: $tagBorderRadius;
+    border: $buttonBorder;
 
     &.p-tag-success {
-        background-color: $successButtonBg;
-        color: $successButtonTextColor;
+        background-color: $successTagBg;
+        color: $successTagTextColor;
+        border: $successTagBorder;
     }
 
     &.p-tag-info {
         background-color: $infoButtonBg;
         color: $infoButtonTextColor;
+        border-color: $infoButtonBg;
     }
 
     &.p-tag-warning {
         background-color: $warningButtonBg;
         color: $warningButtonTextColor;
+        border-color: $warningButtonBg;
     }
 
     &.p-tag-danger {
-        background-color: $dangerButtonBg;
-        color: $dangerButtonTextColor;
+        background-color: $dangerTagBg;
+        color: $dangerTagTextColor;
+        border-color: $dangerTagBg;
+    }
+
+    * + .p-tag-value {
+        margin-left: 0.5rem;
     }
 }

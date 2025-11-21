@@ -1,4 +1,4 @@
-$primaryColor: #ff851b !default;
+$primaryColor: #e17100 !default;
 $primaryLightColor: #ffa24f !default;      // ~20 percent lighter
 $primaryLighterColor: #ffbe80 !default;    // ~40 percent lighter
 $primaryLightestColor: rgba(255, 133, 27, 0.2) !default;
@@ -26,11 +26,11 @@ $colors: (
 //shades
 $shade000: rgba(255, 255, 255, 0.87) !default; //text color
 $shade100: rgba(255, 255, 255, 0.6) !default; //text secondary color
-$shade500: #6b7280 !default;
-$shade600: #424b57 !default; //input bg, border, divider
-$shade700: #374151 !default; //menu bg
-$shade800: #1f2937 !default; //elevated surface
-$shade900: #111827 !default; //ground surface
+$shade500: #71717a !default; // zinc-500
+$shade600: #52525b !default; // zinc-600
+$shade700: #3f3f46 !default; // zinc-700
+$shade800: #27272a !default; // zinc-800
+$shade900: #18181b !default; // zinc-900
 
 $hoverBg: rgba(255, 255, 255, 0.03) !default;
 
@@ -47,10 +47,10 @@ $hoverBg: rgba(255, 255, 255, 0.03) !default;
 @import 'variables/misc';
 
 :root {
-  font-family: "Inter var", sans-serif;
+  font-family: "Geist", sans-serif;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   font-variation-settings: normal;
-  --font-family: "Inter var", sans-serif;
+  --font-family: "Geist", sans-serif;
   --font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   --surface-a: #{$shade800};
   --surface-b: #{$shade900};
@@ -60,18 +60,19 @@ $hoverBg: rgba(255, 255, 255, 0.03) !default;
   --surface-f: #{$shade800};
   --text-color: #{$shade000};
   --text-color-secondary: #{$shade100};
+  --muted: #{$shade500};
   --primary-color: #{$primaryColor};
   --primary-color-text: #{$primaryTextColor};
-  --surface-0: #111827;
-  --surface-50: #1f2937;
-  --surface-100: #374151;
-  --surface-200: #4b5563;
-  --surface-300: #6b7280;
-  --surface-400: #9ca3af;
-  --surface-500: #d1d5db;
-  --surface-600: #e5e7eb;
-  --surface-700: #f3f4f6;
-  --surface-800: #f9fafb;
+  --surface-0:   #18181b;   // zinc-900
+  --surface-50:  #27272a;   // zinc-800
+  --surface-100: #3f3f46;   // zinc-700
+  --surface-200: #52525b;   // zinc-600
+  --surface-300: #71717a;   // zinc-500
+  --surface-400: #a1a1aa;   // zinc-400
+  --surface-500: #d4d4d8;   // zinc-300
+  --surface-600: #e4e4e7;   // zinc-200
+  --surface-700: #f4f4f5;   // zinc-100
+  --surface-800: #fafafa;   // zinc-50
   --surface-900: #ffffff;
   --gray-50: #f9fafb;
   --gray-100: #f3f4f6;

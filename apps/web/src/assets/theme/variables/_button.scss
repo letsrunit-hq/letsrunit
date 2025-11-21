@@ -1,18 +1,21 @@
 //button
-$buttonPadding: 0.75rem 1.25rem !default;
-$buttonIconOnlyWidth: 3rem !default;
-$buttonIconOnlyPadding: 0.75rem 0 !default;
+$buttonPadding: 0.5rem 1rem !default;
+$buttonIconOnlyWidth: 2.5rem !default;
+$buttonIconOnlyPadding: 0.5rem 0 !default;
 $buttonBg: $primaryColor !default;
+$buttonBgFrom: #ff6900 !default;
 $buttonTextColor: $primaryTextColor !default;
-$buttonBorder: 1px solid $primaryColor !default;
-$buttonHoverBg: $primaryLightColor !default;
+$buttonBorder: 1px solid transparent !default;
+$buttonHoverBg: #e17100 !default;
+$buttonHoverBgFrom: #f54a00 !default;
 $buttonTextHoverColor: $primaryTextColor !default;
-$buttonHoverBorderColor: $primaryLightColor !default;
+$buttonHoverBorderColor: transparent !default;
 $buttonActiveBg: $primaryLighterColor !default;
 $buttonTextActiveColor: $primaryTextColor !default;
 $buttonActiveBorderColor: $primaryLighterColor !default;
 $raisedButtonShadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2),
 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12) !default;
+$buttonBorderRadius: 0.625rem !default;
 $roundedButtonBorderRadius: 2rem !default;
 
 $textButtonHoverBgOpacity: 0.04 !default;
@@ -22,17 +25,17 @@ $plainButtonTextColor: $textSecondaryColor !default;
 $plainButtonHoverBgColor: $hoverBg !default;
 $plainButtonActiveBgColor: rgba(255, 255, 255, 0.16) !default;
 
-$secondaryButtonBg: #94a3b8 !default;
-$secondaryButtonTextColor: #020617 !default;
-$secondaryButtonBorder: 1px solid #94a3b8 !default;
-$secondaryButtonHoverBg: #cbd5e1 !default;
+$secondaryButtonBg: $shade800 !default;
+$secondaryButtonTextColor: #ffffff !default;
+$secondaryButtonBorder: 1px solid $shade700 !default;
+$secondaryButtonHoverBg: $secondaryButtonBg !default;
 $secondaryButtonTextHoverColor: $secondaryButtonTextColor !default;
-$secondaryButtonHoverBorderColor: #cbd5e1 !default;
-$secondaryButtonActiveBg: #e2e8f0 !default;
+$secondaryButtonHoverBorderColor: $shade600 !default;
+$secondaryButtonActiveBg: $secondaryButtonBg !default;
 $secondaryButtonTextActiveColor: $secondaryButtonTextColor !default;
-$secondaryButtonActiveBorderColor: #e2e8f0 !default;
-$secondaryButtonFocusShadow: 0 0 0 1px
-scale-color($secondaryButtonBg, $lightness: 30%) !default;
+$secondaryButtonActiveBorderColor: $secondaryButtonHoverBorderColor !default;
+$secondaryButtonFocusShadow: none !default;
+$secondaryTextButtonTextColor: $shade500 !default;
 
 $infoButtonBg: #38bdf8 !default;
 $infoButtonTextColor: #082f49 !default;

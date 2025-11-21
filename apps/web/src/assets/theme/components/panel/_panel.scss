@@ -1,8 +1,4 @@
 .p-panel {
-    // Base panel look (moved from globals.css)
-    border: 1px solid var(--surface-border);
-    border-radius: 12px;
-    background: var(--surface-card);
     overflow: hidden;
 
     .p-panel-header {
@@ -28,6 +24,13 @@
         }
     }
 
+    &:has(> .p-panel-header) .p-panel-content {
+        border-top: none;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+    }
+
+
     &:has(> .p-panel-footer) .p-panel-content {
         border-bottom-left-radius: 0;
         border-bottom-right-radius: 0;
@@ -38,9 +41,7 @@
         border: $panelContentBorder;
         background: $panelContentBg;
         color: $panelContentTextColor;
-        border-bottom-right-radius: $borderRadius;
-        border-bottom-left-radius: $borderRadius;
-        border-top: 0 none;
+        border-radius: $borderRadius;
     }
 
     .p-panel-footer {
@@ -51,24 +52,37 @@
         border-top: 0 none;
     }
 
-    // Variants moved from globals.css
     &.primary {
-        // Border style (dashed/solid) intentionally not defined here
-        background: linear-gradient(
-                0deg,
-                color-mix(in oklab, var(--orange-400, #f59e0b) 6%, transparent),
-                transparent 60%
-            ),
-            var(--surface-card);
-        border-color: color-mix(in oklab, var(--primary-color) 25%, var(--surface-border));
+        .p-panel-content {
+            background: $panelContentOddRowBg;
+        }
+
+        button:hover & .p-panel-content {
+            background: color-mix(in oklab, $primaryColor 5%, transparent);
+            border-color: color-mix(in oklab, $primaryColor 50%, transparent);
+            color: $primaryColor;
+        }
     }
 
-    &.alt {
-        background: linear-gradient(
-                0deg,
-                color-mix(in oklab, var(--blue-400, #60a5fa) 6%, transparent),
-                transparent 60%
-            ),
-            var(--surface-card);
+    &.even {
+      .p-panel-content {
+          background: $panelContentEvenRowBg;
+      }
+    }
+
+    &.odd {
+        .p-panel-content {
+            background: $panelContentOddRowBg;
+        }
+    }
+
+    &.border-dashed {
+        border: none !important;
+
+        .p-panel-header,
+        .p-panel-content {
+            border-width: 2px;
+            border-style: dashed;
+        }
     }
 }

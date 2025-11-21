@@ -3,23 +3,23 @@ $inputPadding: 0.75rem 0.75rem !default;
 $inputTextFontSize: 1rem !default;
 $inputBg: $shade900 !default;
 $inputTextColor: $shade000 !default;
-$inputIconColor: $shade100 !default;
-$inputBorder: 1px solid $shade600 !default;
+$inputIconColor: $shade500 !default;
+$inputBorder: 1px solid $shade800 !default;
 $inputHoverBorderColor: $primaryColor !default;
 $inputFocusBorderColor: $primaryColor !default;
 $inputErrorBorderColor: $errorColor !default;
-$inputPlaceholderTextColor: $shade100 !default;
-$inputFilledBg: $shade600 !default;
+$inputPlaceholderTextColor: $shade500 !default;
+$inputFilledBg: $shade900 !default;
 $inputFilledHoverBg: $inputFilledBg !default;
 $inputFilledFocusBg: $inputFilledBg !default;
 
 //input groups
-$inputGroupBg: $shade800 !default;
-$inputGroupTextColor: $shade100 !default;
+$inputGroupBg: $shade900 !default;
+$inputGroupTextColor: $shade500 !default;
 $inputGroupAddOnMinWidth: 3rem !default;
 
 //input lists (e.g. dropdown, autocomplete, multiselect, orderlist)
-$inputListBg: $shade800 !default;
+$inputListBg: $shade900 !default;
 $inputListTextColor: $shade000 !default;
 $inputListBorder: $inputBorder !default;
 $inputListPadding: 0.75rem 0 !default;
