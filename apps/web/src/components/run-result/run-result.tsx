@@ -6,7 +6,6 @@ import { RunTimeline, RunTimelineSkeleton } from '@/components/run-timeline';
 import { BreadCrumb } from 'primereact/breadcrumb';
 import { Tag } from 'primereact/tag';
 import { Screenshot } from '@/components/screenshot';
-import { cn } from '@letsrunit/utils';
 import styles from './run-result.module.css';
 import { Button } from 'primereact/button';
 import { useRouter } from 'next/navigation';
@@ -21,8 +20,6 @@ export function RunResult({ project, run, journal }: JournalProps) {
   const [screenshot, setScreenshot] = React.useState<Artifact | null>(null);
   const router = useRouter();
 
-  const items = [{ label: project.title || 'Project' }, { label: `Run #${run.id}` }];
-
   const runTitle = journal?.entries.find((j) => j.type === 'title');
   const statusSeverity =
     run.status === 'success' ? 'success' : run.status === 'failed' || run.status === 'error' ? 'danger' : 'info';
@@ -31,13 +28,18 @@ export function RunResult({ project, run, journal }: JournalProps) {
   const duration = typeof durationMs === 'number' ? `${(durationMs / 1000).toFixed(1)}s` : undefined;
 
   useEffect(() => {
-    setScreenshot(() => journal?.entries.findLast((j) => j.type === 'success')?.screenshot ?? null);
-  }, [journal]);
+    const fn = run.status === 'running' ? 'findLast' : 'find';
+    const screenshot = journal?.entries[fn]((j) => j.type === 'success' || j.type === 'failure')?.screenshot
+    if (screenshot) setScreenshot(screenshot);
+  }, [journal, run]);
 
   return (
     <div className="grid">
       <div className="col-12 mb-3">
-        <BreadCrumb model={items} />
+        <BreadCrumb model={[
+          { label: project.title || 'Project', url: `/projects/${project.id}` },
+          { label: `Run #${run.id}` },
+        ]} />
       </div>
 
       {/* Left side - Screenshot and Info */}
@@ -62,24 +64,26 @@ export function RunResult({ project, run, journal }: JournalProps) {
 
         {/* Screenshot placeholder */}
         <Screenshot image={screenshot?.url} alt={screenshot?.name} width={1920} height={1080} />
-
-        {/* Description from project */}
-        <div className="mt-4">
-          <div className="flex align-items-center gap-2 text-500 mb-2">
-            <div className={cn('flex-1', styles.lineIn)} />
-            <span>Project Description</span>
-            <div className={cn('flex-1', styles.lineOut)} />
-          </div>
-          <p className="text-600 line-height-3">{project.description ?? 'No description available.'}</p>
-        </div>
       </div>
 
       {/* Right side - Run Timeline */}
       <div className="col-12 md:col-4 pl-6">
         <div className={styles.timeline}>
-          {journal ? <RunTimeline entries={journal.entries} /> : <RunTimelineSkeleton />}
+          {journal ? (
+            <RunTimeline
+              status={run.status}
+              entries={journal.entries}
+              onSelect={(entry) => setScreenshot(entry.screenshot ?? null)}
+            />
+          ) : (
+            <RunTimelineSkeleton />
+          )}
           {run.type === 'explore' && run.status === 'success' && (
-            <Button label="Continue" className="w-full mt-6" onClick={() => router.push(`/projects/${project.accountId}/${project.id}`) } />
+            <Button
+              label="Continue"
+              className="w-full mt-6"
+              onClick={() => router.push(`/projects/${project.id}`)}
+            />
           )}
         </div>
       </div>

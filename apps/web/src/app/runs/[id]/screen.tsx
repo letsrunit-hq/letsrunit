@@ -8,23 +8,24 @@ import { QueueStatus } from '@/components/queue-status';
 import styles from './screen.module.css';
 import useProject from '@/hooks/use-project';
 import type { UUID } from 'node:crypto';
+import type { RunStatus } from '@letsrunit/model';
 
 interface ScreenOptions {
   projectId: UUID;
   runId: UUID;
+  status: RunStatus;
 }
 
-export default function Screen({ projectId, runId }: ScreenOptions) {
+export default function Screen({ projectId, runId, status }: ScreenOptions) {
   const { run, journal, loading: runLoading, error: runError } = useRun(runId);
   const { project, loading: projectLoading, error: projectError } = useProject(projectId);
 
   const loading = runLoading || projectLoading;
   const error = runError || projectError;
 
-  // TODO nicer error display
-  if (error) return <main className="p-3">Error: {error}</main>;
+  if (error) throw new Error(error);
 
-  if (loading || run?.status === 'queued') {
+  if ((run?.status ?? status) === 'queued') {
     return (
       <main className="p-3 center">
         <AnimatedBackground waiting />
@@ -33,7 +34,11 @@ export default function Screen({ projectId, runId }: ScreenOptions) {
     );
   }
 
+  if (loading) return <></>;
+
   return (
-    <main className={`p-3 ${styles.container}`}>{<RunResult project={project!} run={run!} journal={journal} />}</main>
+    <main className={`p-3 ${styles.container}`}>
+      <RunResult project={project!} run={run!} journal={journal} />
+    </main>
   );
 }

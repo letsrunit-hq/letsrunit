@@ -33,41 +33,56 @@ export default async function explore(
   try {
     const { page } = await controller.run(makeFeature({ name: `Explore website "${base}"`, steps }));
     const pageInfo = await extractPageInfo(page);
+    const title = pageInfo.title ?? pageInfo.url;
+
+    await journal
+      .batch()
+      .prepare(`Reading page "${title}"`) // Step 3
+      .prepare('Determining user stories') // Step 4
+      .flush();
 
     const content = await journal.do(
-      `Reading page "${pageInfo.title ?? pageInfo.url}"`,
+      `> Reading page "${title}"`,
       () => describePage({ ...page, info: pageInfo }, 'markdown'),
+      () => (pageInfo.screenshot ? { artifacts: [pageInfo.screenshot] } : {}),
     );
 
     await journal.debug(content);
 
     const { actions, ...appInfo } = await journal.do(
-      'Determining user stories',
+      '> Determining user stories',
       () => assessPage(content),
-      (result) => ({ result }),
+      (result) => ({
+        meta: { result, description: `Found ${result.actions.length} user stories` },
+      }),
     );
 
-    await journal.batch()
-      .debug(Object.entries(appInfo).map(([k, v]) => `${k}: ${v}`).join('\n'))
-      .each(
-        actions,
-        (j, action) => j.debug(`- ${action.name}\n  ${action.description}\n  Definition of done: ${action.done }`),
+    await journal
+      .batch()
+      .debug(
+        Object.entries(appInfo)
+          .map(([k, v]) => `${k}: ${v}`)
+          .join('\n'),
+      )
+      .each(actions, (j, action) =>
+        j.debug(`- ${action.name}\n  ${action.description}\n  Definition of done: ${action.done}`),
       )
       .flush();
 
     const preparedActions = actions.map((action) => ({
       ...action,
-      run: () => generateFeature({
-        controller,
-        page: { ...page, lang: pageInfo.lang },
-        feature: {
-          ...action,
-          comment: `Definition of done: ${action.done}`,
-          background: steps,
-          steps: [],
-        },
-        appInfo,
-      }),
+      run: () =>
+        generateFeature({
+          controller,
+          page: { ...page, lang: pageInfo.lang },
+          feature: {
+            ...action,
+            comment: `Definition of done: ${action.done}`,
+            background: steps,
+            steps: [],
+          },
+          appInfo,
+        }),
     }));
 
     await process({ ...pageInfo, ...appInfo }, preparedActions);

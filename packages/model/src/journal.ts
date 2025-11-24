@@ -1,11 +1,11 @@
 import { connect } from './supabase';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { type Journal, type JournalEntry, type JournalEntryData, JournalEntrySchema } from './types';
+import { type Artifact, type Journal, type JournalEntry, type JournalEntryData, JournalEntrySchema } from './types';
 import type { UUID } from 'node:crypto';
 import { fromData } from './utils/convert';
 
-function isScreenshot(name: string): boolean {
-  return !!name.match(/(^|\/)screenshot-[\w\-].png$/);
+function isScreenshot(artifact: Artifact): boolean {
+  return Boolean(artifact.url && artifact.name.match(/^screenshot-[\w\-]+\.(png|je?pg|webp)$/));
 }
 
 export async function getJournal(runId: UUID, opts: { supabase?: SupabaseClient } = {}): Promise<Journal> {
@@ -34,7 +34,7 @@ export function journalFromData(runId: UUID, raw: JournalEntryData[]): Journal {
 
   for (const e of raw) {
     const item = entryFromData(e);
-    item.screenshot = (item.artifacts ?? []).find((a) => !!a.url && isScreenshot(a.name));
+    item.screenshot = (item.artifacts ?? []).find((a) => isScreenshot(a));
 
     if (item.type === 'title') {
       prepareEntries.clear();

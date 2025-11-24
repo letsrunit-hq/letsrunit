@@ -40,7 +40,9 @@ export function ExploreForm({
       router.push(`/runs/${runId}`);
     } finally {
       // If navigation happens, component may unmount; this is safe.
-      setIsSubmitting(false);
+      setTimeout(() => {
+        setIsSubmitting(false);
+      }, 5000);
     }
   }, [router, url]);
 

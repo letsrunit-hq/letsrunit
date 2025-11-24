@@ -1,5 +1,5 @@
 import type { PageInfo } from '../types';
-
+import type { Snapshot } from '@letsrunit/playwright';
 import metascraper, { type MetascraperOptions } from 'metascraper';
 import metascraperTitle from 'metascraper-title';
 import metascraperDescription from 'metascraper-description';
@@ -19,7 +19,7 @@ const scrape = metascraper([
   metascraperUrl(),
 ]);
 
-export async function extractPageInfo(options: MetascraperOptions): Promise<PageInfo> {
+export async function extractPageInfo(options: MetascraperOptions & Partial<Snapshot>): Promise<PageInfo> {
   const meta = await scrape(options);
 
   return {
@@ -29,6 +29,7 @@ export async function extractPageInfo(options: MetascraperOptions): Promise<Page
     image: meta.image || undefined,
     favicon: meta.logo || undefined,
     lang: meta.lang || undefined,
+    screenshot: options.screenshot,
   };
 }
 

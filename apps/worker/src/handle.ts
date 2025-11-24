@@ -9,7 +9,7 @@ export async function handle(run: Run, { supabase, journal }: Partial<HandleOpti
   supabase ??= connect();
   journal ??= new Journal(new SupabaseSink({
     supabase,
-    runId: run.id,
+    run,
     tableName: 'journal_entries',
     bucket: ARTIFACT_BUCKET,
   }));
@@ -19,6 +19,7 @@ export async function handle(run: Run, { supabase, journal }: Partial<HandleOpti
     const result = await startRun(run, { supabase, journal });
     await updateRunStatus(run.id, result, { supabase });
   } catch (error) {
+    console.error(error);
     await updateRunStatus(run.id, { status: 'error', error: (error as any).message }, { supabase });
   }
 }

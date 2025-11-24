@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './page.module.css';
-import FeaturesList, { type Feature } from '../../../../components/features-list';
-import { StatsToolbar } from '../../../../components/stats-toolbar';
+import FeaturesList, { type Feature } from '../../../components/features-list';
+import { StatsToolbar } from '../../../components/stats-toolbar';
 
 const features: Feature[] = [
   {

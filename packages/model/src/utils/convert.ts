@@ -48,9 +48,9 @@ export function fromData<TSchema extends z.ZodObject>(schema: TSchema) {
 export function toData<TSchema extends z.ZodObject>(schema: TSchema) {
   return (input: z.infer<TSchema>): Data<z.infer<TSchema>> => {
     const parsed = schema.parse(input);
-    const cleaned = pruneUndefined(parsed);
-    const snaked = snakecaseKeys(cleaned, { deep: true });
+    const dated = serializeDates(parsed);
+    const cleaned = pruneUndefined(dated);
 
-    return serializeDates(snaked);
+    return snakecaseKeys(cleaned, { deep: true });
   };
 }

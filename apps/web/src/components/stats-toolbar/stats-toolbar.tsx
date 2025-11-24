@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '@letsrunit/utils';
-import styles from '../../app/projects/[owner]/[ref]/page.module.css';
+import styles from '@/app/projects/[id]/page.module.css';
 
 export type StatsToolbarProps = {
   className?: string;

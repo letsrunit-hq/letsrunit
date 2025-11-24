@@ -14,6 +14,7 @@ function makeEntry(partial: Partial<JournalEntry> = {}): JournalEntry {
 
 describe('SupabaseSink', () => {
   const runId = 'run-123';
+  const projectId = 'project-123';
   let consoleMock: { error: ReturnType<typeof vi.fn> };
   let insertMock: ReturnType<typeof vi.fn>;
   let uploadMock: ReturnType<typeof vi.fn>;
@@ -40,7 +41,7 @@ describe('SupabaseSink', () => {
   });
 
   it('inserts a log row', async () => {
-    const sink = new SupabaseSink({ supabase: client, runId, console: consoleMock });
+    const sink = new SupabaseSink({ supabase: client, run: { id: runId, projectId }, console: consoleMock });
 
     await sink.publish(makeEntry({ message: 'No files', artifacts: [] }));
 
@@ -64,21 +65,31 @@ describe('SupabaseSink', () => {
   });
 
   it('uploads artifacts to storage', async () => {
-    const sink = new SupabaseSink({ supabase: client, runId, bucket: 'logs', console: consoleMock });
+    const sink = new SupabaseSink({
+      supabase: client,
+      run: { id: runId, projectId },
+      bucket: 'artifacts',
+      console: consoleMock,
+    });
 
     const bytes = new Uint8Array([1, 2, 3]);
-    const artifact: any = { name: 'a.txt', size: bytes.length, bytes: vi.fn().mockResolvedValue(bytes) };
+    const artifact: any = {
+      name: 'a.txt',
+      size: bytes.length,
+      bytes: vi.fn().mockResolvedValue(bytes),
+      type: 'text/plain',
+    };
 
     await sink.publish(makeEntry({ message: 'With file', artifacts: [artifact] }));
 
     // Upload called with correct bucket and path
-    expect(storageFromMock).toHaveBeenCalledWith('logs');
-    expect(uploadMock).toHaveBeenCalledWith(`${runId}/a.txt`, bytes, { upsert: false });
+    expect(storageFromMock).toHaveBeenCalledWith('artifacts');
+    expect(uploadMock).toHaveBeenCalledWith(`${projectId}/a.txt`, bytes, { upsert: false, contentType: 'text/plain' });
 
     // Insert contains artifacts with public URL
     expect(insertMock).toBeCalledWith(
       expect.objectContaining({
-        artifacts: [{ name: 'a.txt', url: `https://cdn.example/${runId}/a.txt`, size: bytes.length }],
+        artifacts: [{ name: 'a.txt', url: `https://cdn.example/${projectId}/a.txt`, size: bytes.length }],
       }),
     );
   });
@@ -86,7 +97,12 @@ describe('SupabaseSink', () => {
   it('skips artifact on upload error and still inserts row', async () => {
     uploadMock.mockResolvedValueOnce({ error: { message: 'fail' } });
 
-    const sink = new SupabaseSink({ supabase: client, runId, bucket: 'logs', console: consoleMock });
+    const sink = new SupabaseSink({
+      supabase: client,
+      run: { id: runId, projectId },
+      bucket: 'artifacts',
+      console: consoleMock,
+    });
 
     const bytes = new Uint8Array([9, 9]);
     const artifact: any = { name: 'bad.bin', size: bytes.length, bytes: vi.fn().mockResolvedValue(bytes) };

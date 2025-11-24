@@ -4,9 +4,11 @@
   background: #ffffff;
   border: 1px solid var(--surface-border);
   border-radius: var(--border-radius);
+  overflow: hidden;
 
   img {
     max-width: 100%;
+    height: auto;
   }
 }
 

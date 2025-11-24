@@ -5,8 +5,10 @@ import { type Data, type Project, ProjectSchema } from './types';
 import { fromData, toData } from './utils/convert';
 import { z } from 'zod';
 import { DBError } from './db-error';
+import { saveScreenshot } from './utils/screenshot';
+import { File } from 'node:buffer';
 
-const CreateProjectSchema = ProjectSchema.omit({ id: true }).partial().required({ accountId: true, url: true });
+const CreateProjectSchema = ProjectSchema.omit({ id: true }).partial().required({ url: true });
 
 export async function getProject(id: string, opts: { supabase?: SupabaseClient } = {}): Promise<Project> {
   const supabase = opts.supabase ?? connect();
@@ -25,7 +27,12 @@ export async function createProject(
   const id = randomUUID();
 
   const { status, error } = await supabase.from('projects').insert({
-    ...toData(CreateProjectSchema)(project),
+    ...toData(CreateProjectSchema)({
+      title: project.url.replace(/https?:\/\/(www\.)?/, ''),
+      ...project,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }),
     id,
     created_by: opts.by?.id,
   });
@@ -39,15 +46,23 @@ const UpdateProjectSchema = ProjectSchema.omit({ id: true }).partial();
 
 export async function updateProject(
   id: UUID,
-  values: z.infer<typeof UpdateProjectSchema>,
+  values: Omit<z.infer<typeof UpdateProjectSchema>, 'screenshot'> & { screenshot?: File | string },
   opts: { supabase?: SupabaseClient; by?: User } = {},
 ) {
   const supabase = opts.supabase ?? connect();
 
+  if (values.screenshot instanceof File) {
+    const publicUrl = await saveScreenshot(id, values.screenshot, { supabase });
+    values = { ...values, screenshot: publicUrl };
+  }
+
   const { status, error } = await supabase
     .from('projects')
     .update({
-      ...toData(UpdateProjectSchema)(values),
+      ...toData(UpdateProjectSchema)({
+        ...(values as Partial<Project>),
+        updatedAt: new Date(),
+      }),
       updated_by: opts.by?.id,
     })
     .eq('id', id);

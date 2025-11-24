@@ -28,11 +28,9 @@ describe('suggestion lib', () => {
   it('storeSuggestions inserts mapped rows with snake_case and foreign keys', async () => {
     const supabase = new FakeSupabase() as unknown as SupabaseClient;
     const projectId = randomUUID();
-    const runId = randomUUID();
 
     await storeSuggestions(
       projectId,
-      runId,
       [
         { name: 'Do thing', description: 'A longer desc', done: 'It works' },
         { name: 'Another', description: 'More words', done: 'Visible state' },
@@ -40,7 +38,7 @@ describe('suggestion lib', () => {
       { supabase },
     );
 
-    const insert = (supabase as any).ops.find((o: any) => o.type === 'insert' && o.table === 'suggestions');
+    const insert = (supabase as any).ops.find((o: any) => o.type === 'insert' && o.table === 'features');
     expect(insert).toBeTruthy();
 
     const rows = insert.payload as any[];
@@ -49,10 +47,10 @@ describe('suggestion lib', () => {
 
     for (const row of rows) {
       expect(row.project_id).toBe(projectId);
-      expect(row.run_id).toBe(runId);
       expect(row.name).toBeTypeOf('string');
       expect(row.description).toBeTypeOf('string');
-      expect(row.done).toBeTypeOf('string');
+      // comments are derived from done
+      expect(row.comments === null || typeof row.comments === 'string').toBe(true);
 
       // no camelCase foreign keys
       expect('projectId' in row).toBe(false);

@@ -45,3 +45,8 @@ button {
   margin: 0;
   color: inherit;
 }
+
+.run-timeline .p-timeline-event-separator {
+  position: relative;
+  top: 9px;
+}

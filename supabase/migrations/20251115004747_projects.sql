@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS public.projects
     description text,
     image text,
     favicon text,
+    screenshot text,
     lang text,
     login_available boolean,
     visibility project_visibility NOT NULL DEFAULT 'private',

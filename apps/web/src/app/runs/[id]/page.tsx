@@ -12,7 +12,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   }
 
   const supabase = await connect();
-  const { status, data, error } = await supabase.from('runs').select('id, project_id').eq('id', id).maybeSingle();
+  const { status, data, error } = await supabase.from('runs').select('id, project_id, status').eq('id', id).maybeSingle();
 
   if (status < 100 || status >= 400) {
     throw new DBError(status, error); // Server error or bad request
@@ -22,5 +22,5 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     return notFound(); // Access error or not found
   }
 
-  return <Screen runId={id} projectId={data!.project_id} />;
+  return <Screen runId={id} projectId={data!.project_id} status={data.status} />;
 }

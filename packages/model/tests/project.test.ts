@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createProject, updateProject } from '../src';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
@@ -27,6 +27,33 @@ class FakeTableQuery {
 
 class FakeSupabase implements Partial<SupabaseClient> {
   public ops: any[] = [];
+  public storage: any;
+  constructor() {
+    const self = this;
+    const uploads: any[] = [];
+    const buckets: any[] = [];
+    this.storage = {
+      createBucket: vi.fn(async (bucket: string, opts: any) => {
+        buckets.push({ type: 'createBucket', bucket, opts });
+        self.ops.push({ type: 'createBucket', bucket, opts });
+        return {} as any;
+      }),
+      from: (bucket: string) => {
+        return {
+          upload: vi.fn(async (path: string, bytes: Uint8Array, _opts: any) => {
+            uploads.push({ bucket, path, size: bytes.length });
+            self.ops.push({ type: 'upload', bucket, path, size: bytes.length });
+            return {} as any;
+          }),
+          getPublicUrl: (path: string) => {
+            const url = `https://public/${bucket}/${path}`;
+            self.ops.push({ type: 'publicUrl', bucket, path, url });
+            return { data: { publicUrl: url } } as any;
+          },
+        } as any;
+      },
+    } as any;
+  }
   from(table: string) {
     return new FakeTableQuery(table, this.ops) as any;
   }
@@ -95,5 +122,40 @@ describe('project lib', () => {
 
     // no camelCase
     expect('loginAvailable' in op.values).toBe(false);
+  });
+
+  it('updateProject uploads screenshot bytes to storage and saves public URL', async () => {
+    const supabase = new FakeSupabase() as unknown as SupabaseClient;
+
+    const projectId = '11111111-1111-1111-1111-111111111111';
+    const bytes = new Uint8Array([1, 2, 3]);
+
+    // set env for bucket
+    const prev = process.env.ARTIFACT_BUCKET;
+    process.env.ARTIFACT_BUCKET = 'artifacts';
+
+    await updateProject(projectId as any, { screenshot: bytes }, { supabase });
+
+    // storage ops
+    const ops = (supabase as any).ops;
+    expect(ops.find((o: any) => o.type === 'createBucket' && o.bucket === 'artifacts')).toBeTruthy();
+    const upload = ops.find((o: any) => o.type === 'upload');
+    expect(upload).toBeTruthy();
+    expect(upload.bucket).toBe('artifacts');
+    expect(upload.path).toContain(projectId);
+    expect(upload.path.endsWith('.png')).toBe(true);
+
+    // db update uses URL string
+    const update = ops.find((o: any) => o.type === 'update' && o.table === 'projects');
+    expect(update).toBeTruthy();
+    expect(typeof update.values.screenshot).toBe('string');
+    expect(update.values.screenshot).toMatch(/^https:\/\/public\/artifacts\/.*\.png$/);
+
+    // restore env
+    if (prev === undefined) {
+      delete process.env.ARTIFACT_BUCKET;
+    } else {
+      process.env.ARTIFACT_BUCKET = prev;
+    }
   });
 });

@@ -8,8 +8,8 @@
     transition: $formElementTransition;
     border-radius: $buttonBorderRadius;
 
-    &:not(:disabled):hover {
-        box-shadow: 0 0 12px 0 rgba($buttonBg, 0.5);
+    &:not(:disabled):hover,
+    &:not(:disabled):active {
         background-color: $buttonHoverBg;
         background-image: linear-gradient(
             to right,
@@ -19,11 +19,11 @@
         color: $buttonTextHoverColor;
         border-color: $buttonHoverBorderColor;
     }
-
+    &:not(:disabled):hover {
+        box-shadow: 0 0 12px 0 rgba($buttonBg, 0.5);
+    }
     &:not(:disabled):active {
-        background: $buttonActiveBg;
-        color: $buttonTextActiveColor;
-        border-color: $buttonActiveBorderColor;
+        box-shadow: 0 0 20px 0 rgba($buttonBg, 0.6);
     }
 
     &.p-button-outlined {

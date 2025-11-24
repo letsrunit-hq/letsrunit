@@ -72,6 +72,9 @@ describe('journal lib', () => {
           { name: 'log.txt', url: 'https://no/log.txt' },
         ],
         created_at: createdAt,
+        created_by: null,
+        updated_at: createdAt,
+        updated_by: null,
       },
       // Success for A, should replace previous prepare
       {
@@ -84,6 +87,9 @@ describe('journal lib', () => {
           { name: 'not-screenshot.png', url: 'https://ok/ignore.png' }, // filtered: not a screenshot
         ],
         created_at: createdAt,
+        created_by: null,
+        updated_at: createdAt,
+        updated_by: null,
       },
       // Title resets prepare map
       {
@@ -93,6 +99,9 @@ describe('journal lib', () => {
         meta: {},
         artifacts: [],
         created_at: createdAt,
+        created_by: null,
+        updated_at: createdAt,
+        updated_by: null,
       },
       // Prepare B then failure B appears but since after title, no replacement occurs
       {
@@ -102,6 +111,9 @@ describe('journal lib', () => {
         meta: {},
         artifacts: [{ name: 'screenshot-3.png', url: 'https://ok/c.png' }],
         created_at: createdAt,
+        created_by: null,
+        updated_at: createdAt,
+        updated_by: null,
       },
       {
         id: '5',
@@ -110,6 +122,9 @@ describe('journal lib', () => {
         meta: {},
         artifacts: [{ name: 'not-screenshot.png', url: 'https://no/d.png' }],
         created_at: createdAt,
+        created_by: null,
+        updated_at: createdAt,
+        updated_by: null,
       },
     ]);
 
@@ -124,8 +139,10 @@ describe('journal lib', () => {
 
     const [e1, e2, e3] = journal.entries;
     expect(e1.type).toBe('success');
-    expect(e1.artifacts.every((a) => a.name.startsWith('screenshot-'))).toBe(true);
-    expect(e1.artifacts.every((a) => !!a.url)).toBe(true);
+    // artifacts may include non-screenshots; ensure screenshot property is set and valid
+    expect(e1.screenshot).toBeTruthy();
+    expect(e1.screenshot!.name.startsWith('screenshot-')).toBe(true);
+    expect(!!e1.screenshot!.url).toBe(true);
 
     expect(e2.type).toBe('title');
 

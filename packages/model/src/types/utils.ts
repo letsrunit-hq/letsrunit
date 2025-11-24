@@ -11,6 +11,6 @@ export type SerializeDates<T> = T extends Date
       : T;
 
 // Snake_case keys + Date fields als ISO string
-export type Data<T> = SerializeDates<SnakeCaseKeys<T>>;
+export type Data<T> = SnakeCaseKeys<SerializeDates<T>>;
 
 export const UUIDSchema: z.ZodType<UUID> = z.uuid() as z.ZodType<UUID>;

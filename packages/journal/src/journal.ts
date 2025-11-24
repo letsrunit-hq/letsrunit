@@ -1,6 +1,7 @@
 import type { JournalEntry, Sink } from './types';
 import { NoSink } from './sink';
 import { JournalBatch } from './journal-batch';
+import type { File } from 'node:buffer';
 
 type Options = Partial<Pick<JournalEntry, 'artifacts' | 'meta'>>;
 
@@ -30,14 +31,19 @@ export class Journal<TSink extends Sink = Sink> {
   async do<T>(
     message: string,
     callback: () => T | Promise<T>,
-    metaFn?: (result: T) => Record<string, any>,
+    metaFn?: (result: T) => { meta?: Record<string, any>; artifacts?: File[] },
   ): Promise<T> {
     try {
-      await this.prepare(message);
+      if (!message.startsWith('>')) {
+        await this.prepare(message);
+      } else {
+        message = message.replace(/^>\s*/, '');
+      }
+
       const result = await callback();
 
-      const meta = metaFn?.(result);
-      await this.success(message, { meta });
+      const { meta, artifacts } = metaFn?.(result) ?? {};
+      await this.success(message, { meta, artifacts });
 
       return result;
     } catch (e) {

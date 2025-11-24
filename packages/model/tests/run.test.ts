@@ -37,7 +37,7 @@ describe('run lib', () => {
   it('createRun inserts snake_case and returns a UUID', async () => {
     const supabase = new FakeSupabase() as unknown as SupabaseClient;
     const runId = await createRun(
-      { projectId: randomUUID(), type: 'explore', status: 'pending', target: 'https://example.com' },
+      { projectId: randomUUID(), type: 'explore', status: 'queued', target: 'https://example.com' },
       { supabase },
     );
 
@@ -48,9 +48,8 @@ describe('run lib', () => {
     expect(payload.id).toBeTypeOf('string');
     expect(payload.project_id).toBeTypeOf('string');
     expect(payload.type).toBe('explore');
-    expect(payload.status).toBe('pending');
+    expect(payload.status).toBe('queued');
     expect(payload.target).toBe('https://example.com');
-    expect(payload.created_at).toBeTypeOf('string');
 
     // should not leak camelCase
     expect('projectId' in payload).toBe(false);

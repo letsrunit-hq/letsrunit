@@ -1,8 +1,8 @@
 import { runner } from './runner';
-import { browse, snapshot } from '@letsrunit/playwright';
+import { browse, screenshot, snapshot } from '@letsrunit/playwright';
 import type { Result, World } from './types';
 import { createFieldEngine, parseFeature } from '@letsrunit/gherkin';
-import { type Browser, type BrowserContextOptions, chromium, PageScreenshotOptions, selectors } from '@playwright/test';
+import { type Browser, type BrowserContextOptions, chromium, selectors } from '@playwright/test';
 import { Journal } from '@letsrunit/journal';
 import { ParsedStep } from '@letsrunit/gherker/src/types';
 import { File } from 'node:buffer';
@@ -14,20 +14,29 @@ export interface ControllerOptions extends BrowserContextOptions {
 }
 
 export class Controller {
+  static fieldSelectorIsRegistered: boolean = false;
+
   private constructor(
     private browser: Browser,
     private world: World,
     readonly journal: Journal,
   ) {}
 
+  static async registerFieldSelector() {
+    if (this.fieldSelectorIsRegistered) return;
+    try {
+      await selectors.register('field', createFieldEngine);
+    } catch {}
+  }
+
   static async launch(options: ControllerOptions = {}): Promise<Controller> {
-    await selectors.register('field', createFieldEngine);
+    await this.registerFieldSelector();
 
     const browser = await chromium.launch({ headless: options.headless ?? true });
     const page = await browse(browser, options);
 
     if (options.debug) {
-      page.on('console', msg => {
+      page.on('console', (msg) => {
         console.log('[page]', msg.type(), msg.text());
       });
     }
@@ -40,34 +49,32 @@ export class Controller {
   async run(feature: string): Promise<Result> {
     await this.logFeature(feature);
 
-    const { world: _, ...result } = await runner.run(
-      feature,
-      this.world,
-      async (step, status, reason) => {
-        const artifacts: File[] = [];
-        if (status === 'success') artifacts.push(await this.screenshot());
+    const { world: _, ...result } = await runner.run(feature, this.world, async (step, status, reason) => {
+      const artifacts: File[] = [];
+      if (status === 'success') artifacts.push(await screenshot(this.world.page));
 
-        await this.journal.batch()
-          .log(step, { type: status, artifacts })
-          .error(reason?.message)
-          .flush();
-      },
-    );
+      await this.journal.batch().log(step, { type: status, artifacts }).error(reason?.message).flush();
+    });
     const page = await snapshot(this.world.page);
 
     return { ...result, page };
   }
 
-  validate(feature: string): { valid: boolean, steps: ParsedStep[] } {
+  validate(feature: string): { valid: boolean; steps: ParsedStep[] } {
     const steps = runner.parse(feature);
     const valid = steps.every((step) => !!step.def);
 
     return { valid, steps };
   }
 
-  async screenshot(options?: PageScreenshotOptions): Promise<File> {
-    const buffer = await this.world.page.screenshot(options);
-    return new File([buffer], `screenshot-${Date.now()}.png`, { type: 'image/png' });
+  async close(): Promise<void> {
+    await this.browser.close();
+  }
+
+  listSteps(type?: 'Given' | 'When' | 'Then'): string[] {
+    return runner.defs
+      .filter((def) => def.comment !== 'hidden' && (!type || def.type === type))
+      .map((def) => `${def.type} ${def.source}` + (def.comment ? `  # ${def.comment}` : ''));
   }
 
   private async logFeature(feature: string): Promise<void> {
@@ -84,15 +91,5 @@ export class Controller {
     } finally {
       await journal.flush();
     }
-  }
-
-  async close(): Promise<void> {
-    await this.browser.close();
-  }
-
-  listSteps(type?: 'Given' | 'When' | 'Then'): string[] {
-    return runner.defs
-      .filter((def) => def.comment !== 'hidden' && (!type || def.type === type))
-      .map((def) => `${def.type} ${def.source}` + (def.comment ? `  # ${def.comment}` : ''));
   }
 }

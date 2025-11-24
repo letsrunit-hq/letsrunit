@@ -44,7 +44,7 @@ export function useProject(id: string | undefined, opts: UseProjectOptions = {})
 
     channel.on('postgres_changes', { event: '*', schema: 'public', table: 'projects', filter: `id=eq.${id}` }, (payload) => {
       try {
-        const project = fromData(ProjectSchema)(payload as unknown as Data<Project>);
+        const project = fromData(ProjectSchema)(payload.new as unknown as Data<Project>);
         setProject(project);
       } catch (e: any) {
         setError(e?.message ?? String(e));

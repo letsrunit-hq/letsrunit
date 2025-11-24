@@ -13,6 +13,10 @@ interface StartExploreOpts {
 export async function startExploreRun(target: string, opts: StartExploreOpts = {}): Promise<UUID> {
   const client = opts.supabase || (await connect());
 
+  if (!target.match(/^https?:\/\//)) {
+    target = `https://${target}`;
+  }
+
   const {
     data: { user },
   } = await client.auth.getUser();
