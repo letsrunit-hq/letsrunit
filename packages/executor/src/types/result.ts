@@ -1,3 +1,3 @@
 export interface Result {
-  status: 'success' | 'error';
+  status: 'passed' | 'failed' | 'error';
 }
