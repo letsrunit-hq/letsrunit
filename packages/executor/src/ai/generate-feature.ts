@@ -1,13 +1,12 @@
 import { Controller, Result } from '@letsrunit/controller';
 import { generate } from '@letsrunit/ai';
-import { deltaSteps, type Feature, parseFeature, makeFeature } from '@letsrunit/gherkin';
+import { deltaSteps, type Feature, makeFeature, parseFeature } from '@letsrunit/gherkin';
 import type { Snapshot } from '@letsrunit/playwright';
-import { splitUrl } from '@letsrunit/utils';
+import { splitUrl, statusSymbol } from '@letsrunit/utils';
 import * as z from 'zod';
 import { ModelMessage, ToolSet } from 'ai';
 import { describePage } from './describe-page';
 import ISO6391 from 'iso-639-1';
-import { statusSymbol } from '@letsrunit/utils';
 import { detectPageChanges } from './detect-page-changes';
 import { locatorRules } from './locator-rules';
 import { Journal } from '@letsrunit/journal';
@@ -64,17 +63,17 @@ Do not output the current feature without adding steps
 
 interface Options {
   controller: Controller;
-  page: Snapshot & { content?: string, lang?: string };
+  page: Snapshot & { content?: string; lang?: string };
   feature: Feature;
   appInfo?: {
     purpose: string;
     loginAvailable: boolean;
-  }
+  };
 }
 
 export const tools: ToolSet = {
   publish: {
-    description: "Publish the feature.",
+    description: 'Publish the feature.',
     inputSchema: z.object({}),
   },
 };
@@ -89,14 +88,17 @@ async function determineThenSteps(old: Snapshot, current: Snapshot, journal?: Jo
     steps = await detectPageChanges(old, current, { journal });
   }
 
-  journal?.batch().each(steps, (j, step) => j.success(step)).flush();
+  journal
+    ?.batch()
+    .each(steps, (j, step) => j.success(step))
+    .flush();
 
   return steps;
 }
 
 function invalidToMessages(
   feature: Feature | string,
-  validatedSteps: { text: string, def?: string }[]
+  validatedSteps: { text: string; def?: string }[],
 ): ModelMessage[] {
   const invalidSteps = validatedSteps.filter((step) => !step.def);
   const userMessage = [
@@ -131,7 +133,7 @@ export async function generateFeature({ controller, page, feature }: Options): P
   const whenSteps = controller.listSteps('When');
 
   let runCount = 0;
-  let content = page.content ?? await describePage(page, 'html');
+  let content = page.content ?? (await describePage(page, 'html'));
   let currentPage = page;
 
   const language = page.lang && (ISO6391.getName(page.lang.substring(0, 2)) || page.lang);
@@ -155,7 +157,7 @@ export async function generateFeature({ controller, page, feature }: Options): P
   do {
     // We've tried enough, no more
     if (messages.length > 6 || runCount++ >= 10) {
-      await controller.journal.error("Failed to generate feature; returning partial feature");
+      await controller.journal.error('Failed to generate feature; returning partial feature');
       break;
     }
 
@@ -170,7 +172,7 @@ export async function generateFeature({ controller, page, feature }: Options): P
     const nextSteps = deltaSteps(steps, responseSteps);
 
     if (nextSteps.length === 0) {
-      console.warn("No new steps. Should have called `publish` tool")
+      console.warn('No new steps. Should have called `publish` tool');
       break;
     }
 
@@ -187,7 +189,7 @@ export async function generateFeature({ controller, page, feature }: Options): P
     const result = await controller.run(next);
     const { page: nextPage, status, steps: runSteps, reason: runFailure } = result;
 
-    steps.push(...runSteps.filter((s) => s.status === 'success').map(({text}) => text));
+    steps.push(...runSteps.filter((s) => s.status === 'success').map(({ text }) => text));
 
     // The run failed; try again
     if (status === 'failure') {
@@ -207,5 +209,5 @@ export async function generateFeature({ controller, page, feature }: Options): P
     ];
   } while (true);
 
-  return { ...feature, steps, comment: undefined };
+  return { ...feature, steps, comments: undefined };
 }

@@ -3,6 +3,7 @@ import { startExploreRun } from './handlers/explore';
 import { Journal, SupabaseSink } from '@letsrunit/journal';
 import type { HandleOptions } from './types/handle';
 import type { Result } from '@letsrunit/executor';
+import { startGenerateRun } from './handlers/generate';
 
 const ARTIFACT_BUCKET = process.env.ARTIFACT_BUCKET || 'artifacts';
 
@@ -29,6 +30,8 @@ async function startRun(run: Run, opts: HandleOptions): Promise<Result> {
   switch (run.type) {
     case 'explore':
       return await startExploreRun(run, opts);
+    case 'generate':
+      return await startGenerateRun(run, opts);
     case 'test':
       throw new Error('Test run not implemented yet');
     default:

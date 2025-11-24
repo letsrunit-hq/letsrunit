@@ -13,7 +13,7 @@ const StoreSuggestionsSchema = SuggestionSchema.pick({ name: true, description: 
 export async function storeSuggestions(
   projectId: UUID,
   features: Array<z.infer<typeof StoreSuggestionsSchema>>,
-  opts: { supabase?: SupabaseClient; by?: User },
+  opts: { supabase?: SupabaseClient; by?: Pick<User, 'id'> },
 ): Promise<void> {
   const supabase = opts.supabase || connect();
 
@@ -49,7 +49,6 @@ export async function listFeatures(projectId: UUID, opts: { supabase?: SupabaseC
         'created_by',
         'updated_at',
         'updated_by',
-        // alias the relation to last_run and fetch only the most recent item via referenced table options
         'last_run:runs(*)',
       ].join(', '),
     )
@@ -68,4 +67,40 @@ export async function listFeatures(projectId: UUID, opts: { supabase?: SupabaseC
   }));
 
   return normalized.map(toFeature);
+}
+
+export async function getFeature(id: UUID, opts: { supabase?: SupabaseClient } = {}): Promise<Feature> {
+  const supabase = opts.supabase || connect();
+
+  const { data, status, error } = await supabase
+    .from('features')
+    .select()
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error) throw new DBError(status, error);
+
+  return fromData(FeatureSchema)(data);
+}
+
+const UpdateFeatureSchema = FeatureSchema
+  .pick({ name: true, description: true, comments: true, body: true, lastRun: true })
+  .partial();
+
+export async function updateFeature(
+  id: UUID,
+  feature: z.infer<typeof UpdateFeatureSchema>,
+  opts: { supabase?: SupabaseClient; by?: Pick<User, 'id'> } = {},
+): Promise<void> {
+  const supabase = opts.supabase || connect();
+
+  const { status, error } = await supabase
+    .from('features')
+    .update({
+      ...toData(UpdateFeatureSchema)(feature),
+      updated_by: opts.by?.id,
+    })
+    .eq('id', id);
+
+  if (error) throw new DBError(status, error);
 }

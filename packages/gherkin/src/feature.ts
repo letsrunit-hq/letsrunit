@@ -6,16 +6,13 @@ const newId = IdGenerator.uuid();
 export interface Feature {
   name?: string;
   description?: string;
-  comment?: string;
+  comments?: string;
   background?: string[];
   steps: string[];
 }
 
-export function makeFeature({ name, description, comment, background, steps }: Feature): string {
-  const lines = [
-    `Feature: ${name ?? ''}`.trim(),
-    '',
-  ];
+export function makeFeature({ name, description, comments, background, steps }: Feature): string {
+  const lines = [`Feature: ${name ?? ''}`.trim(), ''];
 
   if (description) {
     lines.push(
@@ -37,11 +34,10 @@ export function makeFeature({ name, description, comment, background, steps }: F
     ...steps.map((s) => `    ${s}`),
   );
 
-
-  if (comment) {
+  if (comments) {
     lines.push(
       '',
-      `  # ${comment}`
+      ...comments.split('\n').map((s) => `  # ${s.trim()}`),
     );
   }
 
@@ -53,42 +49,39 @@ function wrapIfNeeded(input: string): string {
   if (/^\s*Feature:/im.test(input)) return input;
 
   const lines = input.split('\n');
-  const scenario = lines[0].trim().startsWith('Scenario:')
-    ? lines.shift()!.trim()
-    : 'Scenario:';
+  const scenario = lines[0].trim().startsWith('Scenario:') ? lines.shift()!.trim() : 'Scenario:';
 
   const indented = lines.map((l) => (l.trim() ? '    ' + l : l));
 
-  return [
-    'Feature:',
-    `  ${scenario}`,
-    ...indented
-  ].join('\n');
+  return ['Feature:', `  ${scenario}`, ...indented].join('\n');
 }
 
 export function parseFeature(input: string): Feature {
   const source = wrapIfNeeded(input);
 
-  const envelopes = generateMessages(
-    source,
-    'inline.feature',
-    SourceMediaType.TEXT_X_CUCUMBER_GHERKIN_PLAIN,
-    {
-      newId: () => newId(),
-      includeGherkinDocument: true,
-      includePickles: false,
-      includeSource: false,
-    },
-  );
+  const envelopes = generateMessages(source, 'inline.feature', SourceMediaType.TEXT_X_CUCUMBER_GHERKIN_PLAIN, {
+    newId: () => newId(),
+    includeGherkinDocument: true,
+    includePickles: false,
+    includeSource: false,
+  });
 
   const gherkinDoc = envelopes.find((e) => e.gherkinDocument)?.gherkinDocument;
   const feature = gherkinDoc?.feature;
-  if (!feature) return { name: '', description: '', steps: [] };
+
+  const comments =
+    (gherkinDoc?.comments ?? [])
+      .map((c) => (c.text ?? '').trim())
+      .filter(Boolean)
+      .join('\n') || undefined;
+
+  if (!feature) return { name: '', description: '', steps: [], comments };
 
   // Find the first real Scenario (skip Rules/Backgrounds)
   const firstScenarioChild = feature.children?.find((c) => c.scenario && !c.scenario?.examples?.length);
   const scenario = firstScenarioChild?.scenario;
-  if (!scenario) return { name: '', description: feature.description, steps: [] };
+
+  if (!scenario) return { name: '', description: feature.description, steps: [], comments };
 
   let currentKeyword = 'Given';
 
@@ -117,7 +110,7 @@ export function parseFeature(input: string): Feature {
     return result;
   });
 
-  return { name: feature.name, description: feature.description, steps };
+  return { name: feature.name, description: feature.description, steps, comments };
 }
 
 export function deltaSteps(steps: string[], newSteps: string[]): string[] {

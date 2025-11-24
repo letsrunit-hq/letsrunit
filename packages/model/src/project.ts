@@ -1,7 +1,7 @@
 import type { SupabaseClient, User } from '@supabase/supabase-js';
 import { randomUUID, type UUID } from 'node:crypto';
 import { connect } from './supabase';
-import { type Data, type Project, ProjectSchema } from './types';
+import { type Project, ProjectSchema } from './types';
 import { fromData, toData } from './utils/convert';
 import { z } from 'zod';
 import { DBError } from './db-error';
@@ -16,7 +16,7 @@ export async function getProject(id: string, opts: { supabase?: SupabaseClient }
   const { data, status, error } = await supabase.from('projects').select().eq('id', id).maybeSingle();
   if (error) throw new DBError(status, error);
 
-  return fromData(ProjectSchema)(data as unknown as Data<Project>);
+  return fromData(ProjectSchema)(data);
 }
 
 export async function createProject(
