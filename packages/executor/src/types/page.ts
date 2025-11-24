@@ -1,3 +1,5 @@
+import type { File } from 'node:buffer';
+
 export interface PageInfo {
   /** Page title (from <title> or meta tags) */
   title?: string;
@@ -25,6 +27,9 @@ export interface PageInfo {
 
   /** Canonical or resolved page URL */
   url: string;
+
+  /** Screenshot of the page */
+  screenshot?: File;
 }
 
 export interface AppInfo extends PageInfo {

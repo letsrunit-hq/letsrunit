@@ -4,7 +4,7 @@ import { File } from 'node:buffer';
 
 interface SupabaseSinkOptions {
   supabase: SupabaseClient;
-  runId: string;
+  run: { id: string; projectId: string };
   tableName?: string;
   bucket?: string;
   console?: { error: (...args: any[]) => void };
@@ -12,6 +12,7 @@ interface SupabaseSinkOptions {
 
 export class SupabaseSink implements Sink {
   private readonly supabase: SupabaseClient;
+  private readonly projectId: string;
   private readonly runId: string;
   private readonly tableName: string;
   private readonly bucket?: string;
@@ -20,7 +21,8 @@ export class SupabaseSink implements Sink {
 
   constructor(options: SupabaseSinkOptions) {
     this.supabase = options.supabase;
-    this.runId = options.runId;
+    this.runId = options.run.id;
+    this.projectId = options.run.projectId;
     this.tableName = options.tableName ?? 'log_entries';
     this.bucket = options.bucket;
     this.console = options.console || console;
@@ -64,21 +66,21 @@ export class SupabaseSink implements Sink {
     const stored: any[] = [];
 
     for (const artifact of artifacts) {
-      const path = `${this.runId}/${artifact.name}`;
+      const path = `${this.projectId}/${artifact.name}`;
       const { error } = await this.supabase.storage
         .from(this.bucket)
-        .upload(path, await artifact.bytes(), { upsert: false });
+        .upload(path, await artifact.bytes(), { contentType: artifact.type, upsert: false });
 
-      if (error) {
+      if (error && Number((error as any).statusCode) !== 409) {
         this.console.error('SupabaseSink upload failed:', error);
         continue;
       }
 
-      const { data: publicUrl } = this.supabase.storage.from(this.bucket).getPublicUrl(path);
+      const { data } = this.supabase.storage.from(this.bucket).getPublicUrl(path);
 
       stored.push({
         name: artifact.name,
-        url: publicUrl.publicUrl,
+        url: data.publicUrl,
         size: artifact.size,
       });
     }
