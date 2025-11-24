@@ -6,7 +6,7 @@ BEGIN
         CREATE TYPE run_type AS ENUM ('explore', 'generate', 'test');
     END IF;
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'run_status') THEN
-        CREATE TYPE run_status AS ENUM ('queued', 'running', 'success', 'failed', 'error');
+        CREATE TYPE run_status AS ENUM ('queued', 'running', 'passed', 'failed', 'error');
     END IF;
 END
 $$;

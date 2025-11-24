@@ -22,7 +22,7 @@ describe('RunResult component', () => {
         { id: '1', type: 'prepare', message: 'Doing A', ...baseEntry },
         {
           id: '2',
-          type: 'success',
+          type: 'passed',
           message: 'Did A',
           ...baseEntry,
           artifacts: [

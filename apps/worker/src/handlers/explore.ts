@@ -5,7 +5,7 @@ import type { HandleOptions } from '../types/handle';
 export async function startExploreRun(run: Run, { supabase, journal }: HandleOptions) {
   return await explore(run.target, { journal }, (info, actions) =>
     Promise.all([
-      updateProject(run.projectId, info, { supabase }),
+      updateProject(run.projectId, { ...info, description: info.purpose }, { supabase }),
       storeSuggestions(run.projectId, actions, { supabase }),
     ]),
   );

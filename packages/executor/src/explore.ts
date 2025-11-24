@@ -87,7 +87,7 @@ export default async function explore(
 
     await process({ ...pageInfo, ...appInfo }, preparedActions);
 
-    return { status: 'success' };
+    return { status: 'passed' };
   } catch (e) {
     await journal.error('An unexpected error occurred');
     console.error(e);

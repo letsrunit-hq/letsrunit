@@ -18,12 +18,12 @@ interface ScreenOptions {
 
 export default function Screen({ projectId, runId, status }: ScreenOptions) {
   const { run, journal, loading: runLoading, error: runError } = useRun(runId);
+  if (runError) throw new Error(runError);
+
   const { project, loading: projectLoading, error: projectError } = useProject(projectId);
+  if (projectError) throw new Error(projectError);
 
   const loading = runLoading || projectLoading;
-  const error = runError || projectError;
-
-  if (error) throw new Error(error);
 
   if ((run?.status ?? status) === 'queued') {
     return (

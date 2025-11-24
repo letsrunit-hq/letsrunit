@@ -6393,6 +6393,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"geist@npm:^1.5.1":
+  version: 1.5.1
+  resolution: "geist@npm:1.5.1"
+  peerDependencies:
+    next: ">=13.2.0"
+  checksum: 10c0/87c03e1e47c9d359b020f3f16b01c2dbab18e6ab46202c503fef67d4a2b3bd12118dc4d2a1c3b222b5547ccaf78a94b2c54b78a2d1d97f211665bf6e8d4e742e
+  languageName: node
+  linkType: hard
+
 "generate-template-files@npm:^3.2.1":
   version: 3.2.1
   resolution: "generate-template-files@npm:3.2.1"
@@ -10203,6 +10212,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-timeago@npm:^8.3.0":
+  version: 8.3.0
+  resolution: "react-timeago@npm:8.3.0"
+  peerDependencies:
+    react: ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 10c0/50bf49cb21b748a1e69947b1183a0406e839b0768b2d84de056c286f35360894bb68d6532b56e564adad9f52526e8833195b689a46e3966a31cc505b013b92c4
+  languageName: node
+  linkType: hard
+
 "react-transition-group@npm:^4.4.1":
   version: 4.4.5
   resolution: "react-transition-group@npm:4.4.5"
@@ -12762,7 +12780,9 @@ __metadata:
     "@types/react": "npm:^19.2.2"
     "@types/react-dom": "npm:^19.2.2"
     cross-env: "npm:^10.1.0"
+    geist: "npm:^1.5.1"
     google-auth-library: "npm:^10.4.0"
+    iso-639-1: "npm:^3.1.5"
     jsdom: "npm:^27.0.0"
     lucide-react: "npm:^0.554.0"
     motion: "npm:^12.23.24"
@@ -12773,6 +12793,7 @@ __metadata:
     primereact: "npm:^10.9.7"
     react: "npm:19.1.0"
     react-dom: "npm:19.1.0"
+    react-timeago: "npm:^8.3.0"
     sass: "npm:^1.94.2"
     vitest: "npm:^4.0.8"
     zod: "npm:^4.1.12"

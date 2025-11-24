@@ -1,42 +1,65 @@
 import React from 'react';
 import { Panel } from 'primereact/panel';
+import type { Project } from '@letsrunit/model';
+import { ExternalLink } from 'lucide-react';
+import { Screenshot } from '@/components/screenshot';
+import ISO6391 from 'iso-639-1';
 
 export type ProjectPanelProps = {
   className?: string;
-  children?: React.ReactNode;
+  project: Project;
 };
 
-export function ProjectPanel({ className, children }: ProjectPanelProps) {
+export function ProjectPanel({ className, project }: ProjectPanelProps) {
+  // Derive hostname for display purposes
+  const hostname = React.useMemo(() => {
+    try {
+      return new URL(project.url).hostname;
+    } catch {
+      return project.url;
+    }
+  }, [project.url]);
+
   return (
-    <Panel className={className} pt={{ content: { className: 'p-0' } }}>
-      <div className="grid gap-3 md:gap-4">
+    <Panel className={className}>
+      <div className="flex flex-column md:flex-row gap-4">
         {/* Left column - Screenshot */}
-        <div className="col-12 md:col-5">
-          <div className="surface-900 border-1 surface-border border-round overflow-hidden" style={{ position: 'relative', width: '100%', paddingTop: '56.25%' }}>
-            {/* Placeholder preview area; theme handles colors */}
-          </div>
+        <div className="w-full md:w-5">
+          <Screenshot
+            src={project.screenshot}
+            alt={`${hostname} screenshot`}
+            width={1920}
+            height={1280}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
         </div>
 
         {/* Right column - Details */}
-        <div className="col-12 md:col-7 flex flex-column gap-3">
+        <div className="w-full md:w-7 flex flex-column gap-3">
           <div>
-            <div className="text-500">URL</div>
-            <a href="https://ecommerce.example.com" className="inline-flex align-items-center gap-2">
-              ecommerce.example.com
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
+            <div className="text-300">URL</div>
+            <a
+              href={project.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex align-items-center gap-2"
+            >
+              {hostname}
+              <ExternalLink size={14} aria-hidden="true" />
             </a>
           </div>
-          <div>
-            <div className="text-500">Description</div>
-            <div>Full-stack e-commerce platform with BDD testing</div>
-          </div>
-          <div>
-            <div className="text-500">Language</div>
-            <div>Dutch</div>
-          </div>
-          {children}
+          {project.description && (
+            <div>
+              <div className="text-300">Description</div>
+              <div>{project.description}</div>
+            </div>
+          )}
+          {project.lang && (
+            <div>
+              <div className="text-300">Language</div>
+              <div>{ISO6391.getName(project.lang) || project.lang}</div>
+            </div>
+          )}
         </div>
       </div>
     </Panel>

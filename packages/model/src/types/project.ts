@@ -13,11 +13,11 @@ export const ProjectSchema = z.object({
   favicon: z.url().nullable().describe('Public URL of the favicon'),
   screenshot: z.url().nullable().describe('Public URL of the screenshot'),
   lang: z.string().nullable().describe('ISO 639 language code'),
-  loginAvailable: z.boolean().describe('Whether login is available'),
+  loginAvailable: z.boolean().nullable().describe('Whether login is available'),
   visibility: ProjectVisibilitySchema.default('private').describe('Whether the project is public or private'),
-  createdAt: z.date().describe('Timestamp when the project was created'),
+  createdAt: z.coerce.date().describe('Timestamp when the project was created'),
   createdBy: UUIDSchema.describe('Account id that created the project'),
-  updatedAt: z.date().describe('Timestamp when the project was last updated'),
+  updatedAt: z.coerce.date().describe('Timestamp when the project was last updated'),
   updatedBy: UUIDSchema.describe('Account id that last updated the project'),
 });
 

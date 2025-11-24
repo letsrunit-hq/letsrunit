@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import type { Artifact, Journal, Project, Run } from '@letsrunit/model';
+import type { Artifact, Journal, Project, Run, RunStatus } from '@letsrunit/model';
 import { RunTimeline, RunTimelineSkeleton } from '@/components/run-timeline';
 import { BreadCrumb } from 'primereact/breadcrumb';
 import { Tag } from 'primereact/tag';
@@ -9,6 +9,7 @@ import { Screenshot } from '@/components/screenshot';
 import styles from './run-result.module.css';
 import { Button } from 'primereact/button';
 import { useRouter } from 'next/navigation';
+import { CheckCircle2, Clock, XCircle } from 'lucide-react';
 
 export interface JournalProps {
   project: Project;
@@ -22,24 +23,35 @@ export function RunResult({ project, run, journal }: JournalProps) {
 
   const runTitle = journal?.entries.find((j) => j.type === 'title');
   const statusSeverity =
-    run.status === 'success' ? 'success' : run.status === 'failed' || run.status === 'error' ? 'danger' : 'info';
+    run.status === 'passed' ? 'success' : run.status === 'failed' || run.status === 'error' ? 'danger' : 'info';
 
   const durationMs = run.startedAt && run.finishedAt ? run.finishedAt.getTime() - run.startedAt.getTime() : undefined;
   const duration = typeof durationMs === 'number' ? `${(durationMs / 1000).toFixed(1)}s` : undefined;
 
+  const statusIcon = (status: RunStatus | undefined) => {
+    switch (status) {
+      case 'passed':
+        return <CheckCircle2 size={14} />;
+      case 'failed':
+      case 'error':
+        return <XCircle size={14} />;
+      case 'running':
+        return <Clock size={14} />;
+    }
+  };
+
   useEffect(() => {
     const fn = run.status === 'running' ? 'findLast' : 'find';
-    const screenshot = journal?.entries[fn]((j) => j.type === 'success' || j.type === 'failure')?.screenshot
+    const screenshot = journal?.entries[fn]((j) => j.type === 'success' || j.type === 'failure')?.screenshot;
     if (screenshot) setScreenshot(screenshot);
   }, [journal, run]);
 
   return (
     <div className="grid">
       <div className="col-12 mb-3">
-        <BreadCrumb model={[
-          { label: project.title || 'Project', url: `/projects/${project.id}` },
-          { label: `Run #${run.id}` },
-        ]} />
+        <BreadCrumb
+          model={[{ label: project.title || 'Project', url: `/projects/${project.id}` }, { label: `Run #${run.id}` }]}
+        />
       </div>
 
       {/* Left side - Screenshot and Info */}
@@ -57,13 +69,13 @@ export function RunResult({ project, run, journal }: JournalProps) {
             )}
           </div>
           <div className="flex align-items-center gap-2">
-            {run && <Tag value={run.status} severity={statusSeverity as any} />}
+            {run && <Tag icon={statusIcon(run.status)} value={run.status} severity={statusSeverity as any} />}
             {duration && <span className="text-500 mono">{duration}</span>}
           </div>
         </div>
 
         {/* Screenshot placeholder */}
-        <Screenshot image={screenshot?.url} alt={screenshot?.name} width={1920} height={1080} />
+        <Screenshot src={screenshot?.url} alt={screenshot?.name} width={1920} height={1080} />
       </div>
 
       {/* Right side - Run Timeline */}
@@ -78,12 +90,8 @@ export function RunResult({ project, run, journal }: JournalProps) {
           ) : (
             <RunTimelineSkeleton />
           )}
-          {run.type === 'explore' && run.status === 'success' && (
-            <Button
-              label="Continue"
-              className="w-full mt-6"
-              onClick={() => router.push(`/projects/${project.id}`)}
-            />
+          {run.type === 'explore' && run.status === 'passed' && (
+            <Button label="Continue" className="w-full mt-6" onClick={() => router.push(`/projects/${project.id}`)} />
           )}
         </div>
       </div>

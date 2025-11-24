@@ -44,6 +44,7 @@
         align-items: center;
         justify-content: center;
         border-radius: 10px;
+        background: transparent;
         border: 1px solid var(--surface-border);
 
         &.tile-primary {
@@ -62,6 +63,10 @@
             background: color-mix(in oklab, #34d399 12%, transparent);
             border-color: color-mix(in oklab, #34d399 35%, var(--surface-border));
             color: #34d399;
+        }
+
+        img {
+            margin: 0;
         }
     }
 }

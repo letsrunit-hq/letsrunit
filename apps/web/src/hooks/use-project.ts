@@ -32,8 +32,11 @@ export function useProject(id: string | undefined, opts: UseProjectOptions = {})
 
     async function fetchProject() {
       const { data, error: e } = await client!.from('projects').select('*').eq('id', id).single();
-      if (e) setError(e.message);
-      else setProject(data as unknown as Project);
+      if (e) {
+        setError(e.message);
+        return;
+      }
+      setProject(fromData(ProjectSchema)(data as unknown as Data<Project>));
     }
 
     fetchProject()
@@ -44,8 +47,7 @@ export function useProject(id: string | undefined, opts: UseProjectOptions = {})
 
     channel.on('postgres_changes', { event: '*', schema: 'public', table: 'projects', filter: `id=eq.${id}` }, (payload) => {
       try {
-        const project = fromData(ProjectSchema)(payload.new as unknown as Data<Project>);
-        setProject(project);
+        setProject(fromData(ProjectSchema)(payload.new as unknown as Data<Project>));
       } catch (e: any) {
         setError(e?.message ?? String(e));
       }

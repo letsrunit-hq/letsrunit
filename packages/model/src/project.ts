@@ -13,7 +13,7 @@ const CreateProjectSchema = ProjectSchema.omit({ id: true }).partial().required(
 export async function getProject(id: string, opts: { supabase?: SupabaseClient } = {}): Promise<Project> {
   const supabase = opts.supabase ?? connect();
 
-  const { data, status, error } = await supabase.from('projects').select().eq('id', id);
+  const { data, status, error } = await supabase.from('projects').select().eq('id', id).maybeSingle();
   if (error) throw new DBError(status, error);
 
   return fromData(ProjectSchema)(data as unknown as Data<Project>);

@@ -15,15 +15,15 @@ export function StatsToolbar({ className, totalFeatures, activeTests, suggestion
   return (
     <div className={cn('mt-5 pt-4 text-center', className)} style={{ borderTop: '1px solid var(--surface-border)' }}>
       <div className="grid grid-nogutter md:col-12">
-        <div className="col-12 md:col-3">
+        <div className="hidden md:block md:col-3">
           <div className={cn(styles.muted, 'mb-2')}>Total Features</div>
           <div className={styles.statValue}>{totalFeatures}</div>
         </div>
-        <div className="col-12 md:col-3">
-          <div className={cn(styles.muted, 'mb-2')}>Active Tests</div>
+        <div className="col-6 md:col-3">
+          <div className={cn(styles.muted, 'mb-2')}>Test cases</div>
           <div className={styles.statValue}>{activeTests}</div>
         </div>
-        <div className="col-12 md:col-3">
+        <div className="col-6 md:col-3">
           <div className={cn(styles.muted, 'mb-2')}>Suggestions</div>
           <div className={styles.statValue}>{suggestions}</div>
         </div>

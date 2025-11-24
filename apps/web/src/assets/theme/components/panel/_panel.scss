@@ -1,6 +1,11 @@
 .p-panel {
     overflow: hidden;
 
+    &[role=link],
+    &[role=button] {
+        cursor: pointer;
+    }
+
     .p-panel-header {
         border: $panelHeaderBorder;
         padding: $panelHeaderPadding;
@@ -57,7 +62,8 @@
             background: $panelContentOddRowBg;
         }
 
-        button:hover & .p-panel-content {
+        &[role=link]:hover .p-panel-content,
+        &[role=button]:hover .p-panel-content {
             background: color-mix(in oklab, $primaryColor 5%, transparent);
             border-color: color-mix(in oklab, $primaryColor 50%, transparent);
             color: $primaryColor;

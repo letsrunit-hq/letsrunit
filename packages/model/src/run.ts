@@ -40,7 +40,7 @@ export async function updateRunStatus(
 
   const data: Partial<Data<Run>> = { status, error };
   if (status === 'running') data.started_at = new Date().toISOString();
-  if (status === 'success' || status === 'failed') data.finished_at = new Date().toISOString();
+  if (status === 'passed' || status === 'failed') data.finished_at = new Date().toISOString();
 
   const { status: qs, error: qe } = await supabase.from('runs').update(data).eq('id', runId);
   if (qe) throw new DBError(qs, qe);

@@ -70,7 +70,7 @@ describe('run lib', () => {
 
     // terminal
     (supabase as any).ops.length = 0;
-    await updateRunStatus(id, 'success', { supabase });
+    await updateRunStatus(id, 'passed', { supabase });
     const second = (supabase as any).ops.find((o: any) => o.type === 'update' && o.table === 'runs');
     expect(second.values.status).toBe('success');
     expect(second.values.finished_at).toBeTypeOf('string');

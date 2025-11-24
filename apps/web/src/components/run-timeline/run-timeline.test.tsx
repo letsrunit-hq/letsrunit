@@ -18,7 +18,7 @@ describe('RunTimeline', () => {
       { id: '3', type: 'prepare', message: 'Preparing', ...baseEntry },
     ] as any; // keep loose for test simplicity
 
-    render(<RunTimeline entries={entries} />);
+    render(<RunTimeline entries={entries} status="running" />);
     expect(screen.getByText('Test Steps')).toBeInTheDocument();
     expect(screen.getByText('1 of 3 completed')).toBeInTheDocument();
   });

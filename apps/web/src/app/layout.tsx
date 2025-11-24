@@ -5,6 +5,7 @@ import { PrimeReactProvider } from 'primereact/api';
 import '../assets/theme/theme.scss';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
+import 'geist/font/sans';
 
 export const metadata: Metadata = {
   title: 'Vibe Testing done right | letsrunit.',

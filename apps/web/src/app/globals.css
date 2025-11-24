@@ -17,6 +17,12 @@ body {
   line-height: 1.5rem;
 }
 
+h1 {
+  font-size: 1.5rem;
+  line-height: 1.35;
+  font-weight: 600;
+}
+
 a {
   color: inherit;
   text-decoration: underline;
@@ -46,7 +52,12 @@ button {
   color: inherit;
 }
 
-.run-timeline .p-timeline-event-separator {
-  position: relative;
-  top: 9px;
+.run-timeline {
+  .p-timeline-event-separator {
+    position: relative;
+    top: 9px;
+  }
+  .p-timeline-event-content {
+    padding-right: 0;
+  }
 }

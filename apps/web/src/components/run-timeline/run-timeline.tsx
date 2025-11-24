@@ -7,7 +7,7 @@ import { cn, join } from '@letsrunit/utils';
 import { Button } from 'primereact/button';
 import { useTimelinePlayer } from '@/hooks/use-timeline-player';
 
-type StepStatus = 'success' | 'failed' | 'pending';
+type StepStatus = 'passed' | 'failed' | 'pending';
 
 interface RunStep {
   keyword?: string;
@@ -35,7 +35,7 @@ function mapTypeToStatus(t: JournalEntry['type']): StepStatus | null {
     case 'prepare':
       return 'pending';
     case 'success':
-      return 'success';
+      return 'passed';
     case 'failure':
       return 'failed';
     default:
@@ -51,7 +51,7 @@ function formatDuration(ms?: number): string | undefined {
 
 function getStatusColor(status: StepStatus) {
   switch (status) {
-    case 'success':
+    case 'passed':
       return styles.textGreen;
     case 'failed':
       return styles.textRed;
@@ -72,8 +72,13 @@ function markerTemplate(item: ExtendedRunStep, status: RunStatus) {
     return <span className="pi pi-circle text-500" aria-label="pending" />;
   }
 
-  if (item.status === 'success') {
-    return <span className={cn('pi', 'pi-circle-fill', styles.textGreen)} aria-label="success" />;
+  if (item.status === 'passed') {
+    return (
+      <span
+        className={cn('pi', item.hasScreenshot ? 'pi-circle-fill' : 'pi-check-circle', styles.textGreen)}
+        aria-label="success"
+      />
+    );
   }
 
   // failed
@@ -111,8 +116,8 @@ export function RunTimeline({ status, entries, onSelect }: RunTimelineProps) {
     text: e.message.replace(/^(Given|When|Then|And|But|\*)\s+/, ''),
     status: mapTypeToStatus(e.type) as StepStatus,
     duration: formatDuration(e.duration),
-    description: e.meta.description,
     hasScreenshot: Boolean(e.screenshot),
+    description: e.meta.description,
   }));
 
   // selection state
@@ -165,7 +170,7 @@ export function RunTimeline({ status, entries, onSelect }: RunTimelineProps) {
         : undefined,
   }));
 
-  const completed = steps.filter((s) => s.status === 'success').length;
+  const completed = steps.filter((s) => s.status === 'passed').length;
   const passedCount = completed;
   const failedCount = steps.filter((s) => s.status === 'failed').length;
 
@@ -173,7 +178,12 @@ export function RunTimeline({ status, entries, onSelect }: RunTimelineProps) {
     <>
       <div className="mb-4">
         <div className="flex align-items-center justify-content-between">
-          <h2 className="text-base text-white mb-2">Test Steps</h2>
+          <div>
+            <h2 className="text-base text-white mb-2">Test Steps</h2>
+            <p className="opacity-50 m-0">
+              {completed} of {total} completed
+            </p>
+          </div>
           {onSelect && status !== 'running' && (
             <Button
               outlined
@@ -183,9 +193,6 @@ export function RunTimeline({ status, entries, onSelect }: RunTimelineProps) {
             />
           )}
         </div>
-        <p className="opacity-50 m-0">
-          {completed} of {total} completed
-        </p>
       </div>
 
       <Timeline

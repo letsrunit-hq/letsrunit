@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { UUIDSchema } from './utils';
 
 export const RunTypeSchema = z.enum(['explore', 'generate', 'test']);
-export const RunStatusSchema = z.enum(['queued', 'running', 'success', 'failed', 'error']);
+export const RunStatusSchema = z.enum(['queued', 'running', 'passed', 'failed', 'error']);
 
 export const RunSchema = z.object({
   id: UUIDSchema,

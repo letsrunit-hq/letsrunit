@@ -2,6 +2,7 @@ import { connect, type Run, updateRunStatus } from '@letsrunit/model';
 import { startExploreRun } from './handlers/explore';
 import { Journal, SupabaseSink } from '@letsrunit/journal';
 import type { HandleOptions } from './types/handle';
+import type { Result } from '@letsrunit/executor';
 
 const ARTIFACT_BUCKET = process.env.ARTIFACT_BUCKET || 'artifacts';
 
@@ -24,7 +25,7 @@ export async function handle(run: Run, { supabase, journal }: Partial<HandleOpti
   }
 }
 
-async function startRun(run: Run, opts: HandleOptions) {
+async function startRun(run: Run, opts: HandleOptions): Promise<Result> {
   switch (run.type) {
     case 'explore':
       return await startExploreRun(run, opts);
