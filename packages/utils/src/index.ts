@@ -1,5 +1,6 @@
-export * from './join';
 export * from './hash';
+export * from './join';
+export * from './object';
 export * from './sleep';
 export * from './split-url';
 export * from './status-symbol';
