@@ -187,7 +187,7 @@ export async function generateFeature({ controller, page, feature }: Options): P
 
     // Run BDD steps
     const result = await controller.run(next);
-    const { page: nextPage, status, steps: runSteps, reason: runFailure } = result;
+    const { page: nextPage, status, steps: runSteps } = result;
 
     steps.push(...runSteps.filter((s) => s.status === 'success').map(({ text }) => text));
 

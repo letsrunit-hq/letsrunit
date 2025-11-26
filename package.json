@@ -7,7 +7,9 @@
     "packages/@types/*"
   ],
   "scripts": {
-    "cli": "yarn workspace cli dev"
+    "cli": "yarn workspace cli dev",
+    "test": "yarn workspaces foreach -ptA run test",
+    "supabase:reset": "yarn supabase stop && ( docker volume ls --filter label=com.supabase.cli.project=basejump | grep 'supabase_' | awk '{print $2}' | xargs docker volume rm ) && yarn supabase start"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
@@ -16,7 +18,7 @@
     "eslint-config-next": "^15.5.5",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.6.2",
-    "supabase": "2.58.5",
+    "supabase": "^2.62.5",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.4"
   }

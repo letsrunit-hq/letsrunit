@@ -8174,7 +8174,7 @@ __metadata:
     eslint-config-next: "npm:^15.5.5"
     eslint-config-prettier: "npm:^10.1.8"
     prettier: "npm:^3.6.2"
-    supabase: "npm:2.58.5"
+    supabase: "npm:^2.62.5"
     typescript: "npm:^5.9.3"
     typescript-eslint: "npm:^8.46.4"
   languageName: unknown
@@ -11544,9 +11544,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"supabase@npm:2.58.5":
-  version: 2.58.5
-  resolution: "supabase@npm:2.58.5"
+"supabase@npm:^2.62.5":
+  version: 2.62.5
+  resolution: "supabase@npm:2.62.5"
   dependencies:
     bin-links: "npm:^6.0.0"
     https-proxy-agent: "npm:^7.0.2"
@@ -11554,7 +11554,7 @@ __metadata:
     tar: "npm:7.5.2"
   bin:
     supabase: bin/supabase
-  checksum: 10c0/cb32c8eee73920a355a61c22e42c54d5116b038714c0b9e7fa8307059cb97955cf9196a780c2c37474e347cd8055d4d67261135fea6acadd82b913d621f49562
+  checksum: 10c0/bea9252137b29d1c5a8ab6f5f30148ac5060f5327cbffe71bba4a33b2b70dbf9fc0623cf19248b4a765cc6a93573ff937e4b17942e5c5b06f407cefe8fb3f683
   languageName: node
   linkType: hard
 
