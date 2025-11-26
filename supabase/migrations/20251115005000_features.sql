@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS public.features
     description text,
     comments text,
     body text,
+    enabled boolean NOT NULL default true,
     -- end fields generated automatically from the template inputs
 
     -- timestamps are useful for auditing

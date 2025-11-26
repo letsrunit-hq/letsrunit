@@ -51,7 +51,6 @@ CREATE TABLE IF NOT EXISTS basejump.accounts
     -- Account name
     name                  text,
     slug                  text unique,
-    guest_account         boolean                             default false not null,
     personal_account      boolean                             default false not null,
     updated_at            timestamp with time zone,
     created_at            timestamp with time zone,
@@ -641,6 +640,40 @@ END;
 $$;
 
 grant execute on function public.update_account(uuid, text, text, jsonb, boolean) to authenticated, service_role;
+
+create or replace function public.is_account_member(account_id uuid, user_id uuid)
+    returns boolean
+    language plpgsql
+    security definer
+    set search_path = basejump
+as
+$$
+BEGIN
+
+    -- if the caller is an anon/authenticated user (not service role), they
+    -- must be a member of the account to perform this check
+    if current_user in ('anon', 'authenticated') then
+        if not exists (
+            select 1
+            from basejump.account_user au
+            where au.account_id = is_account_member.account_id
+              and au.user_id = auth.uid()
+        ) then
+            raise exception 'You must be a member of the account to access this information';
+        end if;
+    end if;
+
+    return exists(
+        select 1
+        from basejump.account_user au
+        where au.account_id = is_account_member.account_id
+            and au.user_id = is_account_member.user_id
+    );
+
+END;
+$$;
+
+grant execute on function public.is_account_member(uuid, uuid) to authenticated, service_role;
 
 /**
   Returns a list of current account members. Only account owners can access this function.

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { JSX } from 'react';
+import React, { JSX, useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import styles from './animated-background.module.css';
 import AnimatedWave from '../animated-wave/animated-wave';
@@ -10,6 +10,15 @@ interface AnimatedBackgroundProps {
 }
 
 export function AnimatedBackground({ waiting }: AnimatedBackgroundProps): JSX.Element {
+  // Render randomized visuals only after the component mounts on the client to avoid SSR hydration mismatches.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  {/* Avoid rendering randomized SVG during SSR. Show nothing until mounted. */}
+  if (!mounted) return <></>;
+
   return (
     <div className={styles.container}>
       <svg xmlns="http://www.w3.org/2000/svg">
@@ -61,27 +70,6 @@ export function AnimatedBackground({ waiting }: AnimatedBackgroundProps): JSX.El
             }}
           />
         ))}
-
-        {/* Scanning line */}
-        <motion.line
-          x1="0"
-          y1="0"
-          x2="100%"
-          y2="0"
-          stroke="#f59e0b"
-          strokeWidth="2"
-          opacity="0.3"
-          filter="url(#glow)"
-          animate={{
-            y1: ['0%', '100%'],
-            y2: ['0%', '100%'],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-        />
       </svg>
     </div>
   );

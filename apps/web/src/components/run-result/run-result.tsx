@@ -1,15 +1,15 @@
 'use client';
 
-import React, { useEffect } from 'react';
-import type { Artifact, Journal, Project, Run, RunStatus } from '@letsrunit/model';
 import { RunTimeline, RunTimelineSkeleton } from '@/components/run-timeline';
-import { BreadCrumb } from 'primereact/breadcrumb';
-import { Tag } from 'primereact/tag';
 import { Screenshot } from '@/components/screenshot';
-import styles from './run-result.module.css';
-import { Button } from 'primereact/button';
-import { useRouter } from 'next/navigation';
+import type { Artifact, Journal, Project, Run, RunStatus } from '@letsrunit/model';
 import { CheckCircle2, Clock, XCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { BreadCrumb } from 'primereact/breadcrumb';
+import { Button } from 'primereact/button';
+import { Tag } from 'primereact/tag';
+import React, { useEffect } from 'react';
+import styles from './run-result.module.css';
 
 export interface JournalProps {
   project: Project;
@@ -69,7 +69,9 @@ export function RunResult({ project, run, journal }: JournalProps) {
             )}
           </div>
           <div className="flex align-items-center gap-2">
-            {run && <Tag icon={statusIcon(run.status)} value={run.status} severity={statusSeverity as any} />}
+            {run && run.status !== 'queued' && run.status !== 'running' && (
+              <Tag icon={statusIcon(run.status)} value={run.status} severity={statusSeverity} />
+            )}
             {duration && <span className="text-500 mono">{duration}</span>}
           </div>
         </div>
@@ -81,7 +83,7 @@ export function RunResult({ project, run, journal }: JournalProps) {
       {/* Right side - Run Timeline */}
       <div className="col-12 md:col-4 pl-6">
         <div className={styles.timeline}>
-          {journal ? (
+          {journal?.entries.length ? (
             <RunTimeline
               status={run.status}
               entries={journal.entries}

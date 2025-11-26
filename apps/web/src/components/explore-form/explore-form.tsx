@@ -29,10 +29,14 @@ export function ExploreForm({
   buttonLabel = 'Run it.',
 }: UrlFormProps) {
   const router = useRouter();
-  const [url, setUrl] = useState('http://localhost:8080');
+  const [url, setUrl] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const isValid = url.match(/^(https?:\/\/)?[\w\-]+\.[\w\-]+/);
+
   const onSubmitUrl = useCallback(async () => {
+    if (!isValid) return;
+
     try {
       setIsSubmitting(true);
       await ensureSignedIn();
@@ -44,7 +48,7 @@ export function ExploreForm({
         setIsSubmitting(false);
       }, 5000);
     }
-  }, [router, url]);
+  }, [router, url, isValid]);
 
   return (
     <form className={className} onSubmit={(e) => handleSubmit(e, onSubmitUrl)} role="form" aria-label="run-url-form">
@@ -55,6 +59,7 @@ export function ExploreForm({
         aria-label="website-input"
         className={cn('p-inputtext-lg', inputClassName)}
         disabled={isSubmitting}
+        invalid={url !== '' && !isValid}
       />
       <Button
         type="submit"

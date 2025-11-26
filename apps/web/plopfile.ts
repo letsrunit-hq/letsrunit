@@ -199,7 +199,9 @@ const Ctx = createContext<{{pascalCase name}}Value | undefined>(undefined);
 
 export function {{pascalCase name}}Provider({ children }: { children: React.ReactNode }) {
   const [value, setValue] = useState('default');
-  return <Ctx.Provider value={{ value, setValue }}>{children}</Ctx.Provider>;
+  return (
+    <Ctx.Provider value={(() => ({ value, setValue }))()}>{children}</Ctx.Provider>
+  );
 }
 
 export function use{{pascalCase name}}() {

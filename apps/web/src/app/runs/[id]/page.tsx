@@ -6,10 +6,7 @@ import { DBError } from '@letsrunit/model';
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-
-  if (!isUUID(id)) {
-    return notFound();
-  }
+  if (!isUUID(id)) return notFound();
 
   const supabase = await connect();
   const { status, data, error } = await supabase.from('runs').select('id, project_id, status').eq('id', id).maybeSingle();

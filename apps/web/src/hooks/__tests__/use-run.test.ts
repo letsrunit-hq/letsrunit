@@ -92,7 +92,7 @@ function createMockClient({ run, journal }: { run: any; journal: JournalEntryDat
 }
 
 // By default, ensure the real supabase() is not accidentally called
-vi.mock('@/libs/supabase', () => ({
+vi.mock('@/libs/supabase/browser', () => ({
   supabase: vi.fn(() => {
     throw new Error('Default supabase() should not be called in this test');
   }),

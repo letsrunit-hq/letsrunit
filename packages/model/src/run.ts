@@ -4,7 +4,8 @@ import { type Data, type Run, RunSchema, RunStatus } from './types';
 import { connect } from './supabase';
 import { z } from 'zod';
 import { toData } from './utils/convert';
-import { DBError } from './db-error';
+import { DBError } from './utils/db-error';
+import { authorize } from './utils/auth';
 
 const CreateRunSchema = RunSchema.pick({ projectId: true, type: true, status: true, target: true }).partial({
   status: true,
@@ -12,10 +13,13 @@ const CreateRunSchema = RunSchema.pick({ projectId: true, type: true, status: tr
 
 export async function createRun(
   run: z.infer<typeof CreateRunSchema>,
-  opts: { supabase?: SupabaseClient; by?: User } = {},
+  opts: { supabase?: SupabaseClient; by?: Pick<User, 'id'> } = {},
 ): Promise<UUID> {
   const supabase = opts.supabase ?? connect();
   const runId = randomUUID();
+
+  if (!run.projectId) throw new DBError(403);
+  await authorize('projects', run.projectId, { supabase, by: opts.by });
 
   // Create a new record for the run
   const { status, error } = await supabase.from('runs').insert({
@@ -33,7 +37,7 @@ export async function createRun(
 export async function updateRunStatus(
   runId: UUID,
   result: RunStatus | { status: RunStatus; error?: string },
-  opts: { supabase?: SupabaseClient } = {},
+  opts: { supabase?: SupabaseClient; by?: Pick<User, 'id'> } = {},
 ): Promise<void> {
   const supabase = opts.supabase ?? connect();
   const { status, error } = typeof result === 'object' ? result : { status: result };
@@ -41,6 +45,8 @@ export async function updateRunStatus(
   const data: Partial<Data<Run>> = { status, error };
   if (status === 'running') data.started_at = new Date().toISOString();
   if (status === 'passed' || status === 'failed') data.finished_at = new Date().toISOString();
+
+  await authorize('runs', runId, { supabase, by: opts.by });
 
   const { status: qs, error: qe } = await supabase.from('runs').update(data).eq('id', runId);
   if (qe) throw new DBError(qs, qe);

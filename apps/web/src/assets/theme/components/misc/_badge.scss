@@ -63,15 +63,15 @@
     }
 
     &.p-tag-info {
-        background-color: $infoButtonBg;
-        color: $infoButtonTextColor;
-        border-color: $infoButtonBg;
+        background-color: $infoTagBg;
+        color: $infoTagTextColor;
+        border-color: $infoTagBg;
     }
 
     &.p-tag-warning {
-        background-color: $warningButtonBg;
-        color: $warningButtonTextColor;
-        border-color: $warningButtonBg;
+        background-color: $warningTagBg;
+        color: $warningTagTextColor;
+        border-color: $warningTagBg;
     }
 
     &.p-tag-danger {

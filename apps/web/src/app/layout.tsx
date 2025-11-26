@@ -1,10 +1,12 @@
-import React from 'react';
+import { ToastProvider } from '@/context/toast-context';
 import type { Metadata } from 'next';
 import './globals.css';
 import { PrimeReactProvider } from 'primereact/api';
+import { ConfirmDialog } from 'primereact/confirmdialog';
 import '../assets/theme/theme.scss';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
+import React from 'react';
 import 'geist/font/sans';
 
 export const metadata: Metadata = {
@@ -20,7 +22,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <PrimeReactProvider>{children}</PrimeReactProvider>
+        <ConfirmDialog />
+        <PrimeReactProvider>
+          <ToastProvider>
+            {children}
+          </ToastProvider>
+        </PrimeReactProvider>
       </body>
     </html>
   );

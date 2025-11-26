@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { AnimatedBackground } from '@/components/waiting-background';
+import { AnimatedBackground } from '@/components/animated-background';
 import { Button } from 'primereact/button';
 
 export default function ErrorPage({ reset }: { error: Error; reset: () => void }) {

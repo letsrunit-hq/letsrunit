@@ -1,25 +1,33 @@
-'use client';
-
-import React, { useMemo, useState } from 'react';
-import { Panel } from 'primereact/panel';
+import type { Feature, RunStatus } from '@letsrunit/model';
+import { cn } from '@letsrunit/utils';
+import {
+  ArchiveRestore,
+  CheckCircle2,
+  Lightbulb,
+  MoreVertical,
+  Play,
+  Plus,
+  TestTube,
+  X,
+  XCircle,
+  Zap,
+} from 'lucide-react';
 import { Button } from 'primereact/button';
-import { InputText } from 'primereact/inputtext';
-import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
-import { Tag } from 'primereact/tag';
-import { IconField } from 'primereact/iconfield';
-import { InputIcon } from 'primereact/inputicon';
-import { CheckCircle2, Lightbulb, MoreVertical, Play, Plus, Search, TestTube, X, XCircle, Zap } from 'lucide-react';
 import { Chip } from 'primereact/chip';
+import { Panel } from 'primereact/panel';
 import { ProgressSpinner } from 'primereact/progressspinner';
-import type { Feature as ModelFeature, RunStatus } from '@letsrunit/model';
+import { Tag } from 'primereact/tag';
+import React from 'react';
 import TimeAgo from 'react-timeago';
 
-export type FilterType = 'all' | 'suggestions' | 'tests';
+type ActionFn = (feature: Feature) => void;
 
-export type FeaturesListProps = {
+export interface FeaturesListProps {
   className?: string;
-  features: ModelFeature[];
-};
+  features: Feature[];
+  remove?: ActionFn;
+  restore?: ActionFn;
+}
 
 function getStatusBadge(status: RunStatus | undefined) {
   switch (status) {
@@ -34,12 +42,6 @@ function getStatusBadge(status: RunStatus | undefined) {
   }
 }
 
-const filterOptions = [
-  { label: 'All', value: 'all' as FilterType },
-  { label: 'Suggestions', value: 'suggestions' as FilterType },
-  { label: 'Test Cases', value: 'tests' as FilterType },
-];
-
 const CreateButton = () => (
   <Panel role="button" className="w-full primary border-dashed">
     <div className="flex align-items-center justify-content-between gap-3">
@@ -51,30 +53,50 @@ const CreateButton = () => (
   </Panel>
 );
 
-const SuggestionItem = ({ feature }: { feature: ModelFeature }) => (
+const SuggestionItem = ({ feature, remove, restore }: { feature: Feature; remove?: ActionFn; restore?: ActionFn }) => (
   <Panel className="w-full even">
     <div className="flex align-items-center justify-content-between gap-3">
       <div className="flex align-items-center gap-3">
         <Chip className="tile tile-blue" icon={<Lightbulb key="icon" size={24} />} />
         <div className="flex flex-column">
           <div className="flex align-items-center gap-2 mb-1">
-            <h3 className="m-0 mb-1 font-normal">{feature.name}</h3>
+            <h3 className={cn('m-0', 'mb-1', 'font-normal', !feature.enabled && 'line-through')}>{feature.name}</h3>
           </div>
           {feature.description && <p className="text-300 m-0">{feature.description}</p>}
         </div>
       </div>
       <div className="hidden sm:flex align-items-center gap-2">
-        <Button>
-          <Zap size={16} className="mr-2" />
-          <span>Generate & Run</span>
-        </Button>
-        <Button severity="secondary" text aria-label="Remove" icon={<X size={20} />} />
+        {feature.enabled && (
+          <>
+            <Button icon={<Zap size={16} className="mr-2" />}>Generate &amp; Run</Button>
+            {remove && (
+              <Button
+                severity="secondary"
+                text
+                aria-label="Archive"
+                title="Archive suggestion"
+                icon={<X size={20} />}
+                onClick={() => remove(feature)}
+              />
+            )}
+          </>
+        )}
+        {!feature.enabled && restore && (
+          <Button
+            severity="secondary"
+            text
+            aria-label="Restore"
+            title="Restore suggestion"
+            icon={<ArchiveRestore size={20} />}
+            onClick={() => restore(feature)}
+          />
+        )}
       </div>
     </div>
   </Panel>
 );
 
-const TestItem = ({ feature }: { feature: ModelFeature }) => {
+const TestItem = ({ feature }: { feature: Feature }) => {
   const status = feature.lastRun?.status;
 
   return (
@@ -85,7 +107,11 @@ const TestItem = ({ feature }: { feature: ModelFeature }) => {
           <div className="flex flex-column">
             <h3 className="m-0 mb-1 font-normal">{feature.name}</h3>
             <div className="flex align-items-center gap-3 text-300">
-              {feature.lastRun && <span>Last run <TimeAgo date={feature.lastRun.createdAt} /></span>}
+              {feature.lastRun && (
+                <span>
+                  Last run <TimeAgo date={feature.lastRun.createdAt} />
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -97,9 +123,7 @@ const TestItem = ({ feature }: { feature: ModelFeature }) => {
               <span>Run</span>
             </Button>
           )}
-          {(status === 'queued' || status === 'running') && (
-            <ProgressSpinner style={{ height: 32 }} strokeWidth="8" />
-          )}
+          {(status === 'queued' || status === 'running') && <ProgressSpinner style={{ height: 32 }} strokeWidth="8" />}
           <Button
             severity="secondary"
             text
@@ -113,52 +137,15 @@ const TestItem = ({ feature }: { feature: ModelFeature }) => {
   );
 };
 
-export function FeaturesList({ className, features }: FeaturesListProps) {
-  const [filter, setFilter] = useState<FilterType>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-
-  const filteredFeatures = useMemo(() => {
-    return features.filter((feature) => {
-      const isSuggestion = feature.body == null;
-      const matchesFilter = filter === 'all' ? true : filter === 'suggestions' ? isSuggestion : !isSuggestion;
-      const title = feature.name ?? '';
-      const matchesSearch = title.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesFilter && matchesSearch;
-    });
-  }, [features, filter, searchQuery]);
-
+export function FeaturesList({ className, features, remove, restore }: FeaturesListProps) {
   return (
     <div className={className}>
-      <div className="flex align-items-center gap-3 mb-4">
-        {/* Search */}
-        <IconField iconPosition="left" className="flex-1">
-          <InputIcon>
-            <Search size={16} />
-          </InputIcon>
-          <InputText
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search..."
-            className="w-full"
-          />
-        </IconField>
-
-        {/* Filter */}
-        <Dropdown
-          value={filter}
-          onChange={(e: DropdownChangeEvent) => setFilter(e.value as FilterType)}
-          options={filterOptions}
-          className="min-w-12rem"
-          placeholder="Filter"
-        />
-      </div>
-
       <div className="flex flex-column gap-3">
         <CreateButton />
 
-        {filteredFeatures.map((feature) =>
+        {features.map((feature) =>
           feature.body == null ? (
-            <SuggestionItem key={feature.id} feature={feature} />
+            <SuggestionItem key={feature.id} feature={feature} remove={remove} restore={restore} />
           ) : (
             <TestItem key={feature.id} feature={feature} />
           ),

@@ -73,3 +73,33 @@ create policy "Anyone can select public projects" on public.projects
     using (
     visibility = 'public'::project_visibility
     );
+
+
+-- RPC: can_access_project(project_id, user_id)
+-- Returns whether the given user can access the given project by delegating to is_account_member
+create or replace function public.can_access_project(project_id uuid, user_id uuid)
+    returns boolean
+    language plpgsql
+    security definer
+    set search_path = public
+as
+$$
+declare
+    acc_id uuid;
+begin
+    -- Lookup the owning account of the project
+    select p.account_id into acc_id
+    from public.projects p
+    where p.id = can_access_project.project_id;
+
+    -- If project not found, deny
+    if acc_id is null then
+        return false;
+    end if;
+
+    -- Delegate to account membership check
+    return public.is_account_member(acc_id, can_access_project.user_id);
+end;
+$$;
+
+grant execute on function public.can_access_project(uuid, uuid) to authenticated, service_role;

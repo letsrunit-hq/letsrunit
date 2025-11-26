@@ -208,11 +208,11 @@ export function RunTimeline({ status, entries, onSelect }: RunTimelineProps) {
       <div className="mt-4 pt-4 border-top-1 subtle-border">
         <div className="flex align-items-center justify-content-between">
           <div className="flex align-items-center gap-2">
-            <span className={cn(styles.dot, styles.dotGreen, failedCount > 0 ? 'opacity-30' : '')} />
+            <span className={cn(styles.dot, styles.dotGreen, failedCount > 0 && 'opacity-30')} />
             <span className="text-500">{passedCount} Passed</span>
           </div>
           <div className="flex align-items-center gap-2">
-            <span className={cn(styles.dot, styles.dotRed, failedCount === 0 ? 'opacity-30' : '')} />
+            <span className={cn(styles.dot, styles.dotRed, failedCount === 0 && 'opacity-30')} />
             <span className="text-500">{failedCount} Failed</span>
           </div>
         </div>

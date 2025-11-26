@@ -151,7 +151,7 @@
 
     &.p-button-sm {
         @include scaledFontSize($fontSize, $scaleSM);
-        @include scaledPadding($buttonPadding, $scaleSM);
+        padding: .25rem .625rem;
 
         .p-button-icon {
             @include scaledFontSize($primeIconFontSize, $scaleSM);

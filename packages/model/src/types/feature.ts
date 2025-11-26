@@ -9,6 +9,7 @@ export const FeatureSchema = z.object({
   description: z.string().nullable().describe('The full user story of the test'),
   comments: z.string().nullable().describe('Additional comments or instructions for the LLM'),
   body: z.string().nullable().describe('Gherkin feature background and steps'),
+  enabled: z.boolean().default(true).describe('Disabled features are not run'),
   lastRun: RunSchema.nullable().describe('Last run of this feature'),
   createdAt: z.coerce.date().describe('Timestamp when the feature was created'),
   createdBy: UUIDSchema.nullable().describe('Account id that created the feature'),

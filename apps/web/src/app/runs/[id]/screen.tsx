@@ -3,7 +3,7 @@
 import React from 'react';
 import { useRun } from '@/hooks/use-run';
 import { RunResult } from '@/components/run-result';
-import { AnimatedBackground } from '@/components/waiting-background';
+import { AnimatedBackground } from '@/components/animated-background';
 import { QueueStatus } from '@/components/queue-status';
 import styles from './screen.module.css';
 import useProject from '@/hooks/use-project';
