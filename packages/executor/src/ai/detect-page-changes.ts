@@ -1,12 +1,12 @@
-import { unified } from 'unified';
-import rehypeParse from 'rehype-parse';
-import rehypeFormat from 'rehype-format';
-import rehypeStringify from 'rehype-stringify';
-import * as Diff from 'diff';
 import { generate } from '@letsrunit/ai';
+import { Journal } from '@letsrunit/journal';
+import * as Diff from 'diff';
+import rehypeFormat from 'rehype-format';
+import rehypeParse from 'rehype-parse';
+import rehypeStringify from 'rehype-stringify';
+import { unified } from 'unified';
 import { scrubHtml } from '../utils/scrub-html';
 import { locatorRules } from './locator-rules';
-import { Journal } from '@letsrunit/journal';
 
 const PROMPT = `You analyze a diff of two HTML files. Your job is to detect the most significant user-visible changes and output up to 3 Playwright Gherkin steps using these step definitions only:
 
@@ -20,8 +20,10 @@ ${locatorRules}
 
 ## Output
 
-1. Significance order: added or removed visible elements, changed headings or button texts, added or removed list/table items or counters, other visible text changes. Ignore purely structural changes that do not affect visibility.
-2. Generate 0 to 3 steps. If none, output: \`Then I do not see any changes\`.
+1. Significance order: added or removed visible elements, changed headings or button texts, added or removed list/table items or counters, other visible text changes.
+2. Ignore purely structural changes that do not affect visibility.
+3. Ignore changes in input field values
+4. Generate 0 to 3 steps. If none, output: \`Then I do not see any changes\`.
 5. For added elements use \`I see\`, for removed elements use \`I do not see\`. For added or removed child content under a stable parent, use \`contains\` or \`not contains\`.
 6. Output only the steps, one per line, no explanations, no extra text, no code fences.
 
@@ -47,21 +49,18 @@ async function formatHtml(rawHtml: string, url: string) {
 }
 
 export async function unifiedHtmlDiff(
-  old: { html: string, url: string },
-  current: { html: string, url: string },
-) {
-  const [a, b] = await Promise.all([
-    formatHtml(old.html, old.url),
-    formatHtml(current.html, current.url),
-  ]);
+  old: { html: string; url: string },
+  current: { html: string; url: string },
+): Promise<string> {
+  const [a, b] = await Promise.all([formatHtml(old.html, old.url), formatHtml(current.html, current.url)]);
 
   return Diff.createTwoFilesPatch('before.html', 'after.html', a, b);
 }
 
 export async function detectPageChanges(
-  old: { html: string, url: string },
-  current: { html: string, url: string },
-  { journal }: { journal?: Journal } = {}
+  old: { html: string; url: string },
+  current: { html: string; url: string },
+  { journal }: { journal?: Journal } = {},
 ): Promise<string[]> {
   const diff = await unifiedHtmlDiff(old, current);
   journal?.debug(diff);
@@ -69,7 +68,5 @@ export async function detectPageChanges(
   const response = await generate(PROMPT, diff, { model: 'medium' });
   const steps = response.trim();
 
-  return steps.toLowerCase() === DUMMY.toLowerCase()
-    ? []
-    : steps.split('\n');
+  return steps.toLowerCase() === DUMMY.toLowerCase() ? [] : steps.split('\n');
 }

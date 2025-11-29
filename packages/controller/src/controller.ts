@@ -15,6 +15,7 @@ import {
   type PageScreenshotOptions,
   selectors,
 } from '@playwright/test';
+import { File } from 'node:buffer';
 import { runner } from './runner';
 import type { Result, World } from './types';
 
@@ -89,14 +90,14 @@ export class Controller {
       await scrollToCenter(locators[0]);
     }
 
-    const screenshotBefore = await this.screenshot({ mask: locators });
+    const screenshotBefore = await this.makeScreenshot({ mask: locators });
     await this.journal.start(step.text, { artifacts: clean([screenshotBefore]) });
 
     const result = await run();
 
     const screenshotAfter =
-      !step.text.startsWith('Then') && await this.areAllVisible(locators)
-        ? await screenshot(this.world.page, { mask: locators })
+      !step.text.startsWith('Then') && (await this.areAllVisible(locators))
+        ? await this.makeScreenshot({ mask: locators })
         : undefined;
 
     await this.journal
@@ -108,15 +109,14 @@ export class Controller {
     return result;
   }
 
-  private async screenshot(options?: PageScreenshotOptions) {
+  private async makeScreenshot(options?: PageScreenshotOptions): Promise<File | undefined> {
     try {
       return await screenshot(this.world.page, options);
     } catch (e) {
       const message = (e as any).message ?? String(e);
-      await this.journal.warn(
-        `Failed to take screenshot of ${this.world.page.url()}: ${message}`,
-        { meta: { reason: e }},
-      );
+      await this.journal.warn(`Failed to take screenshot of ${this.world.page.url()}: ${message}`, {
+        meta: { reason: e },
+      });
     }
   }
 
