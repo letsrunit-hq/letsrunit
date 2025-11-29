@@ -3,7 +3,7 @@
 import { RunTimeline, RunTimelineSkeleton } from '@/components/run-timeline';
 import { Screenshot } from '@/components/screenshot';
 import type { Artifact, Journal, Project, Run, RunStatus } from '@letsrunit/model';
-import { CheckCircle2, Clock, XCircle } from 'lucide-react';
+import { CheckCircle2, Clock, Globe2, XCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { BreadCrumb } from 'primereact/breadcrumb';
 import { Button } from 'primereact/button';
@@ -62,8 +62,8 @@ export function RunResult({ project, run, journal }: JournalProps) {
             <h1 className="m-0 text-base text-white font-normal">{runTitle?.message ?? run.target}</h1>
             {run && (
               <div className="flex align-items-baseline gap-3 mt-3 mb-2">
-                <div>
-                  <i className="pi pi-globe mr-1" /> Chrome 120
+                <div className="flex align-items-center gap-1">
+                  <Globe2 size={16} aria-hidden="true" /> <span>Chrome 120</span>
                 </div>
               </div>
             )}

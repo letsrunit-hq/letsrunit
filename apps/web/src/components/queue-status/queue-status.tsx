@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import React from 'react';
 import { Card } from 'primereact/card';
+import { Settings } from 'lucide-react';
 import './queue-status.css';
 
 export function QueueStatus() {
@@ -40,7 +41,7 @@ export function QueueStatus() {
                 color: 'var(--primary-color-text)',
               }}
             >
-              <i className="pi pi-cog" style={{ fontSize: '2rem' }} aria-hidden="true" />
+              <Settings className="queue-status-icon" aria-hidden="true" />
             </div>
           </div>
 

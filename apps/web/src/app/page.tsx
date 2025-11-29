@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { ExploreForm } from '../components/explore-form';
 import { ScrollDownButton } from '../components/scroll-down-button';
 import { BackToTopButton } from '../components/back-to-top-button';
+import { ArrowUp, Lightbulb, ListChecks, Sitemap } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -43,7 +44,7 @@ export default function Home() {
 
           <div className={styles.grid}>
             <div className={styles.card}>
-              <i className={`pi pi-sitemap ${styles.cardIcon}`} aria-hidden="true"></i>
+              <Sitemap className={styles.cardIcon} aria-hidden="true" />
               <h3>
                 E2E tests &mdash; generated<span>.</span>
               </h3>
@@ -53,7 +54,7 @@ export default function Home() {
               </p>
             </div>
             <div className={styles.card}>
-              <i className={`pi pi-list-check ${styles.cardIcon}`} aria-hidden="true"></i>
+              <ListChecks className={styles.cardIcon} aria-hidden="true" />
               <h3>
                 Reproduce &rarr; Report &rarr; Recover<span>.</span>
               </h3>
@@ -63,7 +64,7 @@ export default function Home() {
               </p>
             </div>
             <div className={styles.card}>
-              <i className={`pi pi-lightbulb ${styles.cardIcon}`} aria-hidden="true"></i>
+              <Lightbulb className={styles.cardIcon} aria-hidden="true" />
               <h3>
                 BDD clarity on red builds<span>.</span>
               </h3>
@@ -134,7 +135,7 @@ export default function Home() {
             <BackToTopButton
               ariaLabel="Back to top"
               label="Back to top"
-              icon="pi pi-arrow-up"
+              icon={<ArrowUp aria-hidden="true" />}
               className={styles.backTopBtn}
             />
           </div>

@@ -19,3 +19,10 @@
   min-height: 100%;
   display: flex;
 }
+
+.noImageIcon {
+  width: 2rem;
+  height: 2rem;
+  margin-bottom: 0.5rem;
+  color: var(--surface-400);
+}

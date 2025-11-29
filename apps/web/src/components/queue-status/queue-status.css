@@ -28,7 +28,8 @@
   border-color: #3f3f46; /* zinc-700 */
 }
 
-/* Make sure the PrimeIcon in the gradient tile remains visible */
-.queue-status-card .pi {
+.queue-status-icon {
+  width: 2rem;
+  height: 2rem;
   color: rgba(255, 255, 255, 0.8);
 }
