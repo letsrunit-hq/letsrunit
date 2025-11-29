@@ -1,11 +1,11 @@
-import type { AppInfo, Result } from './types';
 import { Controller } from '@letsrunit/controller';
-import { describePage } from './ai/describe-page';
-import { type Feature, makeFeature } from '@letsrunit/gherkin';
-import { type Action, assessPage } from './ai/assess-page';
-import { generateFeature } from './ai/generate-feature';
+import { makeFeature } from '@letsrunit/gherkin';
 import { Journal } from '@letsrunit/journal';
 import { splitUrl } from '@letsrunit/utils';
+import { assessPage } from './ai/assess-page';
+import { describePage } from './ai/describe-page';
+import { generateFeature } from './ai/generate-feature';
+import type { Action, AppInfo, Result } from './types';
 import { extractPageInfo } from './utils/page-info';
 
 interface ExploreOptions {
@@ -13,7 +13,7 @@ interface ExploreOptions {
   journal?: Journal;
 }
 
-export type PreparedAction = Action & { run: () => Promise<Feature> };
+export type PreparedAction = Action & { path?: string; run: () => Promise<Result> };
 
 export default async function explore(
   target: string,
@@ -28,7 +28,7 @@ export default async function explore(
   ];
 
   const journal = opts.journal ?? Journal.nil();
-  const controller = await Controller.launch({ headless: opts.headless, baseURL: base, journal });
+  const controller = await Controller.launch({ headless: opts.headless, baseURL: base, journal, debug: true });
 
   try {
     const { page } = await controller.run(makeFeature({ name: `Explore website "${base}"`, steps }));
@@ -42,7 +42,7 @@ export default async function explore(
       .flush();
 
     const content = await journal.do(
-      `> Reading page "${title}"`,
+      `Reading page "${title}"`,
       () => describePage({ ...page, info: pageInfo }, 'markdown'),
       () => (pageInfo.screenshot ? { artifacts: [pageInfo.screenshot] } : {}),
     );
@@ -50,7 +50,7 @@ export default async function explore(
     await journal.debug(content);
 
     const { actions, ...appInfo } = await journal.do(
-      '> Determining user stories',
+      'Determining user stories',
       () => assessPage(content),
       (result) => ({
         meta: { result, description: `Found ${result.actions.length} user stories` },
@@ -71,10 +71,10 @@ export default async function explore(
 
     const preparedActions = actions.map((action) => ({
       ...action,
+      path,
       run: () =>
         generateFeature({
           controller,
-          page: { ...page, lang: pageInfo.lang },
           feature: {
             ...action,
             comments: `Definition of done: ${action.done}`,

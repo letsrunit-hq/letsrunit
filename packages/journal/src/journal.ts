@@ -1,7 +1,7 @@
-import type { JournalEntry, Sink } from './types';
-import { NoSink } from './sink';
-import { JournalBatch } from './journal-batch';
 import type { File } from 'node:buffer';
+import { JournalBatch } from './journal-batch';
+import { NoSink } from './sink';
+import type { JournalEntry, Sink } from './types';
 
 type Options = Partial<Pick<JournalEntry, 'artifacts' | 'meta'>>;
 
@@ -34,11 +34,7 @@ export class Journal<TSink extends Sink = Sink> {
     metaFn?: (result: T) => { meta?: Record<string, any>; artifacts?: File[] },
   ): Promise<T> {
     try {
-      if (!message.startsWith('>')) {
-        await this.prepare(message);
-      } else {
-        message = message.replace(/^>\s*/, '');
-      }
+      await this.start(message);
 
       const result = await callback();
 
@@ -74,6 +70,10 @@ export class Journal<TSink extends Sink = Sink> {
 
   async prepare(message: string, options: Options = {}): Promise<void> {
     await this.log(message, { ...options, type: 'prepare' });
+  }
+
+  async start(message: string, options: Options = {}): Promise<void> {
+    await this.log(message, { ...options, type: 'start' });
   }
 
   async success(message: string, options: Options = {}): Promise<void> {

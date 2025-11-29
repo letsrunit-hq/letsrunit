@@ -1,15 +1,17 @@
-import { Controller, Result } from '@letsrunit/controller';
 import { generate } from '@letsrunit/ai';
+import { getLang } from '@letsrunit/bdd/src/utils/get-lang';
+import { Controller, Result as StepResult } from '@letsrunit/controller';
 import { deltaSteps, type Feature, makeFeature, parseFeature } from '@letsrunit/gherkin';
+import { Journal } from '@letsrunit/journal';
 import type { Snapshot } from '@letsrunit/playwright';
 import { splitUrl, statusSymbol } from '@letsrunit/utils';
-import * as z from 'zod';
 import { ModelMessage, ToolSet } from 'ai';
-import { describePage } from './describe-page';
 import ISO6391 from 'iso-639-1';
+import * as z from 'zod';
+import type { Result } from '../types';
+import { describePage } from './describe-page';
 import { detectPageChanges } from './detect-page-changes';
 import { locatorRules } from './locator-rules';
-import { Journal } from '@letsrunit/journal';
 
 const PROMPT = `You're a QA tester, tasked with writing BDD tests in Gherkin format for a feature.
 
@@ -63,7 +65,7 @@ Do not output the current feature without adding steps
 
 interface Options {
   controller: Controller;
-  page: Snapshot & { content?: string; lang?: string };
+  page?: Snapshot & { content?: string; lang?: string };
   feature: Feature;
   appInfo?: {
     purpose: string;
@@ -90,7 +92,7 @@ async function determineThenSteps(old: Snapshot, current: Snapshot, journal?: Jo
 
   journal
     ?.batch()
-    .each(steps, (j, step) => j.success(step))
+    .each(steps, (j, step) => j.success(step, { artifacts: step === steps[0] ? [current.screenshot] : [] }))
     .flush();
 
   return steps;
@@ -112,7 +114,7 @@ function invalidToMessages(
   ];
 }
 
-async function failureToMessages(feature: Feature | string, result: Result): Promise<ModelMessage[]> {
+async function failureToMessages(feature: Feature | string, result: StepResult): Promise<ModelMessage[]> {
   const userMessage = [
     ...result.steps.map((s) => `${statusSymbol(s.status)} ${s.text}`),
     '',
@@ -129,14 +131,19 @@ async function failureToMessages(feature: Feature | string, result: Result): Pro
   ];
 }
 
-export async function generateFeature({ controller, page, feature }: Options): Promise<Feature> {
+export async function generateFeature({ controller, feature }: Options): Promise<Result> {
   const whenSteps = controller.listSteps('When');
 
+  const { page } = await controller.run(
+    makeFeature({ ...feature, steps: feature.background ?? [], background: undefined }),
+  );
+
   let runCount = 0;
-  let content = page.content ?? (await describePage(page, 'html'));
+  let content = await describePage(page, 'html');
   let currentPage = page;
 
-  const language = page.lang && (ISO6391.getName(page.lang.substring(0, 2)) || page.lang);
+  const lang = await getLang(page);
+  const language = lang && (ISO6391.getName(lang.substring(0, 2)) || lang);
 
   const system = {
     template: PROMPT,
@@ -151,8 +158,6 @@ export async function generateFeature({ controller, page, feature }: Options): P
     { role: 'assistant' as const, content: makeFeature({ ...feature, steps }) },
     { role: 'user' as const, content },
   ];
-
-  await controller.run(makeFeature({ ...feature, steps: feature.background ?? [], background: undefined }));
 
   do {
     // We've tried enough, no more
@@ -172,6 +177,7 @@ export async function generateFeature({ controller, page, feature }: Options): P
     const nextSteps = deltaSteps(steps, responseSteps);
 
     if (nextSteps.length === 0) {
+      // TODO: Use AI to check if the feature is indeed complete. If not, force new steps.
       console.warn('No new steps. Should have called `publish` tool');
       break;
     }
@@ -209,5 +215,5 @@ export async function generateFeature({ controller, page, feature }: Options): P
     ];
   } while (true);
 
-  return { ...feature, steps, comments: undefined };
+  return { status: 'passed', feature: { ...feature, steps, comments: undefined } };
 }

@@ -5,6 +5,14 @@ export function splitUrl(url: string): { base: string; path: string } {
   return { base, path };
 }
 
+export function asFilename(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')   // collapse to dashes
+    .replace(/^-+|-+$/g, '');      // trim dashes
+}
+
 export function pathRegexp(path: string): { regexp: RegExp, names: string[] } {
   // Build a regex from the pattern and extract params
   const names: string[] = [];

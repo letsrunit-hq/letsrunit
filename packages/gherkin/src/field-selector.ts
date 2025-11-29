@@ -12,7 +12,12 @@ export const createFieldEngine = () => ({
       return (s) => !!s && re.test(s);
     }
 
-    const sanitize = (s: string) => s.toLowerCase().replace(/[^\w\s]+/, '').replace(/\s{2,}/g, ' ').trim();
+    const sanitize = (s: string) => s
+      .toLowerCase()
+      .replace(/[^\w\s]+/, '')
+      .replace(/\s{2,}/g, ' ')
+      .replace(/\*\s*$/, '')
+      .trim();
     const needle = sanitize(trimmed.replace(/^"(.*)"(i?)$/, '$1'));
 
     return ((s) => !!s && sanitize(s) === needle);
@@ -103,6 +108,8 @@ export const createFieldEngine = () => ({
       // 6) native placeholder on <input>/<textarea>, and some custom widgets mirror it as an attribute
       const ph = (el as HTMLInputElement).placeholder ?? el.getAttribute('placeholder');
       if (ph) texts.push(ph);
+
+      console.log(texts);
 
       return texts;
     }

@@ -2,7 +2,7 @@ export * from './hash';
 export * from './join';
 export * from './object';
 export * from './sleep';
-export * from './split-url';
+export * from './path';
 export * from './status-symbol';
 export * from './type-check';
 export * from './types';

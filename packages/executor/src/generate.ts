@@ -1,25 +1,21 @@
-import type { Result } from './types';
 import { Controller } from '@letsrunit/controller';
-import { type Feature, makeFeature } from '@letsrunit/gherkin';
-import { generateFeature } from './ai/generate-feature';
+import { type Feature } from '@letsrunit/gherkin';
 import { Journal } from '@letsrunit/journal';
 import { splitUrl } from '@letsrunit/utils';
-import { extractPageInfo } from './utils/page-info';
+import { generateFeature } from './ai/generate-feature';
+import { refineSuggestion } from './ai/refine-suggestion';
+import type { Result } from './types';
 
 interface GenerateOptions {
   headless?: boolean;
   journal?: Journal;
 }
 
-interface GenerateResult extends Result {
-  feature?: Feature;
-}
-
 export default async function generate(
   target: string,
   suggestion: Pick<Feature, 'name' | 'description' | 'comments'>,
   opts: GenerateOptions = {},
-): Promise<GenerateResult> {
+): Promise<Result> {
   const { base, path } = splitUrl(target);
 
   const steps: string[] = [
@@ -28,23 +24,30 @@ export default async function generate(
   ];
 
   const journal = opts.journal ?? Journal.nil();
+
+  if (!suggestion.description) {
+    throw new Error('Missing description');
+  }
+
+  if (!suggestion.name) {
+    suggestion = await journal.do(
+      'Refining test instructions',
+      () => refineSuggestion(suggestion.description!),
+      (result) => ({ meta: { feature: result } }),
+    );
+  }
+
   const controller = await Controller.launch({ headless: opts.headless, baseURL: base, journal });
 
   try {
-    const { page } = await controller.run(makeFeature({ ...suggestion, steps }));
-    const pageInfo = await extractPageInfo(page);
-
-    const feature = await generateFeature({
+    return await generateFeature({
       controller,
-      page: { ...page, lang: pageInfo.lang },
       feature: {
         ...suggestion,
         background: steps,
         steps: [],
       },
     });
-
-    return { status: 'passed', feature };
   } catch (e) {
     await journal.error('An unexpected error occurred');
     console.error(e);
