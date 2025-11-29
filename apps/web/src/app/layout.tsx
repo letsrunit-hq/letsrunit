@@ -4,7 +4,6 @@ import './globals.css';
 import { PrimeReactProvider } from 'primereact/api';
 import { ConfirmDialog } from 'primereact/confirmdialog';
 import '../assets/theme/theme.scss';
-import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import React from 'react';
 import 'geist/font/sans';

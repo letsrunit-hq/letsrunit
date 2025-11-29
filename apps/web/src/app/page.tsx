@@ -1,10 +1,10 @@
-import styles from './page.module.css';
-import Logo from '../assets/logo.svg';
+import { ArrowUp, Lightbulb, ListChecks, Network } from 'lucide-react';
 import Image from 'next/image';
+import Logo from '../assets/logo.svg';
+import { BackToTopButton } from '../components/back-to-top-button';
 import { ExploreForm } from '../components/explore-form';
 import { ScrollDownButton } from '../components/scroll-down-button';
-import { BackToTopButton } from '../components/back-to-top-button';
-import { ArrowUp, Lightbulb, ListChecks, Sitemap } from 'lucide-react';
+import styles from './page.module.css';
 
 export default function Home() {
   return (
@@ -44,7 +44,7 @@ export default function Home() {
 
           <div className={styles.grid}>
             <div className={styles.card}>
-              <Sitemap className={styles.cardIcon} aria-hidden="true" />
+              <Network className={styles.cardIcon} aria-hidden="true" />
               <h3>
                 E2E tests &mdash; generated<span>.</span>
               </h3>
