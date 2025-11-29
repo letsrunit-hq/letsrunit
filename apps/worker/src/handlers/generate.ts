@@ -1,16 +1,16 @@
 import { generate } from '@letsrunit/executor';
-import { getFeature, type Run, updateFeature } from '@letsrunit/model';
-import type { HandleOptions } from '../types/handle';
-import { clean } from '@letsrunit/utils';
 import { makeFeature } from '@letsrunit/gherkin';
+import { getFeature, type Run, updateFeature } from '@letsrunit/model';
+import { clean, pick } from '@letsrunit/utils';
+import type { HandleOptions } from '../types/handle';
 
 export async function startGenerateRun(run: Run, { supabase, journal }: HandleOptions) {
   if (!run.featureId) throw new Error('No feature associated with Run');
 
   const feature = await getFeature(run.featureId, { supabase });
-  if (feature.body) throw new Error('Feature already generated');
+  const suggestion = clean(pick(feature, ['name', 'description', 'comments']));
 
-  const result = await generate(run.target, clean(feature), { journal });
+  const result = await generate(run.target, suggestion, { journal });
 
   if (result.feature) {
     const body = makeFeature(result.feature);

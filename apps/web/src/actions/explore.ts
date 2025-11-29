@@ -12,7 +12,8 @@ interface StartExploreOpts {
 }
 
 export async function startExploreRun(target: string, opts: StartExploreOpts = {}): Promise<UUID> {
-  const user = await getUser({ supabase: await connect() });
+  const supabase = opts.supabase || (await connect()); // SSR Only, no writes
+  const user = await getUser({ supabase });
 
   if (!target.match(/^https?:\/\//)) {
     target = `https://${target}`;

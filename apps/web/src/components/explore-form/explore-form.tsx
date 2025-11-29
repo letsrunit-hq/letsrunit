@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useCallback, useState } from 'react';
-import { InputText } from 'primereact/inputtext';
-import { Button } from 'primereact/button';
 import { startExploreRun } from '@/actions/explore';
-import { useRouter } from 'next/navigation';
 import { ensureSignedIn } from '@/libs/auth';
 import { cn } from '@letsrunit/utils';
+import { useRouter } from 'next/navigation';
+import { Button } from 'primereact/button';
+import { InputText } from 'primereact/inputtext';
+import React, { useCallback, useState } from 'react';
 
 export type UrlFormProps = {
   className?: string;
@@ -32,7 +32,7 @@ export function ExploreForm({
   const [url, setUrl] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const isValid = url.match(/^(https?:\/\/)?[\w\-]+\.[\w\-]+/);
+  const isValid = url.match(/^(https?:\/\/)?([\w\-]+\.[\w\-]+|localhost)/);
 
   const onSubmitUrl = useCallback(async () => {
     if (!isValid) return;
@@ -44,9 +44,7 @@ export function ExploreForm({
       router.push(`/runs/${runId}`);
     } finally {
       // If navigation happens, component may unmount; this is safe.
-      setTimeout(() => {
-        setIsSubmitting(false);
-      }, 5000);
+      setTimeout(() => void setIsSubmitting(false), 5000);
     }
   }, [router, url, isValid]);
 

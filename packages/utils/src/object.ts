@@ -11,8 +11,10 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 }
 
 /**
- * Remove all properties that are null or undefined from an object, deeply.
- * Arrays are preserved (no filtering of indices); each element is cleaned recursively.
+ * Shallowly cleans values:
+ * - Plain objects: remove top-level properties that are null or undefined (no recursion).
+ * - Arrays: filter out elements that are null or undefined (no recursion into items).
+ * - Non-plain objects and primitives are returned as-is.
  */
 export function clean<T>(input: T): Clean<T> {
   // Primitives and special instances are returned as-is
@@ -28,26 +30,19 @@ export function clean<T>(input: T): Clean<T> {
   }
 
   if (Array.isArray(input)) {
-    const arr = input as unknown[];
-    const cleaned: unknown[] = [];
-    for (const item of arr) {
-      cleaned.push(clean(item as never));
-    }
-    return cleaned as unknown as Clean<T>;
+    const filtered = (input as unknown[]).filter((v) => v !== null && v !== undefined);
+    return filtered as unknown as Clean<T>;
   }
 
   if (isPlainObject(input)) {
     const result: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(input as Record<string, unknown>)) {
       if (value === null || value === undefined) continue;
-      const cleanedValue = clean(value as never);
-      if (cleanedValue === undefined) continue;
-      result[key] = cleanedValue as unknown;
+      result[key] = value as unknown;
     }
     return result as unknown as Clean<T>;
   }
 
-  // Fallback: non-plain objects — return as-is
   return input as unknown as Clean<T>;
 }
 

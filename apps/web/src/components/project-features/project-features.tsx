@@ -1,6 +1,7 @@
 'use client';
 
 import { disableFeature, enableFeature } from '@/actions/features';
+import { startGenerateRun } from '@/actions/generate';
 import FeaturesList from '@/components/features-list';
 import { InverseIcon } from '@/components/inverse-icon';
 import { StatsToolbar } from '@/components/stats-toolbar';
@@ -8,7 +9,9 @@ import { useToast } from '@/context/toast-context';
 import { useFeatureList } from '@/hooks/use-feature-list';
 import type { Feature } from '@letsrunit/model';
 import { Archive, Search } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import type { UUID } from 'node:crypto';
+import { confirmDialog } from 'primereact/confirmdialog';
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
 import { IconField } from 'primereact/iconfield';
 import { InputIcon } from 'primereact/inputicon';
@@ -22,6 +25,7 @@ export type ProjectFeaturesProps = {
 };
 
 export function ProjectFeatures({ className, projectId }: ProjectFeaturesProps) {
+  const router = useRouter();
   const { features, loading } = useFeatureList(projectId);
   const [showArchived, setShowArchived] = useState(false);
   const toast = useToast();
@@ -49,7 +53,18 @@ export function ProjectFeatures({ className, projectId }: ProjectFeaturesProps) 
     return { totalFeatures, suggestions, activeTests, passRate };
   }, [features]);
 
-  const remove = async (feature: Feature) => {
+  const remove = async (feature: Feature, confirmed = false) => {
+    if (feature.body && !confirmed) {
+      confirmDialog({
+        message: `Are you sure you want to archive "${feature.name}"?`,
+        header: 'Archive',
+        icon: 'pi pi-exclamation-triangle',
+        acceptClassName: 'p-button-danger',
+        accept: () => remove(feature, true),
+      });
+      return;
+    }
+
     await disableFeature(feature.id);
     toast.show({
       severity: 'info',
@@ -68,6 +83,21 @@ export function ProjectFeatures({ className, projectId }: ProjectFeaturesProps) 
   const restore = async (feature: Feature) => {
     await enableFeature(feature.id);
     toast.show({ severity: 'success', summary: 'Restored', detail: `"${feature.name}" restored` });
+  };
+
+  const generate = async (feature: Feature, confirmed = false) => {
+    if (feature.body && !confirmed) {
+      confirmDialog({
+        message: 'Are you sure you want to regenerate the steps based on the test description?',
+        header: 'Regenerate',
+        icon: 'pi pi-exclamation-triangle',
+        accept: () => generate(feature, true),
+      });
+      return;
+    }
+
+    const runId = await startGenerateRun(feature.id);
+    router.push(`/runs/${runId}`);
   };
 
   const filteredFeatures = features.filter((f) => {
@@ -123,6 +153,8 @@ export function ProjectFeatures({ className, projectId }: ProjectFeaturesProps) 
         features={filteredFeatures}
         remove={(feature: Feature) => void remove(feature)}
         restore={(feature: Feature) => void restore(feature)}
+        generate={(feature: Feature) => void generate(feature)}
+        run={() => {}}
       />
 
       <StatsToolbar

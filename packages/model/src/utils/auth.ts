@@ -5,6 +5,16 @@ import { DBError } from './db-error';
 
 type Table = 'projects' | 'features' | 'runs';
 
+export async function getProjectId(table: Table, id: UUID, opts: { supabase?: SupabaseClient } = {}): Promise<UUID> {
+  const supabase = opts.supabase ?? connect();
+
+  const { data, status, error } = await supabase.from(table).select('project_id').eq('id', id).maybeSingle();
+  if (error) throw new DBError(status, error);
+  if (!data) throw new DBError(403);
+
+  return (data as { project_id: UUID }).project_id;
+}
+
 /**
  * Authorize that the acting user (opts.by) can write to the given record.
  * DRY helper mirroring RLS read logic.
@@ -25,15 +35,7 @@ export async function authorize(
   const supabase = opts.supabase ?? connect();
 
   // Resolve project id
-  let projectId: UUID;
-  if (table === 'projects') {
-    projectId = id;
-  } else {
-    const { data, status, error } = await supabase.from(table).select('project_id').eq('id', id).maybeSingle();
-    if (error) throw new DBError(status, error);
-    if (!data) throw new DBError(403);
-    projectId = (data as { project_id: UUID }).project_id;
-  }
+  const projectId = table === 'projects' ? id : await getProjectId(table, id, { supabase });
 
   const { data: isMember, status: mStatus, error: mErr } = await supabase.rpc('can_access_project', {
     project_id: projectId,

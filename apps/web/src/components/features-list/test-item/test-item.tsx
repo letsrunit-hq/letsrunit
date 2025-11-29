@@ -1,0 +1,113 @@
+import type { Feature } from '@letsrunit/model';
+import { cn } from '@letsrunit/utils';
+import { Archive, ArchiveRestore, MoreVertical, Play, RefreshCcw, TestTube } from 'lucide-react';
+import { Button } from 'primereact/button';
+import { Chip } from 'primereact/chip';
+import { Menu } from 'primereact/menu';
+import type { MenuItem } from 'primereact/menuitem';
+import { Panel } from 'primereact/panel';
+import { ProgressSpinner } from 'primereact/progressspinner';
+import React from 'react';
+import TimeAgo from 'react-timeago';
+import RunStatusBadge from '../../run-status-badge/run-status-badge';
+import type { ActionFn } from '../types';
+
+export interface TestItemProps {
+  feature: Feature;
+  run?: ActionFn;
+  generate?: ActionFn;
+  remove?: ActionFn;
+  restore?: ActionFn;
+}
+
+export function TestItem({ feature, run, generate, remove, restore }: TestItemProps) {
+  const status = feature.lastRun?.status;
+
+  const menuRef = React.useRef<Menu>(null);
+
+  const items = React.useMemo<MenuItem[]>(() => {
+    const list: MenuItem[] = [];
+    if (generate) {
+      list.push({
+        id: 'regenerate',
+        label: 'Regenerate',
+        icon: <RefreshCcw size={14} className="p-menuitem-icon" />,
+        command: () => generate(feature),
+      });
+    }
+    if (remove) {
+      list.push({
+        id: 'archive',
+        label: 'Archive',
+        icon: <Archive size={14} className="p-menuitem-icon" />,
+        command: () => remove(feature),
+      });
+    }
+    return list;
+  }, [feature, generate, remove]);
+
+  const runButton =
+    status === 'queued' || status === 'running' ? (
+      <ProgressSpinner style={{ height: 32 }} strokeWidth="8" />
+    ) : run ? (
+      <Button
+        severity="secondary"
+        className="ml-2"
+        icon={<Play size={16} className="mr-2" />}
+        label="Run"
+        onClick={() => run(feature)}
+      />
+    ) : <></>;
+
+  const moreMenu =
+    items.length > 0 ? (<>
+      <Menu model={items} popup ref={menuRef} />
+      <Button
+        severity="secondary"
+        text
+        aria-label="More"
+        icon={<MoreVertical size={20} />}
+        disabled={status === 'queued' || status === 'running'}
+        onClick={(e) => menuRef.current?.toggle(e)}
+      />
+    </>) : <></>;
+
+  const restoreButton = restore && (
+    <Button
+      severity="secondary"
+      text
+      aria-label="Restore"
+      title="Restore suggestion"
+      icon={<ArchiveRestore size={20} />}
+      onClick={() => restore(feature)}
+    />
+  );
+
+  return (
+    <Panel className="w-full odd">
+      <div className="flex align-items-center justify-content-between gap-3">
+        <div className="flex align-items-center gap-3">
+          <Chip className="tile tile-green" icon={<TestTube key="icon" size={24} />} />
+          <div className="flex flex-column">
+            <h3 className={cn('m-0', 'mb-1', 'font-normal', !feature.enabled && 'line-through')}>{feature.name}</h3>
+            <div className="flex align-items-center gap-3 text-300">
+              {feature.lastRun && (
+                <span>
+                  Last run <TimeAgo date={feature.lastRun.createdAt} />
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="hidden sm:flex align-items-center gap-2">
+          <RunStatusBadge status={feature.lastRun?.status} />
+          {feature.enabled && runButton}
+          {feature.enabled && moreMenu}
+          {!feature.enabled && restoreButton}
+        </div>
+      </div>
+    </Panel>
+  );
+}
+
+export default TestItem;

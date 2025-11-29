@@ -1,9 +1,9 @@
-import type { Sink, JournalEntry } from '../types';
-import { cursorUp, cursorLeft, eraseDown } from 'ansi-escapes';
-import YAML from 'yaml';
 import { statusSymbol } from '@letsrunit/utils';
+import { cursorLeft, cursorUp, eraseDown } from 'ansi-escapes';
 import { File } from 'node:buffer';
 import { writeFile } from 'node:fs/promises';
+import YAML from 'yaml';
+import type { JournalEntry, Sink } from '../types';
 
 type WriteFile = typeof writeFile;
 
@@ -68,9 +68,12 @@ export class CliSink implements Sink {
   }
 
   private replace(entry: JournalEntry): boolean {
-    if (entry.type !== 'success' && entry.type !== 'failure') return false;
+    if (entry.type !== 'start' && entry.type !== 'success' && entry.type !== 'failure') return false;
 
-    const index = this.entries.findLastIndex((e) => e.type === 'prepare' && e.message === entry.message);
+    const index = this.entries.findLastIndex(
+      (e) => e.message === entry.message &&
+        (e.type === 'prepare' || (e.type === 'start' && entry.type !== 'start'))
+    );
     if (index < 0) return false;
 
     const oldTexts = this.entries.slice(index).map((e) => this.format(e));
@@ -99,7 +102,7 @@ export class CliSink implements Sink {
 
     const message = entry.message.trim();
 
-    if (['prepare', 'success', 'failure'].includes(entry.type)) {
+    if (['prepare', 'start', 'success', 'failure'].includes(entry.type)) {
       const prefix = colorize(entry.type, statusSymbol(entry.type));
       lines.push(`${prefix} ${message}`);
     } else {

@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS public.features
     project_id uuid  NOT NULL references public.projects(id),
 
     -- begin fields generated automatically from the template inputs
+    path text NOT NULL default '/',
     name text NOT NULL,
     description text,
     comments text,

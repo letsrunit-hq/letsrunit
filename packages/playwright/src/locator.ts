@@ -1,4 +1,4 @@
-import { Page, Locator } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 
 /**
  * Locates an element using Playwright selectors, with a fallback that rewrites
@@ -6,7 +6,7 @@ import { Page, Locator } from '@playwright/test';
  * into text proximity lookups (`text=Adres tonen >> .. >> role=switch`).
  */
 export async function locator(page: Page, selector: string): Promise<Locator> {
-  const primary = page.locator(selector);
+  const primary = page.locator(selector).first();
   if (await primary.count()) return primary;
 
   // Try to extract role and name from a selector like:
@@ -15,7 +15,7 @@ export async function locator(page: Page, selector: string): Promise<Locator> {
   if (matchRole) {
     const [, role, name, rest] = matchRole;
     const fallbackSelector = `text=${name} >> .. >> role=${role}${rest}`;
-    const fallback = page.locator(fallbackSelector);
+    const fallback = page.locator(fallbackSelector).first();
 
     if (await fallback.count()) return fallback;
   }
@@ -25,7 +25,14 @@ export async function locator(page: Page, selector: string): Promise<Locator> {
   if (matchField) {
     const [, field] = matchField;
 
-    const fallback = page.locator(`#${field} > input`);
+    const fallback = page.locator(`#${field} > input`).first();
+    if (await fallback.count()) return fallback;
+  }
+
+  // A button might be used as field, with the text in a label
+  const matchButton = selector.match(/^button=([^"]+)$/i);
+  if (matchButton) {
+    const fallback = page.locator(`field=${matchButton}`).first();
     if (await fallback.count()) return fallback;
   }
 

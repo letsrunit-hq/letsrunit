@@ -85,6 +85,7 @@ export function RunResult({ project, run, journal }: JournalProps) {
         <div className={styles.timeline}>
           {journal?.entries.length ? (
             <RunTimeline
+              type={run.type}
               status={run.status}
               entries={journal.entries}
               onSelect={(entry) => setScreenshot(entry.screenshot ?? null)}

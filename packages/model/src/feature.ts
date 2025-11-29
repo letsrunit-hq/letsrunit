@@ -1,15 +1,15 @@
 import type { SupabaseClient, User } from '@supabase/supabase-js';
-import { type Feature, FeatureSchema, SuggestionSchema } from './types';
 import type { UUID } from 'node:crypto';
-import { fromData, toData } from './utils/convert';
 import { z } from 'zod';
 import { connect } from './supabase';
-import { DBError } from './utils/db-error';
+import { type Data, type Feature, FeatureSchema, SuggestionSchema } from './types';
 import { authorize } from './utils/auth';
+import { fromData, toData } from './utils/convert';
+import { DBError } from './utils/db-error';
 
-const StoreSuggestionsSchema = SuggestionSchema.pick({ name: true, description: true, done: true }).partial({
-  done: true,
-});
+const StoreSuggestionsSchema = SuggestionSchema
+  .pick({ name: true, path: true, description: true, done: true })
+  .partial({ path: true, done: true });
 
 export async function storeSuggestions(
   projectId: UUID,
@@ -35,20 +35,21 @@ export async function storeSuggestions(
 export async function getFeature(id: UUID, opts: { supabase?: SupabaseClient } = {}): Promise<Feature> {
   const supabase = opts.supabase || connect();
 
-  const { data, status, error } = await supabase
-    .from('features')
-    .select()
-    .eq('id', id)
-    .maybeSingle();
+  const { data, status, error } = await supabase.from('features').select().eq('id', id).maybeSingle<Data<Feature>>();
 
   if (error) throw new DBError(status, error);
+  if (!data) throw new DBError(404);
 
   return fromData(FeatureSchema)(data);
 }
 
-const UpdateFeatureSchema = FeatureSchema
-  .pick({ name: true, description: true, comments: true, body: true, enabled: true })
-  .partial();
+const UpdateFeatureSchema = FeatureSchema.pick({
+  name: true,
+  description: true,
+  comments: true,
+  body: true,
+  enabled: true,
+}).partial();
 
 export async function updateFeature(
   id: UUID,
@@ -68,4 +69,19 @@ export async function updateFeature(
     .eq('id', id);
 
   if (error) throw new DBError(status, error);
+}
+
+export async function getFeatureTarget(id: UUID, opts: { supabase?: SupabaseClient } = {}): Promise<string> {
+  const supabase = opts.supabase || connect();
+
+  const { data, status, error } = await supabase
+    .from('features')
+    .select('path, project:projects!inner(url)')
+    .eq('id', id)
+    .maybeSingle<{ path: string; project: { url: string }; }>();
+
+  if (error) throw new DBError(status, error);
+  if (!data) throw new DBError(404);
+
+  return new URL(data.path, data.project.url).toString();
 }

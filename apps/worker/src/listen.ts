@@ -28,15 +28,13 @@ async function processRun(data: Data<Run>) {
   }
 }
 
-// On startup: process any queued runs created within the last 5 minutes
+// On startup: process any queued runs
 async function processRecentQueuedRuns() {
   try {
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
     const { data: rows, error, status } = await supabase
       .from('runs')
       .select('*')
       .eq('status', 'queued')
-      .gte('created_at', fiveMinutesAgo)
       .order('created_at', { ascending: true });
     if (error) throw new DBError(status, error);
 

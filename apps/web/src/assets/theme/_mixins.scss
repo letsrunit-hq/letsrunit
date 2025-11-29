@@ -41,6 +41,7 @@
 			color: $menuitemTextColor;
 			padding: $menuitemPadding;
 			user-select: none;
+      text-decoration: none !important;
 
 			.p-menuitem-text {
 				color: $menuitemTextColor;

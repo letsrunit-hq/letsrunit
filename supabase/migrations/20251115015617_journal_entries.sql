@@ -13,6 +13,7 @@ BEGIN
             'warn',
             'error',
             'prepare',
+            'start',
             'success',
             'failure'
         );

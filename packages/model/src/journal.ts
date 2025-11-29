@@ -1,7 +1,7 @@
-import { connect } from './supabase';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { type Artifact, type Journal, type JournalEntry, type JournalEntryData, JournalEntrySchema } from './types';
 import type { UUID } from 'node:crypto';
+import { connect } from './supabase';
+import { type Artifact, type Journal, type JournalEntry, type JournalEntryData, JournalEntrySchema } from './types';
 import { fromData } from './utils/convert';
 
 function isScreenshot(artifact: Artifact): boolean {
@@ -34,31 +34,52 @@ export function journalFromData(runId: UUID, raw: JournalEntryData[]): Journal {
 
   for (const e of raw) {
     const item = entryFromData(e);
-    item.screenshot = (item.artifacts ?? []).find((a) => isScreenshot(a));
 
     if (item.type === 'title') {
       prepareEntries.clear();
     }
 
-    if (item.type === 'prepare') {
-      prepareEntries.set(item.message, result.length);
-    }
-
-    if (item.type === 'success' || item.type === 'failure') {
+    if (item.type === 'start' || item.type === 'success' || item.type === 'failure') {
       const idx = prepareEntries.get(e.message);
 
       // Replace earlier prepare entry instead of appending the entry
       if (idx !== undefined) {
-        item.duration = item.createdAt.getTime() - result[idx].createdAt.getTime();
-        result[idx] = item;
-        prepareEntries.delete(e.message);
+        const prev = result[idx];
+        // Duration only when replacing a start with success/failure
+        if ((item.type === 'success' || item.type === 'failure') && prev.type === 'start') {
+          item.duration = item.createdAt.getTime() - prev.createdAt.getTime();
+        }
+
+        // Shallow merge meta and artifacts
+        const mergedMeta = { ...(prev.meta ?? {}), ...(item.meta ?? {}) } as any;
+        const mergedArtifacts = [...(prev.artifacts ?? []), ...(item.artifacts ?? [])];
+
+        const merged = { ...item, meta: mergedMeta, artifacts: mergedArtifacts } as JournalEntry;
+
+        // Use the screenshot of the later entry
+        merged.screenshot = item.artifacts.find((a) => isScreenshot(a)) ?? merged.screenshot;
+
+        result[idx] = merged;
+
+        // Maintain mapping only if the current item is still a start; otherwise remove it
+        if (item.type === 'start') {
+          // keep the mapping to allow final success/failure overwrite later
+          prepareEntries.set(e.message, idx);
+        } else {
+          prepareEntries.delete(e.message);
+        }
         continue;
       }
     }
 
+    if (item.type === 'start' || item.type === 'prepare') {
+      prepareEntries.set(item.message, result.length);
+    }
+
+    // compute screenshot for non-replaced item
+    item.screenshot = (item.artifacts ?? []).find((a) => isScreenshot(a));
     result.push(item);
   }
 
   return { runId, entries: result };
 }
-

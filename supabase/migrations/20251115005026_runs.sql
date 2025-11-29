@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS public.runs
     -- begin fields generated automatically from the template inputs
     feature_id uuid references public.features(id),
     type run_type NOT NULL,
-    target text,
+    target text NOT NULL,
     status run_status NOT NULL,
     error text,
     -- explicitly nullable timestamps for run lifecycle

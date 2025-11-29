@@ -1,11 +1,22 @@
-import { runner } from './runner';
-import { browse, screenshot, snapshot } from '@letsrunit/playwright';
-import type { Result, World } from './types';
-import { createFieldEngine, parseFeature } from '@letsrunit/gherkin';
-import { type Browser, type BrowserContextOptions, chromium, selectors } from '@playwright/test';
-import { Journal } from '@letsrunit/journal';
+import type { Argument } from '@cucumber/cucumber-expressions';
+import type { StepDescription, StepResult } from '@letsrunit/gherker';
 import { ParsedStep } from '@letsrunit/gherker/src/types';
-import { File } from 'node:buffer';
+import { createFieldEngine, parseFeature } from '@letsrunit/gherkin';
+import { Journal } from '@letsrunit/journal';
+import { browse, locator, screenshot, snapshot } from '@letsrunit/playwright';
+import { scrollToCenter } from '@letsrunit/playwright/src/scroll';
+import { clean } from '@letsrunit/utils';
+import {
+  type Browser,
+  type BrowserContextOptions,
+  chromium,
+  type Locator,
+  type Page,
+  type PageScreenshotOptions,
+  selectors,
+} from '@playwright/test';
+import { runner } from './runner';
+import type { Result, World } from './types';
 
 export interface ControllerOptions extends BrowserContextOptions {
   headless?: boolean;
@@ -49,12 +60,7 @@ export class Controller {
   async run(feature: string): Promise<Result> {
     await this.logFeature(feature);
 
-    const { world: _, ...result } = await runner.run(feature, this.world, async (step, status, reason) => {
-      const artifacts: File[] = [];
-      if (status === 'success') artifacts.push(await screenshot(this.world.page));
-
-      await this.journal.batch().log(step, { type: status, artifacts }).error(reason?.message).flush();
-    });
+    const { world: _, ...result } = await runner.run(feature, this.world, (...args) => this.runStep(...args));
     const page = await snapshot(this.world.page);
 
     return { ...result, page };
@@ -77,6 +83,58 @@ export class Controller {
       .map((def) => `${def.type} ${def.source}` + (def.comment ? `  # ${def.comment}` : ''));
   }
 
+  private async runStep(step: StepDescription, run: () => Promise<StepResult>): Promise<StepResult> {
+    const locators = await this.getLocatorArgs(this.world.page, step.args);
+    if (locators.length > 0) {
+      await scrollToCenter(locators[0]);
+    }
+
+    const screenshotBefore = await this.screenshot({ mask: locators });
+    await this.journal.start(step.text, { artifacts: clean([screenshotBefore]) });
+
+    const result = await run();
+
+    const screenshotAfter =
+      !step.text.startsWith('Then') && await this.areAllVisible(locators)
+        ? await screenshot(this.world.page, { mask: locators })
+        : undefined;
+
+    await this.journal
+      .batch()
+      .log(step.text, { type: result.status, artifacts: clean([screenshotAfter]) })
+      .error(result.reason?.message)
+      .flush();
+
+    return result;
+  }
+
+  private async screenshot(options?: PageScreenshotOptions) {
+    try {
+      return await screenshot(this.world.page, options);
+    } catch (e) {
+      const message = (e as any).message ?? String(e);
+      await this.journal.warn(
+        `Failed to take screenshot of ${this.world.page.url()}: ${message}`,
+        { meta: { reason: e }},
+      );
+    }
+  }
+
+  private async getLocatorArgs(page: Page, args: readonly Argument[]): Promise<Locator[]> {
+    const promises = args
+      .filter((arg) => arg.getParameterType().name === 'locator')
+      .map((arg) => arg.getValue<string>(null))
+      .filter((arg) => arg !== null)
+      .map((arg) => locator(page, arg));
+
+    return Promise.all(promises);
+  }
+
+  private async areAllVisible(locators: Locator[]): Promise<boolean> {
+    const visible = await Promise.all(locators.map((l) => l.isVisible()));
+    return visible.every(Boolean);
+  }
+
   private async logFeature(feature: string): Promise<void> {
     const journal = this.journal.batch();
     const { name, description, background, steps } = parseFeature(feature);
@@ -86,7 +144,7 @@ export class Controller {
       if (description) journal.info(description);
 
       for (const step of [...(background ?? []), ...steps]) {
-        journal.prepare(step);
+        journal.prepare(step, { meta: { source: 'gherkin' } });
       }
     } finally {
       await journal.flush();

@@ -1,5 +1,5 @@
-import type { SnakeCaseKeys } from 'snakecase-keys';
 import type { UUID } from 'node:crypto';
+import type { SnakeCaseKeys } from 'snakecase-keys';
 import { z } from 'zod';
 
 export type SerializeDates<T> = T extends Date

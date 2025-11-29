@@ -1,14 +1,14 @@
-import React from 'react';
-import { Timeline } from 'primereact/timeline';
-import { ProgressSpinner } from 'primereact/progressspinner';
-import styles from './run-timeline.module.css';
-import type { JournalEntry, RunStatus } from '@letsrunit/model';
-import { cn, join } from '@letsrunit/utils';
-import { Button } from 'primereact/button';
 import { useTimelinePlayer } from '@/hooks/use-timeline-player';
+import type { JournalEntry, RunStatus, RunType } from '@letsrunit/model';
+import { cn, join } from '@letsrunit/utils';
 import { CheckCircle2, Circle, CircleDot, Pause, Play, XCircle } from 'lucide-react';
+import { Button } from 'primereact/button';
+import { ProgressSpinner } from 'primereact/progressspinner';
+import { Timeline } from 'primereact/timeline';
+import React from 'react';
+import styles from './run-timeline.module.css';
 
-type StepStatus = 'passed' | 'failed' | 'pending';
+type StepStatus = 'pending' | 'running' | 'passed' | 'failed';
 
 interface RunStep {
   keyword?: string;
@@ -29,12 +29,15 @@ export interface RunTimelineProps {
   status: RunStatus;
   entries: JournalEntry[];
   onSelect?: (key: JournalEntry) => void;
+  type?: RunType;
 }
 
 function mapTypeToStatus(t: JournalEntry['type']): StepStatus | null {
   switch (t) {
     case 'prepare':
       return 'pending';
+    case 'start':
+      return 'running';
     case 'success':
       return 'passed';
     case 'failure':
@@ -60,33 +63,26 @@ function getStatusColor(status: StepStatus) {
 }
 
 // Custom marker template for Timeline
-function markerTemplate(item: ExtendedRunStep, status: RunStatus) {
-  if (item.status === 'pending') {
-    if (item.isFirstPending && status === 'running') {
-      return (
-        <div className={`flex align-items-center justify-content-center ${styles.markerBox}`}>
-          <ProgressSpinner className={styles.spinner} strokeWidth="8" />
-        </div>
-      );
-    }
-    // Other pending steps – gray open circle
-    return <Circle className={cn(styles.statusIcon, 'text-500')} aria-label="pending" />;
+function markerTemplate(item: ExtendedRunStep, runStatus: RunStatus) {
+  if (item.status === 'passed') {
+    return item.hasScreenshot
+      ? <CircleDot className={cn(styles.statusIcon, styles.textGreen)} aria-label="success" />
+      : <CheckCircle2 className={cn(styles.statusIcon, styles.textGreen)} aria-label="success" />;
   }
 
-  if (item.status === 'passed') {
+  if (item.status === 'failed') {
+    return <XCircle className={cn(styles.statusIcon, styles.textRed)} aria-label="failed" />;
+  }
+
+  if (item.status === 'running' && runStatus === 'running') {
     return (
-      <>
-        {item.hasScreenshot ? (
-          <CircleDot className={cn(styles.statusIcon, styles.textGreen)} aria-label="success" />
-        ) : (
-          <CheckCircle2 className={cn(styles.statusIcon, styles.textGreen)} aria-label="success" />
-        )}
-      </>
+      <div className={cn('flex align-items-center justify-content-center', styles.markerBox)}>
+        <ProgressSpinner className={styles.spinner} strokeWidth="8" />
+      </div>
     );
   }
 
-  // failed
-  return <XCircle className={cn(styles.statusIcon, styles.textRed)} aria-label="failed" />;
+  return <Circle className={cn(styles.statusIcon, 'text-500')} aria-label="pending" />;
 }
 
 // Custom content template for Timeline
@@ -112,7 +108,7 @@ function contentTemplate(item: ExtendedRunStep) {
   );
 }
 
-export function RunTimeline({ status, entries, onSelect }: RunTimelineProps) {
+export function RunTimeline({ type, status, entries, onSelect }: RunTimelineProps) {
   // Filter to relevant entry types
   const filtered = entries.filter((e) => mapTypeToStatus(e.type) !== null);
   const steps: RunStep[] = filtered.map((e) => ({
@@ -138,7 +134,11 @@ export function RunTimeline({ status, entries, onSelect }: RunTimelineProps) {
   }, [status, steps.length]);
 
   // Determine the first pending step to render a spinner for it
-  const firstPendingIndex = steps.findIndex((s) => s.status === 'pending');
+  const lastStep = steps[steps.length - 1];
+  const showDetermining =
+    status === 'running' &&
+    (type === 'explore' || type === 'generate') &&
+    (lastStep.status === 'passed' || lastStep.status === 'failed');
   const clickable = status !== 'running';
   const selectIndex = React.useCallback(
     (i: number) => {
@@ -163,7 +163,6 @@ export function RunTimeline({ status, entries, onSelect }: RunTimelineProps) {
 
   const events: ExtendedRunStep[] = steps.map((s, i) => ({
     ...s,
-    isFirstPending: firstPendingIndex >= 0 && i === firstPendingIndex,
     selected: selectedIndex === i,
     onClick:
       onSelect && clickable
@@ -207,6 +206,18 @@ export function RunTimeline({ status, entries, onSelect }: RunTimelineProps) {
         className="run-timeline"
         pt={{ opposite: { className: 'hidden' } }}
       />
+
+      {showDetermining && (
+        <div className="p-3 my-3 border-1 border-round surface-border flex align-items-center gap-3 surface-50">
+          <div className={cn('flex align-items-center justify-content-center', styles.markerBox)}>
+            <ProgressSpinner className={styles.spinner} strokeWidth="8" />
+          </div>
+          <div className="flex flex-column">
+            <span className="font-medium">Determining next steps…</span>
+            <span className="text-500 text-sm">Analyzing results to plan the following action</span>
+          </div>
+        </div>
+      )}
 
       {/* Summary */}
       <div className="mt-4 pt-4 border-top-1 subtle-border">

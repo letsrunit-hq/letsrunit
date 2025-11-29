@@ -1,10 +1,11 @@
-import type { AppInfo, Action } from '@letsrunit/executor';
+import type { Action, AppInfo } from '@letsrunit/executor';
 import { makeFeature } from '@letsrunit/gherkin';
+import { asFilename } from '@letsrunit/utils';
 import * as fs from 'node:fs/promises';
 
 function disableEcho() {
   process.stdout.write('\x1B[?25l'); // hide cursor (optional)
-  process.stdout.write('\x1B[8m');   // hide input
+  process.stdout.write('\x1B[8m'); // hide input
 }
 
 function enableEcho() {
@@ -66,13 +67,12 @@ export async function runExplore(info: AppInfo, actions: Action[], storagePath?:
     if (opt < 0) return;
 
     stdout.write('\n');
-    const feature = await actions[opt].run();
+    const { status, feature } = await actions[opt].run();
 
     actions.splice(opt, 1);
 
-    if (storagePath) {
-      // TODO: Get a descriptive filename.
-      await fs.writeFile(storagePath + `/test-${Date.now()}.feature`, makeFeature(feature));
+    if (storagePath && status === 'passed' && feature) {
+      await fs.writeFile(`${storagePath}/${asFilename(feature.name!)}.feature`, makeFeature(feature));
     }
   }
 }

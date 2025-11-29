@@ -148,4 +148,103 @@ describe('journal lib', () => {
 
     expect(e3.type).toBe('failure');
   });
+
+  it('handles start overwriting prepare, then success overwriting start; merges meta/artifacts and computes duration', async () => {
+    const supabase = new FakeSupabase() as unknown as SupabaseClient;
+    const runId = randomUUID();
+
+    const t0 = new Date('2025-01-01T00:00:00.000Z').toISOString();
+    const t1 = new Date('2025-01-01T00:00:02.000Z').toISOString();
+    const t2 = new Date('2025-01-01T00:00:07.000Z').toISOString();
+
+    (supabase as any).setRows([
+      // prepare
+      {
+        id: 'p1',
+        type: 'prepare',
+        message: 'Do thing',
+        meta: { a: 1 },
+        artifacts: [
+          { name: 'screenshot-1.png', url: 'https://ok/a.png' },
+          { name: 'log.txt', url: 'https://no/log.txt' },
+        ],
+        created_at: t0,
+        created_by: null,
+        updated_at: t0,
+        updated_by: null,
+      },
+      // start should overwrite prepare (keep mapping for later replacement)
+      {
+        id: 's1',
+        type: 'start',
+        message: 'Do thing',
+        meta: { b: 2 },
+        artifacts: [{ name: 'screenshot-2.png', url: 'https://ok/b.png' }],
+        created_at: t1,
+        created_by: null,
+        updated_at: t1,
+        updated_by: null,
+      },
+      // success should overwrite start and prepare
+      {
+        id: 's2',
+        type: 'success',
+        message: 'Do thing',
+        meta: { c: 3 },
+        artifacts: [
+          { name: 'screenshot-3.png', url: 'https://ok/c.png' },
+          { name: 'not-screenshot.png', url: 'https://ok/ignore.png' },
+        ],
+        created_at: t2,
+        created_by: null,
+        updated_at: t2,
+        updated_by: null,
+      },
+    ]);
+
+    const journal = await getJournal(runId as any, { supabase });
+
+    expect(journal.entries.length).toBe(1);
+    const [e] = journal.entries;
+    expect(e.type).toBe('success');
+    // duration between start and success
+    expect(e.duration).toBe(new Date(t2).getTime() - new Date(t1).getTime());
+    // merged meta shallow
+    expect(e.meta).toMatchObject({ a: 1, b: 2, c: 3 });
+    // merged artifacts should include all
+    expect((e.artifacts ?? []).some((a) => a.name === 'screenshot-1.png')).toBe(true);
+    expect((e.artifacts ?? []).some((a) => a.name === 'screenshot-2.png')).toBe(true);
+    expect((e.artifacts ?? []).some((a) => a.name === 'screenshot-3.png')).toBe(true);
+    // screenshot selected and has url
+    expect(e.screenshot && !!e.screenshot.url).toBe(true);
+  });
+
+  it('computes duration when failure overwrites start; no duration if success directly overwrites prepare', async () => {
+    const supabase = new FakeSupabase() as unknown as SupabaseClient;
+    const runId = randomUUID();
+
+    const t0 = new Date('2025-01-01T01:00:00.000Z').toISOString();
+    const t1 = new Date('2025-01-01T01:00:03.000Z').toISOString();
+    const t2 = new Date('2025-01-01T01:00:08.000Z').toISOString();
+
+    (supabase as any).setRows([
+      // Case 1: start then failure
+      { id: 'x1', type: 'start', message: 'Case 1', meta: {}, artifacts: [], created_at: t0, created_by: null, updated_at: t0, updated_by: null },
+      { id: 'x2', type: 'failure', message: 'Case 1', meta: {}, artifacts: [], created_at: t1, created_by: null, updated_at: t1, updated_by: null },
+      // Separator
+      { id: 'ttl', type: 'title', message: 'sep', meta: {}, artifacts: [], created_at: t1, created_by: null, updated_at: t1, updated_by: null },
+      // Case 2: prepare then success (no start)
+      { id: 'y1', type: 'prepare', message: 'Case 2', meta: {}, artifacts: [], created_at: t1, created_by: null, updated_at: t1, updated_by: null },
+      { id: 'y2', type: 'success', message: 'Case 2', meta: {}, artifacts: [], created_at: t2, created_by: null, updated_at: t2, updated_by: null },
+    ]);
+
+    const journal = await getJournal(runId as any, { supabase });
+
+    const [first, , third] = journal.entries;
+    expect(first.type).toBe('failure');
+    expect(first.duration).toBe(new Date(t1).getTime() - new Date(t0).getTime());
+
+    expect(third.type).toBe('success');
+    expect(third.duration ?? null).toBeNull();
+  });
 });

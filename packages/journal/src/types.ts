@@ -2,7 +2,7 @@ import type { File } from 'node:buffer';
 
 export interface JournalEntry {
   timestamp: number;
-  type: 'debug' | 'info' | 'title' | 'warn' | 'error' | 'prepare' | 'success' | 'failure';
+  type: 'debug' | 'info' | 'title' | 'warn' | 'error' | 'prepare' | 'start' | 'success' | 'failure';
   message: string;
   artifacts: File[];
   meta: Record<string, any>;
