@@ -6,6 +6,7 @@ import type { JournalEntry, RunStatus } from '@letsrunit/model';
 import { cn, join } from '@letsrunit/utils';
 import { Button } from 'primereact/button';
 import { useTimelinePlayer } from '@/hooks/use-timeline-player';
+import { CheckCircle2, Circle, CircleDot, Pause, Play, XCircle } from 'lucide-react';
 
 type StepStatus = 'passed' | 'failed' | 'pending';
 
@@ -69,20 +70,23 @@ function markerTemplate(item: ExtendedRunStep, status: RunStatus) {
       );
     }
     // Other pending steps – gray open circle
-    return <span className="pi pi-circle text-500" aria-label="pending" />;
+    return <Circle className={cn(styles.statusIcon, 'text-500')} aria-label="pending" />;
   }
 
   if (item.status === 'passed') {
     return (
-      <span
-        className={cn('pi', item.hasScreenshot ? 'pi-circle-fill' : 'pi-check-circle', styles.textGreen)}
-        aria-label="success"
-      />
+      <>
+        {item.hasScreenshot ? (
+          <CircleDot className={cn(styles.statusIcon, styles.textGreen)} aria-label="success" />
+        ) : (
+          <CheckCircle2 className={cn(styles.statusIcon, styles.textGreen)} aria-label="success" />
+        )}
+      </>
     );
   }
 
   // failed
-  return <span className={cn('pi', 'pi-times-circle', styles.textRed)} aria-label="failed" />;
+  return <XCircle className={cn(styles.statusIcon, styles.textRed)} aria-label="failed" />;
 }
 
 // Custom content template for Timeline
@@ -187,7 +191,7 @@ export function RunTimeline({ status, entries, onSelect }: RunTimelineProps) {
           {onSelect && status !== 'running' && (
             <Button
               outlined
-              icon={playing ? 'pi pi-pause' : 'pi pi-play'}
+              icon={playing ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
               aria-label={playing ? 'Pause' : 'Play'}
               onClick={toggle}
             />

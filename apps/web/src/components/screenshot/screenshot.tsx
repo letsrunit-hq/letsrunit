@@ -1,5 +1,6 @@
 import React, { type CSSProperties } from 'react';
 import Image from 'next/image';
+import { Monitor } from 'lucide-react';
 import styles from './screenshot.module.css';
 
 export type ScreenshotProps = {
@@ -16,7 +17,7 @@ export function Screenshot({ src, alt, style, width, height }: ScreenshotProps) 
       {src && <Image src={src} alt={alt ?? 'screenshot'} width={width} height={height} />}
       {!src && (
         <div className={styles.noImage}>
-          <i className="pi pi-desktop"></i>
+          <Monitor aria-hidden="true" className={styles.noImageIcon} />
           <div>No screenshot</div>
         </div>
       )}

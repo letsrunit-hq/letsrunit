@@ -1,13 +1,14 @@
 "use client";
 
 import React from "react";
+import { ArrowUp } from "lucide-react";
 import { Button } from "primereact/button";
 
 export type BackToTopButtonProps = {
   className?: string;
   label?: string;
   ariaLabel?: string;
-  icon?: string;
+  icon?: React.ReactNode;
 };
 
 function scrollTop() {
@@ -16,7 +17,12 @@ function scrollTop() {
   }
 }
 
-export function BackToTopButton({ className, label = "Back to top", ariaLabel = "Back to top", icon = "pi pi-arrow-up" }: BackToTopButtonProps) {
+export function BackToTopButton({
+  className,
+  label = "Back to top",
+  ariaLabel = "Back to top",
+  icon = <ArrowUp aria-hidden="true" />,
+}: BackToTopButtonProps) {
   return (
     <Button
       aria-label={ariaLabel}

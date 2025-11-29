@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { ChevronDown } from "lucide-react";
 import { Button } from "primereact/button";
 
 export type ScrollDownButtonProps = {
@@ -23,7 +24,7 @@ export function ScrollDownButton({ className, targetId = "learn-more", ariaLabel
   return (
     <Button
       aria-label={ariaLabel}
-      icon="pi pi-chevron-down"
+      icon={<ChevronDown aria-hidden="true" />}
       className={className}
       onClick={handleScrollDownClick}
       data-target-id={targetId}

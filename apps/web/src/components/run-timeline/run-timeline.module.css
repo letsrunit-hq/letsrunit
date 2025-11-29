@@ -8,6 +8,11 @@
   height: 14px;
 }
 
+.statusIcon {
+  width: 1rem;
+  height: 1rem;
+}
+
 .dot {
   display: inline-block;
   width: 0.5rem; /* 8px */
