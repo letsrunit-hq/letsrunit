@@ -133,12 +133,10 @@ export function RunTimeline({ type, status, entries, onSelect }: RunTimelineProp
     }
   }, [status, steps.length]);
 
-  // Determine the first pending step to render a spinner for it
   const lastStep = steps[steps.length - 1];
-  const showDetermining =
-    status === 'running' &&
-    (type === 'explore' || type === 'generate') &&
-    (lastStep.status === 'passed' || lastStep.status === 'failed');
+  const showDetermining = status === 'running'
+    && (type === 'explore' || type === 'generate')
+    && (lastStep?.status === 'passed' || lastStep?.status === 'failed');
   const clickable = status !== 'running';
   const selectIndex = React.useCallback(
     (i: number) => {
@@ -148,7 +146,6 @@ export function RunTimeline({ type, status, entries, onSelect }: RunTimelineProp
     [onSelect, filtered],
   );
 
-  // total steps for player
   const total = steps.length;
 
   const { playing, toggle, pause } = useTimelinePlayer({

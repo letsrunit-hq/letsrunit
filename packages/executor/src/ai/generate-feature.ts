@@ -90,11 +90,6 @@ async function determineThenSteps(old: Snapshot, current: Snapshot, journal?: Jo
     steps = await detectPageChanges(old, current, { journal });
   }
 
-  journal
-    ?.batch()
-    .each(steps, (j, step) => j.success(step, { artifacts: step === steps[0] ? [current.screenshot] : [] }))
-    .flush();
-
   return steps;
 }
 
@@ -205,7 +200,9 @@ export async function generateFeature({ controller, feature }: Options): Promise
 
     // Success
     content = await describePage(nextPage, 'html');
+
     const assertSteps = await determineThenSteps(currentPage, nextPage, controller.journal);
+    await controller.run(makeFeature({ name: 'assert', steps: assertSteps }));
     steps.push(...assertSteps);
 
     currentPage = nextPage;

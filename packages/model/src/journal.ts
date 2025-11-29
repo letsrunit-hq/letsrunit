@@ -57,7 +57,7 @@ export function journalFromData(runId: UUID, raw: JournalEntryData[]): Journal {
         const merged = { ...item, meta: mergedMeta, artifacts: mergedArtifacts } as JournalEntry;
 
         // Use the screenshot of the later entry
-        merged.screenshot = item.artifacts.find((a) => isScreenshot(a)) ?? merged.screenshot;
+        merged.screenshot = item.artifacts.find((a) => isScreenshot(a)) ?? prev.screenshot;
 
         result[idx] = merged;
 
