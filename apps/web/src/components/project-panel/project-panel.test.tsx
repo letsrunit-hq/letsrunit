@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { ProjectPanel } from './project-panel';
 import type { Project } from '@letsrunit/model';
+import ISO6391 from 'iso-639-1';
 
 describe('ProjectPanel', () => {
   const project: Project = {
@@ -26,6 +27,8 @@ describe('ProjectPanel', () => {
   it('renders labels, project details, and children', () => {
     render(<ProjectPanel project={project} />);
 
+    const languageLabel = ISO6391.getName(project.lang!) || project.lang!;
+
     // Labels converted to PrimeFlex text utilities
     expect(screen.getByText('URL')).toBeInTheDocument();
     expect(screen.getByText('Description')).toBeInTheDocument();
@@ -36,7 +39,7 @@ describe('ProjectPanel', () => {
 
     // Description and Language values
     expect(screen.getByText(project.description!)).toBeInTheDocument();
-    expect(screen.getByText('nl')).toBeInTheDocument();
+    expect(screen.getByText(languageLabel)).toBeInTheDocument();
 
     // Screenshot image rendered
     expect(screen.getByRole('img', { name: /ecommerce\.example\.com screenshot/i })).toBeInTheDocument();
