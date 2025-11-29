@@ -1,13 +1,14 @@
-import React from 'react';
-import styles from './page.module.css';
 import { ProjectFeatures } from '@/components/project-features';
 import { ProjectPanel } from '@/components/project-panel';
-import { getProject } from '@letsrunit/model';
 import { connect as connectServerSupabase } from '@/libs/supabase/server';
-import type { UUID } from 'node:crypto';
-import { Chip } from 'primereact/chip';
+import { getProject } from '@letsrunit/model';
 import { cn, isUUID } from '@letsrunit/utils';
 import { notFound } from 'next/navigation';
+import type { UUID } from 'node:crypto';
+import { Button } from 'primereact/button';
+import { Chip } from 'primereact/chip';
+import React from 'react';
+import styles from './page.module.css';
 
 type PageProps = { params: Promise<{ id: UUID }> };
 
@@ -23,9 +24,16 @@ export default async function Page({ params }: PageProps) {
   return (
     <div className={`${styles.container} p-4 md:p-6 lg:p-7`}>
       <div className="mb-4">
-        <div className="flex flex-row align-items-center">
-          {project.favicon && <Chip className={cn('tile', project.favicon, 'mr-3')} image={project.favicon}/>}
-          <h1 className={styles.title}>{project.title}</h1>
+        <div className="flex flex-column md:flex-row align-items-start md:align-items-center justify-content-between">
+          <div className="flex flex-row align-items-center mb-3 md:mb-0">
+            {project.favicon && <Chip className={cn('tile', project.favicon, 'mr-3')} image={project.favicon} />}
+            <h1 className={styles.title}>{project.title}</h1>
+          </div>
+          <div className="flex flex-row gap-2 justify-content-end">
+            <Button aria-label="Run all" label="Run all" icon="pi pi-play" severity="secondary" />
+            <Button aria-label="Run history" icon="pi pi-history" severity="secondary" />
+            <Button aria-label="Settings" icon="pi pi-cog" severity="secondary" />
+          </div>
         </div>
       </div>
 

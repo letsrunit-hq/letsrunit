@@ -46,8 +46,8 @@ where id = '00000000-0000-0000-0000-000000000001';
 
 select is(
                (select updated_by from basejump.accounts where id = '00000000-0000-0000-0000-000000000001'),
-               NULL,
-               'Updtaes from postgres / service_role users set updated_by field to null'
+               tests.get_supabase_uid('test1'),
+               'Updates from postgres / service_role users leave updated_by unchanged (original creator)'
            );
 
 select tests.authenticate_as('test_member');

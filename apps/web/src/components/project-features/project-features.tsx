@@ -41,17 +41,19 @@ export function ProjectFeatures({ className, projectId }: ProjectFeaturesProps) 
   const [searchQuery, setSearchQuery] = useState('');
 
   const stats = useMemo(() => {
-    const totalFeatures = features.length;
-    const suggestions = features.filter((f) => f.body == null).length;
-    const activeTests = features.filter((f) => f.body != null).length;
-    const passed = features.filter((f) => f.lastRun?.status === 'passed').length;
-    const failed = features.filter(
-      (f) => f.lastRun && (f.lastRun.status === 'failed' || f.lastRun.status === 'error'),
-    ).length;
+    const list = showArchived ? features : features.filter((f) => f.enabled);
+
+    const totalFeatures = list.length;
+    const suggestions = list.filter((f) => f.body == null).length;
+    const activeTests = list.filter((f) => f.body != null).length;
+
+    const passed = list.filter((f) => f.lastRun?.status === 'passed').length;
+    const failed = list.filter((f) => f.lastRun?.status === 'failed' || f.lastRun?.status === 'error').length;
     const considered = passed + failed;
     const passRate = considered > 0 ? Math.round((passed / considered) * 100) : '-';
+
     return { totalFeatures, suggestions, activeTests, passRate };
-  }, [features]);
+  }, [features, showArchived]);
 
   const remove = async (feature: Feature, confirmed = false) => {
     if (feature.body && !confirmed) {
