@@ -1,11 +1,6 @@
 import { generate } from '@letsrunit/ai';
 import { Journal } from '@letsrunit/journal';
-import * as Diff from 'diff';
-import rehypeFormat from 'rehype-format';
-import rehypeParse from 'rehype-parse';
-import rehypeStringify from 'rehype-stringify';
-import { unified } from 'unified';
-import { scrubHtml } from '../utils/scrub-html';
+import { unifiedHtmlDiff } from '../../../playwright/src/unified-html-diff';
 import { locatorRules } from './locator-rules';
 
 const PROMPT = `You analyze a diff of two HTML files. Your job is to detect the most significant user-visible changes and output up to 3 Playwright Gherkin steps using these step definitions only:
@@ -36,26 +31,6 @@ Then I see that \`span.count\` contains text "10 items"
 `;
 
 const DUMMY = 'Then I do not see any changes';
-
-async function formatHtml(rawHtml: string, url: string) {
-  const html = await scrubHtml({ html: rawHtml, url });
-
-  const file = await unified()
-    .use(rehypeParse, { fragment: true })
-    .use(rehypeFormat, { indent: 2 }) // collapses existing whitespace and formats nodes
-    .use(rehypeStringify)
-    .process(html);
-  return String(file);
-}
-
-export async function unifiedHtmlDiff(
-  old: { html: string; url: string },
-  current: { html: string; url: string },
-): Promise<string> {
-  const [a, b] = await Promise.all([formatHtml(old.html, old.url), formatHtml(current.html, current.url)]);
-
-  return Diff.createTwoFilesPatch('before.html', 'after.html', a, b);
-}
 
 export async function detectPageChanges(
   old: { html: string; url: string },

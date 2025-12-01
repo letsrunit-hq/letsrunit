@@ -1,12 +1,12 @@
-import { describe, it, expect } from 'vitest';
-import { scrubHtml } from '../../src/utils/scrub-html';
+import { describe, expect, it } from 'vitest';
+import { realScrubHtml } from '../src/scrub-html';
 
 describe('scrubHtml', () => {
   it('removes the head element by default', async () => {
     const html = '<html><head><title>Hidden</title></head><body><main>Content</main></body></html>';
     const page = { html, url: 'https://example.com' };
 
-    const output = await scrubHtml(page);
+    const output = await realScrubHtml(page);
 
     expect(output).toBe('<main>Content</main>');
   });
@@ -22,11 +22,11 @@ describe('scrubHtml', () => {
       '<object data="data.bin"></object>',
       '<embed src="file.bin" />',
       '<div>Keep me</div>',
-      '</body>'
+      '</body>',
     ].join('');
     const page = { html, url: 'https://example.com' };
 
-    const output = await scrubHtml(page);
+    const output = await realScrubHtml(page);
 
     expect(output).toBe('<div>Keep me</div>');
   });
@@ -35,7 +35,7 @@ describe('scrubHtml', () => {
     const html = '<html><head><meta name="test" content="keep" /></head><body><main>Body</main></body></html>';
     const page = { html, url: 'https://example.com' };
 
-    const output = await scrubHtml(page, { dropHead: false });
+    const output = await realScrubHtml(page, { dropHead: false });
 
     expect(output).toBe('<main>Body</main>');
   });
@@ -48,11 +48,11 @@ describe('scrubHtml', () => {
       '<p style="display:none">Display none</p>',
       '<section><em>Visible</em></section>',
       '</div>',
-      '</body>'
+      '</body>',
     ].join('');
     const page = { html, url: 'https://example.com' };
 
-    const output = await scrubHtml(page);
+    const output = await realScrubHtml(page);
 
     expect(output).toBe('<div><section><em>Visible</em></section></div>');
   });
@@ -61,7 +61,7 @@ describe('scrubHtml', () => {
     const html = '<body><ul><li hidden>Secret</li><li>Shown</li></ul></body>';
     const page = { html, url: 'https://example.com' };
 
-    const output = await scrubHtml(page, { dropHidden: false });
+    const output = await realScrubHtml(page, { dropHidden: false });
 
     expect(output).toBe('<ul><li>Secret</li><li>Shown</li></ul>');
   });
@@ -73,11 +73,11 @@ describe('scrubHtml', () => {
       '<section hidden><p>Also hidden</p></section>',
       '<article inert><p>No render</p></article>',
       '<div><p>Visible</p></div>',
-      '</body>'
+      '</body>',
     ].join('');
     const page = { html, url: 'https://example.com' };
 
-    const output = await scrubHtml(page);
+    const output = await realScrubHtml(page);
 
     expect(output).toBe('<div><p>Visible</p></div>');
   });
@@ -87,11 +87,11 @@ describe('scrubHtml', () => {
       '<body>',
       '<a href="javascript:alert(1)" onclick="doThing()">Link</a>',
       '<img src="image.png" style="color:red" data-test="42" integrity="abc" />',
-      '</body>'
+      '</body>',
     ].join('');
     const page = { html, url: 'https://example.com' };
 
-    const output = await scrubHtml(page);
+    const output = await realScrubHtml(page);
 
     expect(output).toBe('<a>Link</a><img src="image.png" data-test="42">');
   });
@@ -100,7 +100,7 @@ describe('scrubHtml', () => {
     const html = '<body><button onclick="x()" data-test="keep">Click</button></body>';
     const page = { html, url: 'https://example.com' };
 
-    const output = await scrubHtml(page, { stripAttributes: false });
+    const output = await realScrubHtml(page, { stripAttributes: 0 });
 
     expect(output).toBe('<button onclick="x()" data-test="keep">Click</button>');
   });
@@ -109,8 +109,8 @@ describe('scrubHtml', () => {
     const html = '<body><!-- comment --><p>Text</p></body>';
     const page = { html, url: 'https://example.com' };
 
-    const defaultOutput = await scrubHtml(page);
-    const preservedOutput = await scrubHtml(page, { dropComments: false });
+    const defaultOutput = await realScrubHtml(page);
+    const preservedOutput = await realScrubHtml(page, { dropComments: false });
 
     expect(defaultOutput).toBe('<p>Text</p>');
     expect(preservedOutput).toBe('<!-- comment --><p>Text</p>');
@@ -120,8 +120,8 @@ describe('scrubHtml', () => {
     const html = '<body><svg><circle cx="10" cy="10" r="5" /></svg><p>Keep</p></body>';
     const page = { html, url: 'https://example.com' };
 
-    const keptOutput = await scrubHtml(page);
-    const droppedOutput = await scrubHtml(page, { dropSvg: true });
+    const keptOutput = await realScrubHtml(page);
+    const droppedOutput = await realScrubHtml(page, { dropSvg: true });
 
     expect(keptOutput).toBe('<svg><circle cx="10" cy="10" r="5"></circle></svg><p>Keep</p>');
     expect(droppedOutput).toBe('<p>Keep</p>');
@@ -131,7 +131,7 @@ describe('scrubHtml', () => {
     const html = '<body><div>Lots   of\n   space</div><pre> exact   spacing </pre></body>';
     const page = { html, url: 'https://example.com' };
 
-    const output = await scrubHtml(page);
+    const output = await realScrubHtml(page);
 
     expect(output).toBe('<div>Lots of space</div><pre> exact   spacing </pre>');
   });
@@ -140,7 +140,7 @@ describe('scrubHtml', () => {
     const html = '<body><p>Keep   this\n spacing</p></body>';
     const page = { html, url: 'https://example.com' };
 
-    const output = await scrubHtml(page, { normalizeWhitespace: false });
+    const output = await realScrubHtml(page, { normalizeWhitespace: false });
 
     expect(output).toBe('<p>Keep   this\n spacing</p>');
   });
@@ -149,7 +149,7 @@ describe('scrubHtml', () => {
     const html = '<body><h1>Hello<br/>World</h1><p>Line<br/>Break</p></body>';
     const page = { html, url: 'https://example.com' };
 
-    const output = await scrubHtml(page);
+    const output = await realScrubHtml(page);
 
     expect(output).toBe('<h1>Hello World</h1><p>Line<br>Break</p>');
   });
@@ -158,7 +158,7 @@ describe('scrubHtml', () => {
     const html = '<body><h2>Hello<br>World</h2></body>';
     const page = { html, url: 'https://example.com' };
 
-    const output = await scrubHtml(page, { replaceBrInHeadings: false });
+    const output = await realScrubHtml(page, { replaceBrInHeadings: false });
 
     expect(output).toBe('<h2>Hello<br>World</h2>');
   });
@@ -169,16 +169,67 @@ describe('scrubHtml', () => {
       '<article id="keep" class="hero" data-info="42" lang="en" onclick="bad()" style="color:red" integrity="xyz">',
       '<a href="https://example.com" rel="noopener" referrerpolicy="no-referrer" data-track="1">Link</a>',
       '</article>',
-      '</body>'
+      '</body>',
     ].join('');
     const page = { html, url: 'https://example.com' };
 
-    const output = await scrubHtml(page);
+    const output = await realScrubHtml(page);
 
     expect(output).toBe(
       '<article id="keep" class="hero" data-info="42" lang="en">' +
-      '<a href="https://example.com" rel="noopener" data-track="1">Link</a>' +
-      '</article>'
+        '<a href="https://example.com" rel="noopener" data-track="1">Link</a>' +
+        '</article>',
     );
+  });
+
+  it('keeps only the <main> section when pickMain is enabled', async () => {
+    const html = '<html><body><header>Top</header><main><p>Only this</p></main><footer>Bottom</footer></body></html>';
+    const page = { html, url: 'https://example.com' };
+
+    const output = await realScrubHtml(page, { pickMain: true });
+
+    expect(output).toBe('<main><p>Only this</p></main>');
+  });
+
+  it('limits list items when limitLists is set', async () => {
+    const html = '<body><ul><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li></ul></body>';
+    const page = { html, url: 'https://example.com' };
+
+    const output = await realScrubHtml(page, { limitLists: 2 });
+
+    expect(output).toBe('<ul><li>1</li><li>2</li></ul>');
+  });
+
+  it('limits table rows when limitLists is set', async () => {
+    const html = [
+      '<body>',
+      '<table>',
+      '<tbody>',
+      '<tr><td>a</td></tr>',
+      '<tr><td>b</td></tr>',
+      '<tr><td>c</td></tr>',
+      '</tbody>',
+      '</table>',
+      '</body>',
+    ].join('');
+    const page = { html, url: 'https://example.com' };
+
+    const output = await realScrubHtml(page, { limitLists: 1 });
+
+    expect(output).toBe('<table><tbody><tr><td>a</td></tr></tbody></table>');
+  });
+
+  it('uses aggressive attribute stripping when stripAttributes=2', async () => {
+    const html = [
+      '<body>',
+      '<a href="/x" title="t" rel="noopener" target="_blank" data-qa="keep" referrerpolicy="no-referrer" onclick="x()">L</a>',
+      '</body>',
+    ].join('');
+    const page = { html, url: 'https://example.com' };
+
+    const output = await realScrubHtml(page, { stripAttributes: 2 });
+
+    // aggressive keeps href, src, alt, title and specific data/aria test ids; drops rel/target/referrerpolicy/onclick
+    expect(output).toBe('<a href="/x" title="t" data-qa="keep">L</a>');
   });
 });

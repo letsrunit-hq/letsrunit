@@ -10,7 +10,18 @@
   "main": "src/index.ts",
   "dependencies": {
     "@letsrunit/utils": "workspace:*",
-    "@playwright/test": "^1.56.1"
+    "@playwright/test": "^1.56.1",
+    "diff": "^8.0.2",
+    "metascraper-description": "^5.49.5",
+    "metascraper-image": "^5.49.5",
+    "metascraper-logo": "^5.49.5",
+    "metascraper-logo-favicon": "^5.49.5",
+    "metascraper-title": "^5.49.5",
+    "metascraper-url": "^5.49.5",
+    "rehype-format": "^5.0.1",
+    "rehype-parse": "^9.0.1",
+    "rehype-stringify": "^10.0.1",
+    "unified": "^11.0.5"
   },
   "devDependencies": {
     "vitest": "^3.2.4"

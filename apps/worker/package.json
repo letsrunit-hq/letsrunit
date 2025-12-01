@@ -7,7 +7,6 @@
     "@google-cloud/storage": "^7.17.2",
     "@letsrunit/executor": "workspace:*",
     "@letsrunit/model": "workspace:*",
-    "fastify": "^5.6.1",
     "google-auth-library": "^10.4.0",
     "zod": "^4.1.12"
   },

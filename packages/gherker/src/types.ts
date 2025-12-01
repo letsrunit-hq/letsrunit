@@ -20,7 +20,7 @@ export interface ParsedStep {
 
 export interface Result<TWorld extends World = any> {
   world: TWorld;
-  status: 'success' | 'failure';
+  status: 'passed' | 'failed';
   steps: Array<{
     text: string;
     status?: 'success' | 'failure';
