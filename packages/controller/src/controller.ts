@@ -4,8 +4,9 @@ import { ParsedStep } from '@letsrunit/gherker/src/types';
 import { createFieldEngine, parseFeature } from '@letsrunit/gherkin';
 import { Journal } from '@letsrunit/journal';
 import { browse, locator, screenshot, snapshot } from '@letsrunit/playwright';
+import { formatHtml } from '@letsrunit/playwright/src/format-html';
 import { scrollToCenter } from '@letsrunit/playwright/src/scroll';
-import { clean } from '@letsrunit/utils';
+import { clean, hash } from '@letsrunit/utils';
 import {
   type Browser,
   type BrowserContextOptions,
@@ -91,7 +92,8 @@ export class Controller {
     }
 
     const screenshotBefore = await this.makeScreenshot({ mask: locators });
-    await this.journal.start(step.text, { artifacts: clean([screenshotBefore]) });
+    const htmlBefore = await this.makeHtmlFile();
+    await this.journal.start(step.text, { artifacts: clean([screenshotBefore, htmlBefore]) });
 
     const result = await run();
 
@@ -107,6 +109,18 @@ export class Controller {
       .flush();
 
     return result;
+  }
+
+  private async makeHtmlFile(): Promise<File | undefined> {
+    try {
+      const html = await formatHtml(this.world.page);
+      return new File([Buffer.from(html, 'utf8')], hash(html) + '.html');
+    } catch (e) {
+      const message = (e as any).message ?? String(e);
+      await this.journal.warn(`Failed to get HTML of ${this.world.page.url()}: ${message}`, {
+        meta: { reason: e },
+      });
+    }
   }
 
   private async makeScreenshot(options?: PageScreenshotOptions): Promise<File | undefined> {

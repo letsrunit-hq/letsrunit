@@ -2,11 +2,11 @@ import { Controller } from '@letsrunit/controller';
 import { makeFeature } from '@letsrunit/gherkin';
 import { Journal } from '@letsrunit/journal';
 import { splitUrl } from '@letsrunit/utils';
+import { extractPageInfo } from '../../playwright/src/page-info';
 import { assessPage } from './ai/assess-page';
 import { describePage } from './ai/describe-page';
 import { generateFeature } from './ai/generate-feature';
 import type { Action, AppInfo, Result } from './types';
-import { extractPageInfo } from './utils/page-info';
 
 interface ExploreOptions {
   headless?: boolean;

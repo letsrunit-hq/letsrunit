@@ -193,7 +193,7 @@ export async function generateFeature({ controller, feature }: Options): Promise
     steps.push(...runSteps.filter((s) => s.status === 'success').map(({ text }) => text));
 
     // The run failed; try again
-    if (status === 'failure') {
+    if (status === 'failed') {
       messages.push(...(await failureToMessages(response!, result)));
       continue;
     }

@@ -4,7 +4,7 @@ import { asFilename } from '@letsrunit/utils';
 import * as fs from 'node:fs/promises';
 
 function disableEcho() {
-  process.stdout.write('\x1B[?25l'); // hide cursor (optional)
+  process.stdout.write('\x1B[?25l'); // hide cursor
   process.stdout.write('\x1B[8m'); // hide input
 }
 

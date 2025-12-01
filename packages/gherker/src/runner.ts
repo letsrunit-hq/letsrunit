@@ -101,7 +101,7 @@ export class Runner<TWorld extends World> {
         completed > i ? 'success' : ((completed === i ? 'failure' : undefined) as 'success' | 'failure' | undefined),
     }));
 
-    return { world, status: !error ? 'success' : 'failure', steps, reason: error };
+    return { world, status: !error ? 'passed' : 'failed', steps, reason: error };
   }
 
   reset() {

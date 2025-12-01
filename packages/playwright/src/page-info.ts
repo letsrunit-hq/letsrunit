@@ -1,13 +1,12 @@
-import type { PageInfo } from '../types';
-import type { Snapshot } from '@letsrunit/playwright';
 import metascraper, { type MetascraperOptions } from 'metascraper';
-import metascraperTitle from 'metascraper-title';
 import metascraperDescription from 'metascraper-description';
 import metascraperImage from 'metascraper-image';
+import metascraperLang from 'metascraper-lang';
 import metascraperLogo from 'metascraper-logo';
 import metascraperLogoFavicon from 'metascraper-logo-favicon';
-import metascraperLang from 'metascraper-lang';
+import metascraperTitle from 'metascraper-title';
 import metascraperUrl from 'metascraper-url';
+import type { PageInfo, Snapshot } from './types';
 
 const scrape = metascraper([
   metascraperTitle(),
@@ -32,4 +31,3 @@ export async function extractPageInfo(options: MetascraperOptions & Partial<Snap
     screenshot: options.screenshot,
   };
 }
-

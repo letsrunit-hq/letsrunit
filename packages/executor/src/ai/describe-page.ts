@@ -1,8 +1,8 @@
-import { scrubHtml } from '../utils/scrub-html';
-import { stringify as toYaml } from 'yaml';
 import { generate } from '@letsrunit/ai';
-import { extractPageInfo } from '../utils/page-info';
-import type { PageInfo } from '../types';
+import type { PageInfo } from '@letsrunit/playwright';
+import { stringify as toYaml } from 'yaml';
+import { extractPageInfo } from '../../../playwright/src/page-info';
+import { scrubHtml } from '../../../playwright/src/scrub-html';
 
 const PROMPT = `Convert raw HTML into compact Markdown using a limited set of custom blocks. The output feeds must be consistent.
 
@@ -92,19 +92,13 @@ Inside \`::: form\`:
 `;
 
 export async function describePage(
-  page: { url: string, html: string, info?: PageInfo },
+  page: { url: string; html: string; info?: PageInfo },
   contentType: 'markdown' | 'html' = 'markdown',
 ): Promise<string> {
-  const info = page.info ?? await extractPageInfo(page);
+  const info = page.info ?? (await extractPageInfo(page));
 
   const html = await scrubHtml(page);
   const content = contentType === 'markdown' ? await generate(PROMPT, html, { model: 'medium' }) : html;
 
-  return [
-    '---',
-    toYaml(info, { lineWidth: 0 }).trim(),
-    '---',
-    '',
-    content
-  ].join('\n');
+  return ['---', toYaml(info, { lineWidth: 0 }).trim(), '---', '', content].join('\n');
 }
