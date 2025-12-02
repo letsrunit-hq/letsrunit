@@ -176,130 +176,33 @@ export async function realScrubHtml(
   const dom = new JSDOM(html, { url });
   const doc = dom.window.document;
 
-  // 1) Optionally pick only the first <main> element
-  let pickedMain = false;
-  if (o.pickMain) {
-    const main = doc.querySelector('main');
-    if (main) {
-      const clone = main.cloneNode(true);
-      doc.body.innerHTML = '';
-      doc.body.appendChild(clone);
-      pickedMain = true;
-    }
-  }
+  // 1) pick <main> (if requested) and remember if we did
+  const pickedMain = o.pickMain ? pickMainIfRequested(doc) : false;
 
-  // 2) Optionally remove <head>
-  if (o.dropHead && !pickedMain) {
-    const head = doc.querySelector('head');
-    if (head) head.remove();
-  }
+  // 2) optionally remove <head>
+  if (o.dropHead && !pickedMain) removeHead(doc);
 
-  // 3) Remove infra/noise elements (but leave SVG unless asked)
-  const toDrop = [...ALWAYS_DROP, o.dropSvg ? 'svg' : ''].filter(Boolean).join(',');
-  if (toDrop) doc.querySelectorAll(toDrop).forEach((el) => el.remove());
+  // 3) drop infra/noise (and svg if asked)
+  dropInfraAndSvg(doc, !!o.dropSvg);
 
-  // 4) Drop clearly hidden/inert nodes (attribute-based only, no layout assumptions)
-  if (o.dropHidden) {
-    // Remove any node that matches hidden selectors OR has a hidden ancestor
-    doc.querySelectorAll<HTMLElement>(HIDDEN_SELECTORS).forEach((el) => el.remove());
+  // 4) drop hidden/inert nodes
+  if (o.dropHidden) dropHiddenTrees(doc);
 
-    // Also remove subtrees whose ancestors carry hidden markers (cheap ancestor scan)
-    // We do a second pass: if any ancestor has hidden attrs, drop the node.
-    const all = [...doc.body.querySelectorAll<HTMLElement>('*')];
-    for (const el of all) {
-      if (!el.isConnected) continue;
-      if (hasHiddenAncestor(el)) el.remove();
-    }
-  }
+  // 5) strip attributes and sanitize links
+  if (o.stripAttributes) stripAttributesAndSanitize(doc, o.stripAttributes);
 
-  // 5) Strip event handlers + non-allowed attributes, keep semantics
-  if (o.stripAttributes) {
-    const all = [...doc.body.querySelectorAll<HTMLElement>('*')];
-    for (const el of all) {
-      const isSvg = el.namespaceURI === 'http://www.w3.org/2000/svg';
-      // Iterate over a copy because we'll mutate attributes
-      for (const { name } of [...el.attributes]) {
-        const lower = name.toLowerCase();
-        if (lower.startsWith('on')) {
-          // Remove event handler attributes
-          el.removeAttribute(name);
-          continue;
-        }
-        if (lower === 'style') {
-          // Remove inline styles to save tokens (we already used style for hidden detection)
-          el.removeAttribute(name);
-          continue;
-        }
+  // 6) remove comments
+  if (o.dropComments) removeHtmlComments(doc);
 
-        // Do not aggressively filter SVG attributes—keep them for glyph integrity
-        if (isSvg) continue;
+  // 7) replace <br> in headings
+  if (o.replaceBrInHeadings) replaceBrsInHeadings(doc);
 
-        const allowedAttrs = o.stripAttributes === 1 ? ALLOWED_ATTRS : ALLOWED_ATTRS_AGGRESSIVE;
+  // 8) limit lists/rows
+  if (o.limitLists >= 0) limitListsAndRows(doc, o.limitLists);
 
-        // Remove all attributes not in allow list
-        if (!allowedAttrs.match.has(lower) && !allowedAttrs.regexp?.test(name)) {
-          el.removeAttribute(name);
-        }
-      }
-    }
+  // 9) normalize whitespace
+  if (o.normalizeWhitespace) normalizeWhitespace(doc.body);
 
-    // Also sanitize <a href="javascript:..."> (keep tag, drop href)
-    doc.querySelectorAll('a[href]').forEach((a) => {
-      const href = a.getAttribute('href') || '';
-      if (/^\s*javascript:/i.test(href)) a.removeAttribute('href');
-    });
-  }
-
-  // 6) Remove comments
-  if (o.dropComments) {
-    const walker = doc.createTreeWalker(doc, dom.window.NodeFilter.SHOW_COMMENT);
-    const toRemove: Comment[] = [];
-    let n: Comment | null;
-
-    while ((n = walker.nextNode() as Comment | null)) toRemove.push(n);
-    toRemove.forEach((c) => c.parentNode?.removeChild(c));
-  }
-
-  // 7) Replace <br> inside headings (h1–h6) with a space to keep words together
-  // This runs before whitespace normalization so spaces are later collapsed/trimmed appropriately.
-  if (o.replaceBrInHeadings) {
-    doc.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((h) => {
-      h.querySelectorAll('br').forEach((br) => {
-        const space = doc.createTextNode(' ');
-        (br as Element).replaceWith(space);
-      });
-    });
-  }
-
-  // 8) Limit lists and table rows, if requested
-  if (typeof o.limitLists === 'number' && o.limitLists > -1) {
-    const limit = o.limitLists;
-
-    // Limit list items for each list separately
-    doc.querySelectorAll('ul, ol').forEach((list) => {
-      // Only consider direct LI children to avoid double-trimming nested lists
-      const items = Array.from(list.children).filter((c) => c.tagName === 'LI');
-      for (let i = limit; i < items.length; i++) {
-        items[i].remove();
-      }
-    });
-
-    // Limit table rows: consider table sections and tables with direct TR children
-    const rowContainers = doc.querySelectorAll('table, thead, tbody, tfoot');
-    rowContainers.forEach((container) => {
-      const rows = Array.from(container.children).filter((c) => c.tagName === 'TR');
-      for (let i = limit; i < rows.length; i++) {
-        rows[i].remove();
-      }
-    });
-  }
-
-  // 9) Normalize whitespace in text nodes (but not inside pre/code)
-  if (o.normalizeWhitespace) {
-    normalizeWhitespace(doc.body);
-  }
-
-  // Return the body’s innerHTML (structure intact, tags preserved)
   return doc.body.innerHTML;
 }
 
@@ -342,6 +245,7 @@ function normalizeWhitespace(root: Element) {
     const collapsed = v.replace(/\s+/g, ' ');
     if (collapsed !== v) changes.push(text);
   }
+
   for (const t of changes) {
     // extra trim around block-ish elements
     const parent = t.parentElement!;
@@ -349,4 +253,104 @@ function normalizeWhitespace(root: Element) {
     t.nodeValue = (t.nodeValue || '').replace(/\s+/g, ' ');
     if (isBlockish) t.nodeValue = (t.nodeValue || '').trim();
   }
+}
+
+// Split-out helper steps (top-level, no nested functions)
+
+function pickMainIfRequested(doc: Document): boolean {
+  const main = doc.querySelector('main');
+  if (!main) return false;
+  const clone = main.cloneNode(true);
+  doc.body.innerHTML = '';
+  doc.body.appendChild(clone);
+  return true;
+}
+
+function removeHead(doc: Document) {
+  const head = doc.querySelector('head');
+  if (head) head.remove();
+}
+
+function dropInfraAndSvg(doc: Document, dropSvg: boolean) {
+  const toDrop = [...ALWAYS_DROP, dropSvg ? 'svg' : ''].filter(Boolean).join(',');
+  if (!toDrop) return;
+  doc.querySelectorAll(toDrop).forEach((el) => el.remove());
+}
+
+function dropHiddenTrees(doc: Document) {
+  doc.querySelectorAll<HTMLElement>(HIDDEN_SELECTORS).forEach((el) => el.remove());
+  const all = [...doc.body.querySelectorAll<HTMLElement>('*')];
+  for (const el of all) {
+    if (!el.isConnected) continue;
+    if (hasHiddenAncestor(el)) el.remove();
+  }
+}
+
+function stripAttributesAndSanitize(doc: Document, level: 0 | 1 | 2) {
+  if (!level) return;
+
+  const all = [...doc.body.querySelectorAll<HTMLElement>('*')];
+
+  for (const el of all) {
+    const isSvg = el.namespaceURI === 'http://www.w3.org/2000/svg';
+    for (const { name } of [...el.attributes]) {
+      const lower = name.toLowerCase();
+      if (lower.startsWith('on')) {
+        el.removeAttribute(name);
+        continue;
+      }
+      if (lower === 'style') {
+        el.removeAttribute(name);
+        continue;
+      }
+      if (isSvg) continue; // keep svg attrs
+      const allowed = level === 1 ? ALLOWED_ATTRS : ALLOWED_ATTRS_AGGRESSIVE;
+      if (!allowed.match.has(lower) && !allowed.regexp?.test(name)) {
+        el.removeAttribute(name);
+      }
+    }
+  }
+
+  // sanitize javascript: hrefs
+  doc.querySelectorAll('a[href]').forEach((a) => {
+    const href = a.getAttribute('href') || '';
+    if (/^\s*javascript:/i.test(href)) a.removeAttribute('href');
+  });
+}
+
+function removeHtmlComments(doc: Document) {
+  const nf = doc.defaultView?.NodeFilter;
+  const SHOW_COMMENT = nf?.SHOW_COMMENT ?? 128; // fallback constant
+
+  // createTreeWalker expects a NodeFilter mask
+  const walker = doc.createTreeWalker(doc, SHOW_COMMENT as unknown as number);
+  const toRemove: Comment[] = [];
+  let n: Comment | null;
+
+  while ((n = walker.nextNode() as Comment | null)) toRemove.push(n);
+  toRemove.forEach((c) => c.parentNode?.removeChild(c));
+}
+
+function replaceBrsInHeadings(doc: Document) {
+  doc.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((h) => {
+    h.querySelectorAll('br').forEach((br) => {
+      const space = doc.createTextNode(' ');
+      (br as Element).replaceWith(space);
+    });
+  });
+}
+
+function limitListsAndRows(doc: Document, limit: number) {
+  // lists
+  doc.querySelectorAll('ul, ol').forEach((list) => {
+    const items = Array.from(list.children).filter((c) => c.tagName === 'LI');
+    for (let i = limit; i < items.length; i++) items[i].remove();
+  });
+
+  // table rows
+  const rowContainers = doc.querySelectorAll('table, thead, tbody, tfoot');
+  rowContainers.forEach((container) => {
+    const rows = Array.from(container.children).filter((c) => c.tagName === 'TR');
+    for (let i = limit; i < rows.length; i++) rows[i].remove();
+  });
 }
