@@ -77,7 +77,8 @@ export class CliSink implements Sink {
     if (index < 0) return false;
 
     const oldTexts = this.entries.slice(index).map((e) => this.format(e));
-    const oldLength = oldTexts.reduce((total, current) => total + current.split('\n').length, 0);
+    const columns = this.stream.columns ?? 0;
+    const oldLength = oldTexts.reduce((total, current) => total + this.countDisplayLines(current, columns), 0);
 
     this.entries[index] = entry;
     const newTexts = this.entries.slice(index).map((e) => this.format(e));
@@ -117,6 +118,29 @@ export class CliSink implements Sink {
     }
 
     return lines.join('\n');
+  }
+
+  private stripAnsi(input: string): string {
+    // Regex from chalk/strip-ansi to remove ANSI escape sequences
+    const pattern = /[\u001B\u009B][[\]()#;?]*(?:((?:[a-zA-Z\d]*(?:;[a-zA-Z\d]*)*)?\u0007)|(?:\d{1,4}(?:;\d{0,4})*)?[\dA-PR-TZcf-nq-uy=><~])/g;
+    return input.replace(pattern, '');
+  }
+
+  private countDisplayLines(text: string, columns: number): number {
+    // If columns is not available (non-TTY), fall back to newline-based counting
+    if (!columns || columns <= 0 || !Number.isFinite(columns)) {
+      return text.split('\n').length;
+    }
+
+    let count = 0;
+    const lines = text.split('\n');
+    for (const line of lines) {
+      const visible = this.stripAnsi(line);
+      const len = [...visible].length; // handles surrogate pairs reasonably
+      const wraps = Math.max(1, Math.ceil(len / columns));
+      count += wraps;
+    }
+    return count;
   }
 
   private async storeArtifacts(artifacts: File[]) {

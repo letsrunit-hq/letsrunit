@@ -73,10 +73,6 @@ function getByFieldSelector(text: string | RegExp, props = ''): string {
   return `field=${q}${props ? ` ${props}` : ''}`;
 }
 
-function getByLabelSelector(text: string | RegExp, props = ''): string {
-  return 'label=' + escapeForTextSelector(text) + (props ? ` ${props}` : '');
-}
-
 function getByTextSelector(text: string | RegExp, props = ''): string {
   return 'text=' + escapeForTextSelector(text) + (props ? ` ${props}` : '');
 }
