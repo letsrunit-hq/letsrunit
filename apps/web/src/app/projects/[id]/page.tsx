@@ -39,7 +39,7 @@ export default async function Page({ params }: PageProps) {
 
       <ProjectPanel className="mb-4" project={project} />
 
-      <ProjectFeatures projectId={id} />
+      <ProjectFeatures projectId={id} baseUrl={project.url} />
     </div>
   );
 }

@@ -8,17 +8,18 @@ import type { ActionFn } from './types';
 export type FeaturesListProps = {
   className?: string;
   features: Feature[];
+  create?: () => any;
   generate?: ActionFn;
   run?: ActionFn;
   remove?: ActionFn;
   restore?: ActionFn;
 };
 
-export function FeaturesList({ className, features, generate, run, remove, restore }: FeaturesListProps) {
+export function FeaturesList({ className, features, create, generate, run, remove, restore }: FeaturesListProps) {
   return (
     <div className={className}>
       <div className="flex flex-column gap-3">
-        <CreateButton onClick={() => {}} />
+        {create && <CreateButton onClick={() => create()} />}
 
         {features.map((feature) =>
           feature.body == null ? (

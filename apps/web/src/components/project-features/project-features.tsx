@@ -2,6 +2,7 @@
 
 import { disableFeature, enableFeature } from '@/actions/features';
 import { startGenerateRun } from '@/actions/generate';
+import { CreateTestDialog } from '@/components/create-test-dialog/create-test-dialog';
 import FeaturesList from '@/components/features-list';
 import { InverseIcon } from '@/components/inverse-icon';
 import { StatsToolbar } from '@/components/stats-toolbar';
@@ -22,12 +23,14 @@ import React, { useMemo, useState } from 'react';
 export type ProjectFeaturesProps = {
   className?: string;
   projectId: UUID;
+  baseUrl: string;
 };
 
-export function ProjectFeatures({ className, projectId }: ProjectFeaturesProps) {
+export function ProjectFeatures({ className, projectId, baseUrl }: ProjectFeaturesProps) {
   const router = useRouter();
   const { features, loading } = useFeatureList(projectId);
   const [showArchived, setShowArchived] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
   const toast = useToast();
 
   // Local search and type filter state (moved from FeaturesList)
@@ -153,6 +156,7 @@ export function ProjectFeatures({ className, projectId }: ProjectFeaturesProps) 
 
       <FeaturesList
         features={filteredFeatures}
+        create={() => setShowCreate(true)}
         remove={(feature: Feature) => void remove(feature)}
         restore={(feature: Feature) => void restore(feature)}
         generate={(feature: Feature) => void generate(feature)}
@@ -164,6 +168,12 @@ export function ProjectFeatures({ className, projectId }: ProjectFeaturesProps) 
         activeTests={stats.activeTests}
         suggestions={stats.suggestions}
         passRate={stats.passRate}
+      />
+      <CreateTestDialog
+        visible={showCreate}
+        onCancel={() => setShowCreate(false)}
+        onGenerate={() => setShowCreate(false)}
+        baseUrl={baseUrl}
       />
     </div>
   );
