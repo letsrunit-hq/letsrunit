@@ -5,7 +5,7 @@ import { CreateTestDialog } from './create-test-dialog';
 
 describe('CreateTestDialog', () => {
   it('renders dialog with fields and actions', () => {
-    render(<CreateTestDialog visible baseUrl="https://example.com" onCancel={vi.fn()} onGenerate={vi.fn()} />);
+    render(<CreateTestDialog visible baseUrl="https://example.com" cancel={vi.fn()} generate={vi.fn()} />);
 
     // Header
     expect(screen.getByText('Add new test')).toBeInTheDocument();

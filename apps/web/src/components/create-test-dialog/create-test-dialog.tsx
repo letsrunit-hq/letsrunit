@@ -1,36 +1,36 @@
-import { cn } from "@letsrunit/utils";
-import { Zap } from "lucide-react";
-import { Button } from "primereact/button";
-import { Dialog } from "primereact/dialog";
-import { InputText } from "primereact/inputtext";
-import { InputTextarea } from "primereact/inputtextarea";
-import React, { useState } from "react";
-import styles from "./create-test-dialog.module.css";
+import { cn } from '@letsrunit/utils';
+import { Zap } from 'lucide-react';
+import { Button } from 'primereact/button';
+import { Dialog } from 'primereact/dialog';
+import { InputText } from 'primereact/inputtext';
+import { InputTextarea } from 'primereact/inputtextarea';
+import React, { useState } from 'react';
+import styles from './create-test-dialog.module.css';
 
 export type CreateTestDialogValues = {
-  startPath: string;
-  instructions: string;
+  path: string;
+  description: string;
 };
 
 export type CreateTestDialogProps = {
   className?: string;
   visible: boolean;
   baseUrl?: string;
-  onCancel: () => void;
-  onGenerate: (values: CreateTestDialogValues) => void;
+  cancel: () => void;
+  generate: (values: CreateTestDialogValues) => void;
 };
 
-export function CreateTestDialog({ className, visible, baseUrl, onCancel, onGenerate }: CreateTestDialogProps) {
+export function CreateTestDialog({ className, visible, baseUrl, cancel, generate }: CreateTestDialogProps) {
   const [startPath, setStartPath] = useState('');
   const [instructions, setInstructions] = useState('');
 
   const footer = (
     <div className="flex align-items-center justify-content-end gap-2 w-full">
-      <Button label="Cancel" text severity="secondary" onClick={onCancel} />
+      <Button label="Cancel" text severity="secondary" onClick={cancel} />
       <Button
         label="Generate"
         icon={<Zap size={16} className="mr-2" />}
-        onClick={() => onGenerate({ startPath, instructions })}
+        onClick={() => generate({ path: startPath, description: instructions })}
         disabled={instructions.trim().length === 0}
       />
     </div>
@@ -41,7 +41,7 @@ export function CreateTestDialog({ className, visible, baseUrl, onCancel, onGene
       header="Create a new test"
       className={cn(className, styles.dialog)}
       visible={visible}
-      onHide={onCancel}
+      onHide={cancel}
       footer={footer}
       dismissableMask
       modal

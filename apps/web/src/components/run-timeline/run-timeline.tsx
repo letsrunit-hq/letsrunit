@@ -5,7 +5,7 @@ import { CheckCircle2, Circle, CircleDot, Pause, Play, XCircle } from 'lucide-re
 import { Button } from 'primereact/button';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Timeline } from 'primereact/timeline';
-import React from 'react';
+import React, { useMemo } from 'react';
 import styles from './run-timeline.module.css';
 
 type StepStatus = 'pending' | 'running' | 'passed' | 'failed';
@@ -65,9 +65,11 @@ function getStatusColor(status: StepStatus) {
 // Custom marker template for Timeline
 function markerTemplate(item: ExtendedRunStep, runStatus: RunStatus) {
   if (item.status === 'passed') {
-    return item.hasScreenshot
-      ? <CircleDot className={cn(styles.statusIcon, styles.textGreen)} aria-label="success" />
-      : <CheckCircle2 className={cn(styles.statusIcon, styles.textGreen)} aria-label="success" />;
+    return item.hasScreenshot ? (
+      <CircleDot className={cn(styles.statusIcon, styles.textGreen)} aria-label="success" />
+    ) : (
+      <CheckCircle2 className={cn(styles.statusIcon, styles.textGreen)} aria-label="success" />
+    );
   }
 
   if (item.status === 'failed') {
@@ -109,42 +111,45 @@ function contentTemplate(item: ExtendedRunStep) {
 }
 
 export function RunTimeline({ type, status, entries, onSelect }: RunTimelineProps) {
-  // Filter to relevant entry types
-  const filtered = entries.filter((e) => mapTypeToStatus(e.type) !== null);
-  const steps: RunStep[] = filtered.map((e) => ({
-    keyword: e.message.match(/^(Given|When|Then|And|But|\*)\s.*$/)?.[1],
-    text: e.message.replace(/^(Given|When|Then|And|But|\*)\s+/, ''),
-    status: mapTypeToStatus(e.type) as StepStatus,
-    duration: formatDuration(e.duration),
-    hasScreenshot: Boolean(e.screenshot),
-    description: e.meta.description,
-  }));
-
-  // selection state
   const [selectedIndex, setSelectedIndex] = React.useState<number | null>(null);
 
-  // when status is not running, ensure first step is selected by default
+  const filtered = useMemo(
+    () => entries.filter((e) => mapTypeToStatus(e.type) !== null),
+    [entries],
+  );
+
+  const steps: RunStep[] = useMemo(
+    () => filtered.map((e) => ({
+      keyword: e.message.match(/^(Given|When|Then|And|But|\*)\s.*$/)?.[1],
+      text: e.message.replace(/^(Given|When|Then|And|But|\*)\s+/, ''),
+      status: mapTypeToStatus(e.type) as StepStatus,
+      duration: formatDuration(e.duration),
+      hasScreenshot: Boolean(e.screenshot),
+      description: e.meta.description,
+    })),
+    [filtered]
+  );
+
+  // when status is not running, ensure first step (with screenshot) is selected by default
   React.useEffect(() => {
-    if (status !== 'running') {
-      setSelectedIndex((prev) => (prev == null ? (steps.length > 0 ? 0 : null) : prev));
-    } else {
-      // when running, don't force selection changes
-      setSelectedIndex((prev) => prev);
-    }
-  }, [status, steps.length]);
+    if (status === 'running') return;
+
+    setSelectedIndex((prev) => {
+      const index = filtered.findIndex((s) => s.screenshot);
+      return index >= 0 ? index : prev;
+    });
+  }, [status, filtered]);
+
+  React.useEffect(() => {
+    if (selectedIndex !== null) onSelect?.(filtered[selectedIndex]);
+  }, [selectedIndex, onSelect, filtered]);
 
   const lastStep = steps[steps.length - 1];
-  const showDetermining = status === 'running'
-    && (type === 'explore' || type === 'generate')
-    && (lastStep?.status === 'passed' || lastStep?.status === 'failed');
+  const showDetermining =
+    status === 'running' &&
+    (type === 'explore' || type === 'generate') &&
+    (lastStep?.status === 'passed' || lastStep?.status === 'failed');
   const clickable = status !== 'running';
-  const selectIndex = React.useCallback(
-    (i: number) => {
-      setSelectedIndex(i);
-      if (onSelect) onSelect(filtered[i]);
-    },
-    [onSelect, filtered],
-  );
 
   const total = steps.length;
 
@@ -152,7 +157,7 @@ export function RunTimeline({ type, status, entries, onSelect }: RunTimelineProp
     enabled: Boolean(onSelect) && clickable,
     total,
     selectedIndex,
-    selectIndex,
+    selectIndex: setSelectedIndex,
     delayMs: 1000,
     wrapOnStart: true,
     hasScreenshotAt: (i) => steps[i].hasScreenshot,
@@ -165,7 +170,7 @@ export function RunTimeline({ type, status, entries, onSelect }: RunTimelineProp
       onSelect && clickable
         ? () => {
             pause();
-            selectIndex(i);
+            setSelectedIndex(i);
           }
         : undefined,
   }));
@@ -220,11 +225,11 @@ export function RunTimeline({ type, status, entries, onSelect }: RunTimelineProp
       <div className="mt-4 pt-4 border-top-1 subtle-border">
         <div className="flex align-items-center justify-content-between">
           <div className="flex align-items-center gap-2">
-            <span className={cn(styles.dot, styles.dotGreen, failedCount > 0 && 'opacity-30')} />
+            <span className={cn(styles.dot, styles.dotGreen, status !== 'passed' && 'opacity-30')} />
             <span className="text-500">{passedCount} Passed</span>
           </div>
           <div className="flex align-items-center gap-2">
-            <span className={cn(styles.dot, styles.dotRed, failedCount === 0 && 'opacity-30')} />
+            <span className={cn(styles.dot, styles.dotRed, status !== 'failed' && 'opacity-30')} />
             <span className="text-500">{failedCount} Failed</span>
           </div>
         </div>

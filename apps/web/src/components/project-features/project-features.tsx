@@ -5,14 +5,15 @@ import { startGenerateRun } from '@/actions/generate';
 import { CreateTestDialog } from '@/components/create-test-dialog/create-test-dialog';
 import FeaturesList from '@/components/features-list';
 import { InverseIcon } from '@/components/inverse-icon';
+import { MessageWithButton } from '@/components/message-with-button';
 import { StatsToolbar } from '@/components/stats-toolbar';
 import { useToast } from '@/context/toast-context';
 import { useFeatureList } from '@/hooks/use-feature-list';
-import type { Feature } from '@letsrunit/model';
-import { Archive, Search } from 'lucide-react';
+import { optionalConfirm } from '@/libs/optional-confirm';
+import type { Feature, Suggestion } from '@letsrunit/model';
+import { Archive, Search, TriangleAlert } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { UUID } from 'node:crypto';
-import { confirmDialog } from 'primereact/confirmdialog';
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
 import { IconField } from 'primereact/iconfield';
 import { InputIcon } from 'primereact/inputicon';
@@ -58,30 +59,25 @@ export function ProjectFeatures({ className, projectId, baseUrl }: ProjectFeatur
     return { totalFeatures, suggestions, activeTests, passRate };
   }, [features, showArchived]);
 
-  const remove = async (feature: Feature, confirmed = false) => {
-    if (feature.body && !confirmed) {
-      confirmDialog({
-        message: `Are you sure you want to archive "${feature.name}"?`,
-        header: 'Archive',
-        icon: 'pi pi-exclamation-triangle',
-        acceptClassName: 'p-button-danger',
-        accept: () => remove(feature, true),
-      });
-      return;
-    }
-
-    await disableFeature(feature.id);
-    toast.show({
-      severity: 'info',
-      summary: 'Archived',
-      detail: (
-        <>
-          &quot;{feature.name}&quot; archived{' '}
-          <button onClick={() => restore(feature)} className="p-link p-0 font-medium text-sm underline ml-1">
-            Undo
-          </button>
-        </>
-      ),
+  const remove = async (feature: Feature) => {
+    optionalConfirm({
+      autoAccept: !!feature.body,
+      message: `Are you sure you want to archive "${feature.name}"?`,
+      header: 'Archive',
+      icon: <TriangleAlert key="icon" size={32} />,
+      acceptClassName: 'p-button-danger',
+      accept: async () => {
+        await disableFeature(feature.id);
+        toast.show({
+          severity: 'info',
+          summary: 'Archived',
+          detail: (
+            <MessageWithButton buttonText="Undo" onClick={() => restore(feature)}>
+              &quot;{feature.name}&quot; archived
+            </MessageWithButton>
+          ),
+        });
+      },
     });
   };
 
@@ -90,19 +86,17 @@ export function ProjectFeatures({ className, projectId, baseUrl }: ProjectFeatur
     toast.show({ severity: 'success', summary: 'Restored', detail: `"${feature.name}" restored` });
   };
 
-  const generate = async (feature: Feature, confirmed = false) => {
-    if (feature.body && !confirmed) {
-      confirmDialog({
-        message: 'Are you sure you want to regenerate the steps based on the test description?',
-        header: 'Regenerate',
-        icon: 'pi pi-exclamation-triangle',
-        accept: () => generate(feature, true),
-      });
-      return;
-    }
-
-    const runId = await startGenerateRun(feature.id);
-    router.push(`/runs/${runId}`);
+  const generate = async (feature: Feature | Omit<Suggestion, 'projectId'>) => {
+    optionalConfirm({
+      autoAccept: Boolean(!('id' in feature) || !feature.body),
+      message: 'Are you sure you want to regenerate the steps based on the test description?',
+      header: 'Regenerate',
+      icon: 'pi pi-exclamation-triangle',
+      accept: async () => {
+        const runId = await startGenerateRun('id' in feature ? feature.id : { projectId, ...feature });
+        router.push(`/runs/${runId}`);
+      },
+    });
   };
 
   const filteredFeatures = features.filter((f) => {
@@ -171,8 +165,11 @@ export function ProjectFeatures({ className, projectId, baseUrl }: ProjectFeatur
       />
       <CreateTestDialog
         visible={showCreate}
-        onCancel={() => setShowCreate(false)}
-        onGenerate={() => setShowCreate(false)}
+        cancel={() => setShowCreate(false)}
+        generate={(feature) => {
+          void generate(feature);
+          setShowCreate(false);
+        }}
         baseUrl={baseUrl}
       />
     </div>

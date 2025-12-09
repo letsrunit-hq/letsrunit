@@ -1,29 +1,34 @@
 'use client';
 
-import React from 'react';
-import { useRun } from '@/hooks/use-run';
-import { RunResult } from '@/components/run-result';
 import { AnimatedBackground } from '@/components/animated-background';
 import { QueueStatus } from '@/components/queue-status';
-import styles from './screen.module.css';
+import { RunResult } from '@/components/run-result';
+import useFeature from '@/hooks/use-feature';
 import useProject from '@/hooks/use-project';
-import type { UUID } from 'node:crypto';
+import { useRun } from '@/hooks/use-run';
 import type { RunStatus } from '@letsrunit/model';
+import type { UUID } from 'node:crypto';
+import React from 'react';
+import styles from './screen.module.css';
 
 interface ScreenOptions {
   projectId: UUID;
+  featureId?: UUID;
   runId: UUID;
   status: RunStatus;
 }
 
-export default function Screen({ projectId, runId, status }: ScreenOptions) {
+export default function Screen({ projectId, featureId, runId, status }: ScreenOptions) {
   const { run, journal, loading: runLoading, error: runError } = useRun(runId);
   if (runError) throw new Error(runError);
 
   const { project, loading: projectLoading, error: projectError } = useProject(projectId);
   if (projectError) throw new Error(projectError);
 
-  const loading = runLoading || projectLoading;
+  const { feature, loading: featureLoading, error: featureError } = useFeature(featureId);
+  if (featureError) throw new Error(featureError);
+
+  const loading = runLoading || projectLoading || featureLoading;
 
   if ((run?.status ?? status) === 'queued') {
     return (
@@ -38,7 +43,7 @@ export default function Screen({ projectId, runId, status }: ScreenOptions) {
 
   return (
     <main className={`p-3 ${styles.container}`}>
-      <RunResult project={project!} run={run!} journal={journal} />
+      <RunResult project={project!} feature={feature} run={run!} journal={journal} />
     </main>
   );
 }

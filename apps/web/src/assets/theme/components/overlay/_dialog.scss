@@ -2,6 +2,7 @@
     border-radius: $borderRadius;
     box-shadow: $overlayContainerShadow;
     border: $overlayContentBorder;
+    background: $overlayContentBg;
 
     .p-dialog-header {
         border-bottom: $dialogHeaderBorder;
@@ -24,7 +25,7 @@
 
             &:last-child {
                 margin-right: 0;
-            }            
+            }
         }
     }
 
@@ -59,12 +60,12 @@
             border-radius: 0;
         }
     }
-    
+
 
     &.p-confirm-dialog {
         .p-confirm-dialog-icon {
             font-size: $primeIconFontSize * 2;
-            
+
             &.p-icon {
                 width: $primeIconFontSize * 2;
                 height: $primeIconFontSize * 2;

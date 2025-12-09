@@ -1,4 +1,4 @@
-import { explore, generate, runTest } from '@letsrunit/executor';
+import { explore, generate, refineSuggestion, runTest } from '@letsrunit/executor';
 import { makeFeature } from '@letsrunit/gherkin';
 import { CliSink, Journal } from '@letsrunit/journal';
 import { asFilename } from '@letsrunit/utils';
@@ -70,7 +70,11 @@ program
     }
 
     const journal = createJournal({ ...opts, artifactPath: opts.save });
-    const { feature, status } = await generate(target, { description: instructions }, { headless: false, journal });
+
+    await journal.info('Refining test instructions');
+    const suggestion = await refineSuggestion(instructions);
+
+    const { feature, status } = await generate(target, suggestion, { headless: false, journal });
 
     if (opts.save && feature) {
       await fs.writeFile(`${opts.save}/${asFilename(feature.name!)}.feature`, makeFeature(feature));

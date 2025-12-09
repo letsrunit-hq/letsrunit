@@ -2,22 +2,24 @@
 
 import { RunTimeline, RunTimelineSkeleton } from '@/components/run-timeline';
 import { Screenshot } from '@/components/screenshot';
-import type { Artifact, Journal, Project, Run, RunStatus } from '@letsrunit/model';
-import { CheckCircle2, Clock, Globe2, XCircle } from 'lucide-react';
+import type { Artifact, Feature, Journal, Project, Run, RunStatus } from '@letsrunit/model';
+import { CalendarClock, CheckCircle2, Clock, Globe2, Monitor, XCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { BreadCrumb } from 'primereact/breadcrumb';
 import { Button } from 'primereact/button';
 import { Tag } from 'primereact/tag';
-import React, { useEffect } from 'react';
+import React from 'react';
 import styles from './run-result.module.css';
 
 export interface JournalProps {
   project: Project;
+  feature?: Feature | null;
   run: Run;
   journal?: Journal;
+  children?: React.ReactNode;
 }
 
-export function RunResult({ project, run, journal }: JournalProps) {
+export function RunResult({ project, feature, run, journal, children }: JournalProps) {
   const [screenshot, setScreenshot] = React.useState<Artifact | null>(null);
   const router = useRouter();
 
@@ -27,6 +29,8 @@ export function RunResult({ project, run, journal }: JournalProps) {
 
   const durationMs = run.startedAt && run.finishedAt ? run.finishedAt.getTime() - run.startedAt.getTime() : undefined;
   const duration = typeof durationMs === 'number' ? `${(durationMs / 1000).toFixed(1)}s` : undefined;
+
+  const description = run.type === 'explore' ? project.description : feature?.description;
 
   const statusIcon = (status: RunStatus | undefined) => {
     switch (status) {
@@ -39,12 +43,6 @@ export function RunResult({ project, run, journal }: JournalProps) {
         return <Clock size={14} />;
     }
   };
-
-  useEffect(() => {
-    const fn = run.status === 'running' ? 'findLast' : 'find';
-    const screenshot = journal?.entries[fn]((j) => j.type === 'success' || j.type === 'failure')?.screenshot;
-    if (screenshot) setScreenshot(screenshot);
-  }, [journal, run]);
 
   return (
     <div className="grid">
@@ -61,10 +59,19 @@ export function RunResult({ project, run, journal }: JournalProps) {
           <div>
             <h1 className="m-0 text-base text-white font-normal">{runTitle?.message ?? run.target}</h1>
             {run && (
-              <div className="flex align-items-baseline gap-3 mt-3 mb-2">
-                <div className="flex align-items-center gap-1">
+              <div className="flex align-items-baseline gap-4 mt-3">
+                <div className="flex align-items-center gap-2">
                   <Globe2 size={16} aria-hidden="true" /> <span>Chrome 120</span>
                 </div>
+                <div className="flex align-items-center gap-2">
+                  <Monitor size={16} aria-hidden="true" /> <span>1920 &times; 1080</span>
+                </div>
+                { run.startedAt && (
+                  <div className="flex align-items-center gap-2">
+                    <CalendarClock size={16} aria-hidden="true" />
+                    <span>{run.startedAt.toLocaleString('en-UK', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -76,8 +83,12 @@ export function RunResult({ project, run, journal }: JournalProps) {
           </div>
         </div>
 
+        {description && <div className="mb-4 text-sm">{description}</div>}
+
         {/* Screenshot placeholder */}
         <Screenshot src={screenshot?.url} alt={screenshot?.name} width={1920} height={1080} />
+
+        {children}
       </div>
 
       {/* Right side - Run Timeline */}

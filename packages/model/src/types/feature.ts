@@ -18,9 +18,12 @@ export const FeatureSchema = z.object({
   updatedBy: UUIDSchema.nullable().describe('Account id that updated the feature'),
 });
 
-export const SuggestionSchema = FeatureSchema.omit({ body: true, comments: true }).extend({
-  done: z.string().describe('Definition of done'),
-});
+export const SuggestionSchema = FeatureSchema
+  .pick({ projectId: true, name: true, path: true, description: true, done: true })
+  .partial({ name: true, path: true })
+  .extend({
+    done: z.string().optional().describe('Definition of done'),
+  });
 
 export type Feature = z.infer<typeof FeatureSchema>;
 export type Suggestion = z.infer<typeof SuggestionSchema>;

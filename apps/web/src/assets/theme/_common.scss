@@ -58,18 +58,22 @@
     @keyframes p-component-overlay-enter-animation {
         from {
             background-color: transparent;
+            backdrop-filter: blur(0);
         }
         to {
             background-color: var(--maskbg);
+            backdrop-filter: blur(10px);
         }
     }
 
     @keyframes p-component-overlay-leave-animation {
         from {
             background-color: var(--maskbg);
+            backdrop-filter: blur(10px);
         }
         to {
             background-color: transparent;
+            backdrop-filter: blur(0);
         }
     }
 }

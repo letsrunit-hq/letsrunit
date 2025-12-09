@@ -1,4 +1,4 @@
-import { generate } from '@letsrunit/executor';
+import { generate, refineSuggestion } from '@letsrunit/executor';
 import { makeFeature } from '@letsrunit/gherkin';
 import { getFeature, type Run, updateFeature } from '@letsrunit/model';
 import { clean, pick } from '@letsrunit/utils';
@@ -8,7 +8,9 @@ export async function startGenerateRun(run: Run, { supabase, journal }: HandleOp
   if (!run.featureId) throw new Error('No feature associated with Run');
 
   const feature = await getFeature(run.featureId, { supabase });
-  const suggestion = clean(pick(feature, ['name', 'description', 'comments']));
+
+  await journal.info('Refining test instructions');
+  const suggestion = await refineSuggestion(clean(pick(feature, ['name', 'description', 'comments'])));
 
   const result = await generate(run.target, suggestion, { journal });
 

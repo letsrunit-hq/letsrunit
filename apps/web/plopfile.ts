@@ -13,7 +13,7 @@ export default function (plop: NodePlopAPI) {
   // -------- React Component --------
   plop.setGenerator('component', {
     description: 'Create a React component with test',
-    prompts: [{ type: 'input', name: 'name', message: 'Component name (e.g. CommitButton):' }],
+    prompts: [{ type: 'input', name: 'name', message: 'Component name:' }],
     actions: [
       {
         type: 'add',
@@ -152,30 +152,36 @@ describe('route {{dashCase path}}', () => {
   // -------- React Hook --------
   plop.setGenerator('hook', {
     description: 'Create a React hook with test',
-    prompts: [{ type: 'input', name: 'name', message: 'Hook name without "use" prefix, e.g. Toggle:' }],
+    prompts: [
+      {
+        type: 'input',
+        name: 'name',
+        message: 'Hook name:',
+      },
+    ],
     actions: [
       {
         type: 'add',
-        path: '{{resolveBase "src/hooks"}}/use-{{dashCase name}}.ts',
+        path: '{{resolveBase "src/hooks"}}/use-{{dashCase (stripUse name)}}.ts',
         template: `import { useState } from 'react';
 
-export function use{{pascalCase name}}(initial = false) {
+export function use{{pascalCase (stripUse name)}}(initial = false) {
   const [value, setValue] = useState<boolean>(initial);
   const toggle = () => setValue((v) => !v);
   return { value, setValue, toggle };
 }
-export default use{{pascalCase name}};`,
+export default use{{pascalCase (stripUse name)}};`,
       },
       {
         type: 'add',
-        path: '{{resolveBase "src/hooks"}}/__tests__/use-{{dashCase name}}.test.ts',
+        path: '{{resolveBase "src/hooks"}}/__tests__/use-{{dashCase (stripUse name)}}.test.ts',
         template: `import { describe, it, expect } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { use{{pascalCase name}} } from './use-{{dashCase name}}';
+import { use{{pascalCase (stripUse name)}} } from '../use-{{dashCase (stripUse name)}}';
 
-describe('use{{pascalCase name}}', () => {
+describe('use{{pascalCase (stripUse name)}}', () => {
   it('toggles', () => {
-    const { result } = renderHook(() => use{{pascalCase name}}());
+    const { result } = renderHook(() => use{{pascalCase (stripUse name)}}());
     act(() => result.current.toggle());
     expect(result.current.value).toBe(true);
   });
@@ -187,7 +193,7 @@ describe('use{{pascalCase name}}', () => {
   // -------- React Context --------
   plop.setGenerator('context', {
     description: 'Create a React context + provider with test',
-    prompts: [{ type: 'input', name: 'name', message: 'Context name, e.g. Theme:' }],
+    prompts: [{ type: 'input', name: 'name', message: 'Context name:' }],
     actions: [
       {
         type: 'add',
@@ -235,7 +241,7 @@ describe('{{pascalCase name}}Context', () => {
   // -------- Server Action --------
   plop.setGenerator('action', {
     description: 'Create a server action with "use server"',
-    prompts: [{ type: 'input', name: 'name', message: 'Action name, e.g. createUser:' }],
+    prompts: [{ type: 'input', name: 'name', message: 'Action name:' }],
     actions: [
       {
         type: 'add',
@@ -267,7 +273,7 @@ describe('action {{camelCase name}}', () => {
   // -------- Library util --------
   plop.setGenerator('lib', {
     description: 'Create a library util in src/libs',
-    prompts: [{ type: 'input', name: 'name', message: 'Lib name, e.g. formatDate:' }],
+    prompts: [{ type: 'input', name: 'name', message: 'Lib name:' }],
     actions: [
       {
         type: 'add',
@@ -296,6 +302,12 @@ describe('lib {{camelCase name}}', () => {
   plop.setHelper('kebabPath', (txt) => {
     const parts = ensureAppPath(String(txt)).split('/').filter(Boolean);
     return parts.map((p) => toKebab(p)).join('/');
+  });
+
+  // Accept names both with and without a leading "use" prefix
+  plop.setHelper('stripUse', function (txt: string) {
+    const s = String(txt || '');
+    return s.replace(/^use[-_\s]?/i, '');
   });
 
   // Resolve base directory: prefer CLI --baseDir, otherwise use provided default

@@ -1,9 +1,8 @@
 import { Controller } from '@letsrunit/controller';
 import { type Feature } from '@letsrunit/gherkin';
 import { Journal } from '@letsrunit/journal';
-import { splitUrl } from '@letsrunit/utils';
+import { type RequireOnly, splitUrl } from '@letsrunit/utils';
 import { generateFeature } from './ai/generate-feature';
-import { refineSuggestion } from './ai/refine-suggestion';
 import type { Result } from './types';
 
 interface GenerateOptions {
@@ -11,9 +10,11 @@ interface GenerateOptions {
   journal?: Journal;
 }
 
+type GenerateInput = RequireOnly<Omit<Feature, 'background' | 'steps'>, 'name' | 'description'>;
+
 export default async function generate(
   target: string,
-  suggestion: Pick<Feature, 'name' | 'description' | 'comments'>,
+  suggestion: GenerateInput,
   opts: GenerateOptions = {},
 ): Promise<Result> {
   const { base, path } = splitUrl(target);
@@ -24,19 +25,6 @@ export default async function generate(
   ];
 
   const journal = opts.journal ?? Journal.nil();
-
-  if (!suggestion.description) {
-    throw new Error('Missing description');
-  }
-
-  if (!suggestion.name) {
-    suggestion = await journal.do(
-      'Refining test instructions',
-      () => refineSuggestion(suggestion.description!),
-      (result) => ({ meta: { feature: result } }),
-    );
-  }
-
   const controller = await Controller.launch({ headless: opts.headless, baseURL: base, journal });
 
   try {

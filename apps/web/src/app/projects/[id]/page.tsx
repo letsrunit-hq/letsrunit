@@ -3,6 +3,7 @@ import { ProjectPanel } from '@/components/project-panel';
 import { connect as connectServerSupabase } from '@/libs/supabase/server';
 import { getProject } from '@letsrunit/model';
 import { cn, isUUID } from '@letsrunit/utils';
+import { History, Play, Settings } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import type { UUID } from 'node:crypto';
 import { Button } from 'primereact/button';
@@ -30,9 +31,14 @@ export default async function Page({ params }: PageProps) {
             <h1 className={styles.title}>{project.title}</h1>
           </div>
           <div className="flex flex-row gap-2 justify-content-end">
-            <Button aria-label="Run all" label="Run all" icon="pi pi-play" severity="secondary" />
-            <Button aria-label="Run history" icon="pi pi-history" severity="secondary" />
-            <Button aria-label="Settings" icon="pi pi-cog" severity="secondary" />
+            <Button
+              aria-label="Run all"
+              label="Run all"
+              icon={<Play key="icon" size={16} className="mr-2" />}
+              severity="secondary"
+            />
+            <Button aria-label="Run history" icon={<History key="icon" size={24} />} severity="secondary" />
+            <Button aria-label="Settings" icon={<Settings key="icon" size={24} />} severity="secondary" />
           </div>
         </div>
       </div>
