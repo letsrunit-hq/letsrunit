@@ -1,5 +1,6 @@
 import { generate } from '@letsrunit/ai';
 import type { Feature } from '@letsrunit/gherkin';
+import { clean } from '@letsrunit/utils';
 import { ActionSchema } from '../types';
 
 const PROMPT = `The user tells you what they want to test on a website or webapp. Your task is to convert this into
@@ -32,9 +33,20 @@ const PROMPT = `The user tells you what they want to test on a website or webapp
 \`\`\`
 `;
 
+function suggestionToInstructions(suggestion: Pick<Feature, 'name' | 'description' | 'comments'>) {
+  return clean([
+    suggestion.name && `# ${suggestion.name}\n`,
+    suggestion.description,
+    suggestion.comments && `\n_${suggestion.comments}_`,
+  ]).join('\n');
+}
+
 export async function refineSuggestion(
-  instructions: string,
+  suggestion: string | Pick<Feature, 'name' | 'description' | 'comments'>,
 ): Promise<Required<Pick<Feature, 'name' | 'description' | 'comments'>>> {
+  const instructions = typeof suggestion === 'string' ? suggestion : suggestionToInstructions(suggestion);
+  if (!instructions) throw new Error('No test instructions');
+
   const action = await generate(PROMPT, instructions, {
     schema: ActionSchema,
     model: 'large',

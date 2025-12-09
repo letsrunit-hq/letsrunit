@@ -85,7 +85,8 @@ export default async function explore(
         }),
     }));
 
-    await process({ ...pageInfo, ...appInfo }, preparedActions);
+    const { base: appUrl } = splitUrl(pageInfo.url);
+    await process({ ...pageInfo, ...appInfo, url: appUrl }, preparedActions);
 
     return { status: 'passed' };
   } catch (e) {
