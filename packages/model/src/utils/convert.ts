@@ -1,6 +1,6 @@
-import { z } from 'zod';
 import camelcaseKeys from 'camelcase-keys';
 import snakecaseKeys from 'snakecase-keys';
+import { z } from 'zod';
 import type { Data, SerializeDates } from '../types';
 
 function pruneUndefined<T>(value: T): T {
@@ -53,4 +53,10 @@ export function toData<TSchema extends z.ZodObject>(schema: TSchema) {
 
     return snakecaseKeys(cleaned, { deep: true });
   };
+}
+
+export function toFilter<TSchema extends z.ZodObject>(schema: TSchema, filter: Partial<z.infer<TSchema>>): string {
+  const data = toData(schema.partial())(filter);
+  const parts = Object.entries(data).map((val, field) => `${field}=eq.${val}`);
+  return parts.join(',');
 }

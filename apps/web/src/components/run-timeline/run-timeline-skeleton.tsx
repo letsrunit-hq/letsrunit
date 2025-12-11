@@ -1,6 +1,6 @@
-import React from 'react';
-import { Timeline } from 'primereact/timeline';
 import { Skeleton } from 'primereact/skeleton';
+import { Timeline } from 'primereact/timeline';
+import React from 'react';
 import styles from './run-timeline.module.css';
 
 function markerSkeletonTemplate() {
@@ -33,12 +33,19 @@ export function RunTimelineSkeleton() {
 
   return (
     <>
-      <div className="mb-4">
-        <h2 className="text-color mb-1">Test Steps</h2>
+      <div className="mb-5">
+        <h2 className="text-base text-white mb-3">Test Steps</h2>
         <Skeleton width="10rem" height="0.875rem" />
       </div>
 
-      <Timeline value={placeholderEvents} marker={markerSkeletonTemplate} content={contentSkeletonTemplate} />
+      <Timeline
+        value={placeholderEvents}
+        marker={markerSkeletonTemplate}
+        content={contentSkeletonTemplate}
+        align="left"
+        className="run-timeline"
+        pt={{ opposite: { className: 'hidden' } }}
+      />
 
       <div className="mt-4 pt-3 border-top-1 surface-border">
         <div className="flex align-items-center justify-content-between">

@@ -1,6 +1,7 @@
 import type { Feature } from '@letsrunit/model';
 import { cn } from '@letsrunit/utils';
 import { Archive, ArchiveRestore, MoreVertical, Play, RefreshCcw, TestTube } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { Button } from 'primereact/button';
 import { Chip } from 'primereact/chip';
 import { Menu } from 'primereact/menu';
@@ -21,9 +22,10 @@ export interface TestItemProps {
 }
 
 export function TestItem({ feature, run, generate, remove, restore }: TestItemProps) {
-  const status = feature.lastRun?.status;
-
+  const router = useRouter();
   const menuRef = React.useRef<Menu>(null);
+
+  const status = feature.lastRun?.status;
 
   const items = React.useMemo<MenuItem[]>(() => {
     const list: MenuItem[] = [];
@@ -83,10 +85,15 @@ export function TestItem({ feature, run, generate, remove, restore }: TestItemPr
     />
   );
 
+  const openRun = () => {
+    if (!feature.lastRun) return;
+    router.push(`/runs/${feature.lastRun.id}`);
+  };
+
   return (
     <Panel className="w-full odd">
       <div className="flex align-items-center justify-content-between gap-3">
-        <div className="flex align-items-center gap-3">
+        <div className="flex flex-1 align-items-center gap-3" role={feature.lastRun ? 'link' : undefined} onClick={openRun}>
           <Chip className="tile tile-green" icon={<TestTube key="icon" size={24} />} />
           <div className="flex flex-column">
             <h3 className={cn('m-0', 'mb-1', 'font-normal', !feature.enabled && 'line-through')}>{feature.name}</h3>

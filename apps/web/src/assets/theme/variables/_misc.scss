@@ -22,6 +22,10 @@ $tagPadding: 0.25rem 0.625rem !default;
 $tagFontSize: 1rem !default;
 $tagBorderRadius: $buttonBorderRadius !default;
 
+$tagBg: rgba($primaryColor, 0.1) !default;
+$tagTextColor: $primaryColor !default;
+$tagBorder: 1px solid color-mix(in oklab, $primaryColor 30%, transparent) !default;
+
 $successTagBg: rgba(#4ade80, 0.1) !default;
 $successTagTextColor: #00d492 !default;
 $successTagBorder: 1px solid color-mix(in oklab, #00bc7d 30%, transparent) !default;

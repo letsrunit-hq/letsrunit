@@ -1,5 +1,5 @@
 import { connect } from '@/libs/supabase/server';
-import { DBError } from '@letsrunit/model';
+import { getFeature, getProject, getRun, getRunHistory } from '@letsrunit/model';
 import { isUUID } from '@letsrunit/utils';
 import { notFound } from 'next/navigation';
 import Screen from './screen';
@@ -9,19 +9,23 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   if (!isUUID(id)) return notFound();
 
   const supabase = await connect();
-  const { status, data, error } = await supabase
-    .from('runs')
-    .select('id, project_id, feature_id, status')
-    .eq('id', id)
-    .maybeSingle();
+  const run = await getRun(id, { supabase });
 
-  if (status < 100 || status >= 400) {
-    throw new DBError(status, error); // Server error or bad request
-  }
-
-  if (!data || (status > 400 && status < 500)) {
+  if (!run) {
     return notFound(); // Access error or not found
   }
 
-  return <Screen runId={id} projectId={data!.project_id} featureId={data!.feature_id} status={data.status} />;
+  const historyFilter = {
+    projectId: run.projectId,
+    featureId: run.featureId || undefined,
+    type: run.featureId ? undefined : run.type,
+  };
+
+  const [project, feature, history] = await Promise.all([
+    getProject(run.projectId, { supabase }),
+    run.featureId ? getFeature(run.featureId, { supabase }) : undefined,
+    run.projectId ? getRunHistory(historyFilter, { supabase }) : undefined,
+  ]);
+
+  return <Screen run={run} project={project!} feature={feature} history={history} />;
 }

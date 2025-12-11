@@ -1,8 +1,8 @@
-import { beforeEach, describe, expect, it } from 'vitest';
-import { act, renderHook, waitFor } from '@testing-library/react';
 import type { Feature } from '@letsrunit/model';
-import { useFeatureList } from '../use-feature-list';
 import { fixedUUID } from '@letsrunit/utils';
+import { act, renderHook, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { useFeatureList } from '../use-feature-list';
 
 const PROJECT_ID = fixedUUID(1, 'project');
 const FEATURE_ID = fixedUUID(1, 'feature');
@@ -79,7 +79,7 @@ function makeFeature(partial: Partial<Feature> = {}): Feature {
     updatedAt: now,
     updatedBy: null,
     ...partial,
-  };
+  } as Feature;
 }
 
 describe('useFeatureList', () => {
@@ -94,7 +94,7 @@ describe('useFeatureList', () => {
     const row = client._helpers.featureRow(makeFeature());
     client._setRows([row]);
 
-    const { result } = renderHook(() => useFeatureList(PROJECT_ID, { client } as any));
+    const { result } = renderHook(() => useFeatureList(PROJECT_ID, undefined, { client } as any));
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
@@ -134,7 +134,7 @@ describe('useFeatureList', () => {
     const f1 = makeFeature({ id: FEATURE_ID, name: 'A' });
     client._setRows([client._helpers.featureRow(f1)]);
 
-    const { result } = renderHook(() => useFeatureList(PROJECT_ID, { client } as any));
+    const { result } = renderHook(() => useFeatureList(PROJECT_ID, undefined, { client } as any));
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
@@ -165,7 +165,7 @@ describe('useFeatureList', () => {
     const f1 = makeFeature({ id: FEATURE_ID, name: 'A', enabled: true });
     client._setRows([client._helpers.featureRow(f1)]);
 
-    const { result } = renderHook(() => useFeatureList(PROJECT_ID, { client } as any));
+    const { result } = renderHook(() => useFeatureList(PROJECT_ID, undefined, { client } as any));
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);

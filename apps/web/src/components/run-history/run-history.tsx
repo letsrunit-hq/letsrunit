@@ -1,0 +1,92 @@
+'use client';
+
+import { SubtleHeader } from '@/components/subtle-header';
+import { formatDurationMs } from '@/libs/date-time';
+import type { Run } from '@letsrunit/model';
+import { cn } from '@letsrunit/utils';
+import { CheckCircle2, XCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import type { UUID } from 'node:crypto';
+import { Chip } from 'primereact/chip';
+import { Panel } from 'primereact/panel';
+import { Tag } from 'primereact/tag';
+import React, { useCallback } from 'react';
+import TimeAgo from 'react-timeago';
+import styles from './run-history.module.css';
+
+export type RunHistoryProps = {
+  className?: string;
+  runs: Run[];
+  currentRunId?: UUID;
+  showName?: boolean;
+};
+
+export function RunHistory({ className, runs, currentRunId, showName }: RunHistoryProps) {
+  const router = useRouter();
+
+  const goto = useCallback(
+    (run: Run) => {
+      router.push(`/runs/${run.id}`);
+    },
+    [router],
+  );
+
+  if (runs.length === 0) {
+    return <div className={cn(styles.container, className)}>No runs yet</div>;
+  }
+
+  return (
+    <div className={cn(styles.container, className)}>
+      <SubtleHeader className="mb-3">Run History</SubtleHeader>
+
+      {runs.map((run) => {
+        return (
+          <Panel
+            className={cn('w-full slim even', run.id === currentRunId && 'selected')}
+            key={run.id}
+            role="button"
+            onClick={() => goto(run)}
+          >
+            <div className="flex align-items-center justify-content-between gap-3">
+              <div className="flex align-items-center gap-3">
+                <Chip
+                  className={cn('tile tile-sm', run.status === 'passed' ? 'tile-green' : 'tile-red')}
+                  aria-label={run.status}
+                  icon={
+                    run.status === 'passed' ? <CheckCircle2 key="icon" size={20} /> : <XCircle key="icon" size={20} />
+                  }
+                />
+                <div className="min-w-0">
+                  <div className={cn(styles.title, 'flex align-items-center gap-2')}>
+                    {showName && <span className="text-400">{run.name}</span>}
+                    {!showName && <span className="mono text-sm text-400">#{run.id}</span>}
+
+                    {run.type === 'generate' && <Tag className="text-xs" value={run.type} />}
+                    {run.status === 'error' && <Tag className="text-xs" value="error" severity="danger" />}
+                  </div>
+                  <div className={cn(styles.meta, 'text-500 text-xs')}>
+                    {showName && <><span className="mono">#{run.id}</span>{' | '}</>}
+                    <TimeAgo date={run.startedAt || run.createdAt} />
+                  </div>
+                </div>
+              </div>
+
+              <div
+                className={cn(
+                  styles.right,
+                  'text-right text-500',
+                  run.status === 'passed' && 'text-green-500',
+                  (run.status === 'failed' || run.status === 'error') && 'text-red-500',
+                )}
+              >
+                {run.finishedAt && formatDurationMs(run.startedAt, run.finishedAt)}
+              </div>
+            </div>
+          </Panel>
+        );
+      })}
+    </div>
+  );
+}
+
+export default RunHistory;

@@ -1,16 +1,19 @@
-import { useEffect, useMemo, useState } from 'react';
-import type { SupabaseClient } from '@supabase/supabase-js';
 import { connect as supabase } from '@/libs/supabase/browser';
 import { type Data, DBError, fromData, type Journal, journalFromData, type Run, RunSchema } from '@letsrunit/model';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import type { UUID } from 'node:crypto';
+import { useEffect, useMemo, useState } from 'react';
 
 export interface UseRunOptions {
   client?: SupabaseClient;
 }
 
-export function useRun(id: string | undefined, opts: UseRunOptions = {}) {
+export function useRun(input: string | Run | undefined, opts: UseRunOptions = {}) {
+  const id = typeof input === 'string' ? input : input?.id;
+  const initial = typeof input === 'object' ? input : undefined;
+
   const injectedClient = opts.client;
-  const [run, setRun] = useState<Run | undefined>();
+  const [run, setRun] = useState<Run | undefined>(initial);
   const [journal, setJournal] = useState<Journal | undefined>();
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,12 +28,15 @@ export function useRun(id: string | undefined, opts: UseRunOptions = {}) {
     }
   }, [injectedClient]);
 
+  // Keep state in sync when a full Run object is provided by the caller
+  useEffect(() => {
+    setRun(initial);
+  }, [initial]);
+
   useEffect(() => {
     if (!id || !client) return;
 
     let isActive = true;
-    setLoading(true);
-    setError(null);
 
     async function fetchRun() {
       const { data, status, error } = await client!.from('runs').select('*').eq('id', id).single();
@@ -51,9 +57,12 @@ export function useRun(id: string | undefined, opts: UseRunOptions = {}) {
       return journalFromData(id as UUID, data);
     }
 
+    setLoading(true);
+    setError(null);
+
     Promise.all([
-      fetchRun().then(setRun),
-      fetchJournal().then(setJournal)
+      initial ?? fetchRun().then(setRun),
+      fetchJournal().then(setJournal),
     ])
       .catch((e) => setError(e?.message ?? String(e)))
       .finally(() => isActive && setLoading(false));
@@ -96,7 +105,7 @@ export function useRun(id: string | undefined, opts: UseRunOptions = {}) {
         // ignore
       }
     };
-  }, [client, id]);
+  }, [client, id, initial]);
 
   return { run, journal, loading, error };
 }

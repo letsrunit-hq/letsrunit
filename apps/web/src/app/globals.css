@@ -33,6 +33,11 @@ button {
   white-space: nowrap;
 }
 
+div[role="button"],
+div[role="link"]{
+  cursor: pointer;
+}
+
 .center {
   display: flex;
   flex-direction: column;

@@ -91,10 +91,10 @@ function createMockClient({ run, journal }: { run: any; journal: JournalEntryDat
   return client;
 }
 
-// By default, ensure the real supabase() is not accidentally called
+// By default, ensure the real connect() is not accidentally called
 vi.mock('@/libs/supabase/browser', () => ({
-  supabase: vi.fn(() => {
-    throw new Error('Default supabase() should not be called in this test');
+  connect: vi.fn(() => {
+    throw new Error('Default supabase connect() should not be called in this test');
   }),
 }));
 

@@ -6,31 +6,39 @@ import { RunResult } from '@/components/run-result';
 import useFeature from '@/hooks/use-feature';
 import useProject from '@/hooks/use-project';
 import { useRun } from '@/hooks/use-run';
-import type { RunStatus } from '@letsrunit/model';
-import type { UUID } from 'node:crypto';
+import useRunHistory from '@/hooks/use-run-history';
+import type { Feature, Project, Run } from '@letsrunit/model';
+import { BreadCrumb } from 'primereact/breadcrumb';
 import React from 'react';
+import RunHistory from '../../../components/run-history/run-history';
 import styles from './screen.module.css';
 
 interface ScreenOptions {
-  projectId: UUID;
-  featureId?: UUID;
-  runId: UUID;
-  status: RunStatus;
+  run: Run;
+  project: Project;
+  feature?: Feature | null;
+  history?: Run[];
 }
 
-export default function Screen({ projectId, featureId, runId, status }: ScreenOptions) {
-  const { run, journal, loading: runLoading, error: runError } = useRun(runId);
+export default function Screen(initial: ScreenOptions) {
+  const { run, journal, loading, error: runError } = useRun(initial.run);
   if (runError) throw new Error(runError);
 
-  const { project, loading: projectLoading, error: projectError } = useProject(projectId);
+  const { project, error: projectError } = useProject(initial.project);
   if (projectError) throw new Error(projectError);
 
-  const { feature, loading: featureLoading, error: featureError } = useFeature(featureId);
+  const { feature, error: featureError } = useFeature(initial.feature ?? undefined);
   if (featureError) throw new Error(featureError);
 
-  const loading = runLoading || projectLoading || featureLoading;
+  const { runs: history, loading: historyLoading } = useRunHistory({
+    projectId: run!.projectId,
+    featureId: run!.featureId || undefined,
+    type: run!.featureId ? undefined : run!.type,
+  }, initial.history);
 
-  if ((run?.status ?? status) === 'queued') {
+  const crumbs = [{ label: project?.title || '...', url: `/projects/${project!.id}` }, { label: `Run #${run!.id}` }];
+
+  if (run!.status === 'queued') {
     return (
       <main className="p-3 center">
         <AnimatedBackground waiting />
@@ -39,11 +47,15 @@ export default function Screen({ projectId, featureId, runId, status }: ScreenOp
     );
   }
 
-  if (loading) return <></>;
-
   return (
-    <main className={`p-3 ${styles.container}`}>
-      <RunResult project={project!} feature={feature} run={run!} journal={journal} />
-    </main>
+    <>
+      <main className={`p-3 ${styles.container}`}>
+        <BreadCrumb model={crumbs} className="mb-5" />
+
+        <RunResult project={project!} feature={feature} run={run!} loading={loading} journal={journal}>
+          {!historyLoading && <RunHistory className="mt-6" runs={history} currentRunId={run!.id} />}
+        </RunResult>
+      </main>
+    </>
   );
 }

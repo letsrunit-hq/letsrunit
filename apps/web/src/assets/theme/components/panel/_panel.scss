@@ -86,9 +86,41 @@
         border: none !important;
 
         .p-panel-header,
-        .p-panel-content {
+        .p-panel-content,
+        .p-panel-footer {
             border-width: 2px;
             border-style: dashed;
         }
+    }
+
+    &.slim {
+      .p-panel-header {
+        padding: $panelSlimHeaderPadding;
+      }
+      .p-panel-content {
+        padding: $panelSlimContentPadding;
+      }
+      .p-panel-footer {
+        padding: $panelSlimFooterPadding;
+      }
+    }
+
+    &.selected {
+      .p-panel-header,
+      .p-panel-content,
+      .p-panel-footer {
+        border-color: rgba($primaryColor, 0.4);
+      }
+      &:before {
+        content: '';
+        display: block;
+        height: 1px;
+        background: linear-gradient(
+            to left,
+            transparent 0%,
+            $primaryColor 50%,
+            transparent 100%
+        );
+      }
     }
 }

@@ -8,16 +8,16 @@ export async function startGenerateRun(run: Run, { supabase, journal }: HandleOp
   if (!run.featureId) throw new Error('No feature associated with Run');
 
   const feature = await getFeature(run.featureId, { supabase });
+  const by = run.createdBy ? { id: run.createdBy } : undefined;
 
   await journal.info('Refining test instructions');
   const suggestion = await refineSuggestion(clean(pick(feature, ['name', 'description', 'comments'])));
+  await updateFeature(feature.id, suggestion, { supabase, by });
 
   const result = await generate(run.target, suggestion, { journal });
 
   if (result.feature) {
     const body = makeFeature(result.feature);
-    const by = run.createdBy ? { id: run.createdBy } : undefined;
-
     await updateFeature(feature.id, { body }, { supabase, by });
   }
 

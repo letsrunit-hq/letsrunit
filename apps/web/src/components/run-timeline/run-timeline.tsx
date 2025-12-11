@@ -151,6 +151,8 @@ export function RunTimeline({ type, status, entries, onSelect }: RunTimelineProp
     (lastStep?.status === 'passed' || lastStep?.status === 'failed');
   const clickable = status !== 'running';
 
+  const showInitializing = entries.length === 1 && entries[0].type === 'info';
+
   const total = steps.length;
 
   const { playing, toggle, pause } = useTimelinePlayer({
@@ -199,6 +201,17 @@ export function RunTimeline({ type, status, entries, onSelect }: RunTimelineProp
           )}
         </div>
       </div>
+
+      {showInitializing && (
+        <div className="p-3 my-3 border-1 border-round surface-border flex align-items-center gap-3 surface-50">
+          <div className={cn('flex align-items-center justify-content-center', styles.markerBox)}>
+            <ProgressSpinner className={styles.spinner} strokeWidth="8" />
+          </div>
+          <div className="flex flex-column">
+            <span className="font-medium">{entries[0].message}…</span>
+          </div>
+        </div>
+      )}
 
       <Timeline
         value={events}

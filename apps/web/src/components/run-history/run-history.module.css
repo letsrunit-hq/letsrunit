@@ -1,0 +1,12 @@
+.container {
+  display: grid;
+  gap: .75rem;
+}
+
+.subtitle {
+  max-width: 56ch;
+}
+
+.meta {
+  color: var(--text-color-secondary);
+}

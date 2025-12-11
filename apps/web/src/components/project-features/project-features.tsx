@@ -2,6 +2,7 @@
 
 import { disableFeature, enableFeature } from '@/actions/features';
 import { startGenerateRun } from '@/actions/generate';
+import { startTestRun } from '@/actions/run';
 import { CreateTestDialog } from '@/components/create-test-dialog/create-test-dialog';
 import FeaturesList from '@/components/features-list';
 import { InverseIcon } from '@/components/inverse-icon';
@@ -25,11 +26,12 @@ export type ProjectFeaturesProps = {
   className?: string;
   projectId: UUID;
   baseUrl: string;
+  features?: Feature[];
 };
 
-export function ProjectFeatures({ className, projectId, baseUrl }: ProjectFeaturesProps) {
+export function ProjectFeatures({ className, projectId, baseUrl, features: initial }: ProjectFeaturesProps) {
   const router = useRouter();
-  const { features, loading } = useFeatureList(projectId);
+  const { features, loading } = useFeatureList(projectId, initial);
   const [showArchived, setShowArchived] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const toast = useToast();
@@ -99,6 +101,11 @@ export function ProjectFeatures({ className, projectId, baseUrl }: ProjectFeatur
     });
   };
 
+  const run = async (feature: Feature) => {
+    const runId = await startTestRun(feature.id);
+    router.push(`/runs/${runId}`);
+  }
+
   const filteredFeatures = features.filter((f) => {
     if (!f.enabled && !showArchived) return false;
 
@@ -154,7 +161,7 @@ export function ProjectFeatures({ className, projectId, baseUrl }: ProjectFeatur
         remove={(feature: Feature) => void remove(feature)}
         restore={(feature: Feature) => void restore(feature)}
         generate={(feature: Feature) => void generate(feature)}
-        run={() => {}}
+        run={(feature) => void run(feature)}
       />
 
       <StatsToolbar

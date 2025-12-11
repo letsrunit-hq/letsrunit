@@ -1,21 +1,3 @@
-.lineIn {
-  background: linear-gradient(
-    to right,
-    #444 0%,
-    transparent 100%
-  );
-  height: 1px;
-}
-
-.lineOut {
-  background: linear-gradient(
-    to left,
-    #444 0%,
-    transparent 100%
-  );
-  height: 1px;
-}
-
 .timeline {
   position: sticky;
   top: 2rem;

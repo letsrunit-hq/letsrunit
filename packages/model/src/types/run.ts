@@ -9,6 +9,12 @@ export const RunSchema = z.object({
   type: RunTypeSchema.describe('The mode of the run defining the workflow to execute'),
   projectId: UUIDSchema.describe('Identifier of the project this run belongs to'),
   featureId: UUIDSchema.nullable().describe('The feature that was run'),
+  name: z   // Supabase join may return { name: { name: string } }. Normalize to string | null.
+    .preprocess(
+      (v) => typeof v === 'object' && v !== null && 'name' in v && typeof v.name === 'string' ? v.name : v,
+      z.string().nullable().optional(),
+    )
+    .describe('The name of the feature'),
   target: z.url().describe('The target URL for the run'),
   status: RunStatusSchema.describe('Current execution status of the run'),
   error: z.string().nullable().describe('Error message in case of an error during the run'),

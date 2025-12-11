@@ -1,16 +1,19 @@
-import { useEffect, useMemo, useState } from 'react';
-import type { SupabaseClient } from '@supabase/supabase-js';
 import { connect as supabase } from '@/libs/supabase/browser';
 import { type Data, fromData, type Project, ProjectSchema } from '@letsrunit/model';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { useEffect, useMemo, useState } from 'react';
 
 export interface UseProjectOptions {
   client?: SupabaseClient;
 }
 
-export function useProject(id: string | undefined, opts: UseProjectOptions = {}) {
+export function useProject(input: string | Project | undefined, opts: UseProjectOptions = {}) {
+  const id = typeof input === 'string' ? input : input?.id;
+  const initial = typeof input === 'object' ? input : undefined;
+
   const injectedClient = opts.client;
-  const [project, setProject] = useState<Project | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [project, setProject] = useState<Project | undefined>(initial);
+  const [loading, setLoading] = useState<boolean>(!initial);
   const [error, setError] = useState<string | null>(null);
 
   const client = useMemo(() => {
@@ -23,12 +26,15 @@ export function useProject(id: string | undefined, opts: UseProjectOptions = {})
     }
   }, [injectedClient]);
 
+  // Keep state in sync when an object is provided directly
+  useEffect(() => {
+    setProject(initial);
+  }, [initial]);
+
   useEffect(() => {
     if (!id || !client) return;
 
     let isActive = true;
-    setLoading(true);
-    setError(null);
 
     async function fetchProject() {
       const { data, error: e } = await client!.from('projects').select('*').eq('id', id).single();
@@ -39,19 +45,30 @@ export function useProject(id: string | undefined, opts: UseProjectOptions = {})
       setProject(fromData(ProjectSchema)(data as unknown as Data<Project>));
     }
 
-    fetchProject()
-      .catch((e) => setError(e?.message ?? String(e)))
-      .finally(() => isActive && setLoading(false));
+    if (!initial) {
+      setLoading(true);
+      setError(null);
+
+      fetchProject()
+        .catch((e) => setError(e?.message ?? String(e)))
+        .finally(() => isActive && setLoading(false));
+    } else {
+      setLoading(false);
+    }
 
     const channel = client.channel(`realtime:project:${id}`);
 
-    channel.on('postgres_changes', { event: '*', schema: 'public', table: 'projects', filter: `id=eq.${id}` }, (payload) => {
-      try {
-        setProject(fromData(ProjectSchema)(payload.new as unknown as Data<Project>));
-      } catch (e: any) {
-        setError(e?.message ?? String(e));
-      }
-    });
+    channel.on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'projects', filter: `id=eq.${id}` },
+      (payload) => {
+        try {
+          setProject(fromData(ProjectSchema)(payload.new as unknown as Data<Project>));
+        } catch (e: any) {
+          setError(e?.message ?? String(e));
+        }
+      },
+    );
 
     channel.subscribe();
 
@@ -63,7 +80,7 @@ export function useProject(id: string | undefined, opts: UseProjectOptions = {})
         // ignore
       }
     };
-  }, [client, id]);
+  }, [client, id, initial]);
 
   return { project, loading, error };
 }

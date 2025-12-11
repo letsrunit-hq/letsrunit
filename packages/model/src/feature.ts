@@ -41,6 +41,41 @@ export async function getFeature(id: UUID, opts: { supabase?: SupabaseClient } =
   return fromData(FeatureSchema)(data);
 }
 
+export async function getFeatureName(id: UUID, opts: { supabase?: SupabaseClient } = {}): Promise<string | null> {
+  const supabase = opts.supabase || connect();
+
+  const { data, status, error } = await supabase.from('features').select('name').eq('id', id).maybeSingle<Data<Feature>>();
+
+  if (error) throw new DBError(status, error);
+
+  return data?.name ?? null;
+}
+
+export async function getFeatureList(
+  projectId: UUID,
+  opts: { supabase?: SupabaseClient } = {},
+): Promise<Feature[]> {
+  const supabase = opts.supabase || connect();
+
+  const { data, status, error } = await supabase
+    .from('features')
+    // simple '*' plus joined last_run
+    .select('*, last_run:runs(*)')
+    .eq('project_id', projectId)
+    .order('created_at', { referencedTable: 'last_run', ascending: false })
+    .limit(1, { referencedTable: 'last_run' });
+
+  if (error) throw new DBError(status, error);
+
+  const toFeature = fromData(FeatureSchema);
+  const normalized = (data as any[]).map((row) => ({
+    ...row,
+    last_run: Array.isArray(row.last_run) ? row.last_run[0] ?? null : row.last_run ?? null,
+  }));
+
+  return normalized.map(toFeature) as Feature[];
+}
+
 const CreateFeatureSchema = FeatureSchema.pick({
   projectId: true,
   name: true,

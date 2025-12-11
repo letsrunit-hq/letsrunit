@@ -1,16 +1,19 @@
-import { useEffect, useMemo, useState } from 'react';
-import type { SupabaseClient } from '@supabase/supabase-js';
 import { connect as supabase } from '@/libs/supabase/browser';
-import { type Data, fromData, type Feature, FeatureSchema } from '@letsrunit/model';
+import { type Data, type Feature, FeatureSchema, fromData } from '@letsrunit/model';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { useEffect, useMemo, useState } from 'react';
 
 export interface UseFeatureOptions {
   client?: SupabaseClient;
 }
 
-export function useFeature(id: string | undefined, opts: UseFeatureOptions = {}) {
+export function useFeature(input: string | Feature | undefined, opts: UseFeatureOptions = {}) {
+  const id = typeof input === 'string' ? input : input?.id;
+  const initial = typeof input === 'object' ? input : undefined;
+
   const injectedClient = opts.client;
-  const [feature, setFeature] = useState<Feature | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [feature, setFeature] = useState<Feature | undefined>(initial);
+  const [loading, setLoading] = useState<boolean>(!initial);
   const [error, setError] = useState<string | null>(null);
 
   const client = useMemo(() => {
@@ -23,12 +26,15 @@ export function useFeature(id: string | undefined, opts: UseFeatureOptions = {})
     }
   }, [injectedClient]);
 
+  // Keep state in sync when a full object is provided by the caller
+  useEffect(() => {
+    setFeature(initial);
+  }, [initial]);
+
   useEffect(() => {
     if (!id || !client) return;
 
     let isActive = true;
-    setLoading(true);
-    setError(null);
 
     async function fetchFeature() {
       const { data, error: e } = await client!.from('features').select('*').eq('id', id).single();
@@ -39,9 +45,13 @@ export function useFeature(id: string | undefined, opts: UseFeatureOptions = {})
       setFeature(fromData(FeatureSchema)(data as unknown as Data<Feature>));
     }
 
-    fetchFeature()
-      .catch((e) => setError(e?.message ?? String(e)))
-      .finally(() => isActive && setLoading(false));
+    if (!initial) {
+      setLoading(true);
+      setError(null);
+      fetchFeature()
+        .catch((e) => setError(e?.message ?? String(e)))
+        .finally(() => isActive && setLoading(false));
+    }
 
     const channel = client.channel(`realtime:feature:${id}`);
 
@@ -67,7 +77,7 @@ export function useFeature(id: string | undefined, opts: UseFeatureOptions = {})
         // ignore
       }
     };
-  }, [client, id]);
+  }, [client, id, initial]);
 
   return { feature, loading, error };
 }

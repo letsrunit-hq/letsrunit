@@ -1,18 +1,21 @@
 import type { SupabaseClient, User } from '@supabase/supabase-js';
+import { File } from 'node:buffer';
 import { randomUUID, type UUID } from 'node:crypto';
-import { connect } from './supabase';
-import { type Project, ProjectSchema } from './types';
-import { fromData, toData } from './utils/convert';
 import { z } from 'zod';
+import { connect } from './supabase';
+import { type Data, type Project, ProjectSchema } from './types';
+import { authorize, authorizeForAccount } from './utils/auth';
+import { fromData, toData } from './utils/convert';
 import { DBError } from './utils/db-error';
 import { saveScreenshot } from './utils/screenshot';
-import { File } from 'node:buffer';
-import { authorize, authorizeForAccount } from './utils/auth';
 
 export async function getProject(id: string, opts: { supabase?: SupabaseClient } = {}): Promise<Project | null> {
   const supabase = opts.supabase ?? connect();
 
-  const { data, status, error } = await supabase.from('projects').select().eq('id', id).maybeSingle();
+  const { data, status, error } = await supabase
+    .from('projects')
+    .select().eq('id', id)
+    .maybeSingle<Data<Project>>();
 
   if (!data || (status > 400 && status < 500)) {
     return null;
@@ -34,7 +37,7 @@ export async function createProject(
 
   if (opts.by?.id) {
     project.accountId ??= opts.by.id as UUID;
-    await authorizeForAccount(project.accountId, { supabase, by: opts.by })
+    await authorizeForAccount(project.accountId, { supabase, by: opts.by });
   }
 
   const { status, error } = await supabase.from('projects').insert({
