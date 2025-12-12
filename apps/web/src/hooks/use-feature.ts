@@ -1,7 +1,10 @@
-import { connect as supabase } from '@/libs/supabase/browser';
-import { type Data, type Feature, FeatureSchema, fromData } from '@letsrunit/model';
+import { useAbortController } from '@/hooks/use-abort-controller';
+import useSupabase from '@/hooks/use-supabase';
+import { type Data, type Feature, FeatureSchema, fromData, getFeature } from '@letsrunit/model';
+import { isRecord } from '@letsrunit/utils';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { useEffect, useMemo, useState } from 'react';
+import type { UUID } from 'node:crypto';
+import { useEffect, useState } from 'react';
 
 export interface UseFeatureOptions {
   client?: SupabaseClient;
@@ -11,73 +14,56 @@ export function useFeature(input: string | Feature | undefined, opts: UseFeature
   const id = typeof input === 'string' ? input : input?.id;
   const initial = typeof input === 'object' ? input : undefined;
 
-  const injectedClient = opts.client;
   const [feature, setFeature] = useState<Feature | undefined>(initial);
   const [loading, setLoading] = useState<boolean>(!initial);
   const [error, setError] = useState<string | null>(null);
-
-  const client = useMemo(() => {
-    if (injectedClient) return injectedClient;
-    try {
-      return supabase();
-    } catch (e: any) {
-      setError(e?.message ?? String(e));
-      return null;
-    }
-  }, [injectedClient]);
-
-  // Keep state in sync when a full object is provided by the caller
-  useEffect(() => {
-    setFeature(initial);
-  }, [initial]);
+  const client = useSupabase(opts, setError);
+  const { signal } = useAbortController();
 
   useEffect(() => {
     if (!id || !client) return;
 
-    let isActive = true;
-
-    async function fetchFeature() {
-      const { data, error: e } = await client!.from('features').select('*').eq('id', id).single();
-      if (e) {
-        setError(e.message);
-        return;
-      }
-      setFeature(fromData(FeatureSchema)(data as unknown as Data<Feature>));
-    }
-
-    if (!initial) {
+    async function load() {
       setLoading(true);
       setError(null);
-      fetchFeature()
-        .catch((e) => setError(e?.message ?? String(e)))
-        .finally(() => isActive && setLoading(false));
+
+      try {
+        const feature = await getFeature(id as UUID, { supabase: client!, signal });
+        setFeature(feature);
+      } catch (e: any) {
+        setError(e?.message ?? String(e));
+      } finally {
+        setLoading(false);
+      }
     }
 
-    const channel = client.channel(`realtime:feature:${id}`);
+    if (initial) {
+      setFeature(initial);
+      setLoading(false);
+    } else {
+      void load();
+    }
 
-    channel.on(
-      'postgres_changes',
-      { event: '*', schema: 'public', table: 'features', filter: `id=eq.${id}` },
-      (payload) => {
-        try {
-          setFeature(fromData(FeatureSchema)(payload.new as unknown as Data<Feature>));
-        } catch (e: any) {
-          setError(e?.message ?? String(e));
-        }
-      },
-    );
-
-    channel.subscribe();
+    const channel = client
+      .channel(`realtime:feature:${id}`)
+      .on<Data<Feature>>(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'features', filter: `id=eq.${id}` },
+        (payload) => {
+          if (!isRecord(payload.new)) return; // Ignore delete
+          try {
+            setFeature(fromData(FeatureSchema)(payload.new));
+          } catch (e: any) {
+            setError(e?.message ?? String(e));
+          }
+        },
+      )
+      .subscribe();
 
     return () => {
-      isActive = false;
-      try {
-        client?.removeChannel(channel);
-      } catch {
-        // ignore
-      }
+      void client?.removeChannel(channel).catch(() => {});
     };
-  }, [client, id, initial]);
+  }, [client, id, initial, signal]);
 
   return { feature, loading, error };
 }

@@ -1,25 +1,23 @@
-import type { SupabaseClient, User } from '@supabase/supabase-js';
 import { File } from 'node:buffer';
 import { randomUUID, type UUID } from 'node:crypto';
 import { z } from 'zod';
 import { connect } from './supabase';
-import { type Data, type Project, ProjectSchema } from './types';
+import { type Data, type Project, ProjectSchema, type ReadOptions, type WriteOptions } from './types';
 import { authorize, authorizeForAccount } from './utils/auth';
 import { fromData, toData } from './utils/convert';
 import { DBError } from './utils/db-error';
 import { saveScreenshot } from './utils/screenshot';
+import { maybeSignal } from './utils/signal';
 
-export async function getProject(id: string, opts: { supabase?: SupabaseClient } = {}): Promise<Project | null> {
+export async function getProject(id: UUID, opts: ReadOptions = {}): Promise<Project> {
   const supabase = opts.supabase ?? connect();
 
   const { data, status, error } = await supabase
     .from('projects')
-    .select().eq('id', id)
-    .maybeSingle<Data<Project>>();
-
-  if (!data || (status > 400 && status < 500)) {
-    return null;
-  }
+    .select<'projects', Data<Project>>()
+    .eq('id', id)
+    .abortSignal(maybeSignal(opts))
+    .single();
 
   if (error) throw new DBError(status, error);
 
@@ -30,7 +28,7 @@ const CreateProjectSchema = ProjectSchema.omit({ id: true }).partial().required(
 
 export async function createProject(
   project: z.infer<typeof CreateProjectSchema>,
-  opts: { supabase?: SupabaseClient; by?: Pick<User, 'id'> } = {},
+  opts: WriteOptions = {},
 ): Promise<UUID> {
   const supabase = opts.supabase ?? connect();
   const id = randomUUID();
@@ -61,7 +59,7 @@ const UpdateProjectSchema = ProjectSchema.omit({ id: true }).partial();
 export async function updateProject(
   id: UUID,
   values: Omit<z.infer<typeof UpdateProjectSchema>, 'screenshot'> & { screenshot?: File | string },
-  opts: { supabase?: SupabaseClient; by?: Pick<User, 'id'> } = {},
+  opts: WriteOptions = {},
 ) {
   const supabase = opts.supabase ?? connect();
 

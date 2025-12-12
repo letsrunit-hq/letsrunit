@@ -1,24 +1,22 @@
-import type { SupabaseClient, User } from '@supabase/supabase-js';
 import { randomUUID, type UUID } from 'node:crypto';
 import { z } from 'zod';
 import { connect } from './supabase';
-import { type Data, type Run, RunSchema, RunStatus, type RunType } from './types';
+import { type Data, type ReadOptions, type Run, RunSchema, RunStatus, type RunType, type WriteOptions } from './types';
 import { authorize, getProjectId } from './utils/auth';
 import { fromData, toData } from './utils/convert';
 import { DBError } from './utils/db-error';
+import { maybeSignal } from './utils/signal';
 
-export async function getRun(id: string, opts: { supabase?: SupabaseClient } = {}): Promise<Run | null> {
+export async function getRun(id: string, opts: ReadOptions = {}): Promise<Run> {
   const supabase = opts.supabase ?? connect();
 
   const { data, status, error } = await supabase
     .from('runs')
     .select('*, name:features!left(name)')
     .eq('id', id)
-    .maybeSingle<Data<Run>>();
+    .abortSignal(maybeSignal(opts))
+    .single<Data<Run>>();
 
-  if (!data || (status > 400 && status < 500)) {
-    return null;
-  }
   if (error) throw new DBError(status, error);
 
   return fromData(RunSchema)(data);
@@ -26,21 +24,23 @@ export async function getRun(id: string, opts: { supabase?: SupabaseClient } = {
 
 export async function getRunHistory(
   filter: { projectId: UUID; type?: RunType; featureId?: UUID },
-  opts: { supabase?: SupabaseClient; limit?: number } = {},
+  opts: ReadOptions & { limit?: number } = {},
 ) {
   const supabase = opts.supabase ?? connect();
 
-  let q = supabase
+  let query = supabase
     .from('runs')
     .select('*, name:features!left(name)')
     .eq('project_id', filter.projectId)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .abortSignal(maybeSignal(opts));
 
-  if (filter.type) q = q.eq('type', filter.type);
-  if (filter.featureId) q = q.eq('feature_id', filter.featureId);
-  if (opts.limit) q = q.limit(opts.limit);
+  if (filter.type) query = query.eq('type', filter.type);
+  if (filter.featureId) query = query.eq('feature_id', filter.featureId);
+  if (opts.limit) query = query.limit(opts.limit);
 
-  const { data, status, error } = await q;
+  const { data, status, error } = await query;
+
   if (error) throw new DBError(status, error);
 
   const toRun = fromData(RunSchema);
@@ -57,10 +57,7 @@ const CreateRunSchema = RunSchema.pick({
   .partial()
   .required({ type: true, target: true });
 
-export async function createRun(
-  run: z.infer<typeof CreateRunSchema>,
-  opts: { supabase?: SupabaseClient; by?: Pick<User, 'id'> } = {},
-): Promise<UUID> {
+export async function createRun(run: z.infer<typeof CreateRunSchema>, opts: WriteOptions = {}): Promise<UUID> {
   const supabase = opts.supabase ?? connect();
   const runId = randomUUID();
 
@@ -86,7 +83,7 @@ export async function createRun(
 export async function updateRunStatus(
   runId: UUID,
   result: RunStatus | { status: RunStatus; error?: string },
-  opts: { supabase?: SupabaseClient; by?: Pick<User, 'id'> } = {},
+  opts: WriteOptions = {},
 ): Promise<void> {
   const supabase = opts.supabase ?? connect();
   const { status, error } = typeof result === 'object' ? result : { status: result };

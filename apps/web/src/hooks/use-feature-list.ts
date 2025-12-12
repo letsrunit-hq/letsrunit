@@ -1,19 +1,15 @@
 'use client';
 
-import { connect as connectBrowserSupabase } from '@/libs/supabase/browser';
-import { type Feature, FeatureSchema, fromData, getFeatureList, type Run, RunSchema } from '@letsrunit/model';
+import { useAbortController } from '@/hooks/use-abort-controller';
+import useSupabase from '@/hooks/use-supabase';
+import { type Feature, FeatureSchema, fromData, listFeatures, type Run, RunSchema } from '@letsrunit/model';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { UUID } from 'node:crypto';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export interface UseFeatureListOptions {
   client?: SupabaseClient;
 }
-export type UseFeatureList = {
-  features: Feature[];
-  loading: boolean;
-  error?: Error;
-};
 
 function sortByTime(list: Feature[]): Feature[] {
   return list.sort((a, b) => {
@@ -35,13 +31,12 @@ function updateLastRun(list: Feature[], run: Run): Feature[] {
   });
 }
 
-export function useFeatureList(projectId: UUID, initial?: Feature[], opts: UseFeatureListOptions = {}): UseFeatureList {
+export function useFeatureList(projectId: UUID, initial?: Feature[], opts: UseFeatureListOptions = {}) {
   const [features, setFeatures] = useState<Feature[]>(sortByTime(initial ?? []));
   const [loading, setLoading] = useState<boolean>(!initial);
-  const [error, setError] = useState<Error | undefined>(undefined);
-
-  const supabase = useMemo(() => opts.client ?? connectBrowserSupabase(), [opts.client]);
-  const shouldLoad = !initial;
+  const [error, setError] = useState<string | null>(null);
+  const client = useSupabase(opts, setError);
+  const { signal } = useAbortController();
 
   const onRunEvent = useCallback(
     (payload: any) => {
@@ -89,26 +84,28 @@ export function useFeatureList(projectId: UUID, initial?: Feature[], opts: UseFe
   );
 
   useEffect(() => {
-    let cancelled = false;
+    if (!client) return;
 
     async function load() {
+      if (!client) return;
       try {
         setLoading(true);
-        const list = await getFeatureList(projectId, { supabase });
-        if (!cancelled) setFeatures(sortByTime(list));
+        const list = await listFeatures(projectId, { supabase: client, signal });
+        setFeatures(sortByTime(list));
       } catch (e: any) {
-        if (!cancelled) setError(e instanceof Error ? e : new Error(String(e)));
+        setError(e?.message ?? String(e));
       } finally {
-        if (!cancelled) setLoading(false);
+        setLoading(false);
       }
     }
 
-    if (shouldLoad) {
+    if (!initial) {
       void load();
     }
 
-    const runsChannel = supabase
-      .channel(`runs:project:${projectId}`)
+    const channel = client.channel(`realtime:feature_list:${projectId}`);
+
+    channel
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'runs', filter: `project_id=eq.${projectId}` },
@@ -116,8 +113,7 @@ export function useFeatureList(projectId: UUID, initial?: Feature[], opts: UseFe
       )
       .subscribe();
 
-    const featuresChannel = supabase
-      .channel(`features:project:${projectId}`)
+    channel
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'features', filter: `project_id=eq.${projectId}` },
@@ -126,17 +122,11 @@ export function useFeatureList(projectId: UUID, initial?: Feature[], opts: UseFe
       .subscribe();
 
     return () => {
-      cancelled = true;
-      try {
-        void supabase.removeChannel(runsChannel);
-      } catch {}
-      try {
-        void supabase.removeChannel(featuresChannel);
-      } catch {}
+      void client.removeChannel(channel).catch(() => {});
     };
-  }, [shouldLoad, projectId, supabase, onRunEvent, onFeatureEvent, setFeatures]);
+  }, [initial, projectId, client, onRunEvent, onFeatureEvent, setFeatures, signal]);
 
-  return useMemo(() => ({ features, loading, error }), [features, loading, error]);
+  return { features, loading, error };
 }
 
 export default useFeatureList;

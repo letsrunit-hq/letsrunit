@@ -1,29 +1,32 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
 import type { UUID } from 'node:crypto';
 import { connect } from './supabase';
-import { type Artifact, type Journal, type JournalEntry, type JournalEntryData, JournalEntrySchema } from './types';
+import {
+  type Artifact,
+  type Journal,
+  type JournalEntry,
+  type JournalEntryData,
+  JournalEntrySchema,
+  type ReadOptions,
+} from './types';
 import { fromData } from './utils/convert';
+import { DBError } from './utils/db-error';
 
 function isScreenshot(artifact: Artifact): boolean {
   return Boolean(artifact.url && artifact.name.match(/^screenshot-[\w\-]+\.(png|je?pg|webp)$/));
 }
 
-export async function getJournal(runId: UUID, opts: { supabase?: SupabaseClient } = {}): Promise<Journal> {
+export async function getJournal(runId: UUID, opts: ReadOptions = {}): Promise<Journal> {
   const supabase = opts.supabase ?? connect();
 
-  const { data, error } = await supabase
+  const { data, status, error } = await supabase
     .from('journal_entries')
-    .select()
+    .select<'journal_entries', JournalEntryData>()
     .eq('run_id', runId)
     .order('created_at', { ascending: true });
 
-  if (error) {
-    return { runId, entries: [] };
-  }
+  if (error) throw new DBError(status, error);
 
-  const raw = (data ?? []) as unknown as JournalEntryData[];
-
-  return journalFromData(runId, raw);
+  return journalFromData(runId, data);
 }
 
 export function journalFromData(runId: UUID, raw: JournalEntryData[]): Journal {

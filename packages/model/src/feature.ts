@@ -1,18 +1,18 @@
-import type { SupabaseClient, User } from '@supabase/supabase-js';
 import { randomUUID, type UUID } from 'node:crypto';
 import { z } from 'zod';
 import { connect } from './supabase';
-import { type Data, type Feature, FeatureSchema, SuggestionSchema } from './types';
+import { type Data, type Feature, FeatureSchema, type ReadOptions, SuggestionSchema, type WriteOptions } from './types';
 import { authorize } from './utils/auth';
 import { fromData, toData } from './utils/convert';
 import { DBError } from './utils/db-error';
+import { maybeSignal } from './utils/signal';
 
 const StoreSuggestionsSchema = SuggestionSchema.omit({ projectId: true });
 
 export async function storeSuggestions(
   projectId: UUID,
   features: Array<z.infer<typeof StoreSuggestionsSchema>>,
-  opts: { supabase?: SupabaseClient; by?: Pick<User, 'id'> },
+  opts: WriteOptions = {},
 ): Promise<void> {
   const supabase = opts.supabase || connect();
 
@@ -30,50 +30,65 @@ export async function storeSuggestions(
   if (error) throw new DBError(status, error);
 }
 
-export async function getFeature(id: UUID, opts: { supabase?: SupabaseClient } = {}): Promise<Feature> {
-  const supabase = opts.supabase || connect();
-
-  const { data, status, error } = await supabase.from('features').select().eq('id', id).maybeSingle<Data<Feature>>();
-
-  if (error) throw new DBError(status, error);
-  if (!data) throw new DBError(404);
-
-  return fromData(FeatureSchema)(data);
-}
-
-export async function getFeatureName(id: UUID, opts: { supabase?: SupabaseClient } = {}): Promise<string | null> {
-  const supabase = opts.supabase || connect();
-
-  const { data, status, error } = await supabase.from('features').select('name').eq('id', id).maybeSingle<Data<Feature>>();
-
-  if (error) throw new DBError(status, error);
-
-  return data?.name ?? null;
-}
-
-export async function getFeatureList(
-  projectId: UUID,
-  opts: { supabase?: SupabaseClient } = {},
-): Promise<Feature[]> {
+export async function getFeature(id: UUID, opts: ReadOptions = {}): Promise<Feature> {
   const supabase = opts.supabase || connect();
 
   const { data, status, error } = await supabase
     .from('features')
-    // simple '*' plus joined last_run
-    .select('*, last_run:runs(*)')
-    .eq('project_id', projectId)
-    .order('created_at', { referencedTable: 'last_run', ascending: false })
-    .limit(1, { referencedTable: 'last_run' });
+    .select<'features', Data<Feature>>()
+    .eq('id', id)
+    .abortSignal(maybeSignal(opts))
+    .single();
 
   if (error) throw new DBError(status, error);
 
-  const toFeature = fromData(FeatureSchema);
-  const normalized = (data as any[]).map((row) => ({
-    ...row,
-    last_run: Array.isArray(row.last_run) ? row.last_run[0] ?? null : row.last_run ?? null,
-  }));
+  return fromData(FeatureSchema)(data);
+}
 
-  return normalized.map(toFeature) as Feature[];
+export async function getFeatureName(id: UUID, opts: ReadOptions = {}): Promise<string> {
+  const supabase = opts.supabase || connect();
+
+  const { data, status, error } = await supabase
+    .from('features')
+    .select('name')
+    .eq('id', id)
+    .abortSignal(maybeSignal(opts))
+    .single<{ name: string }>();
+
+  if (error) throw new DBError(status, error);
+
+  return data.name;
+}
+
+export async function getFeatureTarget(id: UUID, opts: ReadOptions = {}): Promise<string> {
+  const supabase = opts.supabase || connect();
+
+  const { data, status, error } = await supabase
+    .from('features')
+    .select('path, project:projects!inner(url)')
+    .eq('id', id)
+    .abortSignal(maybeSignal(opts))
+    .single<{ path: string; project: { url: string } }>();
+
+  if (error) throw new DBError(status, error);
+
+  return new URL(data.path, data.project.url).toString();
+}
+
+export async function listFeatures(projectId: UUID, opts: ReadOptions = {}): Promise<Feature[]> {
+  const supabase = opts.supabase || connect();
+
+  const { data, status, error } = await supabase
+    .from('features')
+    .select('*, last_run:runs(*)')
+    .eq('project_id', projectId)
+    .order('created_at', { referencedTable: 'last_run', ascending: false })
+    .limit(1, { referencedTable: 'last_run' })
+    .abortSignal(maybeSignal(opts));
+
+  if (error) throw new DBError(status, error);
+
+  return data.map(fromData(FeatureSchema));
 }
 
 const CreateFeatureSchema = FeatureSchema.pick({
@@ -89,7 +104,7 @@ const CreateFeatureSchema = FeatureSchema.pick({
 
 export async function createFeature(
   feature: z.infer<typeof CreateFeatureSchema>,
-  opts: { supabase?: SupabaseClient; by?: Pick<User, 'id'> } = {},
+  opts: WriteOptions = {},
 ): Promise<UUID> {
   const supabase = opts.supabase || connect();
   const id = randomUUID();
@@ -122,7 +137,7 @@ const UpdateFeatureSchema = FeatureSchema.pick({
 export async function updateFeature(
   id: UUID,
   feature: z.infer<typeof UpdateFeatureSchema>,
-  opts: { supabase?: SupabaseClient; by?: Pick<User, 'id'> } = {},
+  opts: WriteOptions = {},
 ): Promise<void> {
   const supabase = opts.supabase || connect();
 
@@ -137,19 +152,4 @@ export async function updateFeature(
     .eq('id', id);
 
   if (error) throw new DBError(status, error);
-}
-
-export async function getFeatureTarget(id: UUID, opts: { supabase?: SupabaseClient } = {}): Promise<string> {
-  const supabase = opts.supabase || connect();
-
-  const { data, status, error } = await supabase
-    .from('features')
-    .select('path, project:projects!inner(url)')
-    .eq('id', id)
-    .maybeSingle<{ path: string; project: { url: string } }>();
-
-  if (error) throw new DBError(status, error);
-  if (!data) throw new DBError(404);
-
-  return new URL(data.path, data.project.url).toString();
 }

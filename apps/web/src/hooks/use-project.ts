@@ -1,7 +1,10 @@
-import { connect as supabase } from '@/libs/supabase/browser';
-import { type Data, fromData, type Project, ProjectSchema } from '@letsrunit/model';
+import { useAbortController } from '@/hooks/use-abort-controller';
+import useSupabase from '@/hooks/use-supabase';
+import { type Data, fromData, getProject, type Project, ProjectSchema } from '@letsrunit/model';
+import { isRecord } from '@letsrunit/utils';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { useEffect, useMemo, useState } from 'react';
+import type { UUID } from 'node:crypto';
+import { useEffect, useState } from 'react';
 
 export interface UseProjectOptions {
   client?: SupabaseClient;
@@ -11,76 +14,56 @@ export function useProject(input: string | Project | undefined, opts: UseProject
   const id = typeof input === 'string' ? input : input?.id;
   const initial = typeof input === 'object' ? input : undefined;
 
-  const injectedClient = opts.client;
   const [project, setProject] = useState<Project | undefined>(initial);
   const [loading, setLoading] = useState<boolean>(!initial);
   const [error, setError] = useState<string | null>(null);
-
-  const client = useMemo(() => {
-    if (injectedClient) return injectedClient;
-    try {
-      return supabase();
-    } catch (e: any) {
-      setError(e?.message ?? String(e));
-      return null;
-    }
-  }, [injectedClient]);
-
-  // Keep state in sync when an object is provided directly
-  useEffect(() => {
-    setProject(initial);
-  }, [initial]);
+  const client = useSupabase(opts, setError);
+  const { signal } = useAbortController();
 
   useEffect(() => {
     if (!id || !client) return;
 
-    let isActive = true;
-
-    async function fetchProject() {
-      const { data, error: e } = await client!.from('projects').select('*').eq('id', id).single();
-      if (e) {
-        setError(e.message);
-        return;
-      }
-      setProject(fromData(ProjectSchema)(data as unknown as Data<Project>));
-    }
-
-    if (!initial) {
+    async function load() {
       setLoading(true);
       setError(null);
 
-      fetchProject()
-        .catch((e) => setError(e?.message ?? String(e)))
-        .finally(() => isActive && setLoading(false));
-    } else {
-      setLoading(false);
+      try {
+        const project = await getProject(id as UUID, { supabase: client!, signal });
+        setProject(project);
+      } catch (e: any) {
+        setError(e.message || String(e));
+      } finally {
+        setLoading(false);
+      }
     }
 
-    const channel = client.channel(`realtime:project:${id}`);
+    if (initial) {
+      setProject(initial);
+      setLoading(false);
+    } else {
+      void load();
+    }
 
-    channel.on(
-      'postgres_changes',
-      { event: '*', schema: 'public', table: 'projects', filter: `id=eq.${id}` },
-      (payload) => {
-        try {
-          setProject(fromData(ProjectSchema)(payload.new as unknown as Data<Project>));
-        } catch (e: any) {
-          setError(e?.message ?? String(e));
-        }
-      },
-    );
-
-    channel.subscribe();
+    const channel = client
+      .channel(`realtime:project:${id}`)
+      .on<Data<Project>>(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'projects', filter: `id=eq.${id}` },
+        (payload) => {
+          if (!isRecord(payload.new)) return;
+          try {
+            setProject(fromData(ProjectSchema)(payload.new));
+          } catch (e: any) {
+            setError(e?.message ?? String(e));
+          }
+        },
+      )
+      .subscribe();
 
     return () => {
-      isActive = false;
-      try {
-        client?.removeChannel(channel);
-      } catch {
-        // ignore
-      }
+      void client?.removeChannel(channel).catch(() => {});
     };
-  }, [client, id, initial]);
+  }, [client, id, initial, signal]);
 
   return { project, loading, error };
 }

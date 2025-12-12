@@ -1,7 +1,7 @@
 import { ProjectFeatures } from '@/components/project-features';
 import { ProjectPanel } from '@/components/project-panel';
 import { connect as connectServerSupabase } from '@/libs/supabase/server';
-import { getFeatureList, getProject } from '@letsrunit/model';
+import { getProject, listFeatures } from '@letsrunit/model';
 import { cn, isUUID } from '@letsrunit/utils';
 import { History, Play, Settings } from 'lucide-react';
 import { notFound } from 'next/navigation';
@@ -22,7 +22,7 @@ export default async function Page({ params }: PageProps) {
 
   if (!project) return notFound();
 
-  const features = await getFeatureList(id, { supabase });
+  const features = await listFeatures(id, { supabase });
 
   return (
     <div className={`${styles.container} p-4 md:p-6 lg:p-7`}>
