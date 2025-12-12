@@ -100,7 +100,7 @@ export function TestItem({ feature, run, generate, remove, restore }: TestItemPr
             <div className="flex align-items-center gap-3 text-300">
               {feature.lastRun && (
                 <span>
-                  Last run <TimeAgo date={feature.lastRun.createdAt} />
+                  Last run <TimeAgo date={feature.lastRun.createdAt} live={false} />
                 </span>
               )}
             </div>

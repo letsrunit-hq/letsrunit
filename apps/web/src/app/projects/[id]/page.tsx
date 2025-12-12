@@ -1,9 +1,10 @@
 import { ProjectFeatures } from '@/components/project-features';
 import { ProjectPanel } from '@/components/project-panel';
 import { connect as connectServerSupabase } from '@/libs/supabase/server';
-import { getProject, listFeatures } from '@letsrunit/model';
+import { getProject, listFeatures, maybe } from '@letsrunit/model';
 import { cn, isUUID } from '@letsrunit/utils';
 import { History, Play, Settings } from 'lucide-react';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { UUID } from 'node:crypto';
 import { Button } from 'primereact/button';
@@ -18,7 +19,7 @@ export default async function Page({ params }: PageProps) {
   if (!isUUID(id)) return notFound();
 
   const supabase = await connectServerSupabase();
-  const project = await getProject(id, { supabase });
+  const project = await getProject(id, { supabase }).catch(maybe);
 
   if (!project) return notFound();
 
@@ -39,7 +40,9 @@ export default async function Page({ params }: PageProps) {
               icon={<Play key="icon" size={16} className="mr-2" />}
               severity="secondary"
             />
-            <Button aria-label="Run history" icon={<History key="icon" size={24} />} severity="secondary" />
+            <Link href={`/projects/${id}/runs`} passHref>
+              <Button aria-label="Run history" icon={<History key="icon" size={24} />} severity="secondary" />
+            </Link>
             <Button aria-label="Settings" icon={<Settings key="icon" size={24} />} severity="secondary" />
           </div>
         </div>

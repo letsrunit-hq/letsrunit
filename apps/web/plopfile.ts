@@ -65,23 +65,9 @@ describe('{{pascalCase name}}', () => {
         path: 'src/app/{{kebabPath path}}/page.tsx',
         template: `import React from 'react';
 
-export default function Page() {
+export default async function Page() {
   return <main>{{dashCase path}} page</main>;
 }`,
-      },
-      {
-        type: 'add',
-        path: 'src/app/{{kebabPath path}}/page.test.tsx',
-        template: `import React from 'react';
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import Page from './page';
-
-describe('page {{dashCase path}}', () => {
-  it('renders', () => {
-    render(<Page />);
-  });
-});`,
       },
     ],
   });

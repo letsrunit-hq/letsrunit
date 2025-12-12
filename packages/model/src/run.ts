@@ -22,7 +22,7 @@ export async function getRun(id: string, opts: ReadOptions = {}): Promise<Run> {
   return fromData(RunSchema)(data);
 }
 
-export async function getRunHistory(
+export async function listRuns(
   filter: { projectId: UUID; type?: RunType; featureId?: UUID },
   opts: ReadOptions & { limit?: number } = {},
 ) {

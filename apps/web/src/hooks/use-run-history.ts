@@ -3,7 +3,7 @@
 import { useAbortController } from '@/hooks/use-abort-controller';
 import { useStateWithRef } from '@/hooks/use-state-with-ref';
 import useSupabase from '@/hooks/use-supabase';
-import { fromData, getFeatureName, getRunHistory, type Run, RunSchema, type RunType, toFilter } from '@letsrunit/model';
+import { fromData, getFeatureName, listRuns, type Run, RunSchema, type RunType, toFilter } from '@letsrunit/model';
 import { clean } from '@letsrunit/utils';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { UUID } from 'node:crypto';
@@ -84,7 +84,7 @@ export function useRunHistory(
     async function load() {
       try {
         setLoading(true);
-        const runs = await getRunHistory(filter, { supabase: client!, limit, signal });
+        const runs = await listRuns(filter, { supabase: client!, limit, signal });
         setRuns(sortRuns(runs, limit));
       } catch (e: any) {
         setError(e?.message || String(e));

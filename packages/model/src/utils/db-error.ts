@@ -47,3 +47,8 @@ export class DBError extends Error {
     }
   }
 }
+
+export function maybe(e: unknown): Promise<null> {
+  if (e instanceof DBError && e.status === 404) return Promise.resolve(null);
+  return Promise.reject(e);
+}

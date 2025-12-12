@@ -1,20 +1,23 @@
+import type { Result } from '@letsrunit/executor';
+import { Journal, SupabaseSink } from '@letsrunit/journal';
 import { connect, type Run, updateRunStatus } from '@letsrunit/model';
 import { startExploreRun } from './handlers/explore';
-import { Journal, SupabaseSink } from '@letsrunit/journal';
-import type { HandleOptions } from './types/handle';
-import type { Result } from '@letsrunit/executor';
 import { startGenerateRun } from './handlers/generate';
+import { startTestRun } from './handlers/test';
+import type { HandleOptions } from './types/handle';
 
 const ARTIFACT_BUCKET = process.env.ARTIFACT_BUCKET || 'artifacts';
 
 export async function handle(run: Run, { supabase, journal }: Partial<HandleOptions> = {}): Promise<void> {
   supabase ??= connect();
-  journal ??= new Journal(new SupabaseSink({
-    supabase,
-    run,
-    tableName: 'journal_entries',
-    bucket: ARTIFACT_BUCKET,
-  }));
+  journal ??= new Journal(
+    new SupabaseSink({
+      supabase,
+      run,
+      tableName: 'journal_entries',
+      bucket: ARTIFACT_BUCKET,
+    }),
+  );
 
   try {
     await updateRunStatus(run.id, 'running', { supabase });
@@ -33,7 +36,7 @@ async function startRun(run: Run, opts: HandleOptions): Promise<Result> {
     case 'generate':
       return await startGenerateRun(run, opts);
     case 'test':
-      throw new Error('Test run not implemented yet');
+      return await startTestRun(run, opts);
     default:
       throw new Error(`Unknown handler type "${run.type}"`);
   }

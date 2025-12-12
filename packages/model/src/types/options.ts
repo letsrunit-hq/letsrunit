@@ -1,5 +1,5 @@
+import type { User } from '@supabase/auth-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { UUID } from 'node:crypto';
 
 export type ReadOptions = {
   supabase?: SupabaseClient;
@@ -8,5 +8,5 @@ export type ReadOptions = {
 
 export type WriteOptions = {
   supabase?: SupabaseClient;
-  by?: { id: UUID };
+  by?: Pick<User, 'id'>;
 };

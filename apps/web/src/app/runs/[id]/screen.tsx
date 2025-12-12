@@ -3,10 +3,10 @@
 import { AnimatedBackground } from '@/components/animated-background';
 import { QueueStatus } from '@/components/queue-status';
 import { RunResult } from '@/components/run-result';
+import { SubtleHeader } from '@/components/subtle-header';
 import useFeature from '@/hooks/use-feature';
 import useProject from '@/hooks/use-project';
 import { useRun } from '@/hooks/use-run';
-import useRunHistory from '@/hooks/use-run-history';
 import type { Feature, Project, Run } from '@letsrunit/model';
 import { BreadCrumb } from 'primereact/breadcrumb';
 import React from 'react';
@@ -30,12 +30,6 @@ export default function Screen(initial: ScreenOptions) {
   const { feature, error: featureError } = useFeature(initial.feature ?? undefined);
   if (featureError) throw new Error(featureError);
 
-  const { runs: history, loading: historyLoading } = useRunHistory({
-    projectId: run!.projectId,
-    featureId: run!.featureId || undefined,
-    type: run!.featureId ? undefined : run!.type,
-  }, initial.history);
-
   const crumbs = [{ label: project?.title || '...', url: `/projects/${project!.id}` }, { label: `Run #${run!.id}` }];
 
   if (run!.status === 'queued') {
@@ -53,7 +47,12 @@ export default function Screen(initial: ScreenOptions) {
         <BreadCrumb model={crumbs} className="mb-5" />
 
         <RunResult project={project!} feature={feature} run={run!} loading={loading} journal={journal}>
-          {!historyLoading && <RunHistory className="mt-6" runs={history} currentRunId={run!.id} />}
+          <SubtleHeader className="mt-6 mb-3">Run History</SubtleHeader>
+          <RunHistory
+            projectId={run!.projectId}
+            featureId={run!.featureId || undefined}
+            type={run!.featureId ? undefined : run!.type}
+            runs={initial.history} currentRunId={run!.id} />
         </RunResult>
       </main>
     </>
