@@ -16,15 +16,15 @@ import { locatorRules } from './locator-rules';
 const PROMPT = `You're a QA tester, tasked with writing BDD tests in Gherkin format for a feature.
 
 You will receive the page content from the user. Your job is to:
-- Incrementally add \`When\` steps to complete a **single Gherkin scenario**.
-- End the process by calling \`publish()\` once the scenario is fully satisfied.
+- Incrementally add \`When\` steps to complete a **single Gherkin scenario**
+- End the process by calling \`publish()\` once the scenario is fully satisfied
 
 ## Completion Criteria
 
 Only call \`publish()\` if the **user goal has been met**, based on the definition of done described in the scenario.
 You must:
-1. Verify that all actions required to achieve the user story are complete.
-2. Confirm the presence of a final UI state (e.g. confirmation message, generated link, visible output) in the HTML.
+1. Verify that all actions required to achieve the user story are complete
+2. Confirm the presence of a final UI state (e.g. confirmation message, generated link, visible output) in the HTML
 
 **If these conditions are not met, do NOT call \`publish()\` yet. Continue adding relevant \`When\` steps.**
 
@@ -57,10 +57,18 @@ assistant: continue or call \`publish()\` if scenario goal is met
 Do not add \`Given\` or \`Then\` steps.
 Do not output the current feature without adding steps
 
-📌 **Special Rules**:
+**Special Rules**:
 - Do not add further steps once a \`link\` is clicked (indicating page navigation)
 - Do not add \`When\` steps for elements that are not visible (yet)
+- You must add one or more steps OR call publish
 {{#language}}- Use the {{language}} locale for number and date formatting{{/language}}
+
+{{#hasAccounts}}
+You have access to the following accounts:
+{{#accounts}}
+{{.}}
+{{/accounts}}
+{{/hasAccounts}}
 `;
 
 interface Options {
@@ -71,6 +79,7 @@ interface Options {
     purpose: string;
     loginAvailable: boolean;
   };
+  accounts?: Record<string, string>;
 }
 
 export const tools: ToolSet = {
@@ -126,7 +135,7 @@ async function failureToMessages(feature: Feature | string, result: StepResult):
   ];
 }
 
-export async function generateFeature({ controller, feature }: Options): Promise<Result> {
+export async function generateFeature({ controller, feature, accounts }: Options): Promise<Result> {
   const whenSteps = controller.listSteps('When');
 
   const { page } = await controller.run(
@@ -140,11 +149,15 @@ export async function generateFeature({ controller, feature }: Options): Promise
   const lang = await getLang(page);
   const language = lang && (ISO6391.getName(lang.substring(0, 2)) || lang);
 
+  const accountList = Object.entries(accounts ?? {}).map(([k, v]) => `${k}: ${v}`);
+
   const system = {
     template: PROMPT,
     vars: {
       steps: whenSteps,
       language,
+      hasAccounts: accountList.length > 0,
+      accounts: accountList,
     },
   };
   const steps = [...feature.steps];
@@ -158,7 +171,7 @@ export async function generateFeature({ controller, feature }: Options): Promise
     // We've tried enough, no more
     if (messages.length > 6 || runCount++ >= 10) {
       await controller.journal.error('Failed to generate feature; returning partial feature');
-      break;
+      return { status: 'failed', feature: { ...feature, steps, comments: undefined } };
     }
 
     // Only include the `publish` tool when something has been generated
@@ -169,12 +182,15 @@ export async function generateFeature({ controller, feature }: Options): Promise
     if (!response) break;
 
     const { steps: responseSteps } = parseFeature(response);
-    const nextSteps = deltaSteps(steps, responseSteps);
+    const nextSteps = deltaSteps(steps, responseSteps).filter((step) => step.match(/^when\b/i));
 
     if (nextSteps.length === 0) {
-      // TODO: Use AI to check if the feature is indeed complete. If not, force new steps.
-      console.warn('No new steps. Should have called `publish` tool');
-      break;
+      console.warn('No new steps generated; try again');
+      messages.push({
+        role: 'user',
+        content: 'You need to either add steps or call `publish`, not return the feature as is.',
+      });
+      continue;
     }
 
     const next = makeFeature({ name: 'continue', steps: nextSteps });

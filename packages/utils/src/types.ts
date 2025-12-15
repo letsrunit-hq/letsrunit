@@ -1,4 +1,5 @@
 export type RequireOnly<T, K extends keyof T> = Required<Pick<T, K>> & Partial<Omit<T, K>>;
+export type RequiredAndOptional<T, KR extends keyof T, KO extends keyof T> = Required<Pick<T, KR>> & Partial<Pick<T, KO>>;
 
 type KeysWithNullish<T> = {
   [K in keyof T]-?: null extends T[K] ? K : undefined extends T[K] ? K : never;

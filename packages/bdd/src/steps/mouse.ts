@@ -1,6 +1,6 @@
-import type { Locator } from '@playwright/test';
 import type { KeyCombo } from '@letsrunit/gherkin';
 import { locator, waitAfterInteraction } from '@letsrunit/playwright';
+import type { Locator } from '@playwright/test';
 import { When } from './wrappers';
 
 const TIMEOUT = 2500;
@@ -20,18 +20,22 @@ async function press(el: Locator, action: MouseAction) {
 }
 
 export const click = When(
-  "I {click|double-click|right-click|hover} {locator}",
+  'I {click|double-click|right-click|hover} {locator}',
   async ({ page }, action: MouseAction, selector: string) => {
+    const prevUrl = page.url();
+
     const el = await locator(page, selector);
     await press(el, action);
 
-    await waitAfterInteraction(page, el);
+    await waitAfterInteraction(page, el, { prevUrl });
   },
 );
 
 export const clickHold = When(
-  "I {click|double-click|right-click|hover} {locator} while holding {keys}",
+  'I {click|double-click|right-click|hover} {locator} while holding {keys}',
   async ({ page }, action: MouseAction, selector: string, combo: KeyCombo) => {
+    const prevUrl = page.url();
+
     const el = await locator(page, selector);
     const keys = [...combo.modifiers, combo.key];
 
@@ -39,11 +43,11 @@ export const clickHold = When(
     await press(el, action);
     for (const m of keys.reverse()) await page.keyboard.up(m);
 
-    await waitAfterInteraction(page, el);
+    await waitAfterInteraction(page, el, { prevUrl });
   },
 );
 
-export const scroll = When("I scroll {locator} into view", async ({ page }, selector: string) => {
+export const scroll = When('I scroll {locator} into view', async ({ page }, selector: string) => {
   const el = await locator(page, selector);
   await el.scrollIntoViewIfNeeded({ timeout: TIMEOUT });
 });

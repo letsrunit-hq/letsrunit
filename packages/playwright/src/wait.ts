@@ -1,9 +1,11 @@
-import type { Locator, Page } from '@playwright/test';
 import { sleep } from '@letsrunit/utils';
+import type { Locator, Page } from '@playwright/test';
 
 export async function waitForIdle(page: Page, timeoutMs = 2500) {
   await page.waitForLoadState('domcontentloaded');
-  try { await page.waitForLoadState('networkidle', { timeout: timeoutMs }); } catch {}
+  try {
+    await page.waitForLoadState('networkidle', { timeout: timeoutMs });
+  } catch {}
 }
 
 export async function waitForMeta(page: Page, timeoutMs = 2500) {
@@ -11,23 +13,28 @@ export async function waitForMeta(page: Page, timeoutMs = 2500) {
 
   page.getByRole('navigation');
 
-  await page.waitForFunction(() => {
-    const head = document.head;
-    if (!head) return false;
+  await page
+    .waitForFunction(
+      () => {
+        const head = document.head;
+        if (!head) return false;
 
-    return Boolean(
-      document.title.trim() ||
-      head.querySelector('meta[property^="og:"]') ||
-      head.querySelector('meta[name^="twitter:"]') ||
-      head.querySelector('script[type="application/ld+json"]')
-    );
-  }, { timeout: timeoutMs }).catch(() => {});
+        return Boolean(
+          document.title.trim() ||
+            head.querySelector('meta[property^="og:"]') ||
+            head.querySelector('meta[name^="twitter:"]') ||
+            head.querySelector('script[type="application/ld+json"]'),
+        );
+      },
+      { timeout: timeoutMs },
+    )
+    .catch(() => {});
 }
 
 /** Wait until the DOM hasn't changed for `quietMs` (default 500ms). */
 export async function waitForDomIdle(
   page: Page,
-  { quietMs = 500, timeout = 10_000 }: { quietMs?: number; timeout?: number } = {}
+  { quietMs = 500, timeout = 10_000 }: { quietMs?: number; timeout?: number } = {},
 ) {
   await page.waitForFunction(
     (q) =>
@@ -53,7 +60,7 @@ export async function waitForDomIdle(
         tick();
       }),
     quietMs,
-    { timeout }
+    { timeout },
   );
 }
 
@@ -72,31 +79,33 @@ export async function waitUntilEnabled(page: Page, target: Locator, timeout: num
   const handle = await target.elementHandle().catch(() => null);
   if (!handle) return;
 
-  await page.waitForFunction(
-    (el) => {
-      if (!el || !(el as Element).isConnected) return true; // detached → treat as settled
-      const aria = (el as HTMLElement).getAttribute('aria-disabled');
-      const disabled =
-        (el as HTMLButtonElement).disabled ||
-        aria === 'true' ||
-        (el as HTMLElement).getAttribute('disabled') !== null;
-      return !disabled;
-    },
-    handle,
-    { timeout }
-  ).catch(() => {});
+  await page
+    .waitForFunction(
+      (el) => {
+        if (!el || !(el as Element).isConnected) return true; // detached → treat as settled
+        const aria = (el as HTMLElement).getAttribute('aria-disabled');
+        const disabled =
+          (el as HTMLButtonElement).disabled ||
+          aria === 'true' ||
+          (el as HTMLElement).getAttribute('disabled') !== null;
+        return !disabled;
+      },
+      handle,
+      { timeout },
+    )
+    .catch(() => {});
 }
 
 export async function waitAfterInteraction(
   page: Page,
   target: Locator,
-  opts: { navTimeout?: number; settleTimeout?: number; quietMs?: number; } = {}
+  opts: { prevUrl?: string; navTimeout?: number; settleTimeout?: number; quietMs?: number } = {},
 ) {
   const navTimeout = opts.navTimeout ?? 8_000;
   const settleTimeout = opts.settleTimeout ?? 6_000;
   const quietMs = opts.quietMs ?? 500;
 
-  const prevUrl = page.url();
+  const prevUrl = opts.prevUrl ?? page.url();
   const kind = await elementKind(target).catch(() => 'other');
 
   if (kind === 'link') {
@@ -113,7 +122,7 @@ export async function waitAfterInteraction(
     return;
   }
 
-  if (kind === 'button' && await target.isDisabled()) {
+  if (kind === 'button' && (await target.isDisabled())) {
     // Buttons often disable during in-flight work, or disappear on success.
     await Promise.race([
       waitUntilEnabled(page, target, settleTimeout).catch(() => {}),
@@ -134,7 +143,7 @@ async function elementKind(target: Locator): Promise<'link' | 'button' | 'other'
   if (role === 'link') return 'link';
   if (role === 'button') return 'button';
 
-  const tag = (await target.evaluate((el) => el.tagName.toLowerCase()).catch(() => ''));
+  const tag = await target.evaluate((el) => el.tagName.toLowerCase()).catch(() => '');
   if (tag === 'a') return 'link';
 
   if (tag === 'button') return 'button';
