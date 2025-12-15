@@ -109,8 +109,6 @@ export const createFieldEngine = () => ({
       const ph = (el as HTMLInputElement).placeholder ?? el.getAttribute('placeholder');
       if (ph) texts.push(ph);
 
-      console.log(texts);
-
       return texts;
     }
 

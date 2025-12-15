@@ -1,16 +1,17 @@
 import { Controller } from '@letsrunit/controller';
 import { type Feature } from '@letsrunit/gherkin';
 import { Journal } from '@letsrunit/journal';
-import { type RequireOnly, splitUrl } from '@letsrunit/utils';
+import { type RequiredAndOptional, splitUrl } from '@letsrunit/utils';
 import { generateFeature } from './ai/generate-feature';
 import type { Result } from './types';
 
 interface GenerateOptions {
   headless?: boolean;
   journal?: Journal;
+  accounts?: Record<string, string>;
 }
 
-type GenerateInput = RequireOnly<Omit<Feature, 'background' | 'steps'>, 'name' | 'description'>;
+type GenerateInput = RequiredAndOptional<Feature, 'name' | 'description', 'comments'>;
 
 export default async function generate(
   target: string,
@@ -35,6 +36,7 @@ export default async function generate(
         background: steps,
         steps: [],
       },
+      accounts: opts.accounts,
     });
   } catch (e) {
     await journal.error('An unexpected error occurred');

@@ -86,7 +86,10 @@ export class Controller {
   }
 
   private async runStep(step: StepDescription, run: () => Promise<StepResult>): Promise<StepResult> {
-    const locators = await this.getLocatorArgs(this.world.page, step.args);
+    const locators = !step.text.match(/\b(don't see|not contains)\b/i)
+      ? await this.getLocatorArgs(this.world.page, step.args)
+      : [];
+
     if (locators.length > 0) {
       await scrollToCenter(locators[0]);
     }
@@ -125,7 +128,11 @@ export class Controller {
 
   private async makeScreenshot(options?: PageScreenshotOptions): Promise<File | undefined> {
     try {
-      return await screenshot(this.world.page, options);
+      const mask = (await Promise.all(
+        options?.mask?.map((loc) => loc.isVisible().then((v) => v ? loc : null)) ?? []
+      )).filter(Boolean) as Locator[];
+
+      return await screenshot(this.world.page, { ...options, mask });
     } catch (e) {
       const message = (e as any).message ?? String(e);
       await this.journal.warn(`Failed to take screenshot of ${this.world.page.url()}: ${message}`, {
@@ -158,7 +165,7 @@ export class Controller {
       if (description) journal.info(description);
 
       for (const step of [...(background ?? []), ...steps]) {
-        journal.prepare(step, { meta: { source: 'gherkin' } });
+        journal.prepare(step);
       }
     } finally {
       await journal.flush();

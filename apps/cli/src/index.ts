@@ -1,8 +1,10 @@
-import { explore, generate, refineSuggestion, runTest } from '@letsrunit/executor';
+import { explore, generate, refineSuggestion, run } from '@letsrunit/executor';
+import { getTestmailAccount } from '@letsrunit/executor/src/utils/testmail';
 import { makeFeature } from '@letsrunit/gherkin';
 import { CliSink, Journal } from '@letsrunit/journal';
 import { asFilename } from '@letsrunit/utils';
 import { Command } from 'commander';
+import { randomUUID } from 'node:crypto';
 import fs from 'node:fs/promises';
 import { runExplore } from './run-explore';
 
@@ -36,7 +38,7 @@ async function readStdin(): Promise<string> {
   });
 }
 
-program.name('letsrunit').description('Run tests like a vibe coder').version('0.1.0');
+program.name('letsrunit').description('Vibe testing done right').version('0.1.0');
 
 program
   .command('explore')
@@ -84,12 +86,46 @@ program
   });
 
 program
-  .command('test')
+  .command('register')
   .argument('<target>', 'Target URL or project')
   .option('-v, --verbose', 'Enable verbose logging', false)
   .option('-s, --silent', 'Only output errors', false)
-  .action(async (target: string, opts: { verbose: boolean; silent: boolean }) => {
-    await runTest(target, { headless: false, journal: createJournal(opts) });
+  .option('-o, --save <path>', 'Path to save .feature file', '')
+  .action(async (target: string, opts: { verbose: boolean; silent: boolean; save: string }) => {
+    const journal = createJournal({ ...opts, artifactPath: opts.save });
+
+    const suggestion = {
+      name: 'Register a new user by email',
+      description: [
+        'Locate the registration form and fill it out to create a new account.',
+        'Confirm the registration email and log in as the user',
+      ].join('\n'),
+      comments: [
+        'If no registration button is visible, try locating it through the login form.',
+        'The feature is complete when a confirmation email is received and verified and the user is logged in.',
+      ].join('\n'),
+    };
+
+    const email = getTestmailAccount(randomUUID());
+
+    const { feature, status } = await generate(target, suggestion, { headless: false, journal, accounts: { email } });
+
+    if (opts.save && feature) {
+      await fs.writeFile(`${opts.save}/${asFilename(feature.name!)}.feature`, makeFeature(feature));
+    }
+
+    process.exit(status === 'passed' ? 0 : 1);
+  });
+
+program
+  .command('run')
+  .argument('<target>', 'Target URL or project')
+  .argument('<feature>', 'Gherkin feature file')
+  .option('-v, --verbose', 'Enable verbose logging', false)
+  .option('-s, --silent', 'Only output errors', false)
+  .action(async (target: string, featureFile: string, opts: { verbose: boolean; silent: boolean }) => {
+    const feature = await fs.readFile(featureFile, 'utf-8');
+    await run(target, feature, { headless: false, journal: createJournal(opts) });
   });
 
 program.parse();

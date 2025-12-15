@@ -56,7 +56,7 @@ function escapeForTextSelector(text: string | RegExp, exact = false): string {
 
 function escapeForAttributeSelector(value: string | RegExp, exact = false): string {
   if (typeof value !== 'string') return escapeRegexForSelector(value);
-  return `"${value.replace(/\\/g, '\\\\').replace(/["]/g, '\\"')}"${exact ? 's' : 'i'}`;
+  return `"${value.trim().replace(/\\/g, '\\\\').replace(/["]/g, '\\"')}"${exact ? 's' : 'i'}`;
 }
 
 // ---------- Builders for internal engines ----------
