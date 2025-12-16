@@ -1666,6 +1666,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@letsrunit/mail@workspace:packages/mail":
+  version: 0.0.0-use.local
+  resolution: "@letsrunit/mail@workspace:packages/mail"
+  dependencies:
+    "@letsrunit/utils": "workspace:*"
+    vitest: "npm:^3.2.4"
+  languageName: unknown
+  linkType: soft
+
 "@letsrunit/model@workspace:*, @letsrunit/model@workspace:packages/model":
   version: 0.0.0-use.local
   resolution: "@letsrunit/model@workspace:packages/model"

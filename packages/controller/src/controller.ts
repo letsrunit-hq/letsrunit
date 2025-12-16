@@ -95,13 +95,14 @@ export class Controller {
     }
 
     const screenshotBefore = await this.makeScreenshot({ mask: locators });
+    const urlBefore = this.world.page.url();
     const htmlBefore = await this.makeHtmlFile();
     await this.journal.start(step.text, { artifacts: clean([screenshotBefore, htmlBefore]) });
 
     const result = await run();
 
     const screenshotAfter =
-      !step.text.startsWith('Then') && (await this.areAllVisible(locators))
+      !step.text.startsWith('Then') && this.world.page.url() === urlBefore && (await this.areAllVisible(locators))
         ? await this.makeScreenshot({ mask: locators })
         : undefined;
 
@@ -128,9 +129,9 @@ export class Controller {
 
   private async makeScreenshot(options?: PageScreenshotOptions): Promise<File | undefined> {
     try {
-      const mask = (await Promise.all(
-        options?.mask?.map((loc) => loc.isVisible().then((v) => v ? loc : null)) ?? []
-      )).filter(Boolean) as Locator[];
+      const mask = (
+        await Promise.all(options?.mask?.map((loc) => loc.isVisible().then((v) => (v ? loc : null))) ?? [])
+      ).filter(Boolean) as Locator[];
 
       return await screenshot(this.world.page, { ...options, mask });
     } catch (e) {
