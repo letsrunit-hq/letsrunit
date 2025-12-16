@@ -4,6 +4,7 @@ export interface World {
   page: Page;
   options?: BrowserContextOptions;
   lang?: string;
+  startTime: number;
   [_: string]: any;
 }
 

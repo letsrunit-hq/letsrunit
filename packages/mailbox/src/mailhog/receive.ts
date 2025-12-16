@@ -1,3 +1,4 @@
+import { sleep } from '@letsrunit/utils';
 import { MAILHOG_BASE_URL } from '../constants';
 import type { Email, ReceiveOptions } from '../types';
 
@@ -73,33 +74,24 @@ function mapItemsToEmails(items: any[]): Email[] {
 export async function receive(emailAddress: string, options: ReceiveOptions = {}): Promise<Email[]> {
   const deadline = Date.now() + (options.timeout || (options.wait ? 120_000 : 5_000));
   const pollInterval = 1_000;
+  const signal: AbortSignal = options.signal ?? AbortSignal.timeout(Math.max(0, deadline - Date.now()));
 
-  // simple single-shot when not waiting
-  if (!options.wait) {
-    const items = await fetchOnce(emailAddress, AbortSignal.timeout(deadline - Date.now()));
-    let emails = mapItemsToEmails(items);
-    if (options.after) emails = emails.filter((e) => e.timestamp > options.after!);
-    return emails;
-  }
-
-  // polling until timeout
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    const remaining = deadline - Date.now();
-    if (remaining <= 0) {
-      return [];
-    }
+  while (!signal.aborted) {
     try {
-      const items = await fetchOnce(emailAddress, AbortSignal.timeout(Math.max(100, remaining)));
+      const items = await fetchOnce(emailAddress, signal);
       let emails = mapItemsToEmails(items);
+
       if (options.after) emails = emails.filter((e) => e.timestamp > options.after!);
+      if (options.subject) emails = emails.filter((e) => e.subject.includes(options.subject!));
       if (emails.length > 0) return emails;
     } catch (e) {
-      // bubble up fetch errors except when aborted due to timeout; then just end loop
-      if (!(e instanceof Error && /abort/i.test(e.name))) throw e;
-      return [];
+      // bubble up fetch errors except when aborted due to signal; then just end loop
+      if (!signal.aborted) throw e;
     }
-    // wait briefly before next poll
-    await new Promise((r) => setTimeout(r, Math.min(pollInterval, Math.max(0, deadline - Date.now()))));
+
+    if (!options.wait) break;
+    await sleep(pollInterval, { signal });
   }
+
+  return [];
 }

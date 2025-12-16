@@ -1,5 +1,5 @@
 {
-  "name": "@letsrunit/mail",
+  "name": "@letsrunit/mailbox",
   "private": true,
   "scripts": {
     "test": "vitest run",
@@ -12,6 +12,8 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "@letsrunit/utils": "workspace:*"
+    "@letsrunit/utils": "workspace:*",
+    "graphql": "^16.12.0",
+    "graphql-request": "^7.4.0"
   }
 }

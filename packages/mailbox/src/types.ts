@@ -1,7 +1,9 @@
 export interface ReceiveOptions {
   wait?: boolean;
   timeout?: number;
+  signal?: AbortSignal;
   after?: number;
+  subject?: string;
 }
 
 export interface Email {
