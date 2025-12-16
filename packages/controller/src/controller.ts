@@ -56,7 +56,7 @@ export class Controller {
 
     const journal = options.journal ?? Journal.nil();
 
-    return new Controller(browser, { page, options }, journal);
+    return new Controller(browser, { page, options, startTime: Date.now() }, journal);
   }
 
   async run(feature: string): Promise<Result> {

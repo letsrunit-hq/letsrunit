@@ -11,6 +11,7 @@
   "dependencies": {
     "@cucumber/cucumber-expressions": "^18.0.1",
     "@letsrunit/gherkin": "workspace:*",
+    "@letsrunit/mailbox": "workspace:*",
     "@letsrunit/playwright": "workspace:*",
     "@playwright/test": "^1.56.1",
     "metascraper": "^5.49.4",

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { receive } from '../src/mailhog/receive';
+import { receive } from '../../src/mailhog/receive';
 
 describe('mailhog.receive', () => {
   afterEach(() => {
