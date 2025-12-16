@@ -1,11 +1,11 @@
 import { explore, generate, refineSuggestion, run } from '@letsrunit/executor';
-import { getTestmailAccount } from '@letsrunit/executor/src/utils/testmail';
 import { makeFeature } from '@letsrunit/gherkin';
 import { CliSink, Journal } from '@letsrunit/journal';
 import { asFilename } from '@letsrunit/utils';
 import { Command } from 'commander';
 import { randomUUID } from 'node:crypto';
 import fs from 'node:fs/promises';
+import { getTestmailAccount } from 'packages/testmail/src/testmail';
 import { runExplore } from './run-explore';
 
 const program = new Command();

@@ -1,0 +1,17 @@
+{
+  "name": "@letsrunit/mail",
+  "private": true,
+  "scripts": {
+    "test": "vitest run",
+    "test:cov": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "packageManager": "yarn@4.10.3",
+  "main": "src/index.ts",
+  "devDependencies": {
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "@letsrunit/utils": "workspace:*"
+  }
+}
