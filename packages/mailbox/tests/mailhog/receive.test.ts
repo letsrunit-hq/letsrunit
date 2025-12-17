@@ -78,4 +78,22 @@ describe('mailhog.receive', () => {
 
     await expect(receive(email)).rejects.toThrow('Failed to fetch response from mailhog:');
   });
+
+  it('applies limit to result set', async () => {
+    const email = 'user@example.com';
+    const body = {
+      items: [
+        { Created: '2025-01-01T00:00:10Z', Content: { Headers: { Subject: ['S1'] } } },
+        { Created: '2025-01-01T00:00:11Z', Content: { Headers: { Subject: ['S2'] } } },
+        { Created: '2025-01-01T00:00:12Z', Content: { Headers: { Subject: ['S3'] } } },
+      ],
+    };
+
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue(body) });
+    vi.stubGlobal('fetch', fetchMock as any);
+
+    const res = await receive(email, { limit: 2 });
+    expect(res).toHaveLength(2);
+    expect(res.map((e) => e.subject)).toEqual(['S1', 'S2']);
+  });
 });

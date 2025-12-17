@@ -2,9 +2,9 @@ import type { BrowserContextOptions, Page } from '@playwright/test';
 
 export interface World {
   page: Page;
+  startTime: number;
   options?: BrowserContextOptions;
   lang?: string;
-  startTime: number;
   [_: string]: any;
 }
 

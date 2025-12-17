@@ -1,5 +1,5 @@
-import { clean, pick } from '@letsrunit/utils';
-import { gql, GraphQLClient } from 'graphql-request';
+import { clean } from '@letsrunit/utils';
+import { GraphQLClient } from 'graphql-request';
 import { TESTMAIL_API_KEY, TESTMAIL_GRAPHQL_URL } from '../constants';
 import type { Email, ReceiveOptions } from '../types';
 
@@ -21,25 +21,22 @@ export async function receive(emailAddress: string, options: ReceiveOptions = {}
     },
   });
 
-  const query = gql`
-    query Inbox($namespace: String!, $tag: String!, $timestampFrom: Long, $subject: String) {
+  const fields = ['timestamp', 'from', 'to', 'cc', 'subject'];
+  if (options.full) fields.push('html', 'text', 'attachments { filename contentType }');
+
+  const query = `
+    query Inbox($namespace: String!, $tag: String!, $timestampFrom: Long, $subject: String, $limit: Int) {
       inbox(
         namespace: $namespace
-        tag: $tagPrefix
+        tag: $tag
         ${options.wait ? 'livequery: true' : ''}
         ${options.after ? 'timestamp_from: $timestampFrom' : ''}
         ${options.subject ? `advanced_filters: [{ field: subject, match: exact, action: include, value: $subject }]` : ''}
+        ${options.limit ? 'limit: $limit' : ''}
         advanced_sorts: [{ field: timestamp, order: desc }]
       ) {
         emails {
-          timestamp
-          from
-          to
-          cc
-          subject
-          html
-          text
-          attachments { filename contentType }
+          ${fields.join('\n          ')}
         }
       }
     }
@@ -48,17 +45,14 @@ export async function receive(emailAddress: string, options: ReceiveOptions = {}
   const variables: Record<string, any> = clean({
     namespace,
     tag,
-    timestampFrom: options.after ?? 0,
-    subject: options.subject || '',
+    timestampFrom: options.after,
+    subject: options.subject,
+    limit: options.limit,
   });
 
   try {
     const data: any = await client.request(query, variables);
-    const emails = data?.inbox?.emails || [];
-    return emails.map((email: any) => ({
-      ...pick(email, ['timestamp', 'from', 'to', 'cc', 'subject', 'html', 'text']),
-      attachments: email.attachments?.map((attachment: any) => pick(attachment, ['filename', 'contentType'])),
-    }));
+    return data?.inbox?.emails || [];
   } catch (err: any) {
     const message = err?.response?.errors?.[0]?.message || err?.message || 'Unknown error';
     throw new Error(`Failed to fetch response from testmail: ${message}`);

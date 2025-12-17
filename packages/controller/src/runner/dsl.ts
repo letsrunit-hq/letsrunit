@@ -1,6 +1,5 @@
+import { stepsDefinitions, typeDefinitions, type World } from '@letsrunit/bdd';
 import { Runner } from '@letsrunit/gherker';
-import { World } from '../types';
-import { typeDefinitions, stepsDefinitions } from '@letsrunit/bdd';
 
 export const runner = new Runner<World>();
 

@@ -83,6 +83,7 @@ export async function receive(emailAddress: string, options: ReceiveOptions = {}
 
       if (options.after) emails = emails.filter((e) => e.timestamp > options.after!);
       if (options.subject) emails = emails.filter((e) => e.subject.includes(options.subject!));
+      if (options.limit && options.limit > 0) emails = emails.slice(0, options.limit);
       if (emails.length > 0) return emails;
     } catch (e) {
       // bubble up fetch errors except when aborted due to signal; then just end loop
