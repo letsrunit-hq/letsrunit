@@ -1,9 +1,9 @@
 import * as ai from 'ai';
-import { getModel } from './models';
-import { wrapAISDK } from "langsmith/experimental/vercel";
-import * as z from 'zod';
 import { ModelMessage, ToolSet } from 'ai';
-import Mustache from "mustache";
+import { wrapAISDK } from 'langsmith/experimental/vercel';
+import Mustache from 'mustache';
+import * as z from 'zod';
+import { getModel } from './models';
 
 Mustache.escape = (text: string) => text;
 
@@ -17,7 +17,7 @@ export function mockAi(genText: typeof generateText, genObject?: typeof generate
     const wrapped = wrapAISDK(ai);
     generateText = wrapped.generateText;
     generateObject = wrapped.generateObject;
-  }
+  };
 }
 
 interface GenerateOptions<T extends z.Schema | undefined = undefined> {
@@ -25,10 +25,11 @@ interface GenerateOptions<T extends z.Schema | undefined = undefined> {
   reasoningEffort?: 'minimal' | 'low' | 'medium';
   schema?: T;
   tools?: ToolSet;
+  abortSignal?: AbortSignal;
 }
 
 export async function generate<T extends z.Schema | undefined = undefined>(
-  system: string | { template: string, vars: { [key: string]: any } },
+  system: string | { template: string; vars: { [key: string]: any } },
   prompt: string | ModelMessage[],
   opts: GenerateOptions<T> = {},
 ): Promise<T extends z.Schema ? z.infer<Exclude<T, undefined>> : string> {
@@ -49,6 +50,7 @@ export async function generate<T extends z.Schema | undefined = undefined>(
         reasoningEffort: opts.reasoningEffort ?? 'low',
       },
     },
+    abortSignal: opts.abortSignal,
   };
 
   if (opts.schema) {

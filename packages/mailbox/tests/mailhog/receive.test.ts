@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { receive } from '../../src/mailhog/receive';
+import { receiveMail } from '../../src/mailhog/receive';
 
 describe('mailhog.receive', () => {
   afterEach(() => {
@@ -37,7 +37,7 @@ describe('mailhog.receive', () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue(body) });
     vi.stubGlobal('fetch', fetchMock as any);
 
-    const res = await receive(email);
+    const res = await receiveMail(email);
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const url: string = fetchMock.mock.calls[0][0];
@@ -67,7 +67,7 @@ describe('mailhog.receive', () => {
     vi.stubGlobal('fetch', fetchMock as any);
 
     const after = Date.parse('2025-01-01T00:00:10Z');
-    const res = await receive(email, { after });
+    const res = await receiveMail(email, { after });
     expect(res.map((e) => e.subject)).toEqual(['B']);
   });
 
@@ -76,7 +76,7 @@ describe('mailhog.receive', () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: false, text: vi.fn().mockResolvedValue('nope') });
     vi.stubGlobal('fetch', fetchMock as any);
 
-    await expect(receive(email)).rejects.toThrow('Failed to fetch response from mailhog:');
+    await expect(receiveMail(email)).rejects.toThrow('Failed to fetch response from mailhog:');
   });
 
   it('applies limit to result set', async () => {
@@ -92,7 +92,7 @@ describe('mailhog.receive', () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue(body) });
     vi.stubGlobal('fetch', fetchMock as any);
 
-    const res = await receive(email, { limit: 2 });
+    const res = await receiveMail(email, { limit: 2 });
     expect(res).toHaveLength(2);
     expect(res.map((e) => e.subject)).toEqual(['S1', 'S2']);
   });

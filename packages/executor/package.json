@@ -5,8 +5,7 @@
   "packageManager": "yarn@4.10.3",
   "dependencies": {
     "@letsrunit/controller": "workspace:*",
-    "@letsrunit/utils": "workspace:*",
-    "iso-639-1": "^3.1.5"
+    "@letsrunit/utils": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^24.8.1",

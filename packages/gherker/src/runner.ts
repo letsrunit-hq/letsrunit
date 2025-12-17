@@ -64,6 +64,7 @@ export class Runner<TWorld extends World> {
     feature: string,
     worldFactory: TWorld | (() => Promise<TWorld> | TWorld),
     wrapRun?: StepWrapper,
+    { signal }: { signal?: AbortSignal } = {},
   ): Promise<Result<TWorld>> {
     const pickles = this.compile(feature);
     if (pickles.length > 1) {
@@ -78,6 +79,11 @@ export class Runner<TWorld extends World> {
     let error: Error | undefined;
 
     for (const step of pickle.steps) {
+      if (signal?.aborted) {
+        error = signal.reason instanceof Error ? signal.reason : new Error(String(signal.reason));
+        break;
+      }
+
       try {
         const { status, reason } = await wrapRun(this.describeStep(step), () => this.runStep(world, step));
 

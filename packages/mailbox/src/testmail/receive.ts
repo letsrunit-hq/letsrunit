@@ -3,7 +3,7 @@ import { GraphQLClient } from 'graphql-request';
 import { TESTMAIL_API_KEY, TESTMAIL_GRAPHQL_URL } from '../constants';
 import type { Email, ReceiveOptions } from '../types';
 
-export async function receive(emailAddress: string, options: ReceiveOptions = {}): Promise<Email[]> {
+export async function receiveMail(emailAddress: string, options: ReceiveOptions = {}): Promise<Email[]> {
   if (!TESTMAIL_API_KEY) throw new Error('TESTMAIL_API_KEY environment var not set');
 
   const match = emailAddress.match(/^(?<namespace>[^.@]+)\.(?<tag>[^@]+)@/);

@@ -31,8 +31,17 @@ async function search(emailAddress: string, options: ReceiveOptions, signal: Abo
 
 async function fetchFullMessage(
   id: string,
-  signal: AbortSignal
-): Promise<{ Html?: string; Text?: string; Attachments?: any[]; Created?: string | number; Subject?: string; From?: any; To?: any[]; Cc?: any[] } | null> {
+  signal: AbortSignal,
+): Promise<{
+  Html?: string;
+  Text?: string;
+  Attachments?: any[];
+  Created?: string | number;
+  Subject?: string;
+  From?: any;
+  To?: any[];
+  Cc?: any[];
+} | null> {
   const base = MAILPIT_BASE_URL.replace(/\/$/, '');
   const url = `${base}/api/v1/message/${encodeURIComponent(id)}`;
   const res = await fetch(url, { signal });
@@ -71,33 +80,32 @@ function mapMessageToEmail(m: any): Email {
     to: joinAddresses(m.To),
     cc: m.Cc && joinAddresses(m.Cc),
     subject: m.Subject,
-    html: m.Html,
+    html: m.HTML,
     text: m.Text,
     attachments,
   };
 }
 
-export async function receive(emailAddress: string, options: ReceiveOptions = {}): Promise<Email[]> {
-  const deadline = Date.now() + (options.timeout || (options.wait ? 120_000 : 5_000));
+async function fetchFullEmails(messages: any[], signal: AbortSignal): Promise<Email[]> {
+  const ids: string[] = messages.map((m: any) => m.ID).filter(Boolean);
+  const details = await Promise.all(ids.map((id) => fetchFullMessage(id, signal)));
+  return details.filter(Boolean).map((d) => mapMessageToEmail(d));
+}
+
+export async function receiveMail(emailAddress: string, options: ReceiveOptions = {}): Promise<Email[]> {
   const pollInterval = 1_000;
-  const signal: AbortSignal = options.signal ?? AbortSignal.timeout(Math.max(0, deadline - Date.now()));
+  const timeout = options.timeout || (options.wait ? 60_000 : 5_000);
+  const signal: AbortSignal = options.signal ?? AbortSignal.timeout(timeout);
 
   while (!signal.aborted) {
     try {
       const messages = await search(emailAddress, options, signal);
+      const emails = options.full
+        ? await fetchFullEmails(messages, signal)
+        : messages.map((m) => mapMessageToEmail(m));
 
-      if (options.full) {
-        const ids: string[] = messages.map((m: any) => m.ID).filter(Boolean);
-        if (ids.length === 0) {
-          // nothing yet
-        } else {
-          const details = await Promise.all(ids.map((id) => fetchFullMessage(id, signal)));
-          const emails = details.filter(Boolean).map((d) => mapMessageToEmail(d));
-          if (emails.length > 0) return emails;
-        }
-      } else {
-        const emails = messages.map((m) => mapMessageToEmail(m));
-        if (emails.length > 0) return emails;
+      if (emails.length > 0) {
+        return emails;
       }
     } catch (e) {
       if (!signal.aborted) throw e;

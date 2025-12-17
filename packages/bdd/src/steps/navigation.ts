@@ -1,8 +1,8 @@
 import { suppressInterferences, waitForIdle } from '@letsrunit/playwright';
-import { expect } from '@playwright/test';
-import { getLang } from '../utils/get-lang';
 import { eventually, pathRegexp, splitUrl } from '@letsrunit/utils';
+import { expect } from '@playwright/test';
 import { World } from '../types';
+import { getLang } from '../utils/get-lang';
 import { Given, Then } from './wrappers';
 
 async function openPage(world: World, path: string): Promise<void> {
@@ -13,7 +13,7 @@ async function openPage(world: World, path: string): Promise<void> {
 
   await waitForIdle(page);
 
-  world.lang ??= (await getLang(page)) || undefined;
+  world.lang ??= await getLang(page) || undefined;
 }
 
 export const navHome = Given("I'm on the homepage", async (world) => openPage(world, '/'));
@@ -23,7 +23,7 @@ export const navPath = Given("I'm on page {string}", async (world, path: string)
 });
 
 export const popupClosed = Given('all popups are closed', async ({ page, lang }) => {
-  await suppressInterferences(page, { lang });
+  await suppressInterferences(page, { lang: lang?.code || undefined });
 });
 
 export const assertPath = Then('I should be on page {string}', (world, expectedPath: string) =>
