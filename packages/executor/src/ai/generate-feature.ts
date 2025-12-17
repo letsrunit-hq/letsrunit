@@ -1,22 +1,25 @@
 import { generate } from '@letsrunit/ai';
-import { getLang } from '@letsrunit/bdd/src/utils/get-lang';
 import { Controller, Result as StepResult } from '@letsrunit/controller';
 import { deltaSteps, type Feature, makeFeature, parseFeature } from '@letsrunit/gherkin';
 import { Journal } from '@letsrunit/journal';
+import { receiveMail } from '@letsrunit/mailbox';
 import type { Snapshot } from '@letsrunit/playwright';
 import { splitUrl, statusSymbol } from '@letsrunit/utils';
-import { ModelMessage, ToolSet } from 'ai';
-import ISO6391 from 'iso-639-1';
+import { ModelMessage, type Tool, ToolSet } from 'ai';
 import * as z from 'zod';
 import type { Result } from '../types';
 import { describePage } from './describe-page';
 import { detectPageChanges } from './detect-page-changes';
 import { locatorRules } from './locator-rules';
 
+const MAX_TRIES = 3;
+const MAX_ROUNDS = 10;
+
 const PROMPT = `You're a QA tester, tasked with writing BDD tests in Gherkin format for a feature.
 
 You will receive the page content from the user. Your job is to:
 - Incrementally add \`When\` steps to complete a **single Gherkin scenario**
+- Use tools if additional information is needed to determine the next \`When\` step
 - End the process by calling \`publish()\` once the scenario is fully satisfied
 
 ## Completion Criteria
@@ -80,13 +83,37 @@ interface Options {
     loginAvailable: boolean;
   };
   accounts?: Record<string, string>;
+  signal?: AbortSignal;
 }
 
-export const tools: ToolSet = {
-  publish: {
-    description: 'Publish the feature.',
-    inputSchema: z.object({}),
-  },
+// Context used during generation.
+interface GenerationContext {
+  controller: Controller;
+  feature: Feature;
+  rounds: number;
+  steps: string[];
+  whenSteps: string[];
+  messages: ModelMessage[];
+  content: string;
+  currentPage: Snapshot;
+  language?: string;
+  accountList: string[];
+  mailAfter: number;
+  signal?: AbortSignal;
+}
+
+const publishTool: Tool = {
+  description: 'Publish the feature.',
+  inputSchema: z.object({}),
+};
+
+const checkMailboxTool: Tool = {
+  description:
+    'Call this tools when you expected a mail to be delivered in the mailbox based on the HTML or last step.',
+  inputSchema: z.object({
+    address: z.string().describe('email address of the mail account'),
+  }),
+  outputSchema: z.string(),
 };
 
 async function determineThenSteps(old: Snapshot, current: Snapshot, journal?: Journal): Promise<string[]> {
@@ -135,98 +162,169 @@ async function failureToMessages(feature: Feature | string, result: StepResult):
   ];
 }
 
-export async function generateFeature({ controller, feature, accounts }: Options): Promise<Result> {
+async function initGeneration({ controller, feature, accounts, signal }: Options): Promise<GenerationContext> {
   const whenSteps = controller.listSteps('When');
 
   const { page } = await controller.run(
     makeFeature({ ...feature, steps: feature.background ?? [], background: undefined }),
   );
 
-  let runCount = 0;
-  let content = await describePage(page, 'html');
-  let currentPage = page;
-
-  const lang = await getLang(page);
-  const language = lang && (ISO6391.getName(lang.substring(0, 2)) || lang);
-
+  const content = await describePage(page, 'html');
   const accountList = Object.entries(accounts ?? {}).map(([k, v]) => `${k}: ${v}`);
 
-  const system = {
+  return {
+    controller,
+    feature,
+    rounds: 0,
+    steps: [...feature.steps],
+    whenSteps,
+    messages: [
+      { role: 'assistant', content: makeFeature({ ...feature, steps: [...feature.steps] }) },
+      { role: 'user', content },
+    ],
+    content,
+    currentPage: page,
+    language: controller.lang?.name,
+    accountList,
+    mailAfter: Date.now(),
+    signal,
+  };
+}
+
+function buildSystemPrompt(ctx: GenerationContext) {
+  return {
     template: PROMPT,
     vars: {
-      steps: whenSteps,
-      language,
-      hasAccounts: accountList.length > 0,
-      accounts: accountList,
+      steps: ctx.whenSteps,
+      language: ctx.language,
+      hasAccounts: ctx.accountList.length > 0,
+      accounts: ctx.accountList,
+    },
+  } as const;
+}
+
+function buildToolset(ctx: GenerationContext): ToolSet {
+  return {
+    publish: publishTool,
+    checkMailbox: {
+      ...checkMailboxTool,
+      async execute({ address }: { address: string }): Promise<string> {
+        const emails = await receiveMail(address, { wait: true, after: ctx.mailAfter });
+        ctx.mailAfter = Date.now();
+        if (emails.length === 0) return 'No mail received';
+
+        // Don't run `Then` step, we've already established this
+        const thenStep = `Then mailbox "${address}" received an email with subject "${emails[0].subject}"`;
+        await ctx.controller.journal.success(thenStep);
+        ctx.steps.push(thenStep);
+
+        // Run `Given` step, it will open the email in the browser
+        const givenStep = `Given I'm viewing an email sent to "${address}" with subject "${emails[0].subject}"`;
+        const result = await ctx.controller.run(
+          makeFeature({ name: 'view mail', steps: [givenStep] }),
+          { signal: ctx.signal },
+        );
+
+        if (result.status !== 'passed') {
+          await ctx.controller.journal.warn('Failed to view email ; skipping');
+          return `Could not read the received email with subject "${emails[0].subject}".`;
+        }
+
+        ctx.steps.push(givenStep);
+
+        return result.page.html;
+      },
     },
   };
-  const steps = [...feature.steps];
+}
 
-  let messages: ModelMessage[] = [
-    { role: 'assistant' as const, content: makeFeature({ ...feature, steps }) },
-    { role: 'user' as const, content },
+async function nextStepsFromLLM(
+  ctx: GenerationContext,
+  system: ReturnType<typeof buildSystemPrompt>,
+  tools?: ToolSet,
+): Promise<{ responseText: string; nextSteps: string[] } | undefined> {
+  const response = await generate(system, ctx.messages, {
+    tools,
+    model: 'medium',
+    reasoningEffort: 'low',
+    abortSignal: ctx.signal,
+  });
+  if (!response) return undefined;
+
+  const { steps: responseSteps } = parseFeature(response);
+  const nextSteps = deltaSteps(ctx.steps, responseSteps).filter((s) => s.match(/^when\b/i));
+
+  if (nextSteps.length === 0) {
+    console.warn('No new steps generated; try again');
+    ctx.messages.push({
+      role: 'user',
+      content: 'You need to either add steps or call `publish`, not return the feature as is.',
+    });
+    return undefined;
+  }
+
+  return { responseText: response, nextSteps };
+}
+
+async function validateAndRun(
+  ctx: GenerationContext,
+  responseText: string,
+  nextSteps: string[],
+): Promise<StepResult | undefined> {
+  const next = makeFeature({ name: 'continue', steps: nextSteps });
+  const { valid, steps: validatedSteps } = ctx.controller.validate(next);
+  if (!valid) {
+    ctx.messages.push(...invalidToMessages(responseText, validatedSteps));
+    return undefined;
+  }
+
+  const result = await ctx.controller.run(next, { signal: ctx.signal });
+  const { steps: runSteps } = result;
+  ctx.steps.push(...runSteps.filter((s) => s.status === 'success').map(({ text }) => text));
+
+  if (result.status === 'failed') {
+    ctx.messages.push(...(await failureToMessages(responseText, result)));
+    return undefined;
+  }
+
+  return result;
+}
+
+async function finalizeSuccess(ctx: GenerationContext, result: StepResult): Promise<void> {
+  const { page: nextPage } = result;
+  ctx.content = await describePage(nextPage, 'html');
+
+  const assertSteps = await determineThenSteps(ctx.currentPage, nextPage, ctx.controller.journal);
+  await ctx.controller.run(makeFeature({ name: 'assert', steps: assertSteps }));
+  ctx.steps.push(...assertSteps);
+
+  ctx.currentPage = nextPage;
+  ctx.messages = [
+    { role: 'assistant', content: makeFeature({ ...ctx.feature, steps: ctx.steps }) },
+    { role: 'user', content: ctx.content },
   ];
+}
 
-  do {
-    // We've tried enough, no more
-    if (messages.length > 6 || runCount++ >= 10) {
-      await controller.journal.error('Failed to generate feature; returning partial feature');
-      return { status: 'failed', feature: { ...feature, steps, comments: undefined } };
+export async function generateFeature(opts: Options): Promise<Result> {
+  const ctx = await initGeneration(opts);
+  const system = buildSystemPrompt(ctx);
+
+  while (true) {
+    if (ctx.messages.length > 2 * MAX_TRIES || ctx.rounds++ >= MAX_ROUNDS || ctx.signal?.aborted) {
+      await ctx.controller.journal.error('Failed to generate feature; returning partial feature');
+      return {
+        status: 'failed',
+        feature: { ...ctx.feature, steps: ctx.steps, comments: 'Generation of this feature failed' },
+      };
     }
 
-    // Only include the `publish` tool when something has been generated
-    const useTools = steps.length > feature.steps.length ? tools : undefined;
+    const tools = ctx.steps.length > ctx.feature.steps.length ? buildToolset(ctx) : undefined;
+    const proposed = await nextStepsFromLLM(ctx, system, tools);
+    if (!proposed) continue;
 
-    // LLM generates new feature. Determine next steps
-    const response = await generate(system, messages, { tools: useTools, model: 'medium', reasoningEffort: 'low' });
-    if (!response) break;
+    const result = await validateAndRun(ctx, proposed.responseText, proposed.nextSteps);
+    if (!result) continue;
 
-    const { steps: responseSteps } = parseFeature(response);
-    const nextSteps = deltaSteps(steps, responseSteps).filter((step) => step.match(/^when\b/i));
-
-    if (nextSteps.length === 0) {
-      console.warn('No new steps generated; try again');
-      messages.push({
-        role: 'user',
-        content: 'You need to either add steps or call `publish`, not return the feature as is.',
-      });
-      continue;
-    }
-
-    const next = makeFeature({ name: 'continue', steps: nextSteps });
-
-    // Validate if the result matches our Gherkin step definitions
-    const { valid, steps: validatedSteps } = controller.validate(next);
-    if (!valid) {
-      messages.push(...invalidToMessages(response!, validatedSteps));
-      continue;
-    }
-
-    // Run BDD steps
-    const result = await controller.run(next);
-    const { page: nextPage, status, steps: runSteps } = result;
-
-    steps.push(...runSteps.filter((s) => s.status === 'success').map(({ text }) => text));
-
-    // The run failed; try again
-    if (status === 'failed') {
-      messages.push(...(await failureToMessages(response!, result)));
-      continue;
-    }
-
-    // Success
-    content = await describePage(nextPage, 'html');
-
-    const assertSteps = await determineThenSteps(currentPage, nextPage, controller.journal);
-    await controller.run(makeFeature({ name: 'assert', steps: assertSteps }));
-    steps.push(...assertSteps);
-
-    currentPage = nextPage;
-    messages = [
-      { role: 'assistant' as const, content: makeFeature({ ...feature, steps }) },
-      { role: 'user' as const, content },
-    ];
-  } while (true);
-
-  return { status: 'passed', feature: { ...feature, steps, comments: undefined } };
+    await finalizeSuccess(ctx, result);
+  }
 }

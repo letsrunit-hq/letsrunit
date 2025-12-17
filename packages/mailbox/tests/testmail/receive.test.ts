@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { receive } from '../../src/testmail/receive';
+import { receiveMail } from '../../src/testmail/receive';
 
 vi.mock('graphql-request', async () => {
   class MockGraphQLClient {
@@ -48,7 +48,7 @@ describe('testmail.receive', () => {
     // intercept constructor usage
     vi.spyOn<any, any>(ClientCtor.prototype, 'request').mockResolvedValue({ inbox: { emails: emailsPayload } });
 
-    const res = await receive(email, { wait: true, after: 1734200000000, subject: 'Hello', full: true });
+    const res = await receiveMail(email, { wait: true, after: 1734200000000, subject: 'Hello', full: true });
 
     // Validate mapping
 
@@ -88,7 +88,7 @@ describe('testmail.receive', () => {
     const ClientCtor = GraphQLClient as any;
     vi.spyOn<any, any>(ClientCtor.prototype, 'request').mockRejectedValue({ response: { errors: [{ message: 'bad' }] } });
 
-    await expect(receive(email)).rejects.toThrow('Failed to fetch response from testmail: bad');
+    await expect(receiveMail(email)).rejects.toThrow('Failed to fetch response from testmail: bad');
   });
 
   it('passes limit to GraphQL and returns limited results', async () => {
@@ -105,7 +105,7 @@ describe('testmail.receive', () => {
     };
     vi.spyOn<any, any>(ClientCtor.prototype, 'request').mockResolvedValue(payload);
 
-    const res = await receive(email, { limit: 2 });
+    const res = await receiveMail(email, { limit: 2 });
     expect(res).toHaveLength(2);
     expect(res.map((e) => e.subject)).toEqual(['S1', 'S2']);
 

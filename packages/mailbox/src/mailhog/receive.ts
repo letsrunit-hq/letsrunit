@@ -71,7 +71,7 @@ function mapItemsToEmails(items: any[]): Email[] {
   });
 }
 
-export async function receive(emailAddress: string, options: ReceiveOptions = {}): Promise<Email[]> {
+export async function receiveMail(emailAddress: string, options: ReceiveOptions = {}): Promise<Email[]> {
   const deadline = Date.now() + (options.timeout || (options.wait ? 120_000 : 5_000));
   const pollInterval = 1_000;
   const signal: AbortSignal = options.signal ?? AbortSignal.timeout(Math.max(0, deadline - Date.now()));
@@ -84,7 +84,10 @@ export async function receive(emailAddress: string, options: ReceiveOptions = {}
       if (options.after) emails = emails.filter((e) => e.timestamp > options.after!);
       if (options.subject) emails = emails.filter((e) => e.subject.includes(options.subject!));
       if (options.limit && options.limit > 0) emails = emails.slice(0, options.limit);
-      if (emails.length > 0) return emails;
+
+      if (emails.length > 0) {
+        return emails;
+      }
     } catch (e) {
       // bubble up fetch errors except when aborted due to signal; then just end loop
       if (!signal.aborted) throw e;

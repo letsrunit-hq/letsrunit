@@ -1,11 +1,11 @@
 import { explore, generate, refineSuggestion, run } from '@letsrunit/executor';
 import { makeFeature } from '@letsrunit/gherkin';
 import { CliSink, Journal } from '@letsrunit/journal';
+import { getMailbox } from '@letsrunit/mailbox';
 import { asFilename } from '@letsrunit/utils';
 import { Command } from 'commander';
 import { randomUUID } from 'node:crypto';
 import fs from 'node:fs/promises';
-import { getTestmailAccount } from 'packages/testmail/src/testmail';
 import { runExplore } from './run-explore';
 
 const program = new Command();
@@ -106,7 +106,7 @@ program
       ].join('\n'),
     };
 
-    const email = getTestmailAccount(randomUUID());
+    const email = getMailbox(randomUUID());
 
     const { feature, status } = await generate(target, suggestion, { headless: false, journal, accounts: { email } });
 

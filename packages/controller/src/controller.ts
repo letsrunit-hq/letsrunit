@@ -27,6 +27,10 @@ export interface ControllerOptions extends BrowserContextOptions {
   journal?: Journal;
 }
 
+export interface RunOptions {
+  signal?: AbortSignal;
+}
+
 export class Controller {
   static fieldSelectorIsRegistered: boolean = false;
 
@@ -35,6 +39,10 @@ export class Controller {
     private world: World,
     readonly journal: Journal,
   ) {}
+
+  get lang(): { code: string, name: string} | null {
+    return this.world.lang ?? null;
+  }
 
   static async registerFieldSelector() {
     if (this.fieldSelectorIsRegistered) return;
@@ -60,10 +68,10 @@ export class Controller {
     return new Controller(browser, { page, options, startTime: Date.now() }, journal);
   }
 
-  async run(feature: string): Promise<Result> {
+  async run(feature: string, opts: RunOptions = {}): Promise<Result> {
     await this.logFeature(feature);
 
-    const { world: _, ...result } = await runner.run(feature, this.world, (...args) => this.runStep(...args));
+    const { world: _, ...result } = await runner.run(feature, this.world, (...args) => this.runStep(...args), opts);
     const page = await snapshot(this.world.page);
 
     return { ...result, page };

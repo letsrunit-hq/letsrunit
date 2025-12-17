@@ -9,6 +9,7 @@ interface GenerateOptions {
   headless?: boolean;
   journal?: Journal;
   accounts?: Record<string, string>;
+  timeout?: number;
 }
 
 type GenerateInput = RequiredAndOptional<Feature, 'name' | 'description', 'comments'>;
@@ -27,6 +28,7 @@ export default async function generate(
 
   const journal = opts.journal ?? Journal.nil();
   const controller = await Controller.launch({ headless: opts.headless, baseURL: base, journal });
+  const signal = AbortSignal.timeout(opts.timeout ?? 300_000/* 5 minutes */);
 
   try {
     return await generateFeature({
@@ -37,6 +39,7 @@ export default async function generate(
         steps: [],
       },
       accounts: opts.accounts,
+      signal,
     });
   } catch (e) {
     await journal.error('An unexpected error occurred');
