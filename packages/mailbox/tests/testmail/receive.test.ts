@@ -48,7 +48,7 @@ describe('testmail.receive', () => {
     // intercept constructor usage
     vi.spyOn<any, any>(ClientCtor.prototype, 'request').mockResolvedValue({ inbox: { emails: emailsPayload } });
 
-    const res = await receive(email, { wait: true, after: 1734200000000, subject: 'Hello' });
+    const res = await receive(email, { wait: true, after: 1734200000000, subject: 'Hello', full: true });
 
     // Validate mapping
 
@@ -89,5 +89,30 @@ describe('testmail.receive', () => {
     vi.spyOn<any, any>(ClientCtor.prototype, 'request').mockRejectedValue({ response: { errors: [{ message: 'bad' }] } });
 
     await expect(receive(email)).rejects.toThrow('Failed to fetch response from testmail: bad');
+  });
+
+  it('passes limit to GraphQL and returns limited results', async () => {
+    const email = 'ns.tag@inbox.testmail.app';
+    const { GraphQLClient }: any = await import('graphql-request');
+    const ClientCtor = GraphQLClient as any;
+    const payload = {
+      inbox: {
+        emails: [
+          { timestamp: 1, from: 'a', to: 'x', subject: 'S1', text: '1' },
+          { timestamp: 2, from: 'b', to: 'x', subject: 'S2', text: '2' },
+        ],
+      },
+    };
+    vi.spyOn<any, any>(ClientCtor.prototype, 'request').mockResolvedValue(payload);
+
+    const res = await receive(email, { limit: 2 });
+    expect(res).toHaveLength(2);
+    expect(res.map((e) => e.subject)).toEqual(['S1', 'S2']);
+
+    // Ensure limit was passed to GraphQL variables
+    const calls = (ClientCtor.prototype.request as any).mock.calls;
+    expect(calls.length).toBe(1);
+    const [_queryStr, variables] = calls[0];
+    expect(variables).toMatchObject({ limit: 2 });
   });
 });

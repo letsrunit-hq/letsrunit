@@ -8,7 +8,6 @@ export const see = Then(
   'mailbox {string} receives an email with subject {string}',
   async (world: World, address: string, subject: string) => {
     world.lastMailboxCheck ??= {};
-
     const timestampAfter = world.lastMailboxCheck[address] ?? world.startTime;
     const signal = AbortSignal.timeout(MAX_WAIT);
 

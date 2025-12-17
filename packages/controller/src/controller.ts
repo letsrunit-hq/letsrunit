@@ -1,4 +1,5 @@
 import type { Argument } from '@cucumber/cucumber-expressions';
+import type { World } from '@letsrunit/bdd';
 import type { StepDescription, StepResult } from '@letsrunit/gherker';
 import { ParsedStep } from '@letsrunit/gherker/src/types';
 import { createFieldEngine, parseFeature } from '@letsrunit/gherkin';
@@ -18,7 +19,7 @@ import {
 } from '@playwright/test';
 import { File } from 'node:buffer';
 import { runner } from './runner';
-import type { Result, World } from './types';
+import type { Result } from './types';
 
 export interface ControllerOptions extends BrowserContextOptions {
   headless?: boolean;

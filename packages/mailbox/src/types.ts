@@ -4,6 +4,8 @@ export interface ReceiveOptions {
   signal?: AbortSignal;
   after?: number;
   subject?: string;
+  limit?: number;
+  full?: boolean;
 }
 
 export interface Email {
@@ -13,7 +15,7 @@ export interface Email {
   cc?: string;
   subject: string;
   html?: string;
-  text: string;
+  text?: string;
   attachments?: Attachment[];
 }
 
