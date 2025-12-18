@@ -13,8 +13,8 @@ export function asFilename(name: string): string {
     .replace(/^-+|-+$/g, '');      // trim dashes
 }
 
+// Build a regex from the pattern (eg `/books/:id`) to extract params
 export function pathRegexp(path: string): { regexp: RegExp, names: string[] } {
-  // Build a regex from the pattern and extract params
   const names: string[] = [];
 
   const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

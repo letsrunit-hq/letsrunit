@@ -1,4 +1,4 @@
-import { UUID } from 'node:crypto';
+import type { UUID } from 'node:crypto';
 import { NIL, v5 as uuidv5, validate } from 'uuid';
 
 export function isUUID(value: string): value is UUID {
