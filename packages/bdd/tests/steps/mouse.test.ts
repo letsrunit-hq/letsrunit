@@ -1,13 +1,12 @@
-import { describe, it, expect, vi } from 'vitest';
-import { runStep } from '../helpers';
+import { locator as resolveLocator, waitAfterInteraction } from '@letsrunit/playwright';
+import { describe, expect, it, vi } from 'vitest';
 import { click as clickStep, clickHold, scroll } from '../../src/steps/mouse';
+import { runStep } from '../helpers';
 
 vi.mock('@letsrunit/playwright', () => ({
   locator: vi.fn(async (_page: any, _selector: string) => testLocator),
   waitAfterInteraction: vi.fn(async () => {}),
 }));
-
-import { locator as resolveLocator, waitAfterInteraction } from '@letsrunit/playwright';
 
 type Locator = {
   hover?: (opts: { timeout: number }) => Promise<void>;
@@ -24,7 +23,7 @@ describe('steps/mouse (definitions)', () => {
     (testLocator as any).hover = hover;
     (testLocator as any).click = click;
 
-    const page = { keyboard: { down: vi.fn(), up: vi.fn() } } as any;
+    const page = { url: vi.fn(() => 'https://site.test/x'), keyboard: { down: vi.fn(), up: vi.fn() } } as any;
 
     await runStep(clickStep, 'I hover button "start"', { page } as any);
     expect((resolveLocator as any).mock.calls[0][1]).toBe('role=button [name="start"i]');
@@ -52,13 +51,13 @@ describe('steps/mouse (definitions)', () => {
     const down = vi.fn();
     const up = vi.fn();
 
-    const page = { keyboard: { down, up } } as any;
+    const page = { url: vi.fn(() => 'https://site.test/x'), keyboard: { down, up } } as any;
 
     await runStep(clickHold, "I click `#x` while holding 'Alt+Shift+K'", { page } as any);
 
-    expect(down.mock.calls.map(c => c[0])).toEqual(['Alt', 'Shift', 'K']);
+    expect(down.mock.calls.map((c) => c[0])).toEqual(['Alt', 'Shift', 'K']);
     expect(click).toHaveBeenCalledWith({ button: 'left', clickCount: 1, timeout: 2500 });
-    expect(up.mock.calls.map(c => c[0])).toEqual(['K', 'Shift', 'Alt']);
+    expect(up.mock.calls.map((c) => c[0])).toEqual(['K', 'Shift', 'Alt']);
     expect(waitAfterInteraction).toHaveBeenCalled();
   });
 

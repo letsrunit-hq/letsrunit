@@ -1,17 +1,18 @@
+import type { World as BaseWorld } from '@cucumber/cucumber';
 import type { BrowserContextOptions, Page } from '@playwright/test';
 
-export interface World {
+export interface World extends BaseWorld<BrowserContextOptions> {
   page: Page;
   startTime: number;
-  options?: BrowserContextOptions;
+  pathParams?: Record<string, string>;
   lang?: {
-    code: string,
-    name: string,
+    code: string;
+    name: string;
   };
   [_: string]: any;
 }
 
-export type StepHandler = (world: World, ...args: any[]) => Promise<void> | void;
+export type StepHandler = (this: World, ...args: any[]) => Promise<void> | void;
 export type StepType = 'Given' | 'When' | 'Then';
 
 export interface StepDefinition {
