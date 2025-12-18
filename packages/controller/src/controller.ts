@@ -1,5 +1,6 @@
 import type { Argument } from '@cucumber/cucumber-expressions';
 import type { World } from '@letsrunit/bdd';
+import { toFile } from '@letsrunit/bdd/src/utils/file';
 import type { StepDescription, StepResult } from '@letsrunit/gherker';
 import { ParsedStep } from '@letsrunit/gherker/src/types';
 import { createFieldEngine, parseFeature } from '@letsrunit/gherkin';
@@ -7,7 +8,7 @@ import { Journal } from '@letsrunit/journal';
 import { browse, locator, screenshot, snapshot } from '@letsrunit/playwright';
 import { formatHtml } from '@letsrunit/playwright/src/format-html';
 import { scrollToCenter } from '@letsrunit/playwright/src/scroll';
-import { clean, hash } from '@letsrunit/utils';
+import { clean, hash, omit, type RequireOnly } from '@letsrunit/utils';
 import {
   type Browser,
   type BrowserContextOptions,
@@ -38,9 +39,10 @@ export class Controller {
     private browser: Browser,
     private world: World,
     readonly journal: Journal,
+    private readonly pendingArtifacts: Set<File>,
   ) {}
 
-  get lang(): { code: string, name: string} | null {
+  get lang(): { code: string; name: string } | null {
     return this.world.lang ?? null;
   }
 
@@ -49,6 +51,29 @@ export class Controller {
     try {
       await selectors.register('field', createFieldEngine);
     } catch {}
+  }
+
+  static createWorld(
+    page: Page,
+    options: RequireOnly<ControllerOptions, 'journal'>,
+    pendingArtifacts: Set<File>,
+  ): World {
+    const journal = options.journal;
+
+    return {
+      page,
+      parameters: omit(options, ['headless', 'journal', 'debug']),
+      startTime: Date.now(),
+      async attach(data, options) {
+        pendingArtifacts.add(toFile(data, options));
+      },
+      async link(text: string) {
+        await journal.info(text);
+      },
+      async log(text: string) {
+        await journal.info(text);
+      },
+    };
   }
 
   static async launch(options: ControllerOptions = {}): Promise<Controller> {
@@ -64,8 +89,10 @@ export class Controller {
     }
 
     const journal = options.journal ?? Journal.nil();
+    const pendingArtifacts = new Set<File>();
+    const world = this.createWorld(page, { ...options, journal }, pendingArtifacts);
 
-    return new Controller(browser, { page, options, startTime: Date.now() }, journal);
+    return new Controller(browser, world, journal, pendingArtifacts);
   }
 
   async run(feature: string, opts: RunOptions = {}): Promise<Result> {
@@ -95,6 +122,7 @@ export class Controller {
   }
 
   private async runStep(step: StepDescription, run: () => Promise<StepResult>): Promise<StepResult> {
+    const id = step.id;
     const locators = !step.text.match(/\b(don't see|not contains)\b/i)
       ? await this.getLocatorArgs(this.world.page, step.args)
       : [];
@@ -106,7 +134,7 @@ export class Controller {
     const screenshotBefore = await this.makeScreenshot({ mask: locators });
     const urlBefore = this.world.page.url();
     const htmlBefore = await this.makeHtmlFile();
-    await this.journal.start(step.text, { artifacts: clean([screenshotBefore, htmlBefore]) });
+    await this.journal.start(step.text, { meta: { id }, artifacts: clean([screenshotBefore, htmlBefore]) });
 
     const result = await run();
 
@@ -117,9 +145,15 @@ export class Controller {
 
     await this.journal
       .batch()
-      .log(step.text, { type: result.status, artifacts: clean([screenshotAfter]) })
+      .log(step.text, {
+        type: result.status,
+        meta: { id },
+        artifacts: clean([screenshotAfter, ...this.pendingArtifacts]),
+      })
       .error(result.reason?.message)
       .flush();
+
+    this.pendingArtifacts.clear();
 
     return result;
   }

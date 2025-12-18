@@ -21,33 +21,33 @@ async function press(el: Locator, action: MouseAction) {
 
 export const click = When(
   'I {click|double-click|right-click|hover} {locator}',
-  async ({ page }, action: MouseAction, selector: string) => {
-    const prevUrl = page.url();
+  async function (action: MouseAction, selector: string) {
+    const prevUrl = this.page.url();
 
-    const el = await locator(page, selector);
+    const el = await locator(this.page, selector);
     await press(el, action);
 
-    await waitAfterInteraction(page, el, { prevUrl });
+    await waitAfterInteraction(this.page, el, { prevUrl });
   },
 );
 
 export const clickHold = When(
   'I {click|double-click|right-click|hover} {locator} while holding {keys}',
-  async ({ page }, action: MouseAction, selector: string, combo: KeyCombo) => {
-    const prevUrl = page.url();
+  async function (action: MouseAction, selector: string, combo: KeyCombo) {
+    const prevUrl = this.page.url();
 
-    const el = await locator(page, selector);
+    const el = await locator(this.page, selector);
     const keys = [...combo.modifiers, combo.key];
 
-    for (const m of keys) await page.keyboard.down(m);
+    for (const m of keys) await this.page.keyboard.down(m);
     await press(el, action);
-    for (const m of keys.reverse()) await page.keyboard.up(m);
+    for (const m of keys.reverse()) await this.page.keyboard.up(m);
 
-    await waitAfterInteraction(page, el, { prevUrl });
+    await waitAfterInteraction(this.page, el, { prevUrl });
   },
 );
 
-export const scroll = When('I scroll {locator} into view', async ({ page }, selector: string) => {
-  const el = await locator(page, selector);
+export const scroll = When('I scroll {locator} into view', async function (selector: string) {
+  const el = await locator(this.page, selector);
   await el.scrollIntoViewIfNeeded({ timeout: TIMEOUT });
 });

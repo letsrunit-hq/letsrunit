@@ -3,7 +3,7 @@ import { eventually, pathRegexp, splitUrl } from '@letsrunit/utils';
 import { expect } from '@playwright/test';
 import { World } from '../types';
 import { getLang } from '../utils/get-lang';
-import { Given, Then } from './wrappers';
+import { Given, Then, When } from './wrappers';
 
 async function openPage(world: World, path: string): Promise<void> {
   const { page } = world;
@@ -13,23 +13,24 @@ async function openPage(world: World, path: string): Promise<void> {
 
   await waitForIdle(page);
 
-  world.lang ??= await getLang(page) || undefined;
+  world.lang ??= (await getLang(page)) || undefined;
 }
 
-export const navHome = Given("I'm on the homepage", async (world) => openPage(world, '/'));
-
-export const navPath = Given("I'm on page {string}", async (world, path: string) => {
-  return await openPage(world, path);
+export const navHome = Given("I'm on the homepage", async function () {
+  await openPage(this, '/');
 });
 
-export const popupClosed = Given('all popups are closed', async ({ page, lang }) => {
-  await suppressInterferences(page, { lang: lang?.code || undefined });
+export const navPath = Given("I'm on page {string}", async function (path: string) {
+  await openPage(this, path);
 });
 
-export const assertPath = Then('I should be on page {string}', (world, expectedPath: string) =>
-  eventually(async () => {
-    const { page } = world;
-    const { path: actualPath } = splitUrl(page.url());
+export const popupClosed = Given('all popups are closed', async function (){
+  await suppressInterferences(this.page, { lang: this.lang?.code });
+});
+
+export const assertPath = Then('I should be on page {string}', async function (expectedPath: string) {
+  await eventually(async () => {
+    const { path: actualPath } = splitUrl(this.page.url());
 
     if (expectedPath.includes(':')) {
       const { regexp, names } = pathRegexp(expectedPath);
@@ -37,10 +38,15 @@ export const assertPath = Then('I should be on page {string}', (world, expectedP
       expect(actualPath, `Expected path ${actualPath} to match pattern ${expectedPath}`).toMatch(regexp);
 
       const match = actualPath.match(regexp);
-      world.params = Object.fromEntries(names.map((name, i) => [name, decodeURIComponent(match![i + 1])]));
+      this.pathParams = Object.fromEntries(names.map((name, i) => [name, decodeURIComponent(match![i + 1])]));
     } else {
       expect(actualPath).toEqual(expectedPath);
-      world.params = {};
+      delete this.pathParams;
     }
-  }),
-);
+  });
+});
+
+export const back = When('I go back to the previous page', async function () {
+  await this.page.goBack();
+  await waitForIdle(this.page);
+});

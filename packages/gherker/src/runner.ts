@@ -11,7 +11,7 @@ import { ParameterTypeDefinition, sanitizeStepDefinition } from '@letsrunit/gher
 import { ParsedStep, Result, StepDefinition, StepHandler, StepType, World } from './types';
 
 export type StepResult = { status: 'success' | 'failure'; reason?: Error };
-export type StepDescription = { text: string; args: readonly Argument[] };
+export type StepDescription = { id: string, text: string; args: readonly Argument[] };
 type StepWrapper = (step: StepDescription, run: () => Promise<StepResult>) => Promise<StepResult>;
 
 export class Runner<TWorld extends World> {
@@ -129,7 +129,7 @@ export class Runner<TWorld extends World> {
     const text = def ? `${def.type} ${step.text}` : step.text;
     const args = def?.expr.match(step.text) || [];
 
-    return { text, args };
+    return { id: step.id, text, args };
   }
 
   private compile(feature: string, uri = 'inline.feature') {
@@ -159,7 +159,7 @@ export class Runner<TWorld extends World> {
         extra = step.argument.dataTable.rows.map((r) => r.cells.map((c) => c.value));
       }
 
-      await match.def.fn(world, ...match.values, ...(extra !== undefined ? [extra] : []));
+      await match.def.fn.apply(world, [...match.values, ...(extra !== undefined ? [extra] : [])]);
 
       return { status: 'success' };
     } catch (e) {
