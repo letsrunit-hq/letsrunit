@@ -55,7 +55,7 @@ describe('mailpit.receive', () => {
         },
       ],
     };
-    const detailBody = { Html: '<p>Hello</p>', Text: 'Hello text' };
+    const detailBody = { HTML: '<p>Hello</p>', Text: 'Hello text' };
 
     const fetchMock = vi.fn().mockImplementation((input: any) => {
       const u = String(input);
