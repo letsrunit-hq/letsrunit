@@ -1,4 +1,5 @@
 export * from './hash';
+export * from './html';
 export * from './join';
 export * from './object';
 export * from './sleep';

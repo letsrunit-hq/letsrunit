@@ -41,10 +41,7 @@ export function clean<T>(input: T): Clean<T> {
  * Picks a subset of properties from an object by key list.
  * Returns a new object containing only the specified keys (if the key exists on the object).
  */
-export function pick<T extends object, K extends readonly (keyof T)[]>(
-  obj: T,
-  keys: K
-): Pick<T, K[number]> {
+export function pick<T extends object, K extends readonly (keyof T)[]>(obj: T, keys: K): Pick<T, K[number]> {
   const out: Partial<Pick<T, K[number]>> = {};
   for (const key of keys) {
     if (key in obj) {
@@ -52,4 +49,14 @@ export function pick<T extends object, K extends readonly (keyof T)[]>(
     }
   }
   return out as Pick<T, K[number]>;
+}
+
+/**
+ * Omits a subset of properties from an object by key list.
+ * Returns a new object does not contain the specified keys.
+ */
+export function omit<T extends object, K extends readonly (keyof T)[]>(obj: T, keys: K): Omit<T, K[number]> {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([k]) => !keys.includes(k as keyof T)),
+  ) as Omit<T, K[number]>;
 }

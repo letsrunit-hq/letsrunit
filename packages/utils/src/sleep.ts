@@ -1,20 +1,21 @@
-export type SleepOptions = {
+type SleepOptions = {
   signal?: AbortSignal;
 }
 
-export type RetryOptions = SleepOptions & {
+type RetryOptions = SleepOptions & {
   timeout?: number;   // total time to keep trying
   interval?: number;  // delay between attempts
 };
 
+/**
+ * Sleep for a specified time.
+ * Supports abort signal.
+ */
 export function sleep(time: number, { signal }: SleepOptions = {}): Promise<void> {
   if (time <= 0) return Promise.resolve();
 
   if (signal?.aborted) {
-    return Promise.reject(
-      // prefer provided reason when available
-      (signal as AbortSignal & { reason?: unknown }).reason ?? new Error('Aborted'),
-    );
+    return Promise.reject(signal.reason);
   }
 
   return new Promise((resolve, reject) => {
@@ -25,9 +26,7 @@ export function sleep(time: number, { signal }: SleepOptions = {}): Promise<void
 
     const onAbort = () => {
       cleanup();
-      // use AbortSignal.reason if present (Node 18+/WHATWG), else generic Error
-      const reason = (signal as AbortSignal & { reason?: unknown })?.reason;
-      reject(reason ?? new Error('Aborted'));
+      reject(signal?.reason);
     };
 
     const cleanup = () => {
@@ -41,17 +40,20 @@ export function sleep(time: number, { signal }: SleepOptions = {}): Promise<void
   });
 }
 
-export async function eventually(
-  fn: () => void | Promise<void>,
-  { timeout = 5000, interval = 200, signal }: RetryOptions = {},
-): Promise<void> {
-  const deadline = Date.now() + timeout;
+/**
+ * Retry the function if it throws an error, within the given time.
+ */
+export async function eventually<T>(
+  fn: () => T | Promise<T>,
+  { timeout = 5000, interval = 200, signal: signal2 }: RetryOptions = {},
+): Promise<T> {
   let lastErr: unknown;
+  const signal1 = AbortSignal.timeout(timeout);
+  const signal = signal2 ? AbortSignal.any([signal1, signal2]) : signal1;
 
-  while (Date.now() < deadline) {
+  while (!signal.aborted) {
     try {
-      await fn();
-      return; // ✅ success
+      return await fn();
     } catch (e) {
       lastErr = e;
       await sleep(interval, { signal });
