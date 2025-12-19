@@ -4,10 +4,11 @@ import { deltaSteps, type Feature, makeFeature, parseFeature } from '@letsrunit/
 import { Journal } from '@letsrunit/journal';
 import { receiveMail } from '@letsrunit/mailbox';
 import type { Snapshot } from '@letsrunit/playwright';
-import { splitUrl, statusSymbol } from '@letsrunit/utils';
+import { splitUrl, statusSymbol, textToHtml } from '@letsrunit/utils';
 import { ModelMessage, type Tool, ToolSet } from 'ai';
 import * as z from 'zod';
 import type { Result } from '../types';
+import { analyseEmail } from './analyse-email';
 import { describePage } from './describe-page';
 import { detectPageChanges } from './detect-page-changes';
 import { locatorRules } from './locator-rules';
@@ -109,12 +110,7 @@ const publishTool: Tool = {
 };
 
 const checkMailboxTool: Tool = {
-  description: [
-    'Call this tools when you expected a mail to be delivered in the mailbox based on the HTML or last step.',
-    'Add one `When` step based on the email contents. Either click a link (if available) or navigate back.',
-    'Ignore the output if no mail was received.',
-    'Only ever call this tool once!'
-  ].join(' '),
+  description: 'Call this tools when you expected a mail to be delivered based on the HTML or last step.',
   inputSchema: z.object({
     address: z.string().describe('email address of the mail account'),
   }),
@@ -228,43 +224,47 @@ function buildToolset(ctx: GenerationContext): ToolSet | undefined {
 }
 
 function buildMailboxExecute(ctx: GenerationContext) {
-  let mailIsChecked = false;
-
   return async ({ address }: { address: string }): Promise<string> => {
-    // Ensure this tool is only called once per prompt.
-    if (mailIsChecked) {
-      await ctx.controller.journal.warn('Mail is checked twice in one round');
-      return 'Email is already checked. Do **not** use this tool again!';
-    }
-    mailIsChecked = true;
-
     await ctx.controller.journal.debug(`Checking email in mailbox "${address}"`);
 
-    const emails = await receiveMail(address, { wait: true, after: ctx.mailAfter });
+    const emails = await receiveMail(address, { wait: true, after: ctx.mailAfter, full: true });
     ctx.mailAfter = Date.now();
     if (emails.length === 0) return 'No mail received';
 
+    const email = emails[0];
+
     // Don't run `Then` step, we've already established this
-    const thenStep = `Then mailbox "${address}" received an email with subject "${emails[0].subject}"`;
+    const thenStep = `Then mailbox "${address}" received an email with subject "${email.subject}"`;
     await ctx.controller.journal.success(thenStep);
     ctx.steps.push(thenStep);
 
+    const { otp, cta } = await analyseEmail(textToHtml(email.html ?? textToHtml(email.text!)));
+
+    if (!otp && !cta) {
+      return `Processed email "${email.subject}"`;
+    }
+
     // Run `Given` step, it will open the email in the browser
-    const givenStep = `Given I'm viewing an email sent to "${address}" with subject "${emails[0].subject}"`;
+    const steps = [`Given I'm viewing an email sent to "${address}" with subject "${email.subject}"`];
+    if (otp) steps.push(`When I copy \`${otp.selector}\` to the clipboard`);
+    if (cta) steps.push(`When I click \`${cta.selector}\``);
+    if (!cta) steps.push('When I go back to the previous page');
+
     const result = await ctx.controller.run(
-      makeFeature({ name: 'view mail', steps: [givenStep] }),
+      makeFeature({ name: 'handle email', steps }),
       { signal: ctx.signal },
     );
 
+    addSuccessfulSteps(ctx, result);
+
     if (result.status !== 'passed') {
-      await ctx.controller.journal.warn('Failed to view email ; skipping');
-      return `Could not open email with subject "${emails[0].subject}".`;
+      await ctx.controller.journal.warn('Failed to view email; skipping');
+      return `Could not open email "${email.subject}".`;
     }
 
-    ctx.steps.push(...result.steps.filter((s) => s.status === 'success').map(({ text }) => text));
     await finalizeSuccess(ctx, result);
 
-    return result.page.html;
+    return `Processed email "${email.subject}"`;
   };
 }
 
@@ -296,6 +296,10 @@ async function nextStepsFromLLM(
   return { responseText: response, nextSteps };
 }
 
+function addSuccessfulSteps(ctx: GenerationContext, result: Pick<StepResult, 'steps'>) {
+  ctx.steps.push(...result.steps.filter((s) => s.status === 'success').map(({ text }) => text));
+}
+
 async function validateAndRun(
   ctx: GenerationContext,
   responseText: string,
@@ -309,8 +313,7 @@ async function validateAndRun(
   }
 
   const result = await ctx.controller.run(next, { signal: ctx.signal });
-  const { steps: runSteps } = result;
-  ctx.steps.push(...runSteps.filter((s) => s.status === 'success').map(({ text }) => text));
+  addSuccessfulSteps(ctx, result);
 
   if (result.status === 'failed') {
     ctx.messages.push(...(await failureToMessages(responseText, result)));
@@ -350,6 +353,7 @@ export async function generateFeature(opts: Options): Promise<Result> {
 
     const tools = buildToolset(ctx);
     const proposed = await nextStepsFromLLM(ctx, system, tools);
+
     if (!proposed) {
       if (ctx.isDone) break;
       continue;
