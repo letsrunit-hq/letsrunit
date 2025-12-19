@@ -26,7 +26,7 @@ async function copyText(el: Locator): Promise<string | null> {
 
 export const copy = When('I copy {locator} to the clipboard', async function (selector: string) {
   const el = await locator(this.page, selector);
-  let value = await copyInput(el) ?? await copyLink(el) ?? await copyText(el);
+  let value = (await copyInput(el)) ?? (await copyLink(el)) ?? (await copyText(el));
 
   this.clipboard = { value };
 });
