@@ -38,7 +38,7 @@ export async function generate<T extends z.Schema | undefined = undefined>(
   }
 
   if (typeof system === 'object') {
-    system = Mustache.render(system.template, system.vars);
+    system = Mustache.render(system.template, system.vars).trim();
   }
 
   const arg = {

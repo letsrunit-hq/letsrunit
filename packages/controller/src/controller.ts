@@ -134,7 +134,7 @@ export class Controller {
     const screenshotBefore = await this.makeScreenshot({ mask: locators });
     const urlBefore = this.world.page.url();
     const htmlBefore = await this.makeHtmlFile();
-    await this.journal.start(step.text, { meta: { id }, artifacts: clean([screenshotBefore, htmlBefore]) });
+    await this.journal.start(step.text, { artifacts: clean([screenshotBefore, htmlBefore]) });
 
     const result = await run();
 
@@ -147,7 +147,6 @@ export class Controller {
       .batch()
       .log(step.text, {
         type: result.status,
-        meta: { id },
         artifacts: clean([screenshotAfter, ...this.pendingArtifacts]),
       })
       .error(result.reason?.message)
