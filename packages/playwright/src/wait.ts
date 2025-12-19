@@ -1,14 +1,14 @@
 import { sleep } from '@letsrunit/utils';
 import type { Locator, Page } from '@playwright/test';
 
-export async function waitForIdle(page: Page, timeoutMs = 2500) {
+export async function waitForIdle(page: Page, timeout = 2500) {
   await page.waitForLoadState('domcontentloaded');
   try {
-    await page.waitForLoadState('networkidle', { timeout: timeoutMs });
+    await page.waitForLoadState('networkidle', { timeout });
   } catch {}
 }
 
-export async function waitForMeta(page: Page, timeoutMs = 2500) {
+export async function waitForMeta(page: Page, timeout = 2500) {
   await waitForIdle(page);
 
   page.getByRole('navigation');
@@ -26,15 +26,15 @@ export async function waitForMeta(page: Page, timeoutMs = 2500) {
             head.querySelector('script[type="application/ld+json"]'),
         );
       },
-      { timeout: timeoutMs },
+      { timeout },
     )
     .catch(() => {});
 }
 
-/** Wait until the DOM hasn't changed for `quietMs` (default 500ms). */
+/** Wait until the DOM hasn't changed for `quiet` (default 500ms). */
 export async function waitForDomIdle(
   page: Page,
-  { quietMs = 500, timeout = 10_000 }: { quietMs?: number; timeout?: number } = {},
+  { quiet = 500, timeout = 10_000 }: { quiet?: number; timeout?: number } = {},
 ) {
   await page.waitForFunction(
     (q) =>
@@ -59,7 +59,7 @@ export async function waitForDomIdle(
         };
         tick();
       }),
-    quietMs,
+    quiet,
     { timeout },
   );
 }
@@ -114,11 +114,11 @@ export async function waitAfterInteraction(
     if (urlChanged) {
       // Avoid 'networkidle' for SPAs with websockets/long-polling.
       await page.waitForLoadState('domcontentloaded').catch(() => {});
-      await waitForDomIdle(page, { quietMs, timeout: navTimeout }).catch(() => {});
+      await waitForDomIdle(page, { quiet: quietMs, timeout: navTimeout }).catch(() => {});
       return;
     }
     // Link didn’t navigate (preventDefault, same hash, etc.) → fall back.
-    await waitForDomIdle(page, { quietMs }).catch(() => {});
+    await waitForDomIdle(page, { quiet: quietMs }).catch(() => {});
     return;
   }
 
@@ -131,7 +131,7 @@ export async function waitAfterInteraction(
       waitForUrlChange(page, prevUrl, settleTimeout).catch(() => {}),
     ]);
     await sleep(1000); // Grace periode for redirect
-    await waitForDomIdle(page, { quietMs }).catch(() => {});
+    await waitForDomIdle(page, { quiet: quietMs }).catch(() => {});
     return;
   }
 }

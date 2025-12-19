@@ -1,4 +1,4 @@
-import { receiveMail } from '@letsrunit/mailbox';
+import { receiveMail, toEml } from '@letsrunit/mailbox';
 import { asFilename, textToHtml } from '@letsrunit/utils';
 import { Given, Then } from './wrappers';
 
@@ -37,9 +37,9 @@ export const receive = Then(
 
     const email = emails[0];
 
-    this.attach(email.html ?? email.text!, {
-      mediaType: email.html ? 'text/html' : 'text/plain',
-      fileName: asFilename(email.subject) + '.email' + (email.html ? '.html' : '.txt'),
+    this.attach(toEml(email), {
+      mediaType: 'message/rfc822',
+      fileName: asFilename(email.subject, 'eml'),
     });
   },
 );

@@ -26,6 +26,10 @@ describe('asFilename', () => {
     expect(asFilename('---Already--spaced---')).toBe('already-spaced');
     expect(asFilename('Multi   separator---example')).toBe('multi-separator-example');
   });
+
+  it('adds the extension', () => {
+    expect(asFilename('Hello World', 'txt')).toBe('hello-world.txt');
+  })
 });
 
 describe('pathRegexp', () => {

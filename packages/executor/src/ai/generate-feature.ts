@@ -67,7 +67,7 @@ Do not output the current feature without adding steps
 {{#language}}- Use the {{language}} locale for number and date formatting{{/language}}
 
 {{#hasAccounts}}
-You have access to the following accounts:
+**Available accounts**:
 {{#accounts}}
 {{.}}
 {{/accounts}}
@@ -91,6 +91,7 @@ interface GenerationContext {
   controller: Controller;
   feature: Feature;
   rounds: number;
+  isDone: boolean;
   steps: string[];
   whenSteps: string[];
   messages: ModelMessage[];
@@ -108,8 +109,12 @@ const publishTool: Tool = {
 };
 
 const checkMailboxTool: Tool = {
-  description:
+  description: [
     'Call this tools when you expected a mail to be delivered in the mailbox based on the HTML or last step.',
+    'Add one `When` step based on the email contents. Either click a link (if available) or navigate back.',
+    'Ignore the output if no mail was received.',
+    'Only ever call this tool once!'
+  ].join(' '),
   inputSchema: z.object({
     address: z.string().describe('email address of the mail account'),
   }),
@@ -176,6 +181,7 @@ async function initGeneration({ controller, feature, accounts, signal }: Options
     controller,
     feature,
     rounds: 0,
+    isDone: false,
     steps: [...feature.steps],
     whenSteps,
     messages: [
@@ -203,38 +209,62 @@ function buildSystemPrompt(ctx: GenerationContext) {
   } as const;
 }
 
-function buildToolset(ctx: GenerationContext): ToolSet {
+function buildToolset(ctx: GenerationContext): ToolSet | undefined {
+  // No tools on the first round
+  if (ctx.steps.length <= ctx.feature.steps.length) return undefined;
+
   return {
-    publish: publishTool,
+    publish: {
+      ...publishTool,
+      execute() {
+        ctx.isDone = true;
+      }
+    },
     checkMailbox: {
       ...checkMailboxTool,
-      async execute({ address }: { address: string }): Promise<string> {
-        const emails = await receiveMail(address, { wait: true, after: ctx.mailAfter });
-        ctx.mailAfter = Date.now();
-        if (emails.length === 0) return 'No mail received';
-
-        // Don't run `Then` step, we've already established this
-        const thenStep = `Then mailbox "${address}" received an email with subject "${emails[0].subject}"`;
-        await ctx.controller.journal.success(thenStep);
-        ctx.steps.push(thenStep);
-
-        // Run `Given` step, it will open the email in the browser
-        const givenStep = `Given I'm viewing an email sent to "${address}" with subject "${emails[0].subject}"`;
-        const result = await ctx.controller.run(
-          makeFeature({ name: 'view mail', steps: [givenStep] }),
-          { signal: ctx.signal },
-        );
-
-        if (result.status !== 'passed') {
-          await ctx.controller.journal.warn('Failed to view email ; skipping');
-          return `Could not read the received email with subject "${emails[0].subject}".`;
-        }
-
-        ctx.steps.push(givenStep);
-
-        return result.page.html;
-      },
+      execute: buildMailboxExecute(ctx),
     },
+  };
+}
+
+function buildMailboxExecute(ctx: GenerationContext) {
+  let mailIsChecked = false;
+
+  return async ({ address }: { address: string }): Promise<string> => {
+    // Ensure this tool is only called once per prompt.
+    if (mailIsChecked) {
+      await ctx.controller.journal.warn('Mail is checked twice in one round');
+      return 'Email is already checked. Do **not** use this tool again!';
+    }
+    mailIsChecked = true;
+
+    await ctx.controller.journal.debug(`Checking email in mailbox "${address}"`);
+
+    const emails = await receiveMail(address, { wait: true, after: ctx.mailAfter });
+    ctx.mailAfter = Date.now();
+    if (emails.length === 0) return 'No mail received';
+
+    // Don't run `Then` step, we've already established this
+    const thenStep = `Then mailbox "${address}" received an email with subject "${emails[0].subject}"`;
+    await ctx.controller.journal.success(thenStep);
+    ctx.steps.push(thenStep);
+
+    // Run `Given` step, it will open the email in the browser
+    const givenStep = `Given I'm viewing an email sent to "${address}" with subject "${emails[0].subject}"`;
+    const result = await ctx.controller.run(
+      makeFeature({ name: 'view mail', steps: [givenStep] }),
+      { signal: ctx.signal },
+    );
+
+    if (result.status !== 'passed') {
+      await ctx.controller.journal.warn('Failed to view email ; skipping');
+      return `Could not open email with subject "${emails[0].subject}".`;
+    }
+
+    ctx.steps.push(...result.steps.filter((s) => s.status === 'success').map(({ text }) => text));
+    await finalizeSuccess(ctx, result);
+
+    return result.page.html;
   };
 }
 
@@ -249,7 +279,7 @@ async function nextStepsFromLLM(
     reasoningEffort: 'low',
     abortSignal: ctx.signal,
   });
-  if (!response) return undefined;
+  if (!response) return undefined; // Tool call was executed, no need to do anything
 
   const { steps: responseSteps } = parseFeature(response);
   const nextSteps = deltaSteps(ctx.steps, responseSteps).filter((s) => s.match(/^when\b/i));
@@ -318,13 +348,18 @@ export async function generateFeature(opts: Options): Promise<Result> {
       };
     }
 
-    const tools = ctx.steps.length > ctx.feature.steps.length ? buildToolset(ctx) : undefined;
+    const tools = buildToolset(ctx);
     const proposed = await nextStepsFromLLM(ctx, system, tools);
-    if (!proposed) continue;
+    if (!proposed) {
+      if (ctx.isDone) break;
+      continue;
+    }
 
     const result = await validateAndRun(ctx, proposed.responseText, proposed.nextSteps);
     if (!result) continue;
 
     await finalizeSuccess(ctx, result);
   }
+
+  return { status: 'passed', feature: { ...ctx.feature, steps: ctx.steps, comments: undefined } };
 }

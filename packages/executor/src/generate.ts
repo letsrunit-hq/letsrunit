@@ -28,7 +28,7 @@ export default async function generate(
 
   const journal = opts.journal ?? Journal.nil();
   const controller = await Controller.launch({ headless: opts.headless, baseURL: base, journal });
-  const signal = AbortSignal.timeout(opts.timeout ?? 300_000/* 5 minutes */);
+  const signal = opts.timeout ? AbortSignal.timeout(opts.timeout) : undefined;
 
   try {
     return await generateFeature({

@@ -4,13 +4,14 @@ import { runStep } from '../helpers';
 
 vi.mock('@letsrunit/mailbox', () => ({
   receiveMail: vi.fn(async () => []),
+  toEml: vi.fn(() => 'eml-data'),
 }));
 
 vi.mock('@letsrunit/utils', async (orig) => {
   const actual = await (orig as any)();
   return {
     ...actual,
-    asFilename: vi.fn((s: string) => `fn-${s}`),
+    asFilename: vi.fn((s: string, ext?: string) => (ext ? `fn-${s}.${ext}` : `fn-${s}`)),
     textToHtml: vi.fn((t: string) => `<p>${t}</p>`),
   };
 });
@@ -67,7 +68,7 @@ describe('steps/mailbox (definitions)', () => {
     expect(setContent).toHaveBeenCalledWith('<p>plain</p>', { waitUntil: 'domcontentloaded' });
   });
 
-  it('Then mailbox received an email: waits with timeout and attaches correct payload for html', async () => {
+  it('Then mailbox received an email: waits with timeout and attaches correct payload for eml', async () => {
     const { receiveMail } = await import('@letsrunit/mailbox');
     const { asFilename } = await import('@letsrunit/utils');
     (receiveMail as any).mockResolvedValueOnce([{ subject: 'Welcome!', html: '<b>w</b>', text: 'w' }]);
@@ -85,14 +86,14 @@ describe('steps/mailbox (definitions)', () => {
       timeout: 120_000,
       limit: 1,
     });
-    expect(asFilename).toHaveBeenCalledWith('Welcome!');
-    expect(attach).toHaveBeenCalledWith('<b>w</b>', {
-      mediaType: 'text/html',
-      fileName: 'fn-Welcome!.email.html',
+    expect(asFilename).toHaveBeenCalledWith('Welcome!', 'eml');
+    expect(attach).toHaveBeenCalledWith('eml-data', {
+      mediaType: 'message/rfc822',
+      fileName: 'fn-Welcome!.eml',
     });
   });
 
-  it('Then mailbox received an email: attaches text when no html', async () => {
+  it('Then mailbox received an email: attaches eml even when no html', async () => {
     const { receiveMail } = await import('@letsrunit/mailbox');
     const { asFilename } = await import('@letsrunit/utils');
     (receiveMail as any).mockResolvedValueOnce([{ subject: 'Plain', text: 'Body' }]);
@@ -110,10 +111,10 @@ describe('steps/mailbox (definitions)', () => {
       timeout: 120_000,
       limit: 1,
     });
-    expect(asFilename).toHaveBeenCalledWith('Plain');
-    expect(attach).toHaveBeenCalledWith('Body', {
-      mediaType: 'text/plain',
-      fileName: 'fn-Plain.email.txt',
+    expect(asFilename).toHaveBeenCalledWith('Plain', 'eml');
+    expect(attach).toHaveBeenCalledWith('eml-data', {
+      mediaType: 'message/rfc822',
+      fileName: 'fn-Plain.eml',
     });
   });
 });

@@ -5,12 +5,14 @@ export function splitUrl(url: string): { base: string; path: string } {
   return { base, path };
 }
 
-export function asFilename(name: string): string {
-  return name
+export function asFilename(name: string, ext?: string): string {
+  const filename = name
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9]+/g, '-')   // collapse to dashes
     .replace(/^-+|-+$/g, '');      // trim dashes
+
+  return filename + (ext ? `.${ext}` : '');
 }
 
 // Build a regex from the pattern (eg `/books/:id`) to extract params
