@@ -9,7 +9,7 @@
   "scripts": {
     "cli": "yarn workspace cli dev",
     "test": "yarn workspaces foreach -ptA run test",
-    "supabase:reset": "yarn supabase stop && ( docker volume ls --filter label=com.supabase.cli.project=basejump | grep 'supabase_' | awk '{print $2}' | xargs docker volume rm ) && yarn supabase start"
+    "db:reset": "yarn supabase reset"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
