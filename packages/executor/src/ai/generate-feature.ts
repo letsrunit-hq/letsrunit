@@ -5,7 +5,7 @@ import { Journal } from '@letsrunit/journal';
 import { receiveMail } from '@letsrunit/mailbox';
 import type { Snapshot } from '@letsrunit/playwright';
 import { splitUrl, statusSymbol, textToHtml } from '@letsrunit/utils';
-import { ModelMessage, type Tool, ToolSet } from 'ai';
+import type { ModelMessage, ToolSet } from 'ai';
 import * as z from 'zod';
 import type { Result } from '../types';
 import { analyseEmail } from './analyse-email';
@@ -104,12 +104,7 @@ interface GenerationContext {
   signal?: AbortSignal;
 }
 
-const publishTool: Tool = {
-  description: 'Publish the feature.',
-  inputSchema: z.object({}),
-};
-
-const checkMailboxTool: Tool = {
+const checkMailboxTool = {
   description: 'Call this tools when you expected a mail to be delivered based on the HTML or last step.',
   inputSchema: z.object({
     address: z.string().describe('email address of the mail account'),
@@ -211,10 +206,12 @@ function buildToolset(ctx: GenerationContext): ToolSet | undefined {
 
   return {
     publish: {
-      ...publishTool,
+      description: 'Publish the feature.',
+      inputSchema: z.object({}),
       execute() {
         ctx.isDone = true;
-      }
+        return 'done';
+      },
     },
     checkMailbox: {
       ...checkMailboxTool,
@@ -250,10 +247,7 @@ function buildMailboxExecute(ctx: GenerationContext) {
     if (cta) steps.push(`When I click \`${cta.selector}\``);
     if (!cta) steps.push('When I go back to the previous page');
 
-    const result = await ctx.controller.run(
-      makeFeature({ name: 'handle email', steps }),
-      { signal: ctx.signal },
-    );
+    const result = await ctx.controller.run(makeFeature({ name: 'handle email', steps }), { signal: ctx.signal });
 
     addSuccessfulSteps(ctx, result);
 
