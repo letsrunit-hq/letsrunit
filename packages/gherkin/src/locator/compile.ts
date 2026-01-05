@@ -22,7 +22,13 @@ type RawSelector = {
   raw: string;            // backticked Playwright selector, without the backticks
 };
 
-type Selector = RoleSelector | TagSelector | RawSelector;
+type DateSelector = {
+  type: 'Selector';
+  mode: 'date';
+  name: string;
+};
+
+type Selector = RoleSelector | TagSelector | RawSelector | DateSelector;
 
 type Predicate = { type: 'HasDescendant'; selector: Selector };
 
@@ -77,6 +83,10 @@ function getByTextSelector(text: string | RegExp, props = ''): string {
   return 'text=' + escapeForTextSelector(text) + (props ? ` ${props}` : '');
 }
 
+function getByDateSelector(text: string, props = ''): string {
+  return 'date=' + text.trim() + (props ? ` ${props}` : '');
+}
+
 function getByRoleSelector(role: string, name: string | RegExp = '', props = ''): string {
   return `role=${role}` + (name ? ` [name=${escapeForAttributeSelector(name)}]` : '') + (props ? ` ${props}` : '');
 }
@@ -91,6 +101,8 @@ function compileBaseSelector(sel: Selector): string {
       return sel.raw;
     case 'tag':
       return sel.tag;
+    case 'date':
+      return getByDateSelector(sel.name);
     case 'role': {
       const r = sel.role.toLowerCase();
       if (r === 'field') {

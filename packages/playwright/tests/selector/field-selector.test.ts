@@ -1,8 +1,10 @@
+// noinspection HtmlUnknownAttribute
+
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, beforeEach } from 'vitest';
-import { createFieldEngine } from '../src';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { createFieldEngine } from '../../src';
 
 const engine = createFieldEngine();
 
@@ -27,10 +29,10 @@ describe('createFieldEngine query/queryAll', () => {
     `;
 
     const all = engine.queryAll(document, 'first');
-    expect(all.map((e) => (e as HTMLElement).id)).toEqual(['first']);
+    expect(all.map((e) => (e as HTMLElement).id)).to.eq(['first']);
 
     const one = engine.query(document, 'first');
-    expect((one as HTMLElement | null)?.id).toBe('first');
+    expect((one as HTMLElement | null)?.id).to.eq('first');
   });
 
   it('finds inputs by <label for="...">', () => {
@@ -40,8 +42,8 @@ describe('createFieldEngine query/queryAll', () => {
     `;
 
     const all = engine.queryAll(document, 'email address');
-    expect(all).toHaveLength(1);
-    expect((all[0] as HTMLElement).id).toBe('email');
+    expect(all).to.have.length(1);
+    expect((all[0] as HTMLElement).id).to.eq('email');
   });
 
   it('finds inputs by aria-labelledby', () => {
@@ -52,8 +54,8 @@ describe('createFieldEngine query/queryAll', () => {
     `;
 
     const all = engine.queryAll(document, 'phone number');
-    expect(all).toHaveLength(1);
-    expect((all[0] as HTMLElement).id).toBe('phone');
+    expect(all).to.have.length(1);
+    expect((all[0] as HTMLElement).id).to.eq('phone');
   });
 
   it('finds controls by aria-label', () => {
@@ -62,8 +64,8 @@ describe('createFieldEngine query/queryAll', () => {
       <div role="combobox" id="country" aria-label="Country"></div>
     `;
 
-    expect(engine.queryAll(document, 'search').map((e) => (e as HTMLElement).id)).toEqual(['search']);
-    expect(engine.queryAll(document, 'country').map((e) => (e as HTMLElement).id)).toEqual(['country']);
+    expect(engine.queryAll(document, 'search').map((e) => (e as HTMLElement).id)).to.eq(['search']);
+    expect(engine.queryAll(document, 'country').map((e) => (e as HTMLElement).id)).to.eq(['country']);
   });
 
   it('matches by placeholder on input/textarea and custom role elements', () => {
@@ -74,15 +76,15 @@ describe('createFieldEngine query/queryAll', () => {
     `;
 
     const byBio = engine.queryAll(document, 'describe');
-    expect(byBio).toHaveLength(1);
-    expect((byBio[0] as HTMLElement).id).toBe('bio');
+    expect(byBio).to.have.length(1);
+    expect((byBio[0] as HTMLElement).id).to.eq('bio');
 
     const byCustom = engine.queryAll(document, 'type');
-    expect(byCustom).toHaveLength(1);
-    expect((byCustom[0] as HTMLElement).id).toBe('custom');
+    expect(byCustom).to.have.length(1);
+    expect((byCustom[0] as HTMLElement).id).to.eq('custom');
 
     const none = engine.queryAll(document, 'missing');
-    expect(none).toHaveLength(0);
+    expect(none).to.have.length(0);
   });
 
   it('includes various ARIA role widgets and contenteditable as candidates', () => {
@@ -95,10 +97,10 @@ describe('createFieldEngine query/queryAll', () => {
 
     const ids = engine.queryAll(document, 'volume').concat(engine.queryAll(document, 'quantity')).concat(engine.queryAll(document, 'rich text')).map((e) => (e as HTMLElement).id);
 
-    expect(ids.sort()).toEqual(['ce', 'qty', 'volume']);
+    expect(ids.sort()).to.eq(['ce', 'qty', 'volume']);
 
     // Ensure non-candidates like button are not matched even if text overlaps
-    expect(engine.queryAll(document, 'Not a field')).toHaveLength(0);
+    expect(engine.queryAll(document, 'Not a field')).to.have.length(0);
   });
 
   it('query returns the first match in DOM order and null when none', () => {
@@ -108,10 +110,10 @@ describe('createFieldEngine query/queryAll', () => {
     `;
 
     const first = engine.query(document, 'search');
-    expect(first?.id).toBe('a');
+    expect(first?.id).to.eq('a');
 
     const none = engine.query(document, 'no-such-label');
-    expect(none).toBeNull();
+    expect(none).to.be.null;
   });
 
   it('prefers the exact text', () => {
@@ -121,7 +123,7 @@ describe('createFieldEngine query/queryAll', () => {
     `;
 
     const first = engine.query(document, 'search');
-    expect(first?.id).toBe('b');
+    expect(first?.id).to.eq('b');
   });
 
   it('finds the bol.com search field', () => {
@@ -141,9 +143,9 @@ describe('createFieldEngine query/queryAll', () => {
     `;
 
     const aria = engine.query(document, '"Zoeken"i');
-    expect(aria?.id).toBe('searchfor');
+    expect(aria?.id).to.eq('searchfor');
 
     const placeholder = engine.query(document, 'Waar ben je naar op zoek?');
-    expect(placeholder?.id).toBe('searchfor');
+    expect(placeholder?.id).to.eq('searchfor');
   });
 });
