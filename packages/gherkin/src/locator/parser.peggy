@@ -35,6 +35,7 @@ WithPart
 
 Selector
   = RawSel
+  / DateSel
   / RoleSelFull
   / TagSelFull
 
@@ -50,6 +51,16 @@ RoleSelFull
   = TheOpt? base:RoleSel
     { return { type: "Selector", mode: "role", role: base.role, name: base.name }; }
 
+DateSel
+  = "date"i _ OfOpt? n:DateValue
+    { return { type: "Selector", mode: "date", name: n }; }
+
+OfOpt = "of"i ![a-zA-Z] _
+
+DateValue
+  = s:StringLit { return `"${s}"`; }
+  / $( (!(_ "within"i ![a-zA-Z]) .) + )
+
 // Role selection rules with disambiguation:
 // - If the identifier is a known role keyword (button, link, field, image, text), it's a role.
 // - Otherwise, it is treated as a role only when followed by a quoted name.
@@ -60,7 +71,7 @@ RoleSel
     r:Ident _ n:StringLit       { return { role: r, name: n }; }
 
 KnownRole
-  = "button"i / "link"i / "field"i / "image"i / "text"i
+  = "button"i / "link"i / "field"i / "image"i / "text"i / "date"i
 
 // Tag-first (e.g. div, section, button)
 TagSelFull

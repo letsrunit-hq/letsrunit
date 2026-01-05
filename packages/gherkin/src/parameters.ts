@@ -1,5 +1,6 @@
-import { compileLocator, locatorRegexp } from './locator';
+import { parseDateString } from './date';
 import { KeyCombo, parseKeyCombo } from './keys/parse-key-combo';
+import { compileLocator, locatorRegexp } from './locator';
 
 export interface ParameterTypeDefinition<T> {
   name: string;
@@ -14,7 +15,11 @@ function enumToRegexp(values: readonly string[]) {
   return new RegExp(`(${satinized.join('|')})`);
 }
 
-export function booleanParameter(trueValue: string, falseValue: string, regexp?: RegExp): ParameterTypeDefinition<boolean> {
+export function booleanParameter(
+  trueValue: string,
+  falseValue: string,
+  regexp?: RegExp,
+): ParameterTypeDefinition<boolean> {
   return {
     name: trueValue.replace(/\W/, '_'),
     regexp: regexp ?? enumToRegexp([trueValue, falseValue]),
@@ -22,7 +27,10 @@ export function booleanParameter(trueValue: string, falseValue: string, regexp?:
   };
 }
 
-export function enumParameter<const T extends readonly string[]>(values: T, regexp?: RegExp): ParameterTypeDefinition<T[number]> {
+export function enumParameter<const T extends readonly string[]>(
+  values: T,
+  regexp?: RegExp,
+): ParameterTypeDefinition<T[number]> {
   return {
     name: values[0].replace(/\W/, '_'),
     regexp: regexp ?? enumToRegexp(values),
@@ -30,13 +38,15 @@ export function enumParameter<const T extends readonly string[]>(values: T, rege
   };
 }
 
-export function valueParameter(name = 'value'): ParameterTypeDefinition<string | number> {
+export function valueParameter(name = 'value'): ParameterTypeDefinition<string | number | Date> {
   return {
     name,
-    regexp: /"((?:[^"\\]+|\\.)*)"|(-?\d+(?:\.\d+)?)/,
-    transformer: (str?: string, num?: string): string | number => {
+    regexp:
+      /"((?:[^"\\]+|\\.)*)"|(-?\d+(?:\.\d+)?)|date (?:of )?((?:today|tomorrow|yesterday|\d+ \w+ (?:ago|from now))(?: (?:at )?\d\d?:\d\d(?:\d\d)?)?|"((?:[^"\\]+|\\.)*)")/,
+    transformer: (str?: string, num?: string, date?: string): string | number | Date => {
       if (str != null) return str;
       if (num != null) return Number(num);
+      if (date != null) return parseDateString(date);
       throw new Error('Unexpected value');
     },
   };
