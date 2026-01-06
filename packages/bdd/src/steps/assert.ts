@@ -4,7 +4,7 @@ import { Then } from './wrappers';
 
 const WAIT_TIMEOUT = 5000;
 
-export const see = Then("I {see|don't see} {locator}", async function (visible: boolean, selector: string) {
+export const see = Then("I {see|dont see} {locator}", async function (visible: boolean, selector: string) {
   const el = await locator(this.page, selector);
   await expectOrNot(el, visible).toBeVisible({ timeout: WAIT_TIMEOUT });
 });

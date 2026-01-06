@@ -5,7 +5,7 @@ import { When } from './wrappers';
 const TIMEOUT = 500;
 const DELAY = 500;
 
-export const fill = When('I fill {locator} with {value}', async function (selector: string, value: string | number) {
+export const fill = When('I fill {locator} with {value}', async function (selector: string, value: string | number | Date) {
   const el = await locator(this.page, selector);
   await el.fill(String(value), { timeout: TIMEOUT });
   await sleep(DELAY);

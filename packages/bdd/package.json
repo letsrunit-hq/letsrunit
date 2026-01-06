@@ -4,7 +4,8 @@
   "scripts": {
     "test": "vitest run",
     "test:cov": "vitest run --coverage",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "gen:stub": "tsx scripts/generate-stub.ts"
   },
   "packageManager": "yarn@4.10.3",
   "main": "src/index.ts",
