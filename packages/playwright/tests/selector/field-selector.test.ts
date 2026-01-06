@@ -28,10 +28,10 @@ describe('createFieldEngine query/queryAll', () => {
       </form>
     `;
 
-    const all = engine.queryAll(document, 'first');
-    expect(all.map((e) => (e as HTMLElement).id)).to.eq(['first']);
+    const all = engine.queryAll(document, 'first name');
+    expect(all.map((e) => (e as HTMLElement).id)).to.deep.equal(['first']);
 
-    const one = engine.query(document, 'first');
+    const one = engine.query(document, 'first name');
     expect((one as HTMLElement | null)?.id).to.eq('first');
   });
 
@@ -64,8 +64,8 @@ describe('createFieldEngine query/queryAll', () => {
       <div role="combobox" id="country" aria-label="Country"></div>
     `;
 
-    expect(engine.queryAll(document, 'search').map((e) => (e as HTMLElement).id)).to.eq(['search']);
-    expect(engine.queryAll(document, 'country').map((e) => (e as HTMLElement).id)).to.eq(['country']);
+    expect(engine.queryAll(document, 'search').map((e) => (e as HTMLElement).id)).to.deep.equal(['search']);
+    expect(engine.queryAll(document, 'country').map((e) => (e as HTMLElement).id)).to.deep.equal(['country']);
   });
 
   it('matches by placeholder on input/textarea and custom role elements', () => {
@@ -75,11 +75,11 @@ describe('createFieldEngine query/queryAll', () => {
       <input id="nope" />
     `;
 
-    const byBio = engine.queryAll(document, 'describe');
+    const byBio = engine.queryAll(document, 'describe yourself');
     expect(byBio).to.have.length(1);
     expect((byBio[0] as HTMLElement).id).to.eq('bio');
 
-    const byCustom = engine.queryAll(document, 'type');
+    const byCustom = engine.queryAll(document, 'type here');
     expect(byCustom).to.have.length(1);
     expect((byCustom[0] as HTMLElement).id).to.eq('custom');
 
@@ -97,7 +97,7 @@ describe('createFieldEngine query/queryAll', () => {
 
     const ids = engine.queryAll(document, 'volume').concat(engine.queryAll(document, 'quantity')).concat(engine.queryAll(document, 'rich text')).map((e) => (e as HTMLElement).id);
 
-    expect(ids.sort()).to.eq(['ce', 'qty', 'volume']);
+    expect(ids.sort()).to.deep.equal(['ce', 'qty', 'volume']);
 
     // Ensure non-candidates like button are not matched even if text overlaps
     expect(engine.queryAll(document, 'Not a field')).to.have.length(0);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isBinary, isPlainObject, isRecord } from '../src';
+import { isBinary, isEntity, isPlainObject } from '../src';
 
 describe('isBinary', () => {
   it('returns true for Uint8Array instances', () => {
@@ -35,13 +35,13 @@ describe('isPlainObject', () => {
 
 describe('isRecord', () => {
   it('returns true when the value has an id property', () => {
-    expect(isRecord({ id: 123, name: 'record' })).toBe(true);
-    expect(isRecord({ id: undefined })).toBe(true);
+    expect(isEntity({ id: 123, name: 'record' })).toBe(true);
+    expect(isEntity({ id: undefined })).toBe(true);
   });
 
   it('returns false for values without id', () => {
-    expect(isRecord({ name: 'missing-id' })).toBe(false);
-    expect(isRecord(null)).toBe(false);
-    expect(isRecord('id')).toBe(false);
+    expect(isEntity({ name: 'missing-id' })).toBe(false);
+    expect(isEntity(null)).toBe(false);
+    expect(isEntity('id')).toBe(false);
   });
 });

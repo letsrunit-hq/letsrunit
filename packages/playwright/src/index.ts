@@ -1,4 +1,5 @@
 export * from './browser';
+export * from './field';
 export * from './locator';
 export * from './selector';
 export * from './snapshot';

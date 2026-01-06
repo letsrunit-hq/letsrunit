@@ -3,6 +3,7 @@
   "packageManager": "yarn@4.10.3",
   "workspaces": [
     "apps/*",
+    "compat/*",
     "packages/*",
     "packages/@types/*"
   ],

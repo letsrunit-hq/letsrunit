@@ -12,6 +12,6 @@ export function isPlainObject(value: unknown): value is Record<string, unknown> 
   return Object.getPrototypeOf(value) === Object.prototype;
 }
 
-export function isRecord<T extends {id: any}>(value: null | undefined | {} | T): value is T {
+export function isEntity<T extends {id: any}>(value: null | undefined | {} | T): value is T {
   return typeof value === 'object' && value !== null && 'id' in value;
 }

@@ -4,6 +4,7 @@ import { compileLocator, locatorRegexp } from './locator';
 
 export interface ParameterTypeDefinition<T> {
   name: string;
+  placeholder: string;
   regexp: readonly RegExp[] | readonly string[] | RegExp | string;
   transformer?: (...match: string[]) => T;
   useForSnippets?: boolean;
@@ -22,6 +23,7 @@ export function booleanParameter(
 ): ParameterTypeDefinition<boolean> {
   return {
     name: trueValue.replace(/\W/, '_'),
+    placeholder: `${trueValue}|${falseValue}`,
     regexp: regexp ?? enumToRegexp([trueValue, falseValue]),
     transformer: (value: string): boolean => value === trueValue,
   };
@@ -33,6 +35,7 @@ export function enumParameter<const T extends readonly string[]>(
 ): ParameterTypeDefinition<T[number]> {
   return {
     name: values[0].replace(/\W/, '_'),
+    placeholder: values.join('|'),
     regexp: regexp ?? enumToRegexp(values),
     transformer: (value: string): string => value,
   };
@@ -41,6 +44,7 @@ export function enumParameter<const T extends readonly string[]>(
 export function valueParameter(name = 'value'): ParameterTypeDefinition<string | number | Date> {
   return {
     name,
+    placeholder: name,
     regexp:
       /"((?:[^"\\]+|\\.)*)"|(-?\d+(?:\.\d+)?)|date (?:of )?((?:today|tomorrow|yesterday|\d+ \w+ (?:ago|from now))(?: (?:at )?\d\d?:\d\d(?:\d\d)?)?|"((?:[^"\\]+|\\.)*)")/,
     transformer: (str?: string, num?: string, date?: string): string | number | Date => {
@@ -55,6 +59,7 @@ export function valueParameter(name = 'value'): ParameterTypeDefinition<string |
 export function locatorParameter(name = 'locator'): ParameterTypeDefinition<string> {
   return {
     name,
+    placeholder: name,
     regexp: locatorRegexp,
     transformer: (locator: string) => {
       try {
@@ -70,6 +75,7 @@ export function locatorParameter(name = 'locator'): ParameterTypeDefinition<stri
 export function keysParameter(name = 'keys'): ParameterTypeDefinition<KeyCombo> {
   return {
     name,
+    placeholder: name,
     regexp: /"([^"]+)"|'([^']+)'/,
     transformer: (doubleQuoted?: string, singleQuoted?: string): KeyCombo => {
       const raw = (doubleQuoted ?? singleQuoted ?? '').trim();

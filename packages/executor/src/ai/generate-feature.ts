@@ -43,10 +43,14 @@ Only use the following \`When\` steps:
 
 * \`{locator}\` - A readable description of a page element
 * \`{keys}\` - Keyboard input like "Enter" or "CTRL + S"
-* \`{value}\` - A string or number like "Hello", 10
+* \`{value}\` - A string, number, or date, for example "Hello", 10, \`date of tomorrow\`, or \`date "2026-02-22"\`
 
-Locator rules:
+**Locator rules**:
 ${locatorRules}
+
+**Hint**:
+Use relative dates for \`{locator}\` and \`{value}\` when the date is calculated from or depends on the current time,
+and use fixed dates only when the date is explicitly defined, historical, or must match an exact calendar value.
 
 ## Workflow
 

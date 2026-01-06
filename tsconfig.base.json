@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2024",
-    "lib": ["esnext"],
+    "lib": ["ES2024"],
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,

@@ -1,10 +1,10 @@
-import { describe, expect, it, vi } from 'vitest';
 import type { Browser, Page } from '@playwright/test';
+import { describe, expect, it, vi } from 'vitest';
 import { browse } from '../src';
 
 describe('browse', () => {
   it('creates a context and page', async () => {
-    const page = { } as unknown as Page;
+    const page = {} as unknown as Page;
 
     const addInitScriptMock = vi.fn().mockResolvedValue(undefined);
     const newPageMock = vi.fn().mockResolvedValue(page);
