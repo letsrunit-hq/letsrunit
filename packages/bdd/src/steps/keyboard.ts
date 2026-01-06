@@ -1,5 +1,9 @@
 import type { KeyCombo } from '@letsrunit/gherkin';
+import { sleep } from '@letsrunit/utils';
 import { When } from './wrappers';
+
+const TIMEOUT = 500;
+const DELAY = 500;
 
 export const press = When('I press {keys}', async function (combo: KeyCombo) {
   // Hold modifiers
@@ -10,4 +14,11 @@ export const press = When('I press {keys}', async function (combo: KeyCombo) {
 
   // Release modifiers (reverse order)
   for (const m of combo.modifiers.toReversed()) await this.page.keyboard.up(m);
+
+  await sleep(DELAY);
+});
+
+export const type = When('I type {string}', async function (value: string) {
+  await this.page.keyboard.type(value, { delay: 200, timeout: TIMEOUT });
+  await sleep(DELAY);
 });

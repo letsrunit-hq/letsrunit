@@ -14,7 +14,7 @@ export const createFieldEngine = () => ({
 
     const sanitize = (s: string) => s
       .toLowerCase()
-      .replace(/[^\w\s]+/, '')
+      .replace(/[^\w\s]+/g, '')
       .replace(/\s{2,}/g, ' ')
       .replace(/\*\s*$/, '')
       .trim();

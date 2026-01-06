@@ -3,9 +3,9 @@ import type { World } from '@letsrunit/bdd';
 import { toFile } from '@letsrunit/bdd/src/utils/file';
 import type { StepDescription, StepResult } from '@letsrunit/gherker';
 import { ParsedStep } from '@letsrunit/gherker/src/types';
-import { createFieldEngine, parseFeature } from '@letsrunit/gherkin';
+import { parseFeature } from '@letsrunit/gherkin';
 import { Journal } from '@letsrunit/journal';
-import { browse, locator, screenshot, snapshot } from '@letsrunit/playwright';
+import { browse, createDateEngine, createFieldEngine, locator, screenshot, snapshot } from '@letsrunit/playwright';
 import { formatHtml } from '@letsrunit/playwright/src/format-html';
 import { scrollToCenter } from '@letsrunit/playwright/src/scroll';
 import { clean, hash, omit, type RequireOnly } from '@letsrunit/utils';
@@ -50,6 +50,7 @@ export class Controller {
     if (this.fieldSelectorIsRegistered) return;
     try {
       await selectors.register('field', createFieldEngine);
+      await selectors.register('date', createDateEngine);
     } catch {}
   }
 

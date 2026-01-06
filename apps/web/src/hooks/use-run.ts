@@ -1,7 +1,7 @@
 import { useAbortController } from '@/hooks/use-abort-controller';
 import useSupabase from '@/hooks/use-supabase';
 import { type Data, fromData, getJournal, getRun, type Journal, type Run, RunSchema } from '@letsrunit/model';
-import { isRecord } from '@letsrunit/utils';
+import { isEntity } from '@letsrunit/utils';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { UUID } from 'node:crypto';
 import { useEffect, useState } from 'react';
@@ -64,7 +64,7 @@ export function useRun(input: string | Run | undefined, opts: UseRunOptions = {}
         'postgres_changes',
         { event: '*', schema: 'public', table: 'runs', filter: `id=eq.${id}` },
         (payload) => {
-          if (!isRecord(payload.new)) return;
+          if (!isEntity(payload.new)) return;
           try {
             setRun(fromData(RunSchema)(payload.new));
           } catch (e: any) {

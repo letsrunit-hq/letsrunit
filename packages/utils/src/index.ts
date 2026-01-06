@@ -1,3 +1,4 @@
+export * from './date';
 export * from './hash';
 export * from './html';
 export * from './join';

@@ -1,7 +1,7 @@
 import { useAbortController } from '@/hooks/use-abort-controller';
 import useSupabase from '@/hooks/use-supabase';
 import { type Data, type Feature, FeatureSchema, fromData, getFeature } from '@letsrunit/model';
-import { isRecord } from '@letsrunit/utils';
+import { isEntity } from '@letsrunit/utils';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { UUID } from 'node:crypto';
 import { useEffect, useState } from 'react';
@@ -50,7 +50,7 @@ export function useFeature(input: string | Feature | undefined, opts: UseFeature
         'postgres_changes',
         { event: '*', schema: 'public', table: 'features', filter: `id=eq.${id}` },
         (payload) => {
-          if (!isRecord(payload.new)) return; // Ignore delete
+          if (!isEntity(payload.new)) return; // Ignore delete
           try {
             setFeature(fromData(FeatureSchema)(payload.new));
           } catch (e: any) {

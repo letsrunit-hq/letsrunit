@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
 import type { Page } from '@playwright/test';
+import { describe, expect, it, vi } from 'vitest';
 import { suppressInterferences } from '../src';
 
 function makeBasePageMock() {
@@ -15,11 +15,11 @@ function makeBasePageMock() {
     locator: locator as any,
   } as unknown as Page & {
     __m: {
-      on: typeof on,
-      evaluate: typeof evaluate,
-      getByRole: typeof getByRole,
-      locator: typeof locator,
-    }
+      on: typeof on;
+      evaluate: typeof evaluate;
+      getByRole: typeof getByRole;
+      locator: typeof locator;
+    };
   };
 }
 
@@ -27,10 +27,16 @@ function makeLocator(overrides?: Partial<any>) {
   const click = vi.fn().mockResolvedValue(undefined);
   const scrollIntoViewIfNeeded = vi.fn().mockResolvedValue(undefined);
   const count = vi.fn().mockResolvedValue(0);
-  const first = vi.fn().mockImplementation(function(this: any) { return this; });
-  const getByRole = function(this: any) { return this; } as any;
+  const first = vi.fn().mockImplementation(function (this: any) {
+    return this;
+  });
+  const getByRole = function (this: any) {
+    return this;
+  } as any;
 
-  const filter = function(this: any) { return this; } as any;
+  const filter = function (this: any) {
+    return this;
+  } as any;
 
   return {
     click,
@@ -77,7 +83,9 @@ describe('suppressInterferences', () => {
     const acc = (page.locator as any).mock.calls.find((c: any[]) => c[0] === accSelector);
     expect(acc, 'should query OneTrust accept selector').toBeTruthy();
 
-    const acceptLoc = (page.locator as any).mock.results.find((r: any, i: number) => (page.locator as any).mock.calls[i][0] === accSelector)?.value;
+    const acceptLoc = (page.locator as any).mock.results.find(
+      (r: any, i: number) => (page.locator as any).mock.calls[i][0] === accSelector,
+    )?.value;
     expect(acceptLoc.click).toHaveBeenCalledTimes(1);
   });
 
@@ -102,7 +110,9 @@ describe('suppressInterferences', () => {
       settleAfterActionMs: 0,
     });
 
-    const rejectLoc = (page.locator as any).mock.results.find((r: any, i: number) => (page.locator as any).mock.calls[i][0] === rejectSelector)?.value;
+    const rejectLoc = (page.locator as any).mock.results.find(
+      (r: any, i: number) => (page.locator as any).mock.calls[i][0] === rejectSelector,
+    )?.value;
     expect(rejectLoc?.click).toHaveBeenCalledTimes(1);
   });
 
@@ -114,9 +124,7 @@ describe('suppressInterferences', () => {
     page.getByRole = vi.fn(() => makeLocator({ count: vi.fn().mockResolvedValue(0) })) as any;
 
     // overlay heuristic returns true once
-    const evaluate = vi.fn()
-      .mockResolvedValueOnce(true)
-      .mockResolvedValue(false);
+    const evaluate = vi.fn().mockResolvedValueOnce(true).mockResolvedValue(false);
     page.evaluate = evaluate as any;
 
     await suppressInterferences(page as unknown as Page, {

@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Page } from '@playwright/test';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import * as waitModule from '../src/wait';
 
 const { waitForIdle, waitForMeta } = waitModule;
@@ -12,10 +12,7 @@ afterEach(() => {
 
 describe('waitForIdle', () => {
   it('waits for DOM content loaded and network idle states with the provided timeout', async () => {
-    const waitForLoadState = vi
-      .fn()
-      .mockResolvedValueOnce(undefined)
-      .mockResolvedValueOnce(undefined);
+    const waitForLoadState = vi.fn().mockResolvedValueOnce(undefined).mockResolvedValueOnce(undefined);
 
     const page = { waitForLoadState } as unknown as Page;
 

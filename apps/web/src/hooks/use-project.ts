@@ -1,7 +1,7 @@
 import { useAbortController } from '@/hooks/use-abort-controller';
 import useSupabase from '@/hooks/use-supabase';
 import { type Data, fromData, getProject, type Project, ProjectSchema } from '@letsrunit/model';
-import { isRecord } from '@letsrunit/utils';
+import { isEntity } from '@letsrunit/utils';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { UUID } from 'node:crypto';
 import { useEffect, useState } from 'react';
@@ -50,7 +50,7 @@ export function useProject(input: string | Project | undefined, opts: UseProject
         'postgres_changes',
         { event: '*', schema: 'public', table: 'projects', filter: `id=eq.${id}` },
         (payload) => {
-          if (!isRecord(payload.new)) return;
+          if (!isEntity(payload.new)) return;
           try {
             setProject(fromData(ProjectSchema)(payload.new));
           } catch (e: any) {
