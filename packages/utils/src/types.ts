@@ -27,3 +27,6 @@ export type AtLeastOne<T, K extends keyof T = keyof T> =
       [P in K]-?: Required<Pick<T, P>> & Partial<Omit<Pick<T, K>, P>>;
     }[K];
 
+export type Cartesian<T extends readonly (readonly unknown[])[]> = Array<{
+  [K in keyof T]: T[K] extends readonly (infer U)[] ? U : never;
+}>;
