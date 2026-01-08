@@ -1,3 +1,5 @@
+export * from './cartesian';
+export * from './chain';
 export * from './date';
 export * from './hash';
 export * from './html';

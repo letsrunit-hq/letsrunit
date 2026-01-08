@@ -1,6 +1,6 @@
 import { locator } from '@letsrunit/playwright';
-import { setFieldValue } from '@letsrunit/playwright/src/field';
 import { sleep } from '@letsrunit/utils';
+import { setFieldValue } from 'packages/playwright/src/field/field';
 import { When } from './wrappers';
 
 const TIMEOUT = 500;
