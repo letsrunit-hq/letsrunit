@@ -140,9 +140,114 @@ test.describe('Inline PrimeReact calendar', () => {
     await setFieldValue(page.locator('[data-pc-name="calendar"]'), date, { timeout: 500 });
     await expect(page.getByLabel('result')).toContainText(date.toDateString());
   });
+
+  test('with week numbers', async ({ mount, page }) => {
+    await mount(<PrimeReactCalendar inline showWeek />);
+
+    const date = new Date();
+    date.setDate(3);
+
+    await setFieldValue(page.locator('[data-pc-name="calendar"]'), date, { timeout: 500 });
+    await expect(page.getByLabel('result')).toContainText(date.toDateString());
+  });
+
+  test('with multiple values in the past', async ({ mount, page }) => {
+    await mount(<PrimeReactCalendarMultiple inline />);
+
+    const dates = [new Date('2024-07-15'), new Date('2024-07-18')];
+
+    await setFieldValue(page.locator('[data-pc-name="calendar"]'), dates, { timeout: 500 });
+    await expect(page.getByLabel('result')).toContainText('Mon Jul 15 2024');
+    await expect(page.getByLabel('result')).toContainText('Thu Jul 18 2024');
+  });
+
+  test('with multiple values in the future', async ({ mount, page }) => {
+    await mount(<PrimeReactCalendarMultiple inline />);
+
+    const date1 = new Date();
+    date1.setDate(10);
+
+    const date2 = new Date();
+    date2.setMonth(date2.getMonth() + 2);
+    date2.setDate(20);
+
+    const dates = [date1, date2];
+
+    await setFieldValue(page.locator('[data-pc-name="calendar"]'), dates, { timeout: 500 });
+    await expect(page.getByLabel('result')).toContainText(date1.toDateString());
+    await expect(page.getByLabel('result')).toContainText(date2.toDateString());
+  });
+
+  test('with range', async ({ mount, page }) => {
+    await mount(<PrimeReactCalendarRange inline />);
+
+    const dates = { from: new Date('2024-07-15'), to: new Date('2024-07-18') };
+
+    await setFieldValue(page.locator('[data-pc-name="calendar"]'), dates, { timeout: 500 });
+    await expect(page.getByLabel('result')).toContainText('From: Mon Jul 15 2024');
+    await expect(page.getByLabel('result')).toContainText('To: Thu Jul 18 2024');
+  });
+
+  test('with big range', async ({ mount, page }) => {
+    await mount(<PrimeReactCalendarRange inline />);
+
+    const dates = { from: new Date('2024-07-15'), to: new Date('2024-09-18') };
+
+    await setFieldValue(page.locator('[data-pc-name="calendar"]'), dates, { timeout: 500 });
+    await expect(page.getByLabel('result')).toContainText('From: Mon Jul 15 2024');
+    await expect(page.getByLabel('result')).toContainText('To: Wed Sep 18 2024');
+  });
+});
+
+test.describe('Inline multi-month PrimeReact calendar', () => {
+  test('with range', async ({ mount, page }) => {
+    await mount(<PrimeReactCalendarRange numberOfMonths={3} inline />);
+
+    const dateFrom = new Date();
+
+    const dateTo = new Date();
+    dateTo.setMonth(dateTo.getMonth() + 1);
+    dateTo.setDate(18);
+
+    const dates = { from: dateFrom, to: dateTo };
+
+    await setFieldValue(page.locator('[data-pc-name="calendar"]'), dates, { timeout: 500 });
+    await expect(page.getByLabel('result')).toContainText(`From: ${dateFrom.toDateString()}`);
+    await expect(page.getByLabel('result')).toContainText(`To: ${dateTo.toDateString()}`);
+  });
+
+  test('with multiple values in the future', async ({ mount, page }) => {
+    await mount(<PrimeReactCalendarMultiple numberOfMonths={2} inline />);
+
+    const date1 = new Date();
+    date1.setDate(10);
+
+    const date2 = new Date();
+    date2.setMonth(date2.getMonth() + 2);
+    date2.setDate(20);
+
+    const dates = [date1, date2];
+
+    await setFieldValue(page.locator('[data-pc-name="calendar"]'), dates, { timeout: 500 });
+    await expect(page.getByLabel('result')).toContainText(date1.toDateString());
+    await expect(page.getByLabel('result')).toContainText(date2.toDateString());
+  });
 });
 
 test.describe('PrimeReact calendar with readonly input', () => {
+  test('open and close dialog', async ({ mount, page }) => {
+    await mount(<PrimeReactCalendar readOnlyInput />);
+
+    await expect(page.getByRole('dialog')).not.toBeAttached();
+
+    await page.getByLabel('calendar').focus({ timeout: 500 });
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await page.getByLabel('calendar').blur();
+    await expect(page.getByRole('dialog')).not.toBeAttached();
+  });
+
   test('select date in current month', async ({ mount, page }) => {
     await mount(<PrimeReactCalendar readOnlyInput />);
 
@@ -151,6 +256,8 @@ test.describe('PrimeReact calendar with readonly input', () => {
 
     await setFieldValue(page.getByLabel('calendar'), date, { timeout: 500 });
     await expect(page.getByLabel('result')).toContainText(date.toDateString());
+
+    await expect(page.getByRole('dialog')).not.toBeAttached();
   });
 
   test('select date 2 months ago', async ({ mount, page }) => {

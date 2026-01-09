@@ -2,42 +2,57 @@ import { setFieldValue } from '@letsrunit/playwright';
 import { expect, test } from '@playwright/experimental-ct-react';
 
 test.describe('Date fields', () => {
-  test('sets native date', async ({ mount, page }) => {
+  test('set native date', async ({ mount, page }) => {
     await mount(<input type="date" />);
 
     await setFieldValue(page.locator('input'), new Date('2024-07-15'), { timeout: 500 });
     await expect(page.locator('input')).toHaveValue('2024-07-15');
   });
 
-  test('sets native datetime-local', async ({ mount, page }) => {
+  test('set native datetime-local', async ({ mount, page }) => {
     await mount(<input type="datetime-local" />);
 
     await setFieldValue(page.locator('input'), new Date('2024-07-15T22:03'), { timeout: 500 });
     await expect(page.locator('input')).toHaveValue('2024-07-15T22:03');
   });
 
-  test('sets native month', async ({ mount, page }) => {
+  test('set native month', async ({ mount, page }) => {
     await mount(<input type="month" />);
 
     await setFieldValue(page.locator('input'), new Date('2024-07-15'), { timeout: 500 });
     await expect(page.locator('input')).toHaveValue('2024-07');
   });
 
-  test('sets native week', async ({ mount, page }) => {
+  test('set native week', async ({ mount, page }) => {
     await mount(<input type="week" />);
 
     await setFieldValue(page.locator('input'), new Date('2024-07-15'), { timeout: 500 });
     await expect(page.locator('input')).toHaveValue('2024-W29');
   });
 
-  test('sets native time', async ({ mount, page }) => {
+  test('set native time', async ({ mount, page }) => {
     await mount(<input type="time" />);
 
     await setFieldValue(page.locator('input'), new Date('2024-07-15T22:03'), { timeout: 500 });
     await expect(page.locator('input')).toHaveValue('22:03');
   });
 
-  test.describe('sets grouped date', () => {
+  test('set date range', async ({ mount, page }) => {
+    await mount(
+      <div role="group">
+        <input type="date" name="date_from" />
+        <input type="date" name="date_to" />
+      </div>,
+    );
+
+    const range = { from: new Date('2024-07-15'), to: new Date('2024-07-18') };
+
+    await setFieldValue(page.getByRole('group'), range, { timeout: 500 });
+    await expect(page.locator('input[name="date_from"]')).toHaveValue('2024-07-15');
+    await expect(page.locator('input[name="date_to"]')).toHaveValue('2024-07-18');
+  });
+
+  test.describe('set grouped date', () => {
     test('with select month', async ({ mount, page }) => {
       await mount(
         <form>

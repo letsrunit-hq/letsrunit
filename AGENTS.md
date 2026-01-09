@@ -19,7 +19,7 @@ infra/        GCP deploy scripts
 * Yarn v4 workspaces, TypeScript strict, ESM modules.
 * Package names are scoped: `@letsrunit/core`, etc.
 * Format with Prettier defaults.
-* Never define function within functions.
+* Never define function within functions, except for small arrow functions.
 
 ## Code Generation for `web` (Plop)
 

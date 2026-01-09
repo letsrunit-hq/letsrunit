@@ -1,6 +1,6 @@
 import type { Locator } from '@playwright/test';
 import { describe, expect, it, vi } from 'vitest';
-import { setDateGroup } from '../../src';
+import { setDateGroup } from '../../src/field/date-group';
 
 describe('setDateGroup', () => {
   const createMockLocator = () => {
