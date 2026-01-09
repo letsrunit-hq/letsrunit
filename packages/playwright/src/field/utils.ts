@@ -26,6 +26,7 @@ export function formatDateForInput(date: Date, type: string | null): string {
       return `${yyyy}-${mm}-${dd}`;
   }
 }
+
 export function formatDate(d: Date, format: string): string {
   const dd = String(d.getDate()).padStart(2, '0');
   const mm = String(d.getMonth() + 1).padStart(2, '0');

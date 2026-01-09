@@ -1,12 +1,29 @@
+import type { Locator } from '@playwright/test';
+import { clearSelect } from './native-select';
 import type { Loc, SetOptions, Value } from './types';
 
-export async function setDateGroup({ el, tag }: Loc, value: Value, options?: SetOptions): Promise<boolean> {
-  if (!(value instanceof Date) || tag === 'input' || tag === 'textarea' || tag === 'select') return false;
+type CandidateInfo = {
+  el: Locator;
+  tag: string;
+  type: string | null;
+  name: string | null;
+  id: string | null;
+  ariaLabel: string | null;
+  placeholder: string | null;
+  min: string | null;
+  max: string | null;
+  inputMode: string | null;
+  attrs: Record<string, string>;
+  options: { value: string; text: string }[];
+};
 
+type Score = { day: number; month: number; year: number };
+
+async function getCandidateLocs(el: Locator): Promise<CandidateInfo[]> {
   const candidates = await el.locator('input, select').all();
-  if (candidates.length < 2 || candidates.length > 3) return false;
+  if (candidates.length < 2 || candidates.length > 3) return [];
 
-  const candidateLocs = await Promise.all(
+  return Promise.all(
     candidates.map(async (c) => {
       const info = await c.evaluate((node) => {
         const e = node as HTMLInputElement | HTMLSelectElement;
@@ -40,8 +57,9 @@ export async function setDateGroup({ el, tag }: Loc, value: Value, options?: Set
       return { el: c, ...info };
     }),
   );
+}
 
-  type Score = { day: number; month: number; year: number };
+function scoreByAttributes(candidateLocs: CandidateInfo[]): Score[] {
   const scores: Score[] = candidateLocs.map(() => ({ day: 0, month: 0, year: 0 }));
 
   candidateLocs.forEach((loc, i) => {
@@ -73,7 +91,10 @@ export async function setDateGroup({ el, tag }: Loc, value: Value, options?: Set
     }
   });
 
-  // 3. Behavioral probe as last resort
+  return scores;
+}
+
+async function behavioralProbe(candidateLocs: CandidateInfo[], scores: Score[]) {
   const sorted = [...scores].sort((a, b) => Math.max(b.day, b.month, b.year) - Math.max(a.day, a.month, a.year));
   if (sorted[0].day < 2 && sorted[0].month < 2 && sorted[0].year < 2) {
     for (let i = 0; i < candidateLocs.length; i++) {
@@ -131,14 +152,20 @@ export async function setDateGroup({ el, tag }: Loc, value: Value, options?: Set
       }
     }
   }
+}
 
+function applyTieBreakers(candidateLocs: CandidateInfo[], scores: Score[]) {
   // Tie-breaker: typical order D-M-Y or Y-M-D
   if (candidateLocs.length === 3) {
     scores[0].day += 0.1;
     scores[1].month += 0.1;
     scores[2].year += 0.1;
   }
+}
 
+function resolveDateFields(
+  scores: Score[],
+): { day: number; month: number; year: number } | null {
   const result: { day?: number; month?: number; year?: number } = {};
   const used = new Set<number>();
 
@@ -158,20 +185,13 @@ export async function setDateGroup({ el, tag }: Loc, value: Value, options?: Set
   }
 
   if (result.day === undefined || result.month === undefined || result.year === undefined) {
-    const candidatesStr = candidateLocs.map((c) => `${c.tag}[name=${c.name}]`).join(', ');
-    throw new Error(`Could not reliably detect date fields for ${tag}. Detected candidates: ${candidatesStr}`);
+    return null;
   }
 
-  const dayVal = value.getDate();
-  const monthVal = value.getMonth() + 1;
-  const yearVal = value.getFullYear();
+  return result as { day: number; month: number; year: number };
+}
 
-  // Set Day
-  const dayLoc = candidateLocs[result.day];
-  await dayLoc.el.fill(String(dayVal), options);
-
-  // Set Month
-  const monthLoc = candidateLocs[result.month];
+async function setMonthField(monthLoc: CandidateInfo, monthVal: number, options?: SetOptions) {
   if (monthLoc.tag === 'select') {
     const options_list = monthLoc.options;
     const valueMatch = options_list.find((o) => parseInt(o.value, 10) === monthVal);
@@ -186,10 +206,48 @@ export async function setDateGroup({ el, tag }: Loc, value: Value, options?: Set
   } else {
     await monthLoc.el.fill(String(monthVal), options);
   }
+}
 
-  // Set Year
-  const yearLoc = candidateLocs[result.year];
-  await yearLoc.el.fill(String(yearVal), options);
+async function clearFields(locs: CandidateInfo[], options?: SetOptions) {
+  for (const loc of locs) {
+    if (loc.tag === 'select') {
+      await clearSelect(loc.el);
+    } else {
+      await loc.el.clear(options);
+    }
+  }
+}
+
+export async function setDateGroup({ el, tag }: Loc, value: Value, options?: SetOptions): Promise<boolean> {
+  if (!(value instanceof Date) && value !== null) return false;
+  if (tag === 'input' || tag === 'textarea' || tag === 'select') return false;
+
+  const candidateLocs = await getCandidateLocs(el);
+  if (candidateLocs.length === 0) return false;
+
+  if (value === null) {
+    await clearFields(candidateLocs, options);
+    return true;
+  }
+
+  const scores = scoreByAttributes(candidateLocs);
+  await behavioralProbe(candidateLocs, scores);
+  applyTieBreakers(candidateLocs, scores);
+
+  const result = resolveDateFields(scores);
+
+  if (!result) {
+    const candidatesStr = candidateLocs.map((c) => `${c.tag}[name=${c.name}]`).join(', ');
+    throw new Error(`Could not reliably detect date fields for ${tag}. Detected candidates: ${candidatesStr}`);
+  }
+
+  const dayVal = value.getDate();
+  const monthVal = value.getMonth() + 1;
+  const yearVal = value.getFullYear();
+
+  await candidateLocs[result.day].el.fill(String(dayVal), options);
+  await setMonthField(candidateLocs[result.month], monthVal, options);
+  await candidateLocs[result.year].el.fill(String(yearVal), options);
 
   return true;
 }

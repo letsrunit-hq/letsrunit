@@ -1,4 +1,4 @@
-import { isPlainObject } from './type-check';
+import { isRecord } from './type-check';
 import type { Clean } from './types';
 
 /**
@@ -25,7 +25,7 @@ export function clean<T>(input: T): Clean<T> {
     return filtered as unknown as Clean<T>;
   }
 
-  if (isPlainObject(input)) {
+  if (isRecord(input)) {
     const result: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(input as Record<string, unknown>)) {
       if (value === null || value === undefined) continue;

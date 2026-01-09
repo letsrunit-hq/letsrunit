@@ -3,14 +3,39 @@ import type { Locator } from '@playwright/test';
 import type { Loc, SetOptions, Value } from './types';
 import { formatDate, getMonthNames } from './utils';
 
-export async function isCalendar(root: Locator): Promise<boolean> {
-  const table = root.locator('table[role="grid"]').first().or(root.locator('table').first());
+async function getDialog(root: Locator, options?: SetOptions) {
+  const role = await root.getAttribute('role').catch(() => null);
 
-  if ((await table.count()) === 0) return false;
+  if (role !== 'combobox') return null;
+
+  const ariaControls = await root.getAttribute('aria-controls').catch(() => null);
+  if (!ariaControls) return null;
+
+  const calendar = root.page().locator(`#${ariaControls}`);
+  if ((await calendar.count()) === 0) {
+    await root.click(options);
+  }
+
+  const count = await calendar.count();
+  return count > 0 ? calendar : null;
+}
+
+export async function getCalendar(root: Locator, options?: SetOptions): Promise<{ calendar: Locator, table: Locator } | null> {
+  let calendar: Locator | null;
+  let table = root.locator('table[role="grid"]').first().or(root.locator('table').first());
+
+  if ((await table.count()) > 0) {
+    calendar = root;
+  } else {
+    calendar = await getDialog(root, options);
+    if (calendar) table = calendar.locator('table[role="grid"]').first().or(calendar.locator('table').first());
+  }
+
+  if (!calendar || !table) return null;
 
   const cells = table.locator('td, [role="gridcell"]');
   const cellCount = await cells.count();
-  if (cellCount < 28 || cellCount > 80) return false; // Sanity check
+  if (cellCount < 28 || cellCount > 80) return null; // Sanity check
 
   const texts = await cells.allTextContents();
   const days = texts
@@ -21,7 +46,7 @@ export async function isCalendar(root: Locator): Promise<boolean> {
 
   // Expect sequential numbering from 1 to at least 28. Ignore other cells with other content.
   const last = days.reduce((max, cur) => (cur === max + 1 ? cur : max), 0);
-  return last >= 28;
+  return last >= 28 ? { calendar, table } : null;
 }
 
 async function getCurrentMonthAndYear(root: Locator): Promise<{ month: number; year: number } | null> {
@@ -147,11 +172,19 @@ async function setDayByByCellText(table: Locator, value: Date, options?: SetOpti
   return true;
 }
 
-export async function setCalendarDate({ el }: Loc, value: Value, options?: SetOptions): Promise<boolean> {
-  if (!(value instanceof Date) || !(await isCalendar(el))) return false;
+export async function setCalendarDate({ el, tag }: Loc, value: Value, options?: SetOptions): Promise<boolean> {
+  if (!(value instanceof Date)) return false;
 
-  await navigateToMonth(el, value, options);
+  const { calendar, table } = (await getCalendar(el, options)) ?? {};
+  if (!calendar) return false;
 
-  const table = el.locator('table[role="grid"]').first().or(el.locator('table').first());
-  return chain(setDayByAriaLabel, setDayByByCellText)(table, value, options);
+  await navigateToMonth(calendar, value, options);
+
+  const success = await chain(setDayByAriaLabel, setDayByByCellText)(table!, value, options);
+
+  if (success && tag === 'input') {
+    await el.blur().catch(() => {});
+  }
+
+  return success;
 }
