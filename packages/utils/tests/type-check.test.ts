@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isBinary, isEntity, isPlainObject } from '../src';
+import { isBinary, isEntity, isRecord } from '../src';
 
 describe('isBinary', () => {
   it('returns true for Uint8Array instances', () => {
@@ -14,26 +14,26 @@ describe('isBinary', () => {
   });
 });
 
-describe('isPlainObject', () => {
+describe('isRecord', () => {
   it('accepts plain object literals', () => {
-    expect(isPlainObject({ a: 1, b: 'two' })).toBe(true);
+    expect(isRecord({ a: 1, b: 'two' })).toBe(true);
   });
 
   it('rejects arrays', () => {
-    expect(isPlainObject([1, 2, 3])).toBe(false);
+    expect(isRecord([1, 2, 3])).toBe(false);
   });
 
   it('rejects dates and regular expressions', () => {
-    expect(isPlainObject(new Date())).toBe(false);
-    expect(isPlainObject(/abc/)).toBe(false);
+    expect(isRecord(new Date())).toBe(false);
+    expect(isRecord(/abc/)).toBe(false);
   });
 
   it('rejects Uint8Array instances', () => {
-    expect(isPlainObject(new Uint8Array([4, 5, 6]))).toBe(false);
+    expect(isRecord(new Uint8Array([4, 5, 6]))).toBe(false);
   });
 });
 
-describe('isRecord', () => {
+describe('isEntity', () => {
   it('returns true when the value has an id property', () => {
     expect(isEntity({ id: 123, name: 'record' })).toBe(true);
     expect(isEntity({ id: undefined })).toBe(true);

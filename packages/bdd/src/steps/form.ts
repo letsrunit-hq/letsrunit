@@ -1,20 +1,30 @@
-import { locator } from '@letsrunit/playwright';
-import { sleep } from '@letsrunit/utils';
-import { setFieldValue } from 'packages/playwright/src/field/field';
+import { locator, setFieldValue } from '@letsrunit/playwright';
+import { type Scalar, sleep } from '@letsrunit/utils';
 import { When } from './wrappers';
 
 const TIMEOUT = 500;
 const DELAY = 500;
 
-export const set = When('I set {locator} to {value}', async function (selector: string, value: string | number | Date) {
+export const set = When('I set {locator} to {value}', async function (selector: string, value: Scalar | Scalar[]) {
   const el = await locator(this.page, selector);
   await setFieldValue(el, value, { timeout: TIMEOUT });
   await sleep(DELAY);
 });
 
+export const setRange = When(
+  'I set {locator} to range of {value} to {value}',
+  async function (selector: string, from: Scalar, to: Scalar) {
+    const el = await locator(this.page, selector);
+    await setFieldValue(el, { from, to }, { timeout: TIMEOUT });
+    await sleep(DELAY);
+  },
+);
+
+
 export const clear = When('I clear {locator}', async function (selector) {
   const el = await locator(this.page, selector);
-  await el.clear({ timeout: TIMEOUT });
+  await setFieldValue(el, null, { timeout: TIMEOUT });
+  await sleep(DELAY);
 });
 
 export const check = When(

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { parseDateString } from '../src/date';
+import { parseDateString } from '../src';
 
 describe('parseDateString', () => {
   beforeEach(() => {

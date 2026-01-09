@@ -1,6 +1,6 @@
 import { setFieldValue } from '@letsrunit/playwright';
 import { expect, test } from '@playwright/experimental-ct-react';
-import { PrimeReactCalendar } from '../../src/primereact/calendar';
+import { PrimeReactCalendar, PrimeReactCalendarMultiple, PrimeReactCalendarRange } from '../../src/primereact/calendar';
 
 test.describe('Basic PrimeReact calendar', () => {
   test('with defaults', async ({ mount, page }) => {
@@ -43,6 +43,46 @@ test.describe('Basic PrimeReact calendar', () => {
 
     await setFieldValue(page.getByLabel('calendar'), new Date('2023-12-05'), { timeout: 500 });
     await expect(page.getByLabel('result')).toContainText('Tue Dec 05 2023');
+  });
+
+  test('with multiple values', async ({ mount, page }) => {
+    await mount(<PrimeReactCalendarMultiple />);
+
+    const dates = [new Date('2024-07-15'), new Date('2024-07-18')];
+
+    await setFieldValue(page.getByLabel('calendar'), dates, { timeout: 500 });
+    await expect(page.getByLabel('result')).toContainText('Mon Jul 15 2024');
+    await expect(page.getByLabel('result')).toContainText('Thu Jul 18 2024');
+  });
+
+  test('with multiple values and custom format', async ({ mount, page }) => {
+    await mount(<PrimeReactCalendarMultiple dateFormat="d/m/y" />);
+
+    const dates = [new Date('2024-03-02'), new Date('2024-03-04')];
+
+    await setFieldValue(page.getByLabel('calendar'), dates, { timeout: 500 });
+    await expect(page.getByLabel('result')).toContainText('Sat Mar 02 2024');
+    await expect(page.getByLabel('result')).toContainText('Mon Mar 04 2024');
+  });
+
+  test('with range', async ({ mount, page }) => {
+    await mount(<PrimeReactCalendarRange />);
+
+    const dates = { from: new Date('2024-07-15'), to: new Date('2024-07-18') };
+
+    await setFieldValue(page.getByLabel('calendar'), dates, { timeout: 500 });
+    await expect(page.getByLabel('result')).toContainText('From: Mon Jul 15 2024');
+    await expect(page.getByLabel('result')).toContainText('To: Thu Jul 18 2024');
+  });
+
+  test('with range and custom format', async ({ mount, page }) => {
+    await mount(<PrimeReactCalendarRange dateFormat="d/m/y" />);
+
+    const dates = { from: new Date('2024-03-02'), to: new Date('2024-03-04') };
+
+    await setFieldValue(page.getByLabel('calendar'), dates, { timeout: 500 });
+    await expect(page.getByLabel('result')).toContainText('From: Sat Mar 02 2024');
+    await expect(page.getByLabel('result')).toContainText('To: Mon Mar 04 2024');
   });
 });
 
@@ -98,6 +138,29 @@ test.describe('Inline PrimeReact calendar', () => {
     date.setDate(3);
 
     await setFieldValue(page.locator('[data-pc-name="calendar"]'), date, { timeout: 500 });
+    await expect(page.getByLabel('result')).toContainText(date.toDateString());
+  });
+});
+
+test.describe('PrimeReact calendar with readonly input', () => {
+  test('select date in current month', async ({ mount, page }) => {
+    await mount(<PrimeReactCalendar readOnlyInput />);
+
+    const date = new Date();
+    date.setDate(3);
+
+    await setFieldValue(page.getByLabel('calendar'), date, { timeout: 500 });
+    await expect(page.getByLabel('result')).toContainText(date.toDateString());
+  });
+
+  test('select date 2 months ago', async ({ mount, page }) => {
+    await mount(<PrimeReactCalendar readOnlyInput />);
+
+    const date = new Date();
+    date.setMonth(date.getMonth() - 2);
+    date.setDate(3);
+
+    await setFieldValue(page.getByLabel('calendar'), date, { timeout: 500 });
     await expect(page.getByLabel('result')).toContainText(date.toDateString());
   });
 });

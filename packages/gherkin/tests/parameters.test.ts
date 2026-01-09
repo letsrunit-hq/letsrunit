@@ -1,4 +1,5 @@
 import { CucumberExpression, ParameterType, ParameterTypeRegistry } from '@cucumber/cucumber-expressions';
+import { formatDateForInput } from '@letsrunit/playwright';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   booleanParameter,
@@ -93,6 +94,53 @@ describe('valueParameter', () => {
     expect(n1.getValue(null)).to.eq(42);
     const [n2] = expr.match('value is -12.5')!;
     expect(n2.getValue(null)).to.eq(-12.5);
+  });
+
+  it('parses a relative date value', () => {
+    const [d] = expr.match('value is date today')!;
+    expect(d.getValue(null)).to.be.instanceOf(Date);
+  });
+
+  it('parses a relative date/time value', () => {
+    const [d] = expr.match('value is date tomorrow at 15:04')!;
+    expect(d.getValue(null)).to.be.instanceOf(Date);
+  });
+
+  it('parses a date string value', () => {
+    const [d] = expr.match('value is date "1981-08-22"')!;
+    const value = d.getValue(null);
+    expect(value).to.be.instanceOf(Date);
+    expect(formatDateForInput(value as Date, 'datetime-local')).to.eq('1981-08-22T00:00');
+  });
+
+  it('parses a date/time string value', () => {
+    const [d] = expr.match('value is date "1981-08-22T15:04"')!;
+    const value = d.getValue(null);
+    expect(value).to.be.instanceOf(Date);
+    expect(formatDateForInput(value as Date, 'datetime-local')).to.eq('1981-08-22T15:04');
+  });
+
+  it('parses an array of values', () => {
+    const res = expr.match('value is ["foo", 42]');
+    expect(res).not.to.be.null;
+
+    const [v] = res!;
+    const val = v.getValue(null) as any[];
+    expect(val).to.have.length(2);
+    expect(val[0]).to.eq('foo');
+    expect(val[1]).to.eq(42);
+  });
+
+  it('parses an array of dates', () => {
+    const res = expr.match('value is [date of today, date "1981-08-22T15:04"]');
+    expect(res).not.to.be.null;
+
+    const [v] = res!;
+    const val = v.getValue(null) as any[];
+    expect(val).to.have.length(2);
+    expect(val[0]).to.be.instanceOf(Date);
+    expect(val[1]).to.be.instanceOf(Date);
+    expect(formatDateForInput(val[1] as Date, 'datetime-local')).to.eq('1981-08-22T15:04');
   });
 });
 

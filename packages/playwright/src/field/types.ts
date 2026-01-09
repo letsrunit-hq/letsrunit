@@ -1,3 +1,4 @@
+import type { Range, Scalar } from '@letsrunit/utils';
 import type { Locator } from '@playwright/test';
 
 export interface SetOptions {
@@ -6,7 +7,7 @@ export interface SetOptions {
   timeout?: number;
 }
 
-export type Value = string | number | Date | boolean;
+export type Value = Scalar | Scalar[] | Range | boolean | null;
 
 export interface Loc {
   el: Locator;

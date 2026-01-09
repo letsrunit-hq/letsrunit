@@ -4,26 +4,43 @@ import { setFieldValue } from '../src';
 
 describe('setFieldValue', () => {
   const createMockLocator = () => {
-    return {
+    const mock = {
       evaluate: vi.fn(),
       selectOption: vi.fn(),
       check: vi.fn(),
       uncheck: vi.fn(),
-      getAttribute: vi.fn(),
+      getAttribute: vi.fn().mockResolvedValue(null),
       fill: vi.fn(),
-    } as unknown as Locator & {
+      locator: vi.fn(),
+      first: vi.fn(),
+      last: vi.fn(),
+      nth: vi.fn(),
+      or: vi.fn(),
+      count: vi.fn().mockResolvedValue(0),
+    } as any;
+
+    mock.locator.mockReturnValue(mock);
+    mock.first.mockReturnValue(mock);
+    mock.last.mockReturnValue(mock);
+    mock.nth.mockReturnValue(mock);
+    mock.or.mockReturnValue(mock);
+
+    mock.all = vi.fn().mockResolvedValue([]);
+
+    return mock as unknown as Locator & {
       evaluate: ReturnType<typeof vi.fn>;
       selectOption: ReturnType<typeof vi.fn>;
       check: ReturnType<typeof vi.fn>;
       uncheck: ReturnType<typeof vi.fn>;
       getAttribute: ReturnType<typeof vi.fn>;
       fill: ReturnType<typeof vi.fn>;
+      locator: ReturnType<typeof vi.fn>;
     };
   };
 
   it('sets value for SELECT element', async () => {
     const el = createMockLocator();
-    el.evaluate.mockResolvedValue('SELECT');
+    el.evaluate.mockResolvedValue('select');
     el.selectOption.mockResolvedValue(['option1']);
 
     await setFieldValue(el, 'option1');
@@ -34,7 +51,7 @@ describe('setFieldValue', () => {
 
   it('throws error if option not found in SELECT', async () => {
     const el = createMockLocator();
-    el.evaluate.mockResolvedValue('SELECT');
+    el.evaluate.mockResolvedValue('select');
     el.selectOption.mockResolvedValue([]);
 
     await expect(setFieldValue(el, 'option1')).rejects.toThrow('Option "option1" not found in select');
@@ -42,7 +59,8 @@ describe('setFieldValue', () => {
 
   it('checks checkbox if value is true', async () => {
     const el = createMockLocator();
-    el.evaluate.mockResolvedValue('INPUT');
+    el.evaluate.mockResolvedValue('input');
+    el.getAttribute.mockResolvedValue('checkbox');
 
     await setFieldValue(el, true);
 
@@ -52,7 +70,8 @@ describe('setFieldValue', () => {
 
   it('unchecks checkbox if value is false', async () => {
     const el = createMockLocator();
-    el.evaluate.mockResolvedValue('INPUT');
+    el.evaluate.mockResolvedValue('input');
+    el.getAttribute.mockResolvedValue('checkbox');
 
     await setFieldValue(el, false);
 
@@ -65,7 +84,7 @@ describe('setFieldValue', () => {
 
     it('formats date as number', async () => {
       const el = createMockLocator();
-      el.evaluate.mockResolvedValue('INPUT');
+      el.evaluate.mockResolvedValue('input');
       el.getAttribute.mockResolvedValue('number');
 
       await setFieldValue(el, date);
@@ -75,7 +94,7 @@ describe('setFieldValue', () => {
 
     it('formats date as datetime-local', async () => {
       const el = createMockLocator();
-      el.evaluate.mockResolvedValue('INPUT');
+      el.evaluate.mockResolvedValue('input');
       el.getAttribute.mockResolvedValue('datetime-local');
 
       await setFieldValue(el, date);
@@ -85,7 +104,7 @@ describe('setFieldValue', () => {
 
     it('formats date as month', async () => {
       const el = createMockLocator();
-      el.evaluate.mockResolvedValue('INPUT');
+      el.evaluate.mockResolvedValue('input');
       el.getAttribute.mockResolvedValue('month');
 
       await setFieldValue(el, date);
@@ -95,7 +114,7 @@ describe('setFieldValue', () => {
 
     it('formats date as week', async () => {
       const el = createMockLocator();
-      el.evaluate.mockResolvedValue('INPUT');
+      el.evaluate.mockResolvedValue('input');
       el.getAttribute.mockResolvedValue('week');
 
       await setFieldValue(el, date);
@@ -105,7 +124,7 @@ describe('setFieldValue', () => {
 
     it('formats date as time', async () => {
       const el = createMockLocator();
-      el.evaluate.mockResolvedValue('INPUT');
+      el.evaluate.mockResolvedValue('input');
       el.getAttribute.mockResolvedValue('time');
 
       await setFieldValue(el, date);
@@ -115,7 +134,7 @@ describe('setFieldValue', () => {
 
     it('formats date as date (default)', async () => {
       const el = createMockLocator();
-      el.evaluate.mockResolvedValue('INPUT');
+      el.evaluate.mockResolvedValue('input');
       el.getAttribute.mockResolvedValue('date');
 
       await setFieldValue(el, date);
@@ -125,7 +144,7 @@ describe('setFieldValue', () => {
 
     it('formats date as date when type is null', async () => {
       const el = createMockLocator();
-      el.evaluate.mockResolvedValue('INPUT');
+      el.evaluate.mockResolvedValue('input');
       el.getAttribute.mockRejectedValue(new Error('no attribute'));
 
       await setFieldValue(el, date);
@@ -136,7 +155,7 @@ describe('setFieldValue', () => {
 
   it('sets string value', async () => {
     const el = createMockLocator();
-    el.evaluate.mockResolvedValue('INPUT');
+    el.evaluate.mockResolvedValue('input');
 
     await setFieldValue(el, 'test-value');
 
@@ -145,7 +164,7 @@ describe('setFieldValue', () => {
 
   it('sets number value', async () => {
     const el = createMockLocator();
-    el.evaluate.mockResolvedValue('INPUT');
+    el.evaluate.mockResolvedValue('input');
 
     await setFieldValue(el, 123);
 
@@ -154,7 +173,7 @@ describe('setFieldValue', () => {
 
   it('passes options to playwright methods', async () => {
     const el = createMockLocator();
-    el.evaluate.mockResolvedValue('INPUT');
+    el.evaluate.mockResolvedValue('input');
     const options = { force: true, timeout: 5000 };
 
     await setFieldValue(el, 'test', options);

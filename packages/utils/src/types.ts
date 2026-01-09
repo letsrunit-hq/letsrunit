@@ -30,3 +30,8 @@ export type AtLeastOne<T, K extends keyof T = keyof T> =
 export type Cartesian<T extends readonly (readonly unknown[])[]> = Array<{
   [K in keyof T]: T[K] extends readonly (infer U)[] ? U : never;
 }>;
+
+export type Predicate<T> = (value: unknown) => value is T;
+
+export type Scalar = string | number | Date;
+export type Range<T extends Scalar = Scalar> = { from: T; to: T };

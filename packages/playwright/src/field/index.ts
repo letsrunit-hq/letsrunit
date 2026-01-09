@@ -30,7 +30,10 @@ export async function setFieldValue(el: Locator, value: Value, options?: SetOpti
   );
 
   const tag = await el.evaluate((e) => e.tagName.toLowerCase());
-  const type = await el.getAttribute('type', options).then((s) => s && s.toLowerCase()).catch(() => null);
+  const type = await el
+    .getAttribute('type', options)
+    .then((s) => s && s.toLowerCase())
+    .catch(() => null);
   const loc = { el, tag, type };
 
   await setValue(loc, value, options);
