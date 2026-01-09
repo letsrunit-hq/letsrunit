@@ -1,7 +1,10 @@
-import { chain } from '@letsrunit/utils';
+import { isArray, isDate, isRange } from '@letsrunit/utils';
+import { uniqueItem } from '@letsrunit/utils/src/array';
 import type { Locator } from '@playwright/test';
 import type { Loc, SetOptions, Value } from './types';
-import { formatDate, getMonthNames } from './utils';
+import { formatDate, formatDateForInput, getMonthNames } from './utils';
+
+type MonthYear = { month: number; year: number };
 
 async function getDialog(root: Locator, options?: SetOptions) {
   const role = await root.getAttribute('role').catch(() => null);
@@ -20,22 +23,10 @@ async function getDialog(root: Locator, options?: SetOptions) {
   return count > 0 ? calendar : null;
 }
 
-export async function getCalendar(root: Locator, options?: SetOptions): Promise<{ calendar: Locator, table: Locator } | null> {
-  let calendar: Locator | null;
-  let table = root.locator('table[role="grid"]').first().or(root.locator('table').first());
-
-  if ((await table.count()) > 0) {
-    calendar = root;
-  } else {
-    calendar = await getDialog(root, options);
-    if (calendar) table = calendar.locator('table[role="grid"]').first().or(calendar.locator('table').first());
-  }
-
-  if (!calendar || !table) return null;
-
+async function isCalendarTable(table: Locator): Promise<boolean> {
   const cells = table.locator('td, [role="gridcell"]');
   const cellCount = await cells.count();
-  if (cellCount < 28 || cellCount > 80) return null; // Sanity check
+  if (cellCount < 28 || cellCount > 80) return false; // Sanity check
 
   const texts = await cells.allTextContents();
   const days = texts
@@ -46,40 +37,95 @@ export async function getCalendar(root: Locator, options?: SetOptions): Promise<
 
   // Expect sequential numbering from 1 to at least 28. Ignore other cells with other content.
   const last = days.reduce((max, cur) => (cur === max + 1 ? cur : max), 0);
-  return last >= 28 ? { calendar, table } : null;
+  return last >= 28;
 }
 
-async function getCurrentMonthAndYear(root: Locator): Promise<{ month: number; year: number } | null> {
+export async function getCalendar(
+  root: Locator,
+  options?: SetOptions,
+): Promise<{ calendar: Locator; tables: Locator[] } | null> {
+  const calendar = (await root.locator('table').count()) > 0 ? root : await getDialog(root, options);
+  if (!calendar) return null;
+
+  const allTables = await calendar.locator('table').all();
+  const tables = allTables.filter(isCalendarTable);
+
+  return tables.length > 0 ? { calendar, tables } : null;
+}
+
+function uniqueMonthYearPairs(pairs: MonthYear[]): MonthYear[] {
+  const map = pairs.reduce(
+    (acc, r) => acc.set(`${r.year}-${r.month}`, r),
+    new Map<string, { month: number; year: number }>(),
+  );
+  return Array.from(map.values());
+}
+
+function inferYearForMonth(target: Date, month: number): number {
+  const ty = target.getFullYear();
+  const tm = target.getMonth();
+  const targetTotal = ty * 12 + tm;
+
+  const candidates = [ty - 1, ty, ty + 1].map((y) => ({ year: y, total: y * 12 + month }));
+  candidates.sort((a, b) => Math.abs(a.total - targetTotal) - Math.abs(b.total - targetTotal));
+  return candidates[0].year;
+}
+
+export async function getCurrentMonthsAndYears(root: Locator, target: Date): Promise<MonthYear[]> {
   const lang = await root
     .page()
     .locator('html')
     .getAttribute('lang')
     .catch(() => undefined);
-  const locales = [lang, 'en-US'].filter(Boolean) as string[];
+  const locales = lang && !lang.startsWith('en') ? [lang, 'en-US'] : ['en-US'];
 
-  const monthSets = locales.map(getMonthNames);
   const text = await root.innerText();
+  const monthSets = locales.map(getMonthNames);
 
-  const found = monthSets
-    .flatMap((months) =>
-      months.map((monthName, i) => {
-        const regex = new RegExp(`(${monthName})\\s*(\\d{4})`, 'i');
-        const match = text.match(regex);
-        return match ? { month: i, year: parseInt(match[2], 10) } : null;
-      }),
-    )
-    .find((m) => m !== null);
+  // Look for month year pairs
+  const pairs = monthSets.flatMap((months) => {
+    const matches = text.matchAll(new RegExp(`(${months.join('|')})\\W*(\\d{4})`, 'gi'));
+    return Array.from(matches)
+      .map((m) => ({
+        month: months.findIndex((x) => x.toLowerCase() === m[1].toLowerCase()),
+        year: Number.parseInt(m[2], 10),
+      }))
+      .filter((r) => r.month !== -1);
+  });
 
-  if (found) return found;
+  if (pairs.length) {
+    return uniqueMonthYearPairs(pairs);
+  }
 
-  const foundMonth = monthSets
-    .flatMap((months) => months.map((monthName, i) => (new RegExp(monthName, 'i').test(text) ? i : null)))
-    .find((m) => m !== null);
+  // Fallback looking for months only
+  const months = monthSets
+    .flatMap((ms) => ms.map((name, i) => (new RegExp(name, 'i').test(text) ? i : -1)))
+    .filter(uniqueItem)
+    .filter((i) => i >= 0)
+    .sort((a, b) => a - b);
 
-  const yearMatch = text.match(/\b(20\d{2})\b/);
-  const foundYear = yearMatch ? parseInt(yearMatch[1], 10) : null;
+  const years = (text.match(/\b20\d{2}\b/g) ?? [])
+    .map((y) => Number.parseInt(y, 10))
+    .filter(uniqueItem)
+    .sort((a, b) => a - b);
 
-  return foundMonth && foundYear ? { month: foundMonth, year: foundYear } : null;
+  if (!months.length) return [];
+
+  if (years.length === 1) {
+    return months.map((month) => ({ month, year: years[0] }));
+  }
+
+  // Heuristic: months >= July belong to y0 and <= June belongs to y1
+  if (years.length === 2) {
+    return months
+      .map((month) => ({ month, year: month >= 6 ? years[0] : years[1] }))
+      .sort((a, b) => a.year * 12 + a.month - (b.year * 12 + b.month));
+  }
+
+  // Year can't be determined, infer from target date
+  return months
+    .map((month) => ({ month, year: inferYearForMonth(target, month) }))
+    .sort((a, b) => a.year * 12 + a.month - (b.year * 12 + b.month));
 }
 
 async function navigateToMonth(
@@ -87,33 +133,34 @@ async function navigateToMonth(
   target: Date,
   options?: SetOptions & { wait?: number; retry?: number },
 ): Promise<boolean> {
-  const current = await getCurrentMonthAndYear(root);
-  if (!current) return false;
+  const currentMonths = await getCurrentMonthsAndYears(root, target);
+  if (currentMonths.length === 0) return false;
 
-  const currentTotal = current.year * 12 + current.month;
   const targetTotal = target.getFullYear() * 12 + target.getMonth();
-  const diff = targetTotal - currentTotal;
+  if (currentMonths.find((m) => m.year * 12 + m.month === targetTotal)) {
+    return true;
+  }
 
-  if (diff === 0) return true;
+  const firstMonthTotal = currentMonths[0].year * 12 + currentMonths[0].month;
+  const diff = targetTotal - firstMonthTotal;
 
   const btn =
     diff < 0
-      ? root.locator('button[aria-label*="prev"], [class*="prev"]').first()
-      : root.locator('button[aria-label*="next"], [class*="next"]').first();
+      ? root.locator('button[aria-label*="prev"], button[class*="prev"]').filter({ visible: true }).first()
+      : root.locator('button[aria-label*="next"], button[class*="next"]').filter({ visible: true }).first();
+
+  if (!(await btn.count())) return false;
 
   for (let i = 0; i < Math.abs(diff); i++) {
     await btn.click(options);
     await root.page().waitForTimeout(options?.wait ?? 50);
   }
 
-  const after = await getCurrentMonthAndYear(root);
-  if (after && after.year * 12 + after.month !== targetTotal) {
-    if ((options?.retry ?? 0) >= 1) return false;
-    // Sanity check failed. Try again once and slower this time
-    return await navigateToMonth(root, target, { ...options, wait: 250, retry: 1 });
-  }
+  const afterMonths = await getCurrentMonthsAndYears(root, target);
+  if (afterMonths.some((m) => m.year * 12 + m.month === targetTotal)) return true;
 
-  return true;
+  if ((options?.retry ?? 0) >= 3) return false;
+  return await navigateToMonth(root, target, { ...options, wait: 100, retry: (options?.retry ?? 0) + 1 });
 }
 
 async function setDayByAriaLabel(table: Locator, value: Date, options?: SetOptions): Promise<boolean> {
@@ -127,11 +174,10 @@ async function setDayByAriaLabel(table: Locator, value: Date, options?: SetOptio
         return (await cell.isVisible()) ? cell : null;
       }),
     )
-  ).filter((l) => l !== null);
+  ).filter((l): l is Locator => l !== null);
 
   if (cells.length === 0) return false;
 
-  // Typically we'd find 1 matching cell
   if (cells.length === 1) {
     await cells[0].click(options);
     return true;
@@ -148,12 +194,13 @@ async function setDayByAriaLabel(table: Locator, value: Date, options?: SetOptio
   );
 
   const finalFormat = probeResults.find((fmt) => fmt !== null);
-  const finalLabel = finalFormat ? formatDate(value, finalFormat) : null;
-  const finalCell = finalLabel
-    ? table.locator(`[aria-label="${finalLabel}"], [aria-label*="${finalLabel}"]`).first()
+  const finalCell = finalFormat
+    ? table
+        .locator(`[aria-label="${formatDate(value, finalFormat)}"], [aria-label*="${formatDate(value, finalFormat)}"]`)
+        .first()
     : cells[0];
-  await finalCell.click(options);
 
+  await finalCell.click(options);
   return true;
 }
 
@@ -172,19 +219,56 @@ async function setDayByByCellText(table: Locator, value: Date, options?: SetOpti
   return true;
 }
 
+async function setDates(
+  calendar: Locator,
+  tables: Locator[],
+  dates: Date[],
+  options?: SetOptions,
+): Promise<void> {
+
+  let method: 'aria' | 'text' | undefined = undefined;
+
+  for (const date of dates) {
+    if (!(await navigateToMonth(calendar, date, options))) {
+      throw new Error(`Failed to navigate to "${formatDateForInput(date, 'month')}"`);
+    }
+
+    const currentMonths = await getCurrentMonthsAndYears(calendar, date);
+    const targetTotal = date.getFullYear() * 12 + date.getMonth();
+    const tableIndex = currentMonths.findIndex((m) => m.year * 12 + m.month === targetTotal);
+    const table = tables[tableIndex] ?? tables[0];
+
+    if (method !== 'text' && (await setDayByAriaLabel(table, date, options))) {
+      method ??= 'aria';
+      continue;
+    }
+
+    if (method !== 'aria' && (await setDayByByCellText(table, date, options))) {
+      method ??= 'text';
+      continue;
+    }
+
+    throw new Error(`Failed to set date "${formatDateForInput(date, 'date')}"`)
+  }
+}
+
 export async function setCalendarDate({ el, tag }: Loc, value: Value, options?: SetOptions): Promise<boolean> {
-  if (!(value instanceof Date)) return false;
+  if (!(value instanceof Date) && !isArray(value, isDate) && !isRange(value, isDate)) return false;
 
-  const { calendar, table } = (await getCalendar(el, options)) ?? {};
-  if (!calendar) return false;
+  const dates = isArray(value, isDate) ? value : isRange(value) ? [value.from, value.to] : [value];
 
-  await navigateToMonth(calendar, value, options);
+  const { calendar, tables } = (await getCalendar(el, options)) ?? {};
+  if (!calendar || !tables || tables.length === 0) return false;
 
-  const success = await chain(setDayByAriaLabel, setDayByByCellText)(table!, value, options);
-
-  if (success && tag === 'input') {
-    await el.blur().catch(() => {});
+  try {
+    await setDates(calendar, tables, dates, options);
+  } finally {
+    // Close the dialog
+    if (tag === 'input') {
+      await el.page().keyboard.press('Escape').catch();
+      await el.blur().catch();
+    }
   }
 
-  return success;
+  return true;
 }

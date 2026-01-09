@@ -1,7 +1,7 @@
 import { setFieldValue } from '@letsrunit/playwright';
 import { expect, test } from '@playwright/experimental-ct-react';
 
-test.describe('Native HTML compatibility', () => {
+test.describe('Native form inputs', () => {
   test('sets text input', async ({ mount, page }) => {
     await mount(
       <form>
