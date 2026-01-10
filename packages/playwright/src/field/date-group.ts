@@ -19,7 +19,7 @@ type CandidateInfo = {
 
 type Score = { day: number; month: number; year: number };
 
-async function getCandidateLocs(el: Locator): Promise<CandidateInfo[]> {
+async function getCandidateLocs(el: Locator, options?: SetOptions): Promise<CandidateInfo[]> {
   const candidates = await el.locator('input, select').all();
   if (candidates.length < 2 || candidates.length > 3) return [];
 
@@ -53,7 +53,7 @@ async function getCandidateLocs(el: Locator): Promise<CandidateInfo[]> {
           attrs,
           options,
         };
-      });
+      }, options);
       return { el: c, ...info };
     }),
   );
@@ -94,7 +94,7 @@ function scoreByAttributes(candidateLocs: CandidateInfo[]): Score[] {
   return scores;
 }
 
-async function behavioralProbe(candidateLocs: CandidateInfo[], scores: Score[]) {
+async function behavioralProbe(candidateLocs: CandidateInfo[], scores: Score[], options?: SetOptions) {
   const sorted = [...scores].sort((a, b) => Math.max(b.day, b.month, b.year) - Math.max(a.day, a.month, a.year));
   if (sorted[0].day < 2 && sorted[0].month < 2 && sorted[0].year < 2) {
     for (let i = 0; i < candidateLocs.length; i++) {
@@ -107,7 +107,7 @@ async function behavioralProbe(candidateLocs: CandidateInfo[], scores: Score[]) 
           const valid = e.checkValidity();
           e.value = old;
           return valid;
-        });
+        }, options);
         if (can_be_day) scores[i].day += 1;
 
         const cannot_be_day = await loc.el.evaluate((node) => {
@@ -117,7 +117,7 @@ async function behavioralProbe(candidateLocs: CandidateInfo[], scores: Score[]) 
           const valid = !e.checkValidity();
           e.value = old;
           return valid;
-        });
+        }, options);
         if (cannot_be_day) scores[i].day += 1;
 
         const can_be_month = await loc.el.evaluate((node) => {
@@ -127,7 +127,7 @@ async function behavioralProbe(candidateLocs: CandidateInfo[], scores: Score[]) 
           const valid = e.checkValidity();
           e.value = old;
           return valid;
-        });
+        }, options);
         if (can_be_month) scores[i].month += 1;
 
         const cannot_be_month = await loc.el.evaluate((node) => {
@@ -137,7 +137,7 @@ async function behavioralProbe(candidateLocs: CandidateInfo[], scores: Score[]) 
           const valid = !e.checkValidity();
           e.value = old;
           return valid;
-        });
+        }, options);
         if (cannot_be_month) scores[i].month += 1;
 
         const can_be_year = await loc.el.evaluate((node) => {
@@ -147,7 +147,7 @@ async function behavioralProbe(candidateLocs: CandidateInfo[], scores: Score[]) 
           const valid = e.checkValidity();
           e.value = old;
           return valid;
-        });
+        }, options);
         if (can_be_year) scores[i].year += 1;
       }
     }
@@ -211,7 +211,7 @@ async function setMonthField(monthLoc: CandidateInfo, monthVal: number, options?
 async function clearFields(locs: CandidateInfo[], options?: SetOptions) {
   for (const loc of locs) {
     if (loc.tag === 'select') {
-      await clearSelect(loc.el);
+      await clearSelect(loc.el, options);
     } else {
       await loc.el.clear(options);
     }
@@ -222,7 +222,7 @@ export async function setDateGroup({ el, tag }: Loc, value: Value, options?: Set
   if (!(value instanceof Date) && value !== null) return false;
   if (tag === 'input' || tag === 'textarea' || tag === 'select') return false;
 
-  const candidateLocs = await getCandidateLocs(el);
+  const candidateLocs = await getCandidateLocs(el, options);
   if (candidateLocs.length === 0) return false;
 
   if (value === null) {
@@ -231,7 +231,7 @@ export async function setDateGroup({ el, tag }: Loc, value: Value, options?: Set
   }
 
   const scores = scoreByAttributes(candidateLocs);
-  await behavioralProbe(candidateLocs, scores);
+  await behavioralProbe(candidateLocs, scores, options);
   applyTieBreakers(candidateLocs, scores);
 
   const result = resolveDateFields(scores);

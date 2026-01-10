@@ -11,6 +11,7 @@ describe('setCalendarDate', () => {
       last: vi.fn(),
       nth: vi.fn(),
       or: vi.fn(),
+      filter: vi.fn(),
       count: vi.fn().mockResolvedValue(0),
       getAttribute: vi.fn().mockResolvedValue(null),
       innerText: vi.fn().mockResolvedValue(''),
@@ -25,6 +26,9 @@ describe('setCalendarDate', () => {
           getAttribute: vi.fn().mockResolvedValue('en'),
         }),
         waitForTimeout: vi.fn().mockResolvedValue(undefined),
+        keyboard: {
+          press: vi.fn().mockResolvedValue(undefined),
+        },
       }),
       ...props,
     } as any;
@@ -35,6 +39,7 @@ describe('setCalendarDate', () => {
     mock.first.mockReturnValue(mock);
     mock.last.mockReturnValue(mock);
     mock.nth.mockReturnValue(mock);
+    mock.filter.mockReturnValue(mock);
     mock.all.mockResolvedValue([mock]);
     mock.or.mockReturnValue(mock);
 
@@ -265,6 +270,7 @@ describe('setCalendarDate', () => {
     setupTableMock(table2);
 
     const nextBtn = createMockLocator({ isVisible: vi.fn().mockResolvedValue(true) });
+    nextBtn.count.mockResolvedValue(1);
     const el = createMockLocator({
       innerText: vi.fn().mockResolvedValue('January 2024 February 2024'),
     });
@@ -279,13 +285,14 @@ describe('setCalendarDate', () => {
     // Mock navigation: when next is clicked, update el innerText
     nextBtn.click.mockImplementation(async () => {
       el.innerText.mockResolvedValue('February 2024 March 2024');
+      nextBtn.count.mockResolvedValue(1); // Keep it visible for simplicity if needed
     });
 
     const range = { from: new Date('2024-02-15'), to: new Date('2024-03-10') };
-    const result = await setCalendarDate({ el } as any, range);
+    const result = await setCalendarDate({ el, tag: 'div' } as any, range);
 
     expect(result).toBe(true);
-    
+
     expect(nextBtn.click).toHaveBeenCalledTimes(2);
     expect(dayCell.click).toHaveBeenCalledTimes(2);
   });

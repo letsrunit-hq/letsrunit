@@ -8,12 +8,14 @@ describe('setDateGroup', () => {
       evaluate: vi.fn(),
       selectOption: vi.fn(),
       fill: vi.fn(),
+      clear: vi.fn(),
       locator: vi.fn(),
       getAttribute: vi.fn(),
     } as unknown as Locator & {
       evaluate: ReturnType<typeof vi.fn>;
       selectOption: ReturnType<typeof vi.fn>;
       fill: ReturnType<typeof vi.fn>;
+      clear: ReturnType<typeof vi.fn>;
       locator: ReturnType<typeof vi.fn>;
       getAttribute: ReturnType<typeof vi.fn>;
     };
@@ -189,9 +191,9 @@ describe('setDateGroup', () => {
 
   it('clears fields when value is null', async () => {
     const { mock, locatorMock } = createMockLocator();
-    const dayEl = { evaluate: vi.fn(), fill: vi.fn() };
+    const dayEl = { evaluate: vi.fn(), clear: vi.fn() };
     const monthEl = { evaluate: vi.fn(), selectOption: vi.fn() };
-    const yearEl = { evaluate: vi.fn(), fill: vi.fn() };
+    const yearEl = { evaluate: vi.fn(), clear: vi.fn() };
 
     dayEl.evaluate.mockResolvedValue({ tag: 'input' });
     monthEl.evaluate.mockResolvedValue({ tag: 'select' });
@@ -202,8 +204,8 @@ describe('setDateGroup', () => {
     const result = await setDateGroup({ el: mock, tag: 'div', type: null }, null);
 
     expect(result).toBe(true);
-    expect(dayEl.fill).toHaveBeenCalledWith('', undefined);
+    expect(dayEl.clear).toHaveBeenCalled();
     expect(monthEl.selectOption).toHaveBeenCalledWith([], undefined);
-    expect(yearEl.fill).toHaveBeenCalledWith('', undefined);
+    expect(yearEl.clear).toHaveBeenCalled();
   });
 });
