@@ -52,7 +52,7 @@ function parseDateString(value: string, order: DateOrder, sep: string, yearWidth
   return dt;
 }
 
-async function inferLocaleAndPattern(el: Locator): Promise<{
+async function inferLocaleAndPattern(el: Locator, options?: SetOptions): Promise<{
   locale: string;
   order: DateOrder;
   sep: string;
@@ -77,7 +77,7 @@ async function inferLocaleAndPattern(el: Locator): Promise<{
     const finalOrder = order.length === 3 ? order : (['day', 'month', 'year'] as const);
 
     return { locale: lang, order: finalOrder as any, sep };
-  });
+  }, options);
 }
 
 async function fillAndReadBack(el: Locator, s: string, options?: SetOptions): Promise<string> {
@@ -85,8 +85,8 @@ async function fillAndReadBack(el: Locator, s: string, options?: SetOptions): Pr
   await el.fill(s, options);
 
   // Blur to trigger parsing/formatting
-  await el.evaluate((el) => el.blur());
-  return el.inputValue();
+  await el.evaluate((el) => el.blur(), options);
+  return el.inputValue(options);
 }
 
 function isAmbiguous(value: Date | Date[] | Range<Date>): boolean {
@@ -155,8 +155,8 @@ function sameYMD(a: Date, b: Date): boolean {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
 
-async function formatCombinations(el: Locator) {
-  const { order: localeOrder, sep: localeSep } = await inferLocaleAndPattern(el);
+async function formatCombinations(el: Locator, options?: SetOptions) {
+  const { order: localeOrder, sep: localeSep } = await inferLocaleAndPattern(el, options);
 
   const orders: DateOrder[] = [
     localeOrder,
@@ -194,12 +194,12 @@ export async function setDateTextInput({ el, tag, type }: Loc, value: Value, opt
   if (tag !== 'input' && tag !== 'textarea') return false;
   if (type && type !== 'text' && type !== 'hidden') return false;
   try {
-    if (await el.evaluate((el) => (el as HTMLInputElement).readOnly)) return false;
+    if (await el.evaluate((el) => (el as HTMLInputElement).readOnly, options)) return false;
   } catch {
     return false;
   }
 
-  const { combinations, candidates, localeSep } = await formatCombinations(el);
+  const { combinations, candidates, localeSep } = await formatCombinations(el, options);
   let fallbackMatch: [ DateOrder, string, (typeof candidates)[0] ] | null = null;
 
   for (const [order, sep, c] of combinations) {

@@ -7,11 +7,11 @@ import { formatDate, formatDateForInput, getMonthNames } from './utils';
 type MonthYear = { month: number; year: number };
 
 async function getDialog(root: Locator, options?: SetOptions) {
-  const role = await root.getAttribute('role').catch(() => null);
+  const role = await root.getAttribute('role', options).catch(() => null);
 
   if (role !== 'combobox') return null;
 
-  const ariaControls = await root.getAttribute('aria-controls').catch(() => null);
+  const ariaControls = await root.getAttribute('aria-controls', options).catch(() => null);
   if (!ariaControls) return null;
 
   const calendar = root.page().locator(`#${ariaControls}`);
@@ -171,7 +171,7 @@ async function setDayByAriaLabel(table: Locator, value: Date, options?: SetOptio
     await Promise.all(
       candidateLabels.map(async (label) => {
         const cell = table.locator(`[aria-label="${label}"], [aria-label*="${label}"]`).first();
-        return (await cell.isVisible()) ? cell : null;
+        return (await cell.isVisible(options)) ? cell : null;
       }),
     )
   ).filter((l): l is Locator => l !== null);
@@ -189,7 +189,7 @@ async function setDayByAriaLabel(table: Locator, value: Date, options?: SetOptio
     formats.map(async (fmt) => {
       const label = formatDate(probeDate, fmt);
       const cell = table.locator(`[aria-label="${label}"], [aria-label*="${label}"]`).first();
-      return (await cell.isVisible()) ? fmt : null;
+      return (await cell.isVisible(options)) ? fmt : null;
     }),
   );
 

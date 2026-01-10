@@ -4,12 +4,14 @@ import type { Locator } from '@playwright/test';
 import type { Loc, SetOptions, Value } from './types';
 
 export async function clearSelect(el: Locator, opts?: SetOptions) {
-  const isMultiple = await el.evaluate((e) => (e as HTMLSelectElement).multiple);
-  const options = await el.evaluate((e) =>
-    Array.from((e as HTMLSelectElement).options).map((o) => ({
-      value: o.value,
-      disabled: o.disabled,
-    })),
+  const isMultiple = await el.evaluate((e) => (e as HTMLSelectElement).multiple, opts);
+  const options = await el.evaluate(
+    (e) =>
+      Array.from((e as HTMLSelectElement).options).map((o) => ({
+        value: o.value,
+        disabled: o.disabled,
+      })),
+    opts,
   );
 
   if (isMultiple) {
@@ -30,7 +32,7 @@ export async function clearSelect(el: Locator, opts?: SetOptions) {
 }
 
 async function multiSelect(el: Locator, value: Scalar[], opts?: SetOptions) {
-  const isMultiple = await el.evaluate((e) => (e as HTMLSelectElement).multiple);
+  const isMultiple = await el.evaluate((e) => (e as HTMLSelectElement).multiple, opts);
   if (!isMultiple) throw new Error('Select is not multiple');
 
   const requested = value.map((v) => String(v));

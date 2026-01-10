@@ -7,6 +7,8 @@ import { setNativeCheckbox } from './native-checkbox';
 import { setNativeDate } from './native-date';
 import { setNativeInput } from './native-input';
 import { selectNative } from './native-select';
+import { setOtpValue } from './otp';
+import { setSliderValue } from './slider';
 import type { Loc, SetOptions, Value } from './types';
 
 function toString(value: Value): string {
@@ -31,11 +33,13 @@ export async function setFieldValue(el: Locator, value: Value, options?: SetOpti
     setDateTextInput,
     setDateGroup,
     setCalendarDate,
+    setOtpValue,
+    setSliderValue,
     // fallback (eg contenteditable or will fail)
     setFallback,
   );
 
-  const tag = await el.evaluate((e) => e.tagName.toLowerCase());
+  const tag = await el.evaluate((e) => e.tagName.toLowerCase(), options);
   const type = await el
     .getAttribute('type', options)
     .then((s) => s && s.toLowerCase())
