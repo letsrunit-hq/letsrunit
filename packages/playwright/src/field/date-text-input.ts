@@ -76,10 +76,15 @@ async function inferLocaleAndPattern(el: Locator, options?: SetOptions): Promise
   }, options);
 }
 
-async function fillAndReadBack(el: Locator, s: string, options?: SetOptions): Promise<string> {
+async function fillAndReadBack(el: Locator, s: string, options?: SetOptions, nextInput?: Locator): Promise<string> {
   await el.clear(options);
   await el.fill(s, options);
-  await el.evaluate((el) => el.blur(), options);
+
+  if (nextInput) {
+    await nextInput.focus(options);
+  } else {
+    await el.evaluate((el) => el.blur(), options);
+  }
 
   // Some frameworks need a tiny tick.
   await el.evaluate(() => new Promise(requestAnimationFrame));
@@ -87,7 +92,8 @@ async function fillAndReadBack(el: Locator, s: string, options?: SetOptions): Pr
   return await el.inputValue(options);
 }
 
-function isAmbiguous(value: Date | Date[] | Range<Date>): boolean {
+function isAmbiguous(value: Date | Date[] | Range<Date>, value2?: Date): boolean {
+  if (value2 && value instanceof Date) value = [value, value2];
   return toDateArray(value).every((date) => date.getDate() <= 12);
 }
 
@@ -102,12 +108,13 @@ async function setDateValue(
   sep: string,
   pad: boolean,
   options?: SetOptions,
+  nextInput?: Locator,
 ): Promise<boolean> {
   const dates = toDateArray(value);
   const glue = isRange(value) ? ' - ' : ',';
 
   const s = dates.map((d) => buildDateString(d, order, sep, pad)).join(glue);
-  const back = await fillAndReadBack(el, s, options);
+  const back = await fillAndReadBack(el, s, options, nextInput);
   if (!back) return false;
 
   const backParts = back.split(glue);
@@ -129,6 +136,7 @@ async function tryProbe(
   sep: string,
   pad: boolean,
   options?: SetOptions,
+  nextInput?: Locator,
 ): Promise<boolean | null> {
   const baseDate = isRange(value) ? value.from : isArray(value) ? value[0] : value;
   const y = baseDate.getFullYear();
@@ -140,7 +148,7 @@ async function tryProbe(
       ? { from: new Date(y, month, 22), to: new Date(y, month, 23) }
       : new Date(y, month, 22);
 
-    const success = await setDateValue(el, probeValue, order, sep, pad, options);
+    const success = await setDateValue(el, probeValue, order, sep, pad, options, nextInput);
     if (success) return true;
   }
 
@@ -184,13 +192,15 @@ async function formatCombinations(el: Locator, options?: SetOptions) {
   return { combinations, localeSep };
 }
 
-export async function setDateTextInput({ el, tag, type }: Loc, value: Value, options?: SetOptions): Promise<boolean> {
-  if (!(value instanceof Date) && !isArray(value, isDate) && !isRange(value, isDate)) return false;
-
-  if (tag !== 'input' && tag !== 'textarea') return false;
-  if (type && type !== 'text' && type !== 'hidden') return false;
-
+async function setInputValue(
+  el: Locator,
+  value: Date | Date[] | Range<Date>,
+  el2?: Locator,
+  value2?: Date,
+  options?: SetOptions,
+): Promise<boolean> {
   if (await el.evaluate((el) => (el as HTMLInputElement).readOnly, options)) return false;
+  if (el2 && (await el2.evaluate((el) => (el as HTMLInputElement).readOnly, options))) return false;
 
   const { combinations, localeSep } = await formatCombinations(el, options);
   let fallbackMatch: [DateOrder, string, boolean] | null = null;
@@ -199,15 +209,21 @@ export async function setDateTextInput({ el, tag, type }: Loc, value: Value, opt
     // Optimization: for non-locale separators, only try padded
     if (sep !== localeSep && !pad) continue;
 
-    const success = await setDateValue(el, value, order, sep, pad, options);
+    const success = await setDateValue(el, value, order, sep, pad, options, el2);
     if (!success) continue;
 
-    if (!isAmbiguous(value)) return true; // Done
+    if (el2 && value2) {
+      const success2 = await setDateValue(el2, value2, order, sep, pad, options);
+      if (!success2) continue;
+    }
 
-    const probeResult = await tryProbe(el, value, order, sep, pad, options);
+    if (!isAmbiguous(value, value2)) return true; // Done
+
+    const probeResult = await tryProbe(el, value, order, sep, pad, options, el2);
 
     if (probeResult === true) {
-      await setDateValue(el, value, order, sep, pad, options);
+      await setDateValue(el, value, order, sep, pad, options, el2);
+      if (el2 && value2) await setDateValue(el2, value2, order, sep, pad, options);
       return true; // Done
     }
 
@@ -217,8 +233,30 @@ export async function setDateTextInput({ el, tag, type }: Loc, value: Value, opt
 
   if (fallbackMatch) {
     const [order, sep, pad] = fallbackMatch;
-    await setDateValue(el, value, order, sep, pad, options);
-    return true;
+    const success = await setDateValue(el, value, order, sep, pad, options, el2);
+    if (el2 && value2) {
+      const success2 = await setDateValue(el2, value2, order, sep, pad, options);
+      return success && success2;
+    }
+    return success;
+  }
+
+  return false;
+}
+
+export async function setDateTextInput({ el, tag, type }: Loc, value: Value, options?: SetOptions): Promise<boolean> {
+  if (!(value instanceof Date) && !isArray(value, isDate) && !isRange(value, isDate)) return false;
+
+  if (tag === 'input' || tag === 'textarea') {
+    if (type && type !== 'text' && type !== 'hidden') return false;
+    return await setInputValue(el, value, undefined, undefined, options);
+  }
+
+  if (isRange(value, isDate)) {
+    const inputs = el.locator('input[type=text], input[type=hidden], input:not([type])');
+    if ((await inputs.count()) === 2) {
+      return await setInputValue(inputs.nth(0), value.from, inputs.nth(1), value.to, options);
+    }
   }
 
   return false;
