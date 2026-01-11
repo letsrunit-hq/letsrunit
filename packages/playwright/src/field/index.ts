@@ -12,7 +12,7 @@ import { setSliderValue } from './slider';
 import type { Loc, SetOptions, Value } from './types';
 
 function toString(value: Value): string {
-  if (isRange(value)) return `${String(value)} - ${String(value)}`;
+  if (isRange(value)) return `${String(value.from)} - ${String(value.to)}`;
   if (isArray(value)) return value.map((v) => String(v)).join('\n');
   return String(value);
 }

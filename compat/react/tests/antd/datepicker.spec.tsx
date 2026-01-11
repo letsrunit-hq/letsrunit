@@ -43,7 +43,8 @@ test.describe('Ant Design RangePicker', () => {
 
     const dates = { from: new Date('2024-07-15'), to: new Date('2024-07-18') };
 
-    await setFieldValue(page.getByLabel('rangepicker'), dates, { timeout: 500 });
+    const el = page.getByLabel('rangepicker');
+    await setFieldValue(el, dates, { timeout: 500 });
     await expect(page.getByLabel('result')).toContainText('From: Mon Jul 15 2024');
     await expect(page.getByLabel('result')).toContainText('To: Thu Jul 18 2024');
   });
