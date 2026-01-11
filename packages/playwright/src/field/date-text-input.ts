@@ -8,7 +8,7 @@ function pad2(n: number): string {
   return String(n).padStart(2, '0');
 }
 
-function buildDateString(date: Date, order: DateOrder, sep: string, yearWidth: 2 | 4, pad: boolean): string {
+function buildDateString(date: Date, order: DateOrder, sep: string, pad: boolean): string {
   const d = date.getDate();
   const m = date.getMonth() + 1;
   const y = date.getFullYear();
@@ -16,13 +16,13 @@ function buildDateString(date: Date, order: DateOrder, sep: string, yearWidth: 2
   const parts: Record<'day' | 'month' | 'year', string> = {
     day: pad ? pad2(d) : String(d),
     month: pad ? pad2(m) : String(m),
-    year: yearWidth === 2 ? String(y % 100).padStart(2, '0') : String(y),
+    year: String(y),
   };
 
   return order.map((p) => parts[p]).join(sep);
 }
 
-function parseDateString(value: string, order: DateOrder, sep: string, yearWidthGuess: 2 | 4): Date | null {
+function parseDateString(value: string, order: DateOrder, sep: string): Date | null {
   const raw = value.trim();
   if (!raw) return null;
 
@@ -35,11 +35,7 @@ function parseDateString(value: string, order: DateOrder, sep: string, yearWidth
   const map: Record<'day' | 'month' | 'year', number> = { day: 0, month: 0, year: 0 };
   for (let i = 0; i < 3; i++) map[order[i]] = nums[i];
 
-  let year = map.year;
-  if (yearWidthGuess === 2 && year < 100) {
-    year += year >= 70 ? 1900 : 2000;
-  }
-
+  const year = map.year;
   const month = map.month;
   const day = map.day;
 
@@ -83,10 +79,12 @@ async function inferLocaleAndPattern(el: Locator, options?: SetOptions): Promise
 async function fillAndReadBack(el: Locator, s: string, options?: SetOptions): Promise<string> {
   await el.clear(options);
   await el.fill(s, options);
-
-  // Blur to trigger parsing/formatting
   await el.evaluate((el) => el.blur(), options);
-  return el.inputValue(options);
+
+  // Some frameworks need a tiny tick.
+  await el.evaluate(() => new Promise(requestAnimationFrame));
+
+  return await el.inputValue(options);
 }
 
 function isAmbiguous(value: Date | Date[] | Range<Date>): boolean {
@@ -102,14 +100,13 @@ async function setDateValue(
   value: Date | Date[] | Range<Date>,
   order: DateOrder,
   sep: string,
-  yearWidth: 2 | 4,
   pad: boolean,
   options?: SetOptions,
 ): Promise<boolean> {
   const dates = toDateArray(value);
   const glue = isRange(value) ? ' - ' : ',';
 
-  const s = dates.map((d) => buildDateString(d, order, sep, yearWidth, pad)).join(glue);
+  const s = dates.map((d) => buildDateString(d, order, sep, pad)).join(glue);
   const back = await fillAndReadBack(el, s, options);
   if (!back) return false;
 
@@ -118,7 +115,7 @@ async function setDateValue(
     backParts.length !== dates.length ||
     dates.some((date, i) => {
       const part = backParts[i]?.trim();
-      const parsed = parseDateString(part, order, sep, yearWidth);
+      const parsed = parseDateString(part, order, sep);
       return !parsed || !sameYMD(parsed, date);
     });
 
@@ -130,7 +127,6 @@ async function tryProbe(
   value: Date | Date[] | Range<Date>,
   order: DateOrder,
   sep: string,
-  yearWidth: 2 | 4,
   pad: boolean,
   options?: SetOptions,
 ): Promise<boolean | null> {
@@ -144,7 +140,7 @@ async function tryProbe(
       ? { from: new Date(y, month, 22), to: new Date(y, month, 23) }
       : new Date(y, month, 22);
 
-    const success = await setDateValue(el, probeValue, order, sep, yearWidth, pad, options);
+    const success = await setDateValue(el, probeValue, order, sep, pad, options);
     if (success) return true;
   }
 
@@ -160,9 +156,9 @@ async function formatCombinations(el: Locator, options?: SetOptions) {
 
   const orders: DateOrder[] = [
     localeOrder,
+    ['year', 'month', 'day'], // ISO order
     ['day', 'month', 'year'],
     ['month', 'day', 'year'],
-    ['year', 'month', 'day'],
   ];
 
   const seenOrders = new Set<string>();
@@ -175,17 +171,17 @@ async function formatCombinations(el: Locator, options?: SetOptions) {
     }
   }
 
-  const seps = Array.from(new Set([localeSep, '/', '-', '.', ' ']));
+  const seps = Array.from(new Set([localeSep, '-', '/', '.']));
+  const pads = [true, false];
 
-  const candidates = [
-    { yearWidth: 4 as const, pad: true },
-    { yearWidth: 4 as const, pad: false },
-    { yearWidth: 2 as const, pad: true },
-  ];
+  const combinations = cartesian(uniqueOrders, seps, pads);
 
-  const combinations = cartesian(uniqueOrders, seps, candidates);
+  // Re-order combinations to ensure that locale and iso is second
+  const score = ([o, s]: (typeof combinations)[number]) =>
+    o.join(s) === localeOrder.join(localeSep) ? 0 : o.join(s) === 'year-month-day'? 1 : 2;
+  combinations.sort((a, b) => score(a) - score(b));
 
-  return { combinations, candidates, localeSep };
+  return { combinations, localeSep };
 }
 
 export async function setDateTextInput({ el, tag, type }: Loc, value: Value, options?: SetOptions): Promise<boolean> {
@@ -193,38 +189,35 @@ export async function setDateTextInput({ el, tag, type }: Loc, value: Value, opt
 
   if (tag !== 'input' && tag !== 'textarea') return false;
   if (type && type !== 'text' && type !== 'hidden') return false;
-  try {
-    if (await el.evaluate((el) => (el as HTMLInputElement).readOnly, options)) return false;
-  } catch {
-    return false;
-  }
 
-  const { combinations, candidates, localeSep } = await formatCombinations(el, options);
-  let fallbackMatch: [ DateOrder, string, (typeof candidates)[0] ] | null = null;
+  if (await el.evaluate((el) => (el as HTMLInputElement).readOnly, options)) return false;
 
-  for (const [order, sep, c] of combinations) {
-    // Optimization: for non-locale separators, only try the most common candidate
-    if (sep !== localeSep && (c.yearWidth !== 4 || !c.pad)) continue;
+  const { combinations, localeSep } = await formatCombinations(el, options);
+  let fallbackMatch: [DateOrder, string, boolean] | null = null;
 
-    const success = await setDateValue(el, value, order, sep, c.yearWidth, c.pad, options);
+  for (const [order, sep, pad] of combinations) {
+    // Optimization: for non-locale separators, only try padded
+    if (sep !== localeSep && !pad) continue;
+
+    const success = await setDateValue(el, value, order, sep, pad, options);
     if (!success) continue;
 
     if (!isAmbiguous(value)) return true; // Done
 
-    const probeResult = await tryProbe(el, value, order, sep, c.yearWidth, c.pad, options);
+    const probeResult = await tryProbe(el, value, order, sep, pad, options);
 
     if (probeResult === true) {
-      await setDateValue(el, value, order, sep, c.yearWidth, c.pad, options);
+      await setDateValue(el, value, order, sep, pad, options);
       return true; // Done
     }
 
     // Maybe out of range? Keep as fallback
-    if (probeResult === null && !fallbackMatch) fallbackMatch = [order, sep, c];
+    if (probeResult === null && !fallbackMatch) fallbackMatch = [order, sep, pad];
   }
 
   if (fallbackMatch) {
-    const [ order, sep, c ] = fallbackMatch;
-    await setDateValue(el, value, order, sep, c.yearWidth, c.pad, options);
+    const [order, sep, pad] = fallbackMatch;
+    await setDateValue(el, value, order, sep, pad, options);
     return true;
   }
 
