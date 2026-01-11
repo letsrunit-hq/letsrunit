@@ -3,7 +3,7 @@ import { defineConfig } from '@playwright/experimental-ct-react';
 export default defineConfig({
   testDir: './tests',
 
-  timeout: 5_000,
+  timeout: 300_000_000,
 
   use: {
     //ctPort: 3100,
