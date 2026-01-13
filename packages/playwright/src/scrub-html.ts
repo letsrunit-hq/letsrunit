@@ -10,7 +10,7 @@ import { hash } from '@letsrunit/utils';
 import { memoize } from '@letsrunit/utils/src/memoize';
 import type { Page } from '@playwright/test';
 import { JSDOM } from 'jsdom';
-import { isPage } from './type-check';
+import { isPage } from './utils/type-check';
 
 export type ScrubHtmlOptions = {
   /** Remove nodes that look hidden/inert by attributes. Default: true */

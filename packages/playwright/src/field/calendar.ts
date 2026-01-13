@@ -1,8 +1,9 @@
 import { isArray, isDate, isRange } from '@letsrunit/utils';
 import { uniqueItem } from '@letsrunit/utils/src/array';
 import type { Locator } from '@playwright/test';
+import { formatDate, formatDateForInput, getMonthNames } from '../utils/date';
+import { waitForAnimationsToFinish } from '../wait';
 import type { Loc, SetOptions, Value } from './types';
-import { formatDate, formatDateForInput, getMonthNames } from './utils';
 
 type MonthYear = { month: number; year: number };
 
@@ -23,8 +24,8 @@ async function getDialog(root: Locator, options?: SetOptions) {
   return count > 0 ? calendar : null;
 }
 
-async function isCalendarTable(table: Locator): Promise<boolean> {
-  const cells = table.locator('td, [role="gridcell"]');
+async function isCalendarGrid(grid: Locator): Promise<boolean> {
+  const cells = grid.locator('td, [role="gridcell"]');
   const cellCount = await cells.count();
   if (cellCount < 28 || cellCount > 80) return false; // Sanity check
 
@@ -44,13 +45,38 @@ export async function getCalendar(
   root: Locator,
   options?: SetOptions,
 ): Promise<{ calendar: Locator; tables: Locator[] } | null> {
-  const calendar = (await root.locator('table').count()) > 0 ? root : await getDialog(root, options);
-  if (!calendar) return null;
+  const gridSelector = 'table, [role="grid"]';
 
-  const allTables = await calendar.locator('table').all();
-  const tables = allTables.filter(isCalendarTable);
+  // 1. Identify the container (either the root itself or a linked dialog/popup)
+  let container: Locator | null =
+    (await root.locator(gridSelector).count()) > 0 ? root : await getDialog(root, options);
 
-  return tables.length > 0 ? { calendar, tables } : null;
+  // Fallback: Check if the root itself is a valid grid (e.g. inline MUI DateCalendar)
+  if (!container && (await isCalendarGrid(root))) {
+    return { calendar: root, tables: [root] };
+  }
+  if (!container) return null;
+
+  // 2. Find all valid calendar grids within the container
+  // This handles both <table> and <div role="grid">
+  const found = await container.locator(gridSelector).all();
+  const tables: Locator[] = [];
+
+  // If the container itself matches the selector, check it first
+  if (await isCalendarGrid(container)) {
+    tables.push(container);
+  }
+
+  for (const grid of found) {
+    if (await isCalendarGrid(grid)) {
+      tables.push(grid);
+    }
+  }
+
+  // 3. Deduplicate (prevents issues if container == grid)
+  const uniqueTables = tables.filter((t, i, self) => self.indexOf(t) === i);
+
+  return uniqueTables.length > 0 ? { calendar: container, tables: uniqueTables } : null;
 }
 
 function uniqueMonthYearPairs(pairs: MonthYear[]): MonthYear[] {
@@ -156,11 +182,17 @@ async function navigateToMonth(
     await root.page().waitForTimeout(options?.wait ?? 50);
   }
 
+  await waitForAnimationsToFinish(root);
+
   const afterMonths = await getCurrentMonthsAndYears(root, target);
   if (afterMonths.some((m) => m.year * 12 + m.month === targetTotal)) return true;
 
-  if ((options?.retry ?? 0) >= 3) return false;
-  return await navigateToMonth(root, target, { ...options, wait: 100, retry: (options?.retry ?? 0) + 1 });
+  if ((options?.retry ?? 0) < 3) {
+    const retry = (options?.retry ?? 0) + 1;
+    return await navigateToMonth(root, target, { ...options, wait: 50 + 50 * retry, retry }); // Retry max 3x
+  }
+
+  return false;
 }
 
 async function setDayByAriaLabel(table: Locator, value: Date, options?: SetOptions): Promise<boolean> {
@@ -206,7 +238,7 @@ async function setDayByAriaLabel(table: Locator, value: Date, options?: SetOptio
 
 async function setDayByByCellText(table: Locator, value: Date, options?: SetOptions): Promise<boolean> {
   const day = value.getDate();
-  const cells = table.locator('td, [role="gridcell"]');
+  const cells = table.locator('td, [role="gridcell"]').filter({ visible: true });
 
   const allTexts = await cells.allInnerTexts();
   const foundIndices = allTexts.map((text, i) => (text.trim() === String(day) ? i : -1)).filter((i) => i !== -1);
@@ -219,13 +251,7 @@ async function setDayByByCellText(table: Locator, value: Date, options?: SetOpti
   return true;
 }
 
-async function setDates(
-  calendar: Locator,
-  tables: Locator[],
-  dates: Date[],
-  options?: SetOptions,
-): Promise<void> {
-
+async function setDates(calendar: Locator, tables: Locator[], dates: Date[], options?: SetOptions): Promise<void> {
   let method: 'aria' | 'text' | undefined = undefined;
 
   for (const date of dates) {
@@ -248,7 +274,7 @@ async function setDates(
       continue;
     }
 
-    throw new Error(`Failed to set date "${formatDateForInput(date, 'date')}"`)
+    throw new Error(`Failed to set date "${formatDateForInput(date, 'date')}"`);
   }
 }
 

@@ -1,6 +1,6 @@
 import { setFieldValue } from '@letsrunit/playwright';
 import { expect, test } from '@playwright/experimental-ct-react';
-import { AntdDatePicker, AntdRangePicker } from '../../src/antd/datepicker';
+import { AntdDatePicker, AntdRangePicker, AntdRangePickerMultiple } from '../../src/antd/date-picker';
 
 test.describe('Ant Design DatePicker', () => {
   test('select date with defaults', async ({ mount, page }) => {
@@ -34,6 +34,28 @@ test.describe('Ant Design DatePicker', () => {
 
     await setFieldValue(page.getByLabel('datepicker'), date, { timeout: 500 });
     await expect(page.getByLabel('result')).toContainText(date.toDateString());
+  });
+});
+
+// Doesn't work because ant design doesn't set aria properties, so calendar dialog is not found.
+test.skip('Ant Design DatePicker with multiple values', () => {
+  test('select multiple dates', async ({ mount, page }) => {
+    await mount(<AntdRangePickerMultiple />);
+    const dates = [new Date('2024-07-15'), new Date('2024-07-18')];
+
+    await setFieldValue(page.locator('.ant-picker-multiple-input'), dates, { timeout: 500 });
+    await expect(page.getByLabel('result')).toContainText('Mon Jul 15 2024');
+    await expect(page.getByLabel('result')).toContainText('Thu Jul 18 2024');
+  });
+
+  test('select multiple dates with custom format', async ({ mount, page }) => {
+    await mount(<AntdRangePickerMultiple format="DD/MM/YYYY" />);
+
+    const dates = [new Date('2024-03-02'), new Date('2024-03-04')];
+
+    await setFieldValue(page.getByLabel('.ant-picker-multiple-input'), dates, { timeout: 500 });
+    await expect(page.getByLabel('result')).toContainText('Sat Mar 02 2024');
+    await expect(page.getByLabel('result')).toContainText('Mon Mar 04 2024');
   });
 });
 

@@ -1,5 +1,6 @@
 import { chain, isArray, isRange } from '@letsrunit/utils';
 import type { Locator } from '@playwright/test';
+import { pickFieldElement } from '../utils/pick-field-element';
 import { setCalendarDate } from './calendar';
 import { setDateGroup } from './date-group';
 import { setDateTextInput } from './date-text-input';
@@ -38,6 +39,10 @@ export async function setFieldValue(el: Locator, value: Value, options?: SetOpti
     // fallback (eg contenteditable or will fail)
     setFallback,
   );
+
+  if ((await el.count()) > 1) {
+    el = await pickFieldElement(el);
+  }
 
   const tag = await el.evaluate((e) => e.tagName.toLowerCase(), options);
   const type = await el

@@ -20,12 +20,18 @@ describe('setCalendarDate', () => {
       click: vi.fn().mockResolvedValue(undefined),
       blur: vi.fn().mockResolvedValue(undefined),
       isVisible: vi.fn().mockResolvedValue(false),
+      evaluate: vi.fn().mockResolvedValue(''),
+      evaluateHandle: vi.fn().mockResolvedValue({}),
+      elementHandle: vi.fn().mockResolvedValue({}),
       all: vi.fn().mockResolvedValue([]),
       page: vi.fn().mockReturnValue({
         locator: vi.fn().mockReturnValue({
           getAttribute: vi.fn().mockResolvedValue('en'),
         }),
         waitForTimeout: vi.fn().mockResolvedValue(undefined),
+        waitForFunction: vi.fn().mockResolvedValue(undefined),
+        waitForLoadState: vi.fn().mockResolvedValue(undefined),
+        url: vi.fn().mockReturnValue('http://localhost'),
         keyboard: {
           press: vi.fn().mockResolvedValue(undefined),
         },
@@ -60,7 +66,7 @@ describe('setCalendarDate', () => {
 
   it('identifies and sets date on a basic calendar', async () => {
     const dayCell = createMockLocator({ isVisible: vi.fn().mockResolvedValue(true) });
-    const cells = createMockLocator({
+    const tableCells = createMockLocator({
       count: vi.fn().mockResolvedValue(31),
       allTextContents: vi.fn().mockResolvedValue(Array.from({ length: 31 }, (_, i) => String(i + 1))),
       allInnerTexts: vi.fn().mockResolvedValue(Array.from({ length: 31 }, (_, i) => String(i + 1))),
@@ -69,23 +75,25 @@ describe('setCalendarDate', () => {
     const table = createMockLocator({
       count: vi.fn().mockResolvedValue(1),
       isVisible: vi.fn().mockResolvedValue(true),
+      evaluate: vi.fn().mockResolvedValue('TABLE'),
     });
     table.all.mockResolvedValue([table]);
 
     table.locator.mockImplementation((selector) => {
       assert.ok(typeof selector === 'string');
-      if (selector === 'td, [role="gridcell"]') return cells;
+      if (selector === 'td, [role="gridcell"]') return tableCells;
       if (selector.includes('aria-label')) return dayCell;
       return table;
     });
 
     const el = createMockLocator({
       innerText: vi.fn().mockResolvedValue('January 2024'),
+      evaluate: vi.fn().mockResolvedValue('INPUT'),
     });
 
     el.locator.mockImplementation((selector) => {
       assert.ok(typeof selector === 'string');
-      if (selector === 'table[role="grid"]' || selector === 'table') return table;
+      if (selector === 'table, [role="grid"]') return table;
       return el;
     });
 
@@ -97,7 +105,7 @@ describe('setCalendarDate', () => {
 
   it('handles datepicker using aria-controls', async () => {
     const dayCell = createMockLocator({ isVisible: vi.fn().mockResolvedValue(true) });
-    const cells = createMockLocator({
+    const tableCells = createMockLocator({
       count: vi.fn().mockResolvedValue(0), // Initially 0
       allTextContents: vi.fn().mockResolvedValue(Array.from({ length: 31 }, (_, i) => String(i + 1))),
       allInnerTexts: vi.fn().mockResolvedValue(Array.from({ length: 31 }, (_, i) => String(i + 1))),
@@ -106,12 +114,13 @@ describe('setCalendarDate', () => {
     const table = createMockLocator({
       count: vi.fn().mockResolvedValue(0), // Initially 0
       isVisible: vi.fn().mockResolvedValue(true),
+      evaluate: vi.fn().mockResolvedValue('TABLE'),
     });
     table.all.mockResolvedValue([table]);
 
     table.locator.mockImplementation((selector) => {
       assert.ok(typeof selector === 'string');
-      if (selector === 'td, [role="gridcell"]') return cells;
+      if (selector === 'td, [role="gridcell"]') return tableCells;
       if (selector.includes('aria-label')) return dayCell;
       return table;
     });
@@ -122,7 +131,7 @@ describe('setCalendarDate', () => {
 
     calendarDialog.locator.mockImplementation((selector) => {
       assert.ok(typeof selector === 'string');
-      if (selector === 'table[role="grid"]' || selector === 'table') return table;
+      if (selector === 'table, [role="grid"]') return table;
       return calendarDialog;
     });
 
@@ -137,7 +146,7 @@ describe('setCalendarDate', () => {
 
     el.locator.mockImplementation((selector) => {
       assert.ok(typeof selector === 'string');
-      if (selector === 'table[role="grid"]' || selector === 'table') return table;
+      if (selector === 'table, [role="grid"]') return table;
       return el;
     });
 
@@ -149,7 +158,7 @@ describe('setCalendarDate', () => {
     // When root.click() is called, the table should become available
     el.click.mockImplementation(async () => {
       table.count.mockResolvedValue(1);
-      cells.count.mockResolvedValue(31);
+      tableCells.count.mockResolvedValue(31);
       calendarDialog.count.mockResolvedValue(1);
     });
 
@@ -160,21 +169,23 @@ describe('setCalendarDate', () => {
 
   it('handles multiple dates', async () => {
     const dayCell = createMockLocator({ isVisible: vi.fn().mockResolvedValue(true) });
-    const cells = createMockLocator({
+
+    const table = createMockLocator({
+      count: vi.fn().mockResolvedValue(1),
+      isVisible: vi.fn().mockResolvedValue(true),
+      evaluate: vi.fn().mockResolvedValue('TABLE'),
+    });
+    table.all.mockResolvedValue([table]);
+
+    const tableCells = createMockLocator({
       count: vi.fn().mockResolvedValue(31),
       allTextContents: vi.fn().mockResolvedValue(Array.from({ length: 31 }, (_, i) => String(i + 1))),
       allInnerTexts: vi.fn().mockResolvedValue(Array.from({ length: 31 }, (_, i) => String(i + 1))),
     });
 
-    const table = createMockLocator({
-      count: vi.fn().mockResolvedValue(1),
-      isVisible: vi.fn().mockResolvedValue(true),
-    });
-    table.all.mockResolvedValue([table]);
-
     table.locator.mockImplementation((selector) => {
       assert.ok(typeof selector === 'string');
-      if (selector === 'td, [role="gridcell"]') return cells;
+      if (selector === 'td, [role="gridcell"]') return tableCells;
       if (selector.includes('aria-label')) return dayCell;
       return table;
     });
@@ -185,7 +196,7 @@ describe('setCalendarDate', () => {
 
     el.locator.mockImplementation((selector) => {
       assert.ok(typeof selector === 'string');
-      if (selector === 'table[role="grid"]' || selector === 'table') return table;
+      if (selector === 'table, [role="grid"]') return table;
       return el;
     });
 
@@ -197,21 +208,23 @@ describe('setCalendarDate', () => {
 
   it('handles date ranges', async () => {
     const dayCell = createMockLocator({ isVisible: vi.fn().mockResolvedValue(true) });
-    const cells = createMockLocator({
+
+    const table = createMockLocator({
+      count: vi.fn().mockResolvedValue(1),
+      isVisible: vi.fn().mockResolvedValue(true),
+      evaluate: vi.fn().mockResolvedValue('TABLE'),
+    });
+    table.all.mockResolvedValue([table]);
+
+    const tableCells = createMockLocator({
       count: vi.fn().mockResolvedValue(31),
       allTextContents: vi.fn().mockResolvedValue(Array.from({ length: 31 }, (_, i) => String(i + 1))),
       allInnerTexts: vi.fn().mockResolvedValue(Array.from({ length: 31 }, (_, i) => String(i + 1))),
     });
 
-    const table = createMockLocator({
-      count: vi.fn().mockResolvedValue(1),
-      isVisible: vi.fn().mockResolvedValue(true),
-    });
-    table.all.mockResolvedValue([table]);
-
     table.locator.mockImplementation((selector) => {
       assert.ok(typeof selector === 'string');
-      if (selector === 'td, [role="gridcell"]') return cells;
+      if (selector === 'td, [role="gridcell"]') return tableCells;
       if (selector.includes('aria-label')) return dayCell;
       return table;
     });
@@ -222,7 +235,7 @@ describe('setCalendarDate', () => {
 
     el.locator.mockImplementation((selector) => {
       assert.equal(typeof selector, 'string');
-      if (selector === 'table[role="grid"]' || selector === 'table') return table;
+      if (selector === 'table, [role="grid"]') return table;
       return el;
     });
 
@@ -240,19 +253,16 @@ describe('setCalendarDate', () => {
     // After next, tables should be Feb and March.
 
     const dayCell = createMockLocator({ isVisible: vi.fn().mockResolvedValue(true) });
-    const cells = createMockLocator({
-      count: vi.fn().mockResolvedValue(31),
-      allTextContents: vi.fn().mockResolvedValue(Array.from({ length: 31 }, (_, i) => String(i + 1))),
-      allInnerTexts: vi.fn().mockResolvedValue(Array.from({ length: 31 }, (_, i) => String(i + 1))),
-    });
 
     const table1 = createMockLocator({
       count: vi.fn().mockResolvedValue(1),
       isVisible: vi.fn().mockResolvedValue(true),
+      evaluate: vi.fn().mockResolvedValue('TABLE'),
     });
     const table2 = createMockLocator({
       count: vi.fn().mockResolvedValue(1),
       isVisible: vi.fn().mockResolvedValue(true),
+      evaluate: vi.fn().mockResolvedValue('TABLE'),
     });
 
     const tables = [table1, table2];
@@ -260,8 +270,13 @@ describe('setCalendarDate', () => {
     table2.all.mockResolvedValue(tables);
 
     const setupTableMock = (table: any) => {
+      const tableCells = createMockLocator({
+        count: vi.fn().mockResolvedValue(31),
+        allTextContents: vi.fn().mockResolvedValue(Array.from({ length: 31 }, (_, i) => String(i + 1))),
+        allInnerTexts: vi.fn().mockResolvedValue(Array.from({ length: 31 }, (_, i) => String(i + 1))),
+      });
       table.locator.mockImplementation((selector: string) => {
-        if (selector === 'td, [role="gridcell"]') return cells;
+        if (selector === 'td, [role="gridcell"]') return tableCells;
         if (selector.includes('aria-label')) return dayCell;
         return table;
       });
@@ -277,7 +292,7 @@ describe('setCalendarDate', () => {
 
     el.locator.mockImplementation((selector) => {
       assert.ok(typeof selector === 'string');
-      if (selector === 'table[role="grid"]' || selector === 'table') return table1;
+      if (selector === 'table, [role="grid"]') return table1;
       if (selector.includes('next')) return nextBtn;
       return el;
     });
@@ -295,6 +310,50 @@ describe('setCalendarDate', () => {
 
     expect(nextBtn.click).toHaveBeenCalledTimes(2);
     expect(dayCell.click).toHaveBeenCalledTimes(2);
+  });
+
+  it('handles MUI DateCalendar (div[role="grid"])', async () => {
+    const dayCell = createMockLocator({ isVisible: vi.fn().mockResolvedValue(true) });
+    const cells = createMockLocator({
+      count: vi.fn().mockResolvedValue(31),
+      allTextContents: vi.fn().mockResolvedValue(Array.from({ length: 31 }, (_, i) => String(i + 1))),
+      allInnerTexts: vi.fn().mockResolvedValue(Array.from({ length: 31 }, (_, i) => String(i + 1))),
+    });
+
+    const grid = createMockLocator({
+      count: vi.fn().mockResolvedValue(1),
+      isVisible: vi.fn().mockResolvedValue(true),
+      getAttribute: vi.fn().mockImplementation((attr: string) => {
+        if (attr === 'role') return Promise.resolve('grid');
+        return Promise.resolve(null);
+      }),
+      evaluate: vi.fn().mockResolvedValue('DIV'),
+    });
+    grid.all.mockResolvedValue([grid]);
+
+    grid.locator.mockImplementation((selector) => {
+      assert.ok(typeof selector === 'string');
+      if (selector === 'td, [role="gridcell"]') return cells;
+      if (selector.includes('aria-label')) return dayCell;
+      return grid;
+    });
+
+    const el = createMockLocator({
+      innerText: vi.fn().mockResolvedValue('January 2024'),
+      evaluate: vi.fn().mockResolvedValue('DIV'),
+    });
+
+    el.locator.mockImplementation((selector) => {
+      assert.ok(typeof selector === 'string');
+      if (selector === 'table, [role="grid"]') return grid;
+      // These are used in getCalendar
+      if (selector === 'table') return createMockLocator({ count: vi.fn().mockResolvedValue(0) });
+      return el;
+    });
+
+    const result = await setCalendarDate({ el, tag: 'div' } as any, new Date('2024-01-15'));
+    expect(result).toBe(true);
+    expect(dayCell.click).toHaveBeenCalled();
   });
 });
 

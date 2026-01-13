@@ -64,6 +64,20 @@ export async function waitForDomIdle(
   );
 }
 
+// Wait until there are no running Web Animations on the calendar subtree.
+// This helps with libraries that slide months using WAAPI (common in React UI libs).
+export async function waitForAnimationsToFinish(root: Locator) {
+  await root.page().waitForFunction(
+    (el) => {
+      const animations = (el as HTMLElement).getAnimations?.({ subtree: true }) ?? [];
+      return animations.every((a) => a.playState !== 'running');
+    },
+    await root.elementHandle(),
+  );
+
+  await root.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
+}
+
 export async function waitForUrlChange(page: Page, prevUrl: string, timeout: number) {
   try {
     await page.waitForFunction((u) => location.href !== u, prevUrl, { timeout });
