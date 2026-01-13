@@ -8,6 +8,8 @@
   },
   "packageManager": "yarn@4.10.3",
   "devDependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
     "@letsrunit/playwright": "workspace:*",
     "@mui/material": "^7.3.6",
     "@mui/x-date-pickers": "^8.23.0",

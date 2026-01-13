@@ -11,7 +11,7 @@ test.describe('Basic PrimeReact calendar', () => {
   });
 
   test('with custom format', async ({ mount, page }) => {
-    await mount(<PrimeReactCalendar dateFormat="d/m/y" />);
+    await mount(<PrimeReactCalendar dateFormat="d/m/yy" />);
 
     await setFieldValue(page.getByLabel('calendar'), new Date('2024-03-02'), { timeout: 500 });
     await expect(page.getByLabel('result')).toContainText('Sat Mar 02 2024');
@@ -56,7 +56,7 @@ test.describe('Basic PrimeReact calendar', () => {
   });
 
   test('with multiple values and custom format', async ({ mount, page }) => {
-    await mount(<PrimeReactCalendarMultiple dateFormat="d/m/y" />);
+    await mount(<PrimeReactCalendarMultiple dateFormat="d/m/yy" />);
 
     const dates = [new Date('2024-03-02'), new Date('2024-03-04')];
 

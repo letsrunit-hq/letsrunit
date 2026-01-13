@@ -1,6 +1,6 @@
 import { isDate, isRange, type Range } from '@letsrunit/utils';
+import { formatDateForInput } from '../utils/date';
 import type { Loc, SetOptions, Value } from './types';
-import { formatDateForInput } from './utils';
 
 async function setSingleDate({ el, tag, type }: Loc, value: Date, options?: SetOptions): Promise<boolean> {
   if (tag !== 'input' || !type || !['date', 'datetime-local', 'month', 'week', 'time'].includes(type)) return false;
