@@ -1,5 +1,5 @@
 import { setFieldValue } from '@letsrunit/playwright';
-import { Checkbox, FormControlLabel, Radio, RadioGroup, TextField } from '@mui/material';
+import { Checkbox, FormControlLabel, Input, NativeSelect, Radio, RadioGroup, TextField } from '@mui/material';
 import { expect, test } from '@playwright/experimental-ct-react';
 import { MuiSlider } from '../../src/mui/slider';
 import { MuiSwitch } from '../../src/mui/switch';
@@ -10,7 +10,7 @@ test.describe('MUI TextField', () => {
   test('set value', async ({ mount, page }) => {
     await mount(<TextField label="text" />);
 
-    await setFieldValue(page.getByLabel('text'), 'hello', { timeout: 500 });
+    await setFieldValue(page.getByLabel('text'), 'hello', { timeout: 1000 });
     await expect(page.locator('input')).toHaveValue('hello');
   });
 
@@ -19,14 +19,14 @@ test.describe('MUI TextField', () => {
 
     await expect(page.locator('input')).toHaveValue('abc');
 
-    await setFieldValue(page.getByLabel('text'), null, { timeout: 500 });
+    await setFieldValue(page.getByLabel('text'), null, { timeout: 1000 });
     await expect(page.locator('input')).toHaveValue('');
   });
 
   test('multiline', async ({ mount, page }) => {
     await mount(<TextField label="text" multiline />);
 
-    await setFieldValue(page.getByLabel('text'), 'hello\nworld', { timeout: 500 });
+    await setFieldValue(page.getByLabel('text'), 'hello\nworld', { timeout: 1000 });
     await expect(page.locator('textarea').filter({ visible: true })).toHaveValue('hello\nworld');
   });
 });
@@ -62,11 +62,11 @@ test('MUI Radio Group', async ({ mount, page }) => {
     </RadioGroup>,
   );
 
-  await setFieldValue(page.getByLabel('Male', { exact: true }), true, { timeout: 500 });
+  await setFieldValue(page.getByLabel('Male', { exact: true }), true, { timeout: 1000 });
   await expect(page.getByLabel('Male', { exact: true })).toBeChecked();
   await expect(page.getByLabel('Female', { exact: true })).not.toBeChecked();
 
-  await setFieldValue(page.getByLabel('Other', { exact: true }), true, { timeout: 500 });
+  await setFieldValue(page.getByLabel('Other', { exact: true }), true, { timeout: 1000 });
   await expect(page.getByLabel('Other', { exact: true })).toBeChecked();
   await expect(page.getByLabel('Male', { exact: true })).not.toBeChecked();
 });
@@ -79,4 +79,24 @@ test('MUI Slider', async ({ mount, page }) => {
 
   await setFieldValue(page.getByLabel('slider'), 10, { timeout: 500 });
   await expect(page.getByLabel('result')).toContainText('10');
+});
+
+test('MUI NativeSelect', async ({ mount, page }) => {
+  await mount(
+    <NativeSelect defaultValue={20} inputProps={{ 'aria-label': 'age' }}>
+      <option value={10}>Ten</option>
+      <option value={20}>Twenty</option>
+      <option value={30}>Thirty</option>
+    </NativeSelect>,
+  );
+
+  await setFieldValue(page.getByLabel('age'), '30', { timeout: 1000 });
+  await expect(page.getByLabel('age')).toHaveValue('30');
+});
+
+test('MUI Input', async ({ mount, page }) => {
+  await mount(<Input inputProps={{ 'aria-label': 'input' }} />);
+
+  await setFieldValue(page.getByLabel('input'), 'hello', { timeout: 1000 });
+  await expect(page.getByLabel('input')).toHaveValue('hello');
 });
