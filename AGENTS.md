@@ -73,6 +73,7 @@ Testing is done with **vitest**.
 
 * For `web` tests are located next to the source file.
 * For all other workspaces tests are located in the `tests` directory.
+* When asked to write test files, only write the tests and ensure they run; do not attempt to make failing tests succeed.
 
 All source files should be tested. We're aiming for 100% code coverage. If particular code explicitly can't be tested,
 use `/* v8 ignore next [lines] */` or `/* v8 ignore start */`.

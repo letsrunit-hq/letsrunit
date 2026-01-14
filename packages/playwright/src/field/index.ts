@@ -9,6 +9,7 @@ import { setNativeDate } from './native-date';
 import { setNativeInput } from './native-input';
 import { selectNative } from './native-select';
 import { setOtpValue } from './otp';
+import { setRadioGroup } from './radio-group';
 import { setSliderValue } from './slider';
 import type { Loc, SetOptions, Value } from './types';
 
@@ -28,6 +29,7 @@ export async function setFieldValue(el: Locator, value: Value, options?: SetOpti
     // native
     selectNative,
     setNativeCheckbox,
+    setRadioGroup,
     setNativeDate,
     setNativeInput,
     // aria / components
