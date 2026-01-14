@@ -8,7 +8,7 @@ describe('setNativeCheckbox', () => {
       check: vi.fn(),
       uncheck: vi.fn(),
       locator: vi.fn((selector) => {
-        if (selector === 'input[type=checkbox]') {
+        if (selector === 'input[type=checkbox]' || selector === 'input[type=checkbox], input[type=radio]') {
           return {
             count: vi.fn(async () => children.length),
             check: vi.fn(),
@@ -36,7 +36,7 @@ describe('setNativeCheckbox', () => {
     };
     const mock = {
       locator: vi.fn((selector) => {
-        if (selector === 'input[type=checkbox]') {
+        if (selector === 'input[type=checkbox]' || selector === 'input[type=checkbox], input[type=radio]') {
           return {
             count: vi.fn(async () => 1),
             check: childMock.check,
@@ -55,7 +55,7 @@ describe('setNativeCheckbox', () => {
   it('returns false if component has multiple input[type=checkbox] descendants', async () => {
     const mock = {
       locator: vi.fn((selector) => {
-        if (selector === 'input[type=checkbox]') {
+        if (selector === 'input[type=checkbox]' || selector === 'input[type=checkbox], input[type=radio]') {
           return {
             count: vi.fn(async () => 2),
           };

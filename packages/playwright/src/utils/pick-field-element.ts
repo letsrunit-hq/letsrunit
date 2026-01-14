@@ -11,7 +11,7 @@ export async function pickFieldElement(elements: Locator): Promise<Locator> {
     const [tag, role, isVisible] = await el.evaluate((e) => [
       e.tagName.toLowerCase(),
       e.getAttribute('role')?.toLowerCase() || null,
-      e.getAttribute('type') !== 'hidden',
+      e.getAttribute('type') !== 'hidden' && e.getAttribute('aria-hidden') !== 'true',
     ]);
     candidates.push({ el, tag: tag as string, role: role as string | null, isVisible: isVisible as boolean });
   }

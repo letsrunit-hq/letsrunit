@@ -6,8 +6,8 @@ export async function setNativeCheckbox({ el, tag, type }: Loc, value: Value, op
 
   let target = el;
 
-  if (tag !== 'input' || type !== 'checkbox') {
-    target = el.locator('input[type=checkbox]');
+  if (tag !== 'input' || (type !== 'checkbox' && type !== 'radio')) {
+    target = el.locator('input[type=checkbox], input[type=radio]');
     if ((await target.count()) !== 1) return false;
   }
 

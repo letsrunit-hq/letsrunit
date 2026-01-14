@@ -3,10 +3,33 @@ import { formatDateForInput } from '../utils/date';
 import type { Loc, SetOptions, Value } from './types';
 
 async function setSingleDate({ el, tag, type }: Loc, value: Date, options?: SetOptions): Promise<boolean> {
-  if (tag !== 'input' || !type || !['date', 'datetime-local', 'month', 'week', 'time'].includes(type)) return false;
+  let target = el;
+  let targetType = type;
 
-  const val = formatDateForInput(value, type);
-  await el.fill(val, options);
+  if (tag !== 'input' || !type || !['date', 'datetime-local', 'month', 'week', 'time'].includes(type)) {
+    const inputs = el.locator(
+      'input[type=date], input[type=datetime-local], input[type=month], input[type=week], input[type=time]',
+    );
+    if ((await inputs.count()) === 1) {
+      const isVisible = await inputs.evaluate((e) => {
+        const style = window.getComputedStyle(e);
+        return style.display !== 'none' && style.visibility !== 'hidden' && e.getAttribute('type') !== 'hidden';
+      });
+      if (isVisible) {
+        target = inputs;
+        targetType = (await target.getAttribute('type', options)) || null;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+
+  if (!targetType) return false;
+
+  const val = formatDateForInput(value, targetType);
+  await target.fill(val, options);
 
   return true;
 }
