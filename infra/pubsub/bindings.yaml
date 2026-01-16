@@ -1,5 +1,0 @@
-topic: runs
-subscription: runs-push
-endpoint: https://worker-REPLACE.a.run.app/pubsub
-audience: https://worker-REPLACE.a.run.app/pubsub
-authServiceAccount: worker-sa@${PROJECT}.iam.gserviceaccount.com

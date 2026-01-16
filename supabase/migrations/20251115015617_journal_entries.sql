@@ -1,3 +1,5 @@
+set search_path = "$user", public, extensions, pg_catalog;
+
 -- Enum type for journal entry kinds, aligned with Zod EntryTypeSchema
 DO $$
 BEGIN

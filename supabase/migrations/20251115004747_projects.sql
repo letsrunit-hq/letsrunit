@@ -1,3 +1,4 @@
+set search_path = "$user", public, extensions, pg_catalog;
 
 -- Visibility enum for projects
 DO $$

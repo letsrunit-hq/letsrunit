@@ -9,7 +9,8 @@
     "dist"
   ],
   "scripts": {
-    "dev": "tsx src/index.ts"
+    "dev": "tsx src/index.ts",
+    "test": "echo \"No tests yet\""
   },
   "dependencies": {
     "@letsrunit/executor": "workspace:*",

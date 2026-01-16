@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
-: "${PROJECT:?}"; : "${REGION:?}"
+: "${PROJECT:?Missing PROJECT}";
 
-gcloud services enable   run.googleapis.com   artifactregistry.googleapis.com   pubsub.googleapis.com   firestore.googleapis.com   secretmanager.googleapis.com   cloudbuild.googleapis.com   logging.googleapis.com   monitoring.googleapis.com   iamcredentials.googleapis.com   --project "$PROJECT"
+gcloud services enable \
+  run.googleapis.com \
+  artifactregistry.googleapis.com \
+  cloudtasks.googleapis.com \
+  secretmanager.googleapis.com \
+  cloudbuild.googleapis.com \
+  logging.googleapis.com \
+  monitoring.googleapis.com \
+  iamcredentials.googleapis.com \
+  --project "$PROJECT"

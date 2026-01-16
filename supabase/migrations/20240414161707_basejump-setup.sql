@@ -19,6 +19,8 @@
   * -------------------------------------------------------
  */
 
+set search_path = "$user", public, extensions, pg_catalog;
+
 -- revoke execution by default from public
 ALTER DEFAULT PRIVILEGES REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
 ALTER DEFAULT PRIVILEGES IN SCHEMA PUBLIC REVOKE EXECUTE ON FUNCTIONS FROM anon, authenticated;

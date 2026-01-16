@@ -1,3 +1,4 @@
+set search_path = "$user", public, extensions, pg_catalog;
 
 CREATE TABLE IF NOT EXISTS public.features
 (

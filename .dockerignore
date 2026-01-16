@@ -1,0 +1,17 @@
+node_modules
+.git
+.github
+.vscode
+dist
+build
+.next
+*.log
+.yarn/cache
+.yarn/unplugged
+.yarn/install-state.gz
+.pnp.*
+compat
+packages/*/tests
+infra
+supabase
+docs

@@ -2,9 +2,9 @@
 
 ```
 apps/
-  web/      Next.js app (dev can run Playwright directly)
-  worker/   Cloud Run service (Pub/Sub → start job)
-  runner/   Cloud Run Job (Playwright sandbox)
+  cli/      Command line interface
+  web/      Next.js app
+  worker/   Cloud Run service (Cloud Tasks → handle job)
 packages/
   core/       shared types, zod
   controller/ playwright flows
@@ -27,7 +27,7 @@ The `web` workspace uses **Plop** for generating React code.
 Agents **must** use Plop instead of manually creating files for components, contexts, or hooks.
 This ensures consistent structure, naming, and test coverage.
 
-_The `runner`, `worker` and packages workspaces **do not** use Plop._
+_The `worker` and packages workspaces **do not** use Plop._
 
 ### Usage
 
