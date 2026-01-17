@@ -1,5 +1,5 @@
 import { serve } from '@hono/node-server';
-import { connect, getRunStatus, type Run } from '@letsrunit/model';
+import { connect, type Run, updateRunStatus } from '@letsrunit/model';
 import { Hono } from 'hono';
 import { handle } from './handle';
 
@@ -18,12 +18,11 @@ app.post('/tasks/run', async (c) => {
 
   if (!run?.id) return c.json({ success: false, error: 'Missing run.id' }, 400);
 
-  const status = await getRunStatus(run.id, { supabase });
-  if (status !== 'queued') return c.json({ success: false, error: 'Run not queued' }, 404);
+  const claimed = await updateRunStatus(run.id, 'running', { supabase });
+  if (claimed) return c.json({ success: false, error: 'Run not queued' }, 404);
 
   try {
     await handle(run, { supabase });
-
     return c.json({ success: true });
   } catch (e) {
     console.error('Failed to process task', e);

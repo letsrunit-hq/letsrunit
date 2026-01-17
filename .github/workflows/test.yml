@@ -2,6 +2,7 @@ name: Tests
 on:
   pull_request:
     branches: [ main ]
+
 jobs:
   supabase:
     name: Supabase Tests
@@ -75,7 +76,6 @@ jobs:
 
       - name: Run Tests
         run: yarn workspace ${{ matrix.workspace }} test
-
 
   compat:
     name: Test ${{ matrix.workspace }}

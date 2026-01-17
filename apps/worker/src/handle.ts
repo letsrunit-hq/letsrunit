@@ -20,8 +20,10 @@ export async function handle(run: Run, { supabase, journal }: Partial<HandleOpti
   );
 
   try {
-    await updateRunStatus(run.id, 'running', { supabase });
-    const result = await startRun(run, { supabase, journal });
+    const started = await updateRunStatus(run.id, 'running', { supabase });
+    if (!started) return;
+
+    const result = await execRun(run, { supabase, journal });
     await updateRunStatus(run.id, result, { supabase });
   } catch (error) {
     console.error(error);
@@ -29,7 +31,7 @@ export async function handle(run: Run, { supabase, journal }: Partial<HandleOpti
   }
 }
 
-async function startRun(run: Run, opts: HandleOptions): Promise<Result> {
+async function execRun(run: Run, opts: HandleOptions): Promise<Result> {
   switch (run.type) {
     case 'explore':
       return await startExploreRun(run, opts);

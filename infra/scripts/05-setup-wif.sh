@@ -19,6 +19,7 @@ gcloud iam workload-identity-pools providers create-oidc "github-provider" \
   --workload-identity-pool="github-pool" \
   --display-name="GitHub Actions Provider" \
   --attribute-mapping="google.subject=assertion.sub,attribute.actor=assertion.actor,attribute.repository=assertion.repository" \
+  --attribute-condition="assertion.repository == \"${REPO}\"" \
   --issuer-uri="https://token.actions.githubusercontent.com" || true
 
 # 3. Create a Service Account for CI/CD
@@ -26,21 +27,24 @@ gcloud iam service-accounts create "github-actions-sa" \
   --project="${PROJECT}" \
   --display-name="GitHub Actions CI/CD" || true
 
+# Wait for SA propagation
+sleep 5
+
 # 4. Grant the Service Account necessary permissions
 echo "Granting roles/run.admin..."
 gcloud projects add-iam-policy-binding "${PROJECT}" \
   --member="serviceAccount:github-actions-sa@${PROJECT}.iam.gserviceaccount.com" \
-  --role="roles/run.admin" --condition=None
+  --role="roles/run.admin" --quiet # Removed --condition=None
 
 echo "Granting roles/iam.serviceAccountUser..."
 gcloud projects add-iam-policy-binding "${PROJECT}" \
   --member="serviceAccount:github-actions-sa@${PROJECT}.iam.gserviceaccount.com" \
-  --role="roles/iam.serviceAccountUser" --condition=None
+  --role="roles/iam.serviceAccountUser" --quiet
 
 echo "Granting roles/artifactregistry.admin..."
 gcloud projects add-iam-policy-binding "${PROJECT}" \
   --member="serviceAccount:github-actions-sa@${PROJECT}.iam.gserviceaccount.com" \
-  --role="roles/artifactregistry.admin" --condition=None
+  --role="roles/artifactregistry.admin" --quiet
 
 # 5. Allow GitHub to impersonate the Service Account
 PROJECT_NUMBER=$(gcloud projects describe "${PROJECT}" --format='value(projectNumber)')
@@ -49,7 +53,8 @@ echo "Allowing GitHub to impersonate the Service Account..."
 gcloud iam service-accounts add-iam-policy-binding "github-actions-sa@${PROJECT}.iam.gserviceaccount.com" \
   --project="${PROJECT}" \
   --role="roles/iam.workloadIdentityUser" \
-  --member="principalSet://iam.googleapis.com/projects/${PROJECT_NUMBER}/locations/global/workloadIdentityPools/github-pool/attribute.repository/${REPO}" --condition=None
+  --member="principalSet://iam.googleapis.com/projects/${PROJECT_NUMBER}/locations/global/workloadIdentityPools/github-pool/attribute.repository/${REPO}" \
+  --quiet
 
 echo ""
 echo "WIF Setup Complete!"

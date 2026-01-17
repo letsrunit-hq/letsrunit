@@ -80,26 +80,11 @@ export async function createRun(run: z.infer<typeof CreateRunSchema>, opts: Writ
   return runId;
 }
 
-export async function getRunStatus(runId: UUID, opts: ReadOptions = {}): Promise<RunStatus| null> {
-  const supabase = opts.supabase ?? connect();
-
-  const { data, status, error } = await supabase
-    .from('runs')
-    .select('status')
-    .eq('id', runId)
-    .abortSignal(maybeSignal(opts))
-    .maybeSingle<Data<Pick<Run, 'status'>>>();
-
-  if (error) throw new DBError(status, error);
-
-  return data?.status ?? null;
-}
-
 export async function updateRunStatus(
   runId: UUID,
   result: RunStatus | { status: RunStatus; error?: string },
   opts: WriteOptions = {},
-): Promise<void> {
+): Promise<boolean> {
   const supabase = opts.supabase ?? connect();
   const { status, error } = typeof result === 'object' ? result : { status: result };
 
@@ -109,6 +94,19 @@ export async function updateRunStatus(
 
   await authorize('runs', runId, { supabase, by: opts.by });
 
-  const { status: qs, error: qe } = await supabase.from('runs').update(data).eq('id', runId);
-  if (qe) throw new DBError(qs, qe);
+  let query = supabase
+    .from('runs')
+    .update(data)
+    .eq('id', runId)
+    .in('status', ['queued', 'running'])
+    .neq('status', status);
+
+  if (status === 'queued') {
+    query = query.neq('status', 'running');
+  }
+
+  const { status: qs, error: qe, count } = await query.select().single();
+  if (qe && qe.code !== 'PGRST116') throw new DBError(qs, qe);
+
+  return !!count;
 }
