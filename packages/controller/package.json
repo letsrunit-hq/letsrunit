@@ -11,6 +11,11 @@
   "main": "src/index.ts",
   "dependencies": {
     "@letsrunit/bdd": "workspace:*",
+    "@letsrunit/gherker": "workspace:*",
+    "@letsrunit/gherkin": "workspace:*",
+    "@letsrunit/journal": "workspace:*",
+    "@letsrunit/playwright": "workspace:*",
+    "@letsrunit/utils": "workspace:*",
     "@playwright/test": "^1.57.0",
     "zod": "^4.1.12"
   },

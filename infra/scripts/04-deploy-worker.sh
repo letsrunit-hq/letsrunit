@@ -3,7 +3,23 @@ set -euo pipefail
 : "${PROJECT:?Missing PROJECT}"; : "${REGION:?Missing REGION}"
 
 # Usually: REGION-docker.pkg.dev/PROJECT/REPO/IMAGE:TAG
-IMAGE="${REGION}-docker.pkg.dev/${PROJECT}/letsrunit/worker:latest"
+REPO_NAME="letsrunit"
+IMAGE="${REGION}-docker.pkg.dev/${PROJECT}/${REPO_NAME}/worker:latest"
+
+# Check if repository already exists
+if gcloud artifacts repositories describe "$REPO_NAME" --project="$PROJECT" --location="$REGION" >/dev/null 2>&1; then
+  echo "Repository $REPO_NAME already exists in $REGION."
+else
+  echo "Creating Artifact Registry repository: $REPO_NAME in $REGION..."
+  gcloud artifacts repositories create "$REPO_NAME" \
+    --repository-format=docker \
+    --location="$REGION" \
+    --description="Docker repository for Let's Run It" \
+    --project="$PROJECT"
+fi
+
+echo "Configuring Docker authentication for $REGION..."
+gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet --project="$PROJECT"
 
 echo "Building worker image: ${IMAGE}"
 # We build from the project root to include local packages

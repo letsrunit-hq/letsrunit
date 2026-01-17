@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "tsx watch src/listen.ts",
     "start": "tsx src/server.ts",
-    "build": "tsup src/server.ts --format esm --clean",
+    "build": "tsup",
     "test": "echo \"No tests yet\""
   },
   "dependencies": {
@@ -12,7 +12,10 @@
     "@google-cloud/storage": "^7.17.2",
     "@hono/node-server": "^1.19.9",
     "@letsrunit/executor": "workspace:*",
+    "@letsrunit/gherkin": "workspace:*",
+    "@letsrunit/journal": "workspace:*",
     "@letsrunit/model": "workspace:*",
+    "@letsrunit/utils": "workspace:*",
     "google-auth-library": "^10.4.0",
     "hono": "^4.11.4",
     "zod": "^4.1.12"

@@ -80,6 +80,21 @@ export async function createRun(run: z.infer<typeof CreateRunSchema>, opts: Writ
   return runId;
 }
 
+export async function getRunStatus(runId: UUID, opts: ReadOptions = {}): Promise<RunStatus| null> {
+  const supabase = opts.supabase ?? connect();
+
+  const { data, status, error } = await supabase
+    .from('runs')
+    .select('status')
+    .eq('id', runId)
+    .abortSignal(maybeSignal(opts))
+    .maybeSingle<Data<Pick<Run, 'status'>>>();
+
+  if (error) throw new DBError(status, error);
+
+  return data?.status ?? null;
+}
+
 export async function updateRunStatus(
   runId: UUID,
   result: RunStatus | { status: RunStatus; error?: string },

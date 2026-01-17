@@ -7,7 +7,12 @@
   },
   "packageManager": "yarn@4.10.3",
   "dependencies": {
+    "@letsrunit/ai": "workspace:*",
     "@letsrunit/controller": "workspace:*",
+    "@letsrunit/gherkin": "workspace:*",
+    "@letsrunit/journal": "workspace:*",
+    "@letsrunit/mailbox": "workspace:*",
+    "@letsrunit/playwright": "workspace:*",
     "@letsrunit/utils": "workspace:*"
   },
   "devDependencies": {

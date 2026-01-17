@@ -1,5 +1,5 @@
 import { serve } from '@hono/node-server';
-import { connect, type Run } from '@letsrunit/model';
+import { connect, getRunStatus, type Run } from '@letsrunit/model';
 import { Hono } from 'hono';
 import { handle } from './handle';
 
@@ -9,17 +9,19 @@ const supabase = connect();
 app.get('/', (c) => c.text('Worker is running'));
 
 app.post('/tasks/run', async (c) => {
+  let run: Run;
   try {
-    const run = await c.req.json<Run>();
-    console.log(`Received task for run "${run.id}"`);
+    run = await c.req.json<Run>();
+  } catch {
+    return c.json({ success: false, error: 'Invalid JSON' }, 400);
+  }
 
-    // We don't await handle(run) here because Cloud Tasks has a timeout,
-    // and our runs can be long-running.
-    // However, Cloud Tasks expects a 2xx response to acknowledge receipt.
-    // If we want Cloud Tasks to manage retries based on run success/failure,
-    // we should await it, but then we must ensure the timeout is sufficient.
-    // Cloud Run has a max timeout of 60 mins. Cloud Tasks also has a timeout.
-    // For now, let's await it to allow Cloud Tasks to retry if it fails.
+  if (!run?.id) return c.json({ success: false, error: 'Missing run.id' }, 400);
+
+  const status = await getRunStatus(run.id, { supabase });
+  if (status !== 'queued') return c.json({ success: false, error: 'Run not queued' }, 404);
+
+  try {
     await handle(run, { supabase });
 
     return c.json({ success: true });
@@ -29,10 +31,11 @@ app.post('/tasks/run', async (c) => {
   }
 });
 
-const port = Number(process.env.PORT) || 3000;
+const port = Number(process.env.PORT) || 8080;
 console.log(`Server is running on port ${port}`);
 
 serve({
   fetch: app.fetch,
   port,
+  hostname: '0.0.0.0',
 });

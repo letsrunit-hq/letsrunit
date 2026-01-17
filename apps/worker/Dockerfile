@@ -1,61 +1,39 @@
-# Stage 1: Build
+# Stage 1: build
 FROM node:22-slim AS builder
-
 WORKDIR /app
-
-# Enable Corepack to use Yarn v4
 RUN corepack enable
+ENV YARN_NODE_LINKER=node-modules
 
-# Copy workspace configuration and lockfile
 COPY .yarn ./.yarn
-COPY .yarnrc.yml ./
-COPY package.json yarn.lock ./
-
-# Copy all package.json files to allow Yarn to link workspaces
-COPY apps/worker/package.json ./apps/worker/
-COPY packages/ ./packages/
-# Note: We copy all packages because they are interconnected
-
-# Install all dependencies (including devDependencies for building)
-RUN yarn install --immutable
-
-# Copy the rest of the source code
+COPY .yarnrc.yml package.json yarn.lock tsconfig.base.json ./
 COPY apps/worker ./apps/worker
-# packages are already copied in the previous step if we want to be safe,
-# but let's be explicit and copy them now if we didn't before.
-# Actually, the previous COPY packages/ already copied everything in packages/.
+COPY packages ./packages
 
-# Build the worker
+RUN yarn workspaces focus worker
 RUN yarn workspace worker build
 
-# Stage 2: Run
-FROM node:22-slim AS runner
-
+# Stage 2: prod deps only (manifests only)
+FROM node:22-slim AS deps
 WORKDIR /app
-
-# Enable Corepack
 RUN corepack enable
-
+ENV YARN_NODE_LINKER=node-modules
 ENV NODE_ENV=production
 
-# Copy built artifacts and necessary files for production
-COPY --from=builder /app/package.json /app/yarn.lock /app/.yarnrc.yml ./
-COPY --from=builder /app/.yarn /app/.yarn
-COPY --from=builder /app/apps/worker/package.json ./apps/worker/
-COPY --from=builder /app/apps/worker/dist ./apps/worker/dist
+COPY .yarn ./.yarn
+COPY .yarnrc.yml package.json yarn.lock ./
+COPY apps/worker ./apps/worker
+COPY packages ./packages
 
-# Copy local packages (source might be needed if they are not bundled)
-# Since tsup bundles the server.ts, we might not need all packages if everything is bundled.
-# However, let's check if tsup --clean bundled everything.
-# Usually tsup bundles dependencies unless marked as external.
-COPY --from=builder /app/packages ./packages
-
-# Install only production dependencies
 RUN yarn workspaces focus worker --production
 
-WORKDIR /app/apps/worker
+# Stage 3: runner
+FROM node:22-slim AS runner
+WORKDIR /app
+ENV NODE_ENV=production
 
-EXPOSE 3000
+COPY --from=builder /app/apps/worker/dist /app/dist
+COPY --from=deps /app/node_modules /app/node_modules
+COPY --from=deps /app/package.json /app/package.json
 
-# Start the worker using the bundled output
-CMD ["node", "dist/server.js"]
+EXPOSE 8080
+CMD ["node", "dist/server.cjs"]
