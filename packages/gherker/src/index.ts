@@ -1,2 +1,2 @@
 export * from './runner';
-export type { Result, StepHandler } from "./types";
+export type { Result, StepHandler, ParsedStep } from "./types";

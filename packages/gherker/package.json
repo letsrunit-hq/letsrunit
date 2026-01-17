@@ -12,7 +12,8 @@
   "dependencies": {
     "@cucumber/cucumber-expressions": "^18.0.1",
     "@cucumber/gherkin": "^36.0.0",
-    "@cucumber/messages": "^30.1.0"
+    "@cucumber/messages": "^30.1.0",
+    "@letsrunit/gherkin": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^25.0.3",

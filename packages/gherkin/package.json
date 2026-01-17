@@ -10,7 +10,8 @@
   "packageManager": "yarn@4.10.3",
   "main": "src/index.ts",
   "dependencies": {
-    "@cucumber/cucumber-expressions": "^18.0.1"
+    "@cucumber/cucumber-expressions": "^18.0.1",
+    "@letsrunit/utils": "workspace:*"
   },
   "devDependencies": {
     "peggy": "^5.0.6",
