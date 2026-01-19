@@ -1,6 +1,6 @@
-import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
+import { hash } from '@letsrunit/utils';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { translate } from '../src';
-import { hash } from '../src/utils/hash';
 import { mockAi } from '../src/generate';
 
 const generateTextMock = vi.fn<any>();

@@ -27,10 +27,12 @@ export default async function generate(
   ];
 
   const journal = opts.journal ?? Journal.nil();
-  const controller = await Controller.launch({ headless: opts.headless, baseURL: base, journal });
-  const signal = opts.timeout ? AbortSignal.timeout(opts.timeout) : undefined;
+  let controller: Controller | undefined;
 
   try {
+    controller = await Controller.launch({ headless: opts.headless, baseURL: base, journal });
+    const signal = opts.timeout ? AbortSignal.timeout(opts.timeout) : undefined;
+
     return await generateFeature({
       controller,
       feature: {
@@ -46,6 +48,6 @@ export default async function generate(
     console.error(e);
     return { status: 'error' };
   } finally {
-    await controller.close();
+    await controller?.close();
   }
 }

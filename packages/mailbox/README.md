@@ -21,9 +21,13 @@ Retrieves emails sent to a specific address.
     - `timeout`: How long to wait for emails.
     - `until`: A predicate function to stop polling when an email is found.
 
-### `serializeEmail(email)`
+### `toEml(email)`
 
 Converts an `Email` object into a string representation in `.eml` format.
+
+### `fromEml(email)`
+
+Convert a string in `.eml` from to an `Email` object.
 
 ## Supported Services
 

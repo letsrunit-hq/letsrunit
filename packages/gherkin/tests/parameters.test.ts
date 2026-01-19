@@ -108,9 +108,12 @@ describe('valueParameter', () => {
 
   it('parses a date string value', () => {
     const [d] = expr.match('value is date "1981-08-22"')!;
-    const value = d.getValue(null);
+    const value = d.getValue(null) as Date;
     expect(value).to.be.instanceOf(Date);
-    expect(formatDateForInput(value as Date, 'datetime-local')).to.eq('1981-08-22T00:00');
+
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const expected = `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}T${pad(value.getHours())}:${pad(value.getMinutes())}`;
+    expect(formatDateForInput(value, 'datetime-local')).to.eq(expected);
   });
 
   it('parses a date/time string value', () => {

@@ -10,6 +10,9 @@
   "scripts": {
     "cli": "yarn workspace cli dev",
     "test": "yarn workspaces foreach -ptA run test",
+    "test:apps": "yarn workspaces foreach --include 'apps/*' -ptA run test",
+    "test:compat": "yarn workspaces foreach --include 'compat/*' -ptA run test",
+    "test:packages": "yarn workspaces foreach --include 'packages/*' -ptA run test",
     "db:reset": "yarn supabase reset"
   },
   "devDependencies": {

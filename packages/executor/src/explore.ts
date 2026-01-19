@@ -28,9 +28,10 @@ export default async function explore(
   ];
 
   const journal = opts.journal ?? Journal.nil();
-  const controller = await Controller.launch({ headless: opts.headless, baseURL: base, journal, debug: true });
+  let controller: Controller | undefined;
 
   try {
+    controller = await Controller.launch({ headless: opts.headless, baseURL: base, journal, debug: true });
     const { page } = await controller.run(makeFeature({ name: `Explore website "${base}"`, steps }));
     const pageInfo = await extractPageInfo(page);
     const title = pageInfo.title ?? pageInfo.url;
@@ -94,6 +95,6 @@ export default async function explore(
     console.error(e);
     return { status: 'error' };
   } finally {
-    await controller.close();
+    await controller?.close();
   }
 }
