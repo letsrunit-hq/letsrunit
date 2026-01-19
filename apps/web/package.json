@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@google-cloud/tasks": "^6.2.1",
     "@letsrunit/model": "workspace:*",
     "@letsrunit/utils": "workspace:*",
     "@supabase/ssr": "^0.7.0",

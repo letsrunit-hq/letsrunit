@@ -1,8 +1,9 @@
 'use server';
 
 import { getUser } from '@/libs/auth';
+import { queueRun } from '@/libs/run';
 import { connect } from '@/libs/supabase/server';
-import { createProject, createRun } from '@letsrunit/model';
+import { createProject } from '@letsrunit/model';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { type UUID } from 'node:crypto';
 
@@ -21,5 +22,5 @@ export async function startExploreRun(target: string, opts: StartExploreOpts = {
 
   const projectId = opts.projectId ?? (await createProject({ url: target, accountId: user.id as UUID }, { by: user }));
 
-  return await createRun({ type: 'explore', projectId, target }, { by: user });
+  return await queueRun({ type: 'explore', projectId, target }, { by: user });
 }

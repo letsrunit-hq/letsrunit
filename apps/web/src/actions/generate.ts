@@ -1,8 +1,9 @@
 'use server';
 
 import { getUser } from '@/libs/auth';
+import { queueRun } from '@/libs/run';
 import { connect } from '@/libs/supabase/server';
-import { createFeature, createRun, getFeatureTarget, type Suggestion } from '@letsrunit/model';
+import { createFeature, getFeatureTarget, type Suggestion } from '@letsrunit/model';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { type UUID } from 'node:crypto';
 
@@ -16,5 +17,5 @@ export async function startGenerateRun(feature: UUID | Suggestion, opts: StartGe
   const featureId = typeof feature === 'object' ? await createFeature(feature, { by: user }) : feature;
   const target = await getFeatureTarget(featureId);
 
-  return await createRun({ type: 'generate', featureId, target }, { by: user });
+  return await queueRun({ type: 'generate', featureId, target }, { by: user });
 }
