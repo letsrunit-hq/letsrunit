@@ -21,7 +21,7 @@ export const view = Given(
 
 export const receive = Then(
   'I received an email sent to {string} with subject {string}',
-  async function (subject: string, address: string) {
+  async function (address: string, subject: string) {
     const emails = await receiveMail(address, {
       after: this.startTime,
       full: true,

@@ -19,12 +19,16 @@ export async function storeSuggestions(
   await authorize('projects', projectId, { supabase, by: opts.by });
 
   const { status, error } = await supabase.from('features').insert(
-    features.map(toData(StoreSuggestionsSchema)).map(({ done, ...data }) => ({
-      project_id: projectId,
-      ...data,
-      comments: done ? `Definition of done: ${done}` : null,
-      created_by: opts.by?.id,
-    })),
+    features.map((f) => {
+      const converted = toData(StoreSuggestionsSchema)(f as any);
+      const { done, ...rest } = converted as any;
+      return {
+        project_id: projectId,
+        ...rest,
+        comments: f.done ? `Definition of done: ${f.done}` : (converted.comments ?? null),
+        created_by: opts.by?.id,
+      };
+    }),
   );
 
   if (error) throw new DBError(status, error);

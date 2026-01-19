@@ -24,11 +24,11 @@ export const FeatureSchema = z.object({
 });
 
 export const SuggestionSchema = FeatureSchema
-  .pick({ projectId: true, name: true, path: true, description: true, done: true })
+  .pick({ projectId: true, name: true, path: true, description: true })
   .partial({ name: true, path: true })
   .extend({
     done: z.string().optional().describe('Definition of done'),
-  });
+  }).passthrough();
 
 export type Feature = z.infer<typeof FeatureSchema>;
 export type Suggestion = z.infer<typeof SuggestionSchema>;

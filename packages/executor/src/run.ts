@@ -17,10 +17,12 @@ export default async function run(
   const { base } = splitUrl(target);
 
   const journal = opts.journal ?? Journal.nil();
-  const controller = await Controller.launch({ headless: opts.headless, baseURL: base, journal });
-  const featureText = typeof feature === 'string' ? feature : makeFeature(feature);
+  let controller: Controller | undefined;
 
   try {
+    controller = await Controller.launch({ headless: opts.headless, baseURL: base, journal });
+    const featureText = typeof feature === 'string' ? feature : makeFeature(feature);
+
     const { status } = await controller.run(featureText);
     return { status };
   } catch (e) {
@@ -28,6 +30,6 @@ export default async function run(
     console.error(e);
     return { status: 'error' };
   } finally {
-    await controller.close();
+    await controller?.close();
   }
 }

@@ -1,5 +1,5 @@
 export * from './browser';
-export * from './field';
+export * from './field/index';
 export * from './format-html';
 export * from './locator';
 export * from './selector';
@@ -8,4 +8,5 @@ export * from './screenshot';
 export * from './scroll';
 export * from './suppress-interferences';
 export * from './types';
+export * from './utils/date';
 export * from './wait';

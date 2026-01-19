@@ -1,6 +1,6 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { describe, expect, it, vi } from 'vitest';
 import { createProject, updateProject } from '../src';
-import type { SupabaseClient } from '@supabase/supabase-js';
 
 class FakeTableQuery {
   public ops: any[];
@@ -128,13 +128,13 @@ describe('project lib', () => {
     const supabase = new FakeSupabase() as unknown as SupabaseClient;
 
     const projectId = '11111111-1111-1111-1111-111111111111';
-    const bytes = new Uint8Array([1, 2, 3]);
+    const file = new File([new Uint8Array([1, 2, 3])], 'screenshot.png', { type: 'image/png' });
 
     // set env for bucket
     const prev = process.env.ARTIFACT_BUCKET;
     process.env.ARTIFACT_BUCKET = 'artifacts';
 
-    await updateProject(projectId as any, { screenshot: bytes }, { supabase });
+    await updateProject(projectId as any, { screenshot: file }, { supabase });
 
     // storage ops
     const ops = (supabase as any).ops;

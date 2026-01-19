@@ -76,7 +76,7 @@ describe('steps/mailbox (definitions)', () => {
     const attach = vi.fn();
     const world: any = { attach, startTime: new Date('2024-03-03T00:00:00Z') };
 
-    await runStep(receive, 'mailbox "box@test" received an email with subject "Welcome!"', world);
+    await runStep(receive, 'I received an email sent to "box@test" with subject "Welcome!"', world);
 
     expect(receiveMail).toHaveBeenCalledWith('box@test', {
       after: world.startTime,
@@ -101,7 +101,7 @@ describe('steps/mailbox (definitions)', () => {
     const attach = vi.fn();
     const world: any = { attach, startTime: new Date('2024-04-04T00:00:00Z') };
 
-    await runStep(receive, 'mailbox "user@test" received an email with subject "Plain"', world);
+    await runStep(receive, 'I received an email sent to "user@test" with subject "Plain"', world);
 
     expect(receiveMail).toHaveBeenCalledWith('user@test', {
       after: world.startTime,
