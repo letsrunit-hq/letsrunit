@@ -20,6 +20,31 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Environment Variables
+
+The following environment variables are required for the application to function correctly. You can create a `.env.local` file in the `apps/web` directory for local development.
+
+### Supabase (Public)
+
+These variables are required for authentication and database access via Supabase.
+
+* `NEXT_PUBLIC_SUPABASE_URL`: The URL of your Supabase project (defaults to `http://127.0.0.1:54321` for local development).
+* `NEXT_PUBLIC_SUPABASE_ANON_KEY`: The anonymous key for your Supabase project.
+
+### Cloud Tasks (Server-side only)
+
+These variables are used to queue runs in Google Cloud Tasks. These are required for production.
+
+* `GCP_PROJECT`: Your Google Cloud project ID.
+* `GCP_REGION`: The region where your Cloud Tasks queue is located.
+* `QUEUE_NAME`: The name of the Cloud Tasks queue (e.g., `runs`).
+* `WORKER_URL`: The base URL of the worker service (e.g., `https://worker-xxxxx.a.run.app`).
+  * You can find this URL using the gcloud CLI:
+    ```bash
+    gcloud run services describe worker --platform managed --region <GCP_REGION> --format 'value(status.url)'
+    ```
+* `CLOUD_TASKS_SA`: (Optional) The service account email to use for OIDC tokens. Defaults to `${GCP_PROJECT}@appspot.gserviceaccount.com`.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

@@ -12,7 +12,7 @@ Supabase is used for the database and is not part of this infra setup.
 1) Set environment variables:
    ```bash
    export PROJECT=your-gcp-project
-   export REGION=europe-west4
+   export REGION=europe-west1
    ```
 
 2) Enable APIs:
