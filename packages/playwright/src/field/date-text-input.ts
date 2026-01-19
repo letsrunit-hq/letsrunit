@@ -247,17 +247,24 @@ async function setInputValue(
 export async function setDateTextInput({ el, tag, type }: Loc, value: Value, options?: SetOptions): Promise<boolean> {
   if (!(value instanceof Date) && !isArray(value, isDate) && !isRange(value, isDate)) return false;
 
-  if (tag === 'input' || tag === 'textarea') {
-    if (type && type !== 'text') return false;
-    return await setInputValue(el, value, undefined, undefined, options);
-  }
+  if (tag === 'textarea' || tag === 'select') return false;
 
-  if (isRange(value, isDate)) {
+  if (tag !== 'input' && isRange(value, isDate)) {
     const inputs = el.locator('input[type=text], input:not([type])');
     if ((await inputs.count()) === 2) {
       return await setInputValue(inputs.nth(0), value.from, inputs.nth(1), value.to, options);
     }
   }
 
-  return false;
+  if (tag === 'input' && type && type !== 'text') return false;
+
+  let input = el;
+
+  if (tag !== 'input') {
+    const inputs = el.locator('input[type=text], input:not([type])');
+    if ((await inputs.count()) !== 1)  return false;
+    input = inputs.nth(0);
+  }
+
+  return await setInputValue(input, value, undefined, undefined, options);
 }
