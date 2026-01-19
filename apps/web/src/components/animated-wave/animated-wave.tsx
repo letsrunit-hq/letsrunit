@@ -1,12 +1,12 @@
+import { motion } from 'motion/react';
 import React from 'react';
-import { motion } from 'framer-motion';
 
 export type AnimatedWaveProps = {
-  d: string,
-  color: string,
-  duration: number,
-  delay?: number,
-  className?: string,
+  d: string;
+  color: string;
+  duration: number;
+  delay?: number;
+  className?: string;
 };
 
 export function AnimatedWave({ d, color, duration, delay = 0, className }: AnimatedWaveProps) {
