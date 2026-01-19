@@ -53,10 +53,15 @@ export async function eventually<T>(
 
   while (!signal.aborted) {
     try {
-      return await fn();
+      const res = await fn();
+      if (!signal.aborted) return res;
     } catch (e) {
       lastErr = e;
-      await sleep(interval, { signal });
+      try {
+        await sleep(interval, { signal });
+      } catch (sleepErr) {
+        if (!signal1.aborted) throw sleepErr;
+      }
     }
   }
 
