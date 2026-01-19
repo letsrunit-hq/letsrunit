@@ -104,10 +104,16 @@ describe('eventually', () => {
     // attach handler early to avoid PromiseRejectionHandledWarning from Node
     const captured = promise.catch(e => e);
 
-    // initial call + retries every 100ms until 500ms passes
-    // timeline: t=0 (call1), 100 (2), 200 (3), 300 (4), 400 (5), after 500 stop and throw last
-    await vi.advanceTimersByTimeAsync(600);
+    // Timeline with 500ms timeout and 100ms interval:
+    // t=0ms:   Call 1 (fails, starts sleep)
+    // t=100ms: Call 2 (fails, starts sleep)
+    // t=200ms: Call 3 (fails, starts sleep)
+    // t=300ms: Call 4 (fails, starts sleep)
+    // t=400ms: Call 5 (fails, starts sleep)
+    // t=500ms: Timeout fires during sleep, loop exits, throws last error.
+    await vi.advanceTimersByTimeAsync(450);
 
+    // noinspection ES6RedundantAwait
     await expect(captured).resolves.toBe(lastErr);
 
     // should have been called 5 times within 0..400ms
