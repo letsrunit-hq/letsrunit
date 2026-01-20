@@ -24,7 +24,7 @@ jobs:
       - name: Run Tests
         run: supabase test db
 
-  apps:
+  test:
     name: Test ${{ matrix.workspace }}
     runs-on: ubuntu-latest
     strategy:
@@ -34,26 +34,6 @@ jobs:
           - worker
           - cli
           - web
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "yarn"
-
-      - name: Install dependencies
-        run: yarn install --immutable
-
-      - name: Run Tests
-        run: yarn workspace ${{ matrix.workspace }} test
-
-  packages:
-    name: Test ${{ matrix.workspace }}
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        workspace:
           - "@letsrunit/playwright"
           - "@letsrunit/bdd"
           - "@letsrunit/executor"
@@ -66,29 +46,11 @@ jobs:
           - "@letsrunit/ai"
           - "@letsrunit/model"
           - "@letsrunit/compat-react"
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "yarn"
-
-      - name: Install dependencies
-        run: yarn install --immutable
-
-      - name: Run Tests
-        run: yarn workspace ${{ matrix.workspace }} test
-
-  compat:
-    name: Test ${{ matrix.workspace }}
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        workspace:
           - "@letsrunit/compat-react"
     steps:
       - uses: actions/checkout@v4
+      - name: Enable Corepack
+        run: corepack enable
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -98,6 +60,7 @@ jobs:
         run: yarn install --immutable
 
       - name: Install Playwright Browsers
+        if: matrix.workspace == '@letsrunit/compat-react'
         run: yarn workspace ${{ matrix.workspace }} playwright install --with-deps
 
       - name: Run Tests
