@@ -39,6 +39,16 @@ jobs:
         run: |
           gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
+      - name: Verify Cloud Run service exists
+        run: |
+          if ! gcloud run services describe ${{ env.SERVICE_NAME }} \
+            --region ${{ env.REGION }} \
+            --project ${{ env.PROJECT_ID }} >/dev/null 2>&1; then
+            echo "ERROR: Cloud Run service '${{ env.SERVICE_NAME }}' does not exist in region '${{ env.REGION }}'."
+            echo "This workflow is only allowed to update an existing deployment."
+            exit 1
+          fi
+
       - name: Build and Push Container
         run: |
           IMAGE_NAME="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/${{ env.SERVICE_NAME }}:${{ github.sha }}"
