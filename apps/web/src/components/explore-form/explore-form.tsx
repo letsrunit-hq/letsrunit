@@ -1,6 +1,7 @@
 'use client';
 
 import { startExploreRun } from '@/actions/explore';
+import { useToast } from '@/context/toast-context';
 import { ensureSignedIn } from '@/libs/auth';
 import { cn } from '@letsrunit/utils';
 import { useRouter } from 'next/navigation';
@@ -18,7 +19,7 @@ export type UrlFormProps = {
 
 function handleSubmit(e: React.FormEvent, onSubmitUrl?: () => void) {
   e.preventDefault();
-  if (onSubmitUrl) onSubmitUrl();
+  if (onSubmitUrl) void onSubmitUrl();
 }
 
 export function ExploreForm({
@@ -29,6 +30,7 @@ export function ExploreForm({
   buttonLabel = 'Run it.',
 }: UrlFormProps) {
   const router = useRouter();
+  const toast = useToast();
   const [url, setUrl] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -42,6 +44,13 @@ export function ExploreForm({
       await ensureSignedIn();
       const runId = await startExploreRun(url);
       router.push(`/runs/${runId}`);
+    } catch (e) {
+      toast.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: e instanceof Error ? e.message : 'An error occurred while starting the run',
+        life: 5000,
+      });
     } finally {
       // If navigation happens, component may unmount; this is safe.
       setTimeout(() => void setIsSubmitting(false), 5000);

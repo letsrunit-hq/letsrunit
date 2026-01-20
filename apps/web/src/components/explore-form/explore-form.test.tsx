@@ -24,6 +24,12 @@ vi.mock('next/navigation', () => ({
   })),
 }));
 
+vi.mock('@/context/toast-context', () => ({
+  useToast: vi.fn(() => ({
+    show: vi.fn(),
+  })),
+}));
+
 vi.mock('@/libs/auth', () => ({
   ensureSignedIn: vi.fn(() => Promise.resolve()),
 }));
@@ -59,4 +65,34 @@ describe('ExploreForm', () => {
       expect(button).not.toBeDisabled();
     }, { timeout: 10000 });
   }, 15000);
+
+  it('shows error toast if startExploreRun fails', async () => {
+    const { startExploreRun } = await import('@/actions/explore');
+    const { useToast } = await import('@/context/toast-context');
+
+    const toast = {
+      show: vi.fn(),
+    };
+    vi.mocked(useToast).mockReturnValue(toast);
+
+    vi.mocked(startExploreRun).mockImplementationOnce(() => Promise.reject(new Error('Failed to start run')));
+
+    render(<ExploreForm placeholder="https://www.example.com" buttonLabel="Run it." />);
+
+    const input = screen.getByLabelText('website-input') as HTMLInputElement;
+    const button = screen.getByRole('button', { name: /run it\./i });
+
+    fireEvent.change(input, { target: { value: 'https://test.com' } });
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      expect(toast.show).toHaveBeenCalledWith(
+        expect.objectContaining({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to start run',
+        })
+      );
+    });
+  });
 });
