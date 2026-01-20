@@ -1,5 +1,4 @@
 import { CucumberExpression, ParameterType, ParameterTypeRegistry } from '@cucumber/cucumber-expressions';
-import { formatDateForInput } from '@letsrunit/playwright';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   booleanParameter,
@@ -9,6 +8,11 @@ import {
   ParameterTypeDefinition,
   valueParameter,
 } from '../src';
+
+function formatDateTimeLocal(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
 
 function defineParameterType(reg: ParameterTypeRegistry, type: ParameterTypeDefinition<unknown>): void {
   const param = new ParameterType(type.name, type.regexp, null, type.transformer, type.useForSnippets);
@@ -113,14 +117,14 @@ describe('valueParameter', () => {
 
     const pad = (n: number) => String(n).padStart(2, '0');
     const expected = `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}T${pad(value.getHours())}:${pad(value.getMinutes())}`;
-    expect(formatDateForInput(value, 'datetime-local')).to.eq(expected);
+    expect(formatDateTimeLocal(value)).to.eq(expected);
   });
 
   it('parses a date/time string value', () => {
     const [d] = expr.match('value is date "1981-08-22T15:04"')!;
     const value = d.getValue(null);
     expect(value).to.be.instanceOf(Date);
-    expect(formatDateForInput(value as Date, 'datetime-local')).to.eq('1981-08-22T15:04');
+    expect(formatDateTimeLocal(value as Date)).to.eq('1981-08-22T15:04');
   });
 
   it('parses an array of values', () => {
@@ -143,7 +147,7 @@ describe('valueParameter', () => {
     expect(val).to.have.length(2);
     expect(val[0]).to.be.instanceOf(Date);
     expect(val[1]).to.be.instanceOf(Date);
-    expect(formatDateForInput(val[1] as Date, 'datetime-local')).to.eq('1981-08-22T15:04');
+    expect(formatDateTimeLocal(val[1] as Date)).to.eq('1981-08-22T15:04');
   });
 });
 

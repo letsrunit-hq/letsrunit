@@ -11,6 +11,7 @@
   "main": "src/index.ts",
   "dependencies": {
     "@cucumber/cucumber-expressions": "^18.0.1",
+    "@cucumber/gherkin": "^37.0.1",
     "@letsrunit/utils": "workspace:*"
   },
   "devDependencies": {
