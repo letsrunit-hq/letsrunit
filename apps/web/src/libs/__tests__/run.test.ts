@@ -1,9 +1,9 @@
-import { CloudTasksClient } from '@google-cloud/tasks';
 import { createRun, getRun } from '@letsrunit/model';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { getCloudTasksClient } from '../google-cloud';
 import { queueRun } from '../run';
 
-vi.mock('@google-cloud/tasks');
+vi.mock('../google-cloud');
 vi.mock('@letsrunit/model');
 
 describe('queueRun', () => {
@@ -38,9 +38,9 @@ describe('queueRun', () => {
     const mockCreateTask = vi.fn().mockResolvedValue([{}]);
     const mockQueuePath = vi.fn().mockReturnValue('projects/test-project/locations/test-region/queues/test-queue');
 
-    vi.mocked(CloudTasksClient).mockImplementation(function (this: any) {
-      this.createTask = mockCreateTask;
-      this.queuePath = mockQueuePath;
+    vi.mocked(getCloudTasksClient).mockReturnValue({
+      createTask: mockCreateTask,
+      queuePath: mockQueuePath,
     } as any);
 
     await queueRun({ type: 'test', target: 'http://localhost' } as any, {});
@@ -50,51 +50,20 @@ describe('queueRun', () => {
       task: expect.objectContaining({
         httpRequest: expect.objectContaining({
           url: 'https://worker-url/tasks/run',
-          body: Buffer.from(JSON.stringify(mockRun)).toString('base64'),
+          body: Buffer.from(JSON.stringify(mockRun)),
         }),
       }),
     });
   });
 
   it('should not add to queue if not configured', async () => {
-    delete process.env.GCP_QUEUE_NAME;
+    delete process.env.GCP_WORKER_URL;
 
     const mockId = 'test-id' as any;
     vi.mocked(createRun).mockResolvedValue(mockId);
 
     await queueRun({ type: 'test', target: 'http://localhost' } as any, {});
 
-    expect(CloudTasksClient).not.toHaveBeenCalled();
-  });
-
-  it('should use WIF credentials if GCP_WIF_PROVIDER_ID is provided', async () => {
-    process.env.GCP_QUEUE_NAME = 'test-queue';
-    process.env.GCP_PROJECT_ID = 'test-project';
-    process.env.GCP_REGION = 'test-region';
-    process.env.GCP_WORKER_URL = 'https://worker-url';
-    process.env.GCP_WIF_PROVIDER_ID = 'test-provider';
-    process.env.GCP_SERVICE_ACCOUNT_EMAIL = 'test-sa@test-project.iam.gserviceaccount.com';
-
-    const mockId = 'test-id' as any;
-    vi.mocked(createRun).mockResolvedValue(mockId);
-    vi.mocked(getRun).mockResolvedValue({ id: mockId } as any);
-
-    const mockCreateTask = vi.fn().mockResolvedValue([{}]);
-    const mockQueuePath = vi.fn().mockReturnValue('projects/test-project/locations/test-region/queues/test-queue');
-
-    vi.mocked(CloudTasksClient).mockImplementation(function (this: any) {
-      this.createTask = mockCreateTask;
-      this.queuePath = mockQueuePath;
-    } as any);
-
-    await queueRun({ type: 'test', target: 'http://localhost' } as any, {});
-
-    expect(CloudTasksClient).toHaveBeenCalledWith({
-      credentials: {
-        client_email: 'test-sa@test-project.iam.gserviceaccount.com',
-        project_id: 'test-project',
-      },
-      projectId: 'test-project',
-    });
+    expect(getCloudTasksClient).not.toHaveBeenCalled();
   });
 });

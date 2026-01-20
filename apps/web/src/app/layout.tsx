@@ -1,4 +1,5 @@
 import { ToastProvider } from '@/context/toast-context';
+import { Analytics } from '@vercel/analytics/next';
 import type { Metadata } from 'next';
 import './globals.css';
 import { PrimeReactProvider } from 'primereact/api';
@@ -21,11 +22,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <Analytics />
         <ConfirmDialog />
         <PrimeReactProvider>
-          <ToastProvider>
-            {children}
-          </ToastProvider>
+          <ToastProvider>{children}</ToastProvider>
         </PrimeReactProvider>
       </body>
     </html>

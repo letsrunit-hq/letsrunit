@@ -17,8 +17,8 @@
     "@letsrunit/utils": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^24.8.1",
+    "@types/node": "^25.0.9",
     "typescript": "^5.9.3",
-    "vitest": "^3.2.4"
+    "vitest": "^4.0.17"
   }
 }

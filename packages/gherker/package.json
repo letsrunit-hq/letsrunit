@@ -10,13 +10,13 @@
   "packageManager": "yarn@4.10.3",
   "main": "src/index.ts",
   "dependencies": {
-    "@cucumber/cucumber-expressions": "^18.0.1",
-    "@cucumber/gherkin": "^36.0.0",
-    "@cucumber/messages": "^30.1.0",
+    "@cucumber/cucumber-expressions": "^18.1.0",
+    "@cucumber/gherkin": "^37.0.1",
+    "@cucumber/messages": "^31.2.0",
     "@letsrunit/gherkin": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^25.0.3",
-    "vitest": "^3.2.4"
+    "@types/node": "^25.0.9",
+    "vitest": "^4.0.17"
   }
 }

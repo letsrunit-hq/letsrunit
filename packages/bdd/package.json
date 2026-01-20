@@ -10,21 +10,21 @@
   "packageManager": "yarn@4.10.3",
   "main": "src/index.ts",
   "dependencies": {
-    "@cucumber/cucumber-expressions": "^18.0.1",
+    "@cucumber/cucumber-expressions": "^18.1.0",
     "@letsrunit/gherkin": "workspace:*",
     "@letsrunit/mailbox": "workspace:*",
     "@letsrunit/playwright": "workspace:*",
     "@letsrunit/utils": "workspace:*",
     "@playwright/test": "^1.57.0",
     "iso-639-1": "^3.1.5",
-    "metascraper": "^5.49.4",
-    "metascraper-lang": "^5.49.2"
+    "metascraper": "^5.49.15",
+    "metascraper-lang": "^5.49.15"
   },
   "peerDependencies": {
     "@cucumber/cucumber": "^12.0.0"
   },
   "devDependencies": {
-    "@cucumber/cucumber": "^12.2.0",
-    "vitest": "^3.2.4"
+    "@cucumber/cucumber": "^12.5.0",
+    "vitest": "^4.0.17"
   }
 }

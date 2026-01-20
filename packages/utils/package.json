@@ -9,7 +9,7 @@
   "packageManager": "yarn@4.10.3",
   "main": "src/index.ts",
   "devDependencies": {
-    "vitest": "^3.2.4"
+    "vitest": "^4.0.17"
   },
   "dependencies": {
     "fast-json-stable-stringify": "^2.1.0",
