@@ -12,6 +12,7 @@
     "@emotion/styled": "^11.14.1",
     "@letsrunit/playwright": "workspace:*",
     "@mui/material": "^7.3.6",
+    "@mui/system": "^7.3.7",
     "@mui/x-date-pickers": "^8.23.0",
     "@playwright/experimental-ct-react": "^1.57.0",
     "@playwright/test": "^1.57.0",
