@@ -24,16 +24,31 @@ jobs:
       - name: Run Tests
         run: supabase test db
 
-  test:
+  web:
+    name: Test web app
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enable Corepack
+        run: corepack enable
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "yarn"
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Run Tests
+        run: yarn workspace web test
+
+  packages:
     name: Test ${{ matrix.workspace }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         workspace:
-          - worker
-          - cli
-          - web
           - "@letsrunit/playwright"
           - "@letsrunit/bdd"
           - "@letsrunit/executor"
@@ -45,7 +60,28 @@ jobs:
           - "@letsrunit/utils"
           - "@letsrunit/ai"
           - "@letsrunit/model"
-          - "@letsrunit/compat-react"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enable Corepack
+        run: corepack enable
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "yarn"
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Run Tests
+        run: yarn workspace ${{ matrix.workspace }} test
+
+  compat:
+    name: Test ${{ matrix.workspace }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        workspace:
           - "@letsrunit/compat-react"
     steps:
       - uses: actions/checkout@v4
