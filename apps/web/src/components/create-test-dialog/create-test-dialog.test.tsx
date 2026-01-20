@@ -8,15 +8,13 @@ describe('CreateTestDialog', () => {
     render(<CreateTestDialog visible baseUrl="https://example.com" cancel={vi.fn()} generate={vi.fn()} />);
 
     // Header
-    expect(screen.getByText('Add new test')).toBeInTheDocument();
+    expect(screen.getByText('Create a new test')).toBeInTheDocument();
 
-    // Start page input group
-    expect(screen.getByText('Start page')).toBeInTheDocument();
-    expect(screen.getByText('https://example.com')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('/path')).toBeInTheDocument();
+    // Start page base url
+    expect(screen.getByText('https://example.com/')).toBeInTheDocument();
 
-    // Instructions
-    expect(screen.getByText('What do you want to test?')).toBeInTheDocument();
+    // Instructions placeholder
+    expect(screen.getByPlaceholderText('What do you want to test?')).toBeInTheDocument();
 
     // Actions
     expect(screen.getByRole('button', { name: 'Generate' })).toBeInTheDocument();

@@ -15,7 +15,7 @@ export interface JournalProps {
   feature?: Feature | null;
   run: Run;
   journal?: Journal;
-  loading: boolean;
+  loading?: boolean;
   children?: React.ReactNode;
 }
 

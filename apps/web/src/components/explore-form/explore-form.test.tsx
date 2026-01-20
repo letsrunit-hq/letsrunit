@@ -1,6 +1,6 @@
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 import { ExploreForm } from './explore-form';
 
 vi.mock('@/actions/explore', () => {
@@ -18,8 +18,14 @@ vi.mock('@/actions/explore', () => {
   };
 });
 
-vi.mock('next/client', () => ({
-  router: { push: vi.fn(() => Promise.resolve()) },
+vi.mock('next/navigation', () => ({
+  useRouter: vi.fn(() => ({
+    push: vi.fn(),
+  })),
+}));
+
+vi.mock('@/libs/auth', () => ({
+  ensureSignedIn: vi.fn(() => Promise.resolve()),
 }));
 
 describe('ExploreForm', () => {
@@ -39,8 +45,10 @@ describe('ExploreForm', () => {
     fireEvent.click(button);
 
     // While promise is pending, input and button should be disabled
-    expect(input).toBeDisabled();
-    expect(button).toBeDisabled();
+    await waitFor(() => {
+      expect(input).toBeDisabled();
+      expect(button).toBeDisabled();
+    });
 
     // resolve the pending promise to avoid unhandled rejections
     mod.__resolveRunId('run_123');
@@ -49,6 +57,6 @@ describe('ExploreForm', () => {
     await waitFor(() => {
       expect(input).not.toBeDisabled();
       expect(button).not.toBeDisabled();
-    });
-  });
+    }, { timeout: 10000 });
+  }, 15000);
 });

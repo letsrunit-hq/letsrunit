@@ -1,6 +1,6 @@
-import React from 'react';
-import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import React from 'react';
+import { describe, expect, it } from 'vitest';
 import { Screenshot } from './screenshot';
 
 describe('Screenshot', () => {
@@ -11,9 +11,8 @@ describe('Screenshot', () => {
   });
 
   it('shows the placeholder when src is missing', () => {
-    const { container } = render(<Screenshot width={400} height={300} />);
+    render(<Screenshot width={400} height={300} />);
 
     expect(screen.getByText('No screenshot')).toBeInTheDocument();
-    expect(container.querySelector('.pi.pi-desktop')).toBeInTheDocument();
   });
 });

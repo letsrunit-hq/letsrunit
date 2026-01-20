@@ -1,8 +1,14 @@
-import React from 'react';
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import { TestItem } from './test-item';
 import type { Feature } from '@letsrunit/model';
+import { render, screen } from '@testing-library/react';
+import React from 'react';
+import { describe, expect, it, vi } from 'vitest';
+import { TestItem } from './test-item';
+
+vi.mock('next/navigation', () => ({
+  useRouter: vi.fn(() => ({
+    push: vi.fn(),
+  })),
+}));
 
 function makeFeature(partial?: Partial<Feature>): Feature {
   return {
@@ -26,7 +32,8 @@ function makeFeature(partial?: Partial<Feature>): Feature {
 describe('TestItem', () => {
   it('renders name and the Run button when idle', () => {
     const feature = makeFeature();
-    render(<TestItem feature={feature} />);
+    const run = vi.fn();
+    render(<TestItem feature={feature} run={run} />);
     expect(screen.getByText('My test')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /run/i })).toBeInTheDocument();
   });
@@ -50,7 +57,8 @@ describe('TestItem', () => {
       } as any,
     });
 
-    render(<TestItem feature={feature} />);
+    const run = vi.fn();
+    render(<TestItem feature={feature} run={run} />);
     expect(screen.getByText(/Last run/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /run/i })).toBeInTheDocument();
   });
@@ -74,7 +82,7 @@ describe('TestItem', () => {
       } as any,
     });
 
-    render(<TestItem feature={feature} />);
+    render(<TestItem feature={feature} run={vi.fn()} remove={vi.fn()} />);
     expect(screen.queryByRole('button', { name: /run/i })).not.toBeInTheDocument();
     const more = screen.getByLabelText('More');
     expect(more).toBeDisabled();
