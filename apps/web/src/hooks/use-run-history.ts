@@ -19,7 +19,10 @@ function sortRuns(list: Run[], limit: number) {
     .sort((a, b) => {
       const at = (a.startedAt ?? a.createdAt).getTime();
       const bt = (b.startedAt ?? b.createdAt).getTime();
-      return bt - at;
+      if (at !== bt) return bt - at;
+      const act = a.createdAt.getTime();
+      const bct = b.createdAt.getTime();
+      return bct - act;
     })
     .slice(0, limit);
 }

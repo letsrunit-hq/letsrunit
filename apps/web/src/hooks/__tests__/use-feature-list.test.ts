@@ -1,66 +1,49 @@
 import type { Feature } from '@letsrunit/model';
+import { listFeatures } from '@letsrunit/model';
 import { fixedUUID } from '@letsrunit/utils';
 import { act, renderHook, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { useFeatureList } from '../use-feature-list';
+
+// Mock @letsrunit/model
+vi.mock('@letsrunit/model', async () => {
+  const actual = await vi.importActual('@letsrunit/model');
+  return {
+    ...actual,
+    listFeatures: vi.fn(),
+    fromData: vi.fn(() => (data: any) => data),
+  };
+});
 
 const PROJECT_ID = fixedUUID(1, 'project');
 const FEATURE_ID = fixedUUID(1, 'feature');
 
-// Fake Supabase client (from/select chain + realtime channel)
-type Handler = (payload: any) => void;
-let runsHandler: Handler | undefined;
-let featuresHandler: Handler | undefined;
+function createMockClient() {
+  const handlers: { [key: string]: ((payload?: any) => void)[] } = {};
 
-function makeQueryResponse(rows: any[]) {
-  return {
-    eq: () => ({
-      order: (_field?: any, _opts?: any) => ({
-        limit: () => ({ data: rows, status: 200, error: null }),
-      }),
+  const channel = {
+    on: vi.fn((_event: string, cfg: { table: string }, cb: (payload?: any) => void) => {
+      const key = cfg.table;
+      handlers[key] ??= [];
+      handlers[key].push(cb);
+      return channel;
     }),
+    subscribe: vi.fn(() => ({
+      data: { status: 'SUBSCRIBED' },
+    })),
   } as any;
-}
 
-const featureRow = (f: Feature) => ({
-  id: f.id,
-  project_id: f.projectId,
-  name: f.name,
-  description: f.description,
-  comments: f.comments,
-  body: f.body,
-  enabled: f.enabled,
-  created_at: f.createdAt.toISOString(),
-  created_by: f.createdBy,
-  updated_at: f.updatedAt.toISOString(),
-  updated_by: f.updatedBy,
-  last_run: [],
-});
+  const removeChannel = vi.fn().mockResolvedValue(undefined);
 
-function createFakeClient(initialRows: any[] = []) {
-  let rows = initialRows;
-  return {
-    from: () => ({
-      select: () => makeQueryResponse(rows),
-    }),
-    _setRows: (next: any[]) => {
-      rows = next;
+  const client = {
+    channel: vi.fn(() => channel),
+    removeChannel: removeChannel,
+    __trigger: (table: string, payload?: any) => {
+      (handlers[table] ?? []).forEach((h) => h(payload));
     },
-    channel: () => ({
-      on: (_event: string, filter: any, handler: Handler) => {
-        if (filter?.table === 'runs') {
-          runsHandler = handler;
-        } else if (filter?.table === 'features') {
-          featuresHandler = handler;
-        }
-        return {
-          subscribe: () => ({ id: 'ch' }),
-        } as any;
-      },
-    }),
-    removeChannel: () => {},
-    _helpers: { featureRow },
   } as any;
+
+  return client;
 }
 
 function makeFeature(partial: Partial<Feature> = {}): Feature {
@@ -83,18 +66,12 @@ function makeFeature(partial: Partial<Feature> = {}): Feature {
 }
 
 describe('useFeatureList', () => {
-  beforeEach(() => {
-    runsHandler = undefined;
-    featuresHandler = undefined;
-  });
-
   it('loads features and updates lastRun on run insert', async () => {
-    // prepare returned rows for initial load using injected client
-    const client = createFakeClient();
-    const row = client._helpers.featureRow(makeFeature());
-    client._setRows([row]);
+    const mockClient = createMockClient();
+    const feature = makeFeature();
+    vi.mocked(listFeatures).mockResolvedValue([feature]);
 
-    const { result } = renderHook(() => useFeatureList(PROJECT_ID, undefined, { client } as any));
+    const { result } = renderHook(() => useFeatureList(PROJECT_ID, undefined, { client: mockClient }));
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
@@ -105,23 +82,14 @@ describe('useFeatureList', () => {
     const payload = {
       new: {
         id: fixedUUID(1),
-        type: 'test',
-        project_id: PROJECT_ID,
-        feature_id: FEATURE_ID,
-        target: 'https://example.com',
         status: 'passed',
-        error: null,
-        started_at: null,
-        finished_at: null,
-        created_at: new Date().toISOString(),
-        created_by: null,
-        updated_at: new Date().toISOString(),
-        updated_by: null,
+        featureId: FEATURE_ID,
+        createdAt: new Date(),
       },
     };
 
     act(() => {
-      if (runsHandler) runsHandler(payload);
+      mockClient.__trigger('runs', payload);
     });
 
     await waitFor(() => {
@@ -130,11 +98,11 @@ describe('useFeatureList', () => {
   });
 
   it('adds a new enabled feature when features change event occurs', async () => {
-    const client = createFakeClient();
+    const mockClient = createMockClient();
     const f1 = makeFeature({ id: FEATURE_ID, name: 'A' });
-    client._setRows([client._helpers.featureRow(f1)]);
+    vi.mocked(listFeatures).mockResolvedValue([f1]);
 
-    const { result } = renderHook(() => useFeatureList(PROJECT_ID, undefined, { client } as any));
+    const { result } = renderHook(() => useFeatureList(PROJECT_ID, undefined, { client: mockClient }));
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
@@ -146,11 +114,10 @@ describe('useFeatureList', () => {
     const f2 = makeFeature({ id: fixedUUID(2, 'feature') as any, name: 'B' });
 
     act(() => {
-      if (featuresHandler)
-        featuresHandler({
-          eventType: 'INSERT',
-          new: client._helpers.featureRow(f2),
-        });
+      mockClient.__trigger('features', {
+        eventType: 'INSERT',
+        new: f2,
+      });
     });
 
     await waitFor(() => {
@@ -160,12 +127,12 @@ describe('useFeatureList', () => {
     });
   });
 
-  it('keeps a feature when it becomes disabled (hook returns all), enabled flag becomes false after update event', async () => {
-    const client = createFakeClient();
+  it('keeps a feature when it becomes disabled, enabled flag becomes false after update event', async () => {
+    const mockClient = createMockClient();
     const f1 = makeFeature({ id: FEATURE_ID, name: 'A', enabled: true });
-    client._setRows([client._helpers.featureRow(f1)]);
+    vi.mocked(listFeatures).mockResolvedValue([f1]);
 
-    const { result } = renderHook(() => useFeatureList(PROJECT_ID, undefined, { client } as any));
+    const { result } = renderHook(() => useFeatureList(PROJECT_ID, undefined, { client: mockClient }));
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
@@ -173,14 +140,13 @@ describe('useFeatureList', () => {
     });
 
     // Simulate that an update event arrives with enabled=false
-    const f1Disabled = { ...f1, enabled: false } as Feature;
+    const f1Disabled = { ...f1, enabled: false };
 
     act(() => {
-      if (featuresHandler)
-        featuresHandler({
-          eventType: 'UPDATE',
-          new: client._helpers.featureRow(f1Disabled),
-        });
+      mockClient.__trigger('features', {
+        eventType: 'UPDATE',
+        new: f1Disabled,
+      });
     });
 
     await waitFor(() => {
