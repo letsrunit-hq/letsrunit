@@ -66,7 +66,7 @@ export function useRun(input: string | Run | undefined, opts: UseRunOptions = {}
         (payload) => {
           if (!isEntity(payload.new)) return;
           try {
-            setRun(fromData(RunSchema)(payload.new));
+            setRun(fromData(RunSchema)(payload.new as Data<Run>));
           } catch (e: any) {
             setError(e?.message ?? String(e));
           }

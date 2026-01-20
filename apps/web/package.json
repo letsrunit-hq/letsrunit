@@ -8,8 +8,7 @@
     "plop": "cross-env NODE_OPTIONS='--import tsx' plop --plopfile=plopfile.ts",
     "lint": "eslint",
     "test": "vitest run --environment jsdom",
-    "test:cov": "vitest run --environment jsdom --coverage",
-    "typecheck": "tsc --noEmit"
+    "test:cov": "vitest run --environment jsdom --coverage"
   },
   "dependencies": {
     "@google-cloud/tasks": "^6.2.1",

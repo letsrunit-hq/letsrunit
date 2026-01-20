@@ -29,6 +29,10 @@ export type ProjectFeaturesProps = {
   features?: Feature[];
 };
 
+function isFeature(feature: Feature | Omit<Suggestion, 'projectId'>): feature is Feature {
+  return 'id' in feature;
+}
+
 export function ProjectFeatures({ className, projectId, baseUrl, features: initial }: ProjectFeaturesProps) {
   const router = useRouter();
   const { features, loading } = useFeatureList(projectId, initial);
@@ -95,7 +99,7 @@ export function ProjectFeatures({ className, projectId, baseUrl, features: initi
       header: 'Regenerate',
       icon: 'pi pi-exclamation-triangle',
       accept: async () => {
-        const runId = await startGenerateRun('id' in feature ? feature.id : { projectId, ...feature });
+        const runId = await startGenerateRun(isFeature(feature) ? feature.id : { projectId, ...feature } as Suggestion);
         router.push(`/runs/${runId}`);
       },
     });

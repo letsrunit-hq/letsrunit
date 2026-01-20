@@ -52,7 +52,7 @@ export function useProject(input: string | Project | undefined, opts: UseProject
         (payload) => {
           if (!isEntity(payload.new)) return;
           try {
-            setProject(fromData(ProjectSchema)(payload.new));
+            setProject(fromData(ProjectSchema)(payload.new as Data<Project>));
           } catch (e: any) {
             setError(e?.message ?? String(e));
           }

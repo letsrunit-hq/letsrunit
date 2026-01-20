@@ -52,7 +52,7 @@ export function useFeature(input: string | Feature | undefined, opts: UseFeature
         (payload) => {
           if (!isEntity(payload.new)) return; // Ignore delete
           try {
-            setFeature(fromData(FeatureSchema)(payload.new));
+            setFeature(fromData(FeatureSchema)(payload.new as Data<Feature>));
           } catch (e: any) {
             setError(e?.message ?? String(e));
           }
