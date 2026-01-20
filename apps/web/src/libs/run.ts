@@ -1,4 +1,4 @@
-import { CloudTasksClient } from '@google-cloud/tasks';
+import { getCloudTasksClient } from '@/libs/google-cloud';
 import { createRun, getRun, type WriteOptions } from '@letsrunit/model';
 
 type RunInput = Parameters<typeof createRun>[0];
@@ -6,13 +6,14 @@ type RunInput = Parameters<typeof createRun>[0];
 export async function queueRun(run: RunInput, opts: WriteOptions) {
   const id = await createRun(run, opts);
 
-  const queueName = process.env.QUEUE_NAME;
-  const project = process.env.GCP_PROJECT;
-  const location = process.env.GCP_REGION;
-  const workerUrl = process.env.WORKER_URL;
+  const queueName = process.env.GCP_QUEUE_NAME || 'runs';
+  const location = process.env.GCP_REGION || 'europe-west1';
+  const project = process.env.GCP_PROJECT_ID || 'letsrunit';
+  const workerUrl = process.env.GCP_WORKER_URL;
+  const invokerSa = process.env.GCP_SERVICE_ACCOUNT_EMAIL || `${project}@appspot.gserviceaccount.com`;
 
-  if (queueName && project && location && workerUrl) {
-    const client = new CloudTasksClient();
+  if (workerUrl) {
+    const client = getCloudTasksClient();
 
     const fullRun = await getRun(id, opts);
     const parent = client.queuePath(project, location, queueName);
@@ -24,9 +25,10 @@ export async function queueRun(run: RunInput, opts: WriteOptions) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: Buffer.from(JSON.stringify(fullRun)).toString('base64'),
+        body: Buffer.from(JSON.stringify(fullRun)),
         oidcToken: {
-          serviceAccountEmail: process.env.CLOUD_TASKS_SA || `${project}@appspot.gserviceaccount.com`,
+          serviceAccountEmail: invokerSa,
+          audience: workerUrl,
         },
       },
     };

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-: "${PROJECT:?Missing PROJECT}";
+: "${PROJECT:?Missing PROJECT}"
 
 gcloud services enable \
   run.googleapis.com \

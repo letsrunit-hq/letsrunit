@@ -16,9 +16,9 @@ The following environment variables are used by the worker and its shared packag
 ### Supabase (Database & Auth)
 - `SUPABASE_URL`: The URL of your Supabase project (e.g., `https://xyz.supabase.co`).
 - `SUPABASE_SERVICE_ROLE_KEY`: The service role key for Supabase (required for bypass RLS).
+- `ARTIFACT_BUCKET`: The name of the supabase bucket where screenshots and other artifacts are stored. Defaults to `artifacts`.
 
 ### Storage & Artifacts
-- `ARTIFACT_BUCKET`: The name of the GCS bucket or local directory where screenshots and logs are stored. Defaults to `artifacts`.
 - `GCP_PROJECT`: (Production) The Google Cloud project ID.
 - `GCP_REGION`: (Production) The region where the service is deployed.
 

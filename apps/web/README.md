@@ -35,15 +35,23 @@ These variables are required for authentication and database access via Supabase
 
 These variables are used to queue runs in Google Cloud Tasks. These are required for production.
 
-* `GCP_PROJECT`: Your Google Cloud project ID.
+* `GCP_PROJECT_ID`: Your Google Cloud project ID.
 * `GCP_REGION`: The region where your Cloud Tasks queue is located.
-* `QUEUE_NAME`: The name of the Cloud Tasks queue (e.g., `runs`).
-* `WORKER_URL`: The base URL of the worker service (e.g., `https://worker-xxxxx.a.run.app`).
+* `GCP_QUEUE_NAME`: The name of the Cloud Tasks queue (e.g., `runs`).
+* `GCP_WORKER_URL`: The base URL of the worker service (e.g., `https://worker-xxxxx.a.run.app`).
   * You can find this URL using the gcloud CLI:
     ```bash
     gcloud run services describe worker --platform managed --region <GCP_REGION> --format 'value(status.url)'
     ```
-* `CLOUD_TASKS_SA`: (Optional) The service account email to use for OIDC tokens. Defaults to `${GCP_PROJECT}@appspot.gserviceaccount.com`.
+
+### Google Cloud Workload Identity Federation (WIF)
+
+If you are deploying to Vercel and want to use WIF to authenticate with Google Cloud, you need to set the following environment variables:
+
+* `GCP_PROJECT_NUMBER`: Your Google Cloud project number.
+* `GCP_SERVICE_ACCOUNT_EMAIL`: The email of the service account to impersonate.
+* `GCP_WIF_POOL_ID`: The ID of the Workload Identity Pool.
+* `GCP_WIF_PROVIDER_ID`: The ID of the Workload Identity Provider.
 
 ## Learn More
 

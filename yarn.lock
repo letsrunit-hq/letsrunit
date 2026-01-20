@@ -8988,7 +8988,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"google-auth-library@npm:^10.1.0":
+"google-auth-library@npm:^10.1.0, google-auth-library@npm:^10.5.0":
   version: 10.5.0
   resolution: "google-auth-library@npm:10.5.0"
   dependencies:
@@ -15514,7 +15514,7 @@ __metadata:
     "@types/react-dom": "npm:^19.2.2"
     cross-env: "npm:^10.1.0"
     geist: "npm:^1.5.1"
-    google-auth-library: "npm:^10.4.0"
+    google-auth-library: "npm:^10.5.0"
     iso-639-1: "npm:^3.1.5"
     jsdom: "npm:^27.0.0"
     lucide-react: "npm:^0.554.0"
