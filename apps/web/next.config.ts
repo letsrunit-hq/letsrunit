@@ -12,6 +12,12 @@ const nextConfig: NextConfig = {
     ],
   },
   serverExternalPackages: ['@google-cloud/tasks'],
+  outputFileTracingIncludes: {
+    '/*': [
+      './node_modules/@google-cloud/tasks/build/protos/*.json',
+      './node_modules/@google-cloud/tasks/build/**/src/**/*.json',
+    ],
+  },
   turbopack: {
     debugIds: process.env.NODE_ENV === 'development',
   },
