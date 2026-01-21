@@ -105,7 +105,7 @@ export async function updateRunStatus(
     query = query.neq('status', 'running');
   }
 
-  const { status: qs, error: qe, data: updated } = await query.select().select('id').single();
+  const { status: qs, error: qe, data: updated } = await query.select('id').single();
   if (qe && qe.code !== 'PGRST116') throw new DBError(qs, qe);
 
   return !!updated;

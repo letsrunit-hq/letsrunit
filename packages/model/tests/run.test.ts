@@ -36,7 +36,7 @@ class FakeTableQuery {
         return query;
       },
       async then(resolve: any) {
-        resolve({ status: 200, error: null, count: 1 });
+        resolve({ status: 200, error: null, data: { id: 'fake_id' } });
       },
       single() {
         return query;

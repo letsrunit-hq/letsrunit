@@ -58,7 +58,6 @@ export function RunResult({ project, feature, run, journal, loading, children }:
         <div className="flex align-items-center justify-content-between mb-3 gap-2">
           <div>
             <h1 className="m-0 text-base text-white font-normal">{runTitle?.message ?? feature?.name ?? run.target}</h1>
-
             {feature?.description && <div className="mt-1 text-sm">{feature?.description}</div>}
           </div>
           <div className="flex align-items-center gap-2">
