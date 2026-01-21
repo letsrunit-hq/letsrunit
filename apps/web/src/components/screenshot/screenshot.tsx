@@ -1,5 +1,5 @@
+import { SupabaseImage } from '@/components/supabase-image';
 import { Monitor } from 'lucide-react';
-import Image from 'next/image';
 import React, { type CSSProperties } from 'react';
 import styles from './screenshot.module.css';
 
@@ -14,7 +14,7 @@ export type ScreenshotProps = {
 export function Screenshot({ src, alt, style, width, height }: ScreenshotProps) {
   return (
     <div className={styles.screenshotBox} style={style}>
-      {src && <Image src={src} alt={alt ?? 'screenshot'} width={width} height={height} loading="eager" />}
+      {src && <SupabaseImage src={src} alt={alt ?? 'screenshot'} width={width} height={height} loading="eager" />}
       {!src && (
         <div className={styles.noImage}>
           <Monitor aria-hidden="true" className={styles.noImageIcon} />

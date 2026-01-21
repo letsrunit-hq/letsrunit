@@ -11,10 +11,6 @@ const nextConfig: NextConfig = {
       'color-functions', // Deprecated color helpers like darken()/lighten()
     ],
   },
-  images: {
-    loader: 'custom',
-    loaderFile: './supabase-image-loader.js',
-  },
   serverExternalPackages: ['@google-cloud/tasks'],
   turbopack: {
     debugIds: process.env.NODE_ENV === 'development',
