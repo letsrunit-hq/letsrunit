@@ -1,31 +1,52 @@
 @use 'sass:math';
 
 .p-tag {
-    background: $badgeBg;
-    color: $badgeTextColor;
-    font-size: $badgeFontSize;
+    background: $tagBg;
+    color: $tagTextColor;
+    font-size: $tagFontSize;
     font-weight: $badgeFontWeight;
     padding: $tagPadding;
-    border-radius: $borderRadius;
+    border: $tagBorder;
+
+    &.text-sm {
+      padding: 0 0.5rem;
+    }
+
+    &.p-tag-secondary {
+        background-color: $secondaryTagBg;
+        color: $secondaryTagTextColor;
+        border: $secondaryTagBorder;
+    }
 
     &.p-tag-success {
-        background-color: $successButtonBg;
-        color: $successButtonTextColor;
+        background-color: $successTagBg;
+        color: $successTagTextColor;
+        border: $successTagBorder;
     }
 
     &.p-tag-info {
-        background-color: $infoButtonBg;
-        color: $infoButtonTextColor;
+        background-color: $infoTagBg;
+        color: $infoTagTextColor;
+        border-color: $infoTagBg;
     }
 
     &.p-tag-warning {
-        background-color: $warningButtonBg;
-        color: $warningButtonTextColor;
+        background-color: $warningTagBg;
+        color: $warningTagTextColor;
+        border-color: $warningTagBg;
     }
 
     &.p-tag-danger {
-        background-color: $dangerButtonBg;
-        color: $dangerButtonTextColor;
+        background-color: $dangerTagBg;
+        color: $dangerTagTextColor;
+        border-color: $dangerTagBg;
+    }
+
+    * + .p-tag-value {
+        margin-left: 0.5rem;
+    }
+    &.text-sm * + .p-tag-value {
+        margin-left: 0.25rem;
     }
 
     .p-tag-icon {

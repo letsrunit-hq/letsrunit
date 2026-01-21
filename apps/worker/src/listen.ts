@@ -4,7 +4,7 @@
  * Use the CLI for development of the packages / test run logic.
  */
 
-import { connect, type Data, DBError, fromData, type Run, RunSchema } from '@letsrunit/model';
+import { connect, type Data, DBError, fromData, type Run, RunSchema, updateRunStatus } from '@letsrunit/model';
 import { sleep } from '@letsrunit/utils';
 import { handle } from './handle';
 
@@ -20,6 +20,9 @@ async function processRun(data: Data<Run>) {
       console.log(`Skipping run "${run.id}" because status is "${run.status}"`)
       return;
     }
+
+    const claimed = await updateRunStatus(run.id, 'running', { supabase });
+    if (!claimed) throw new Error("Failed to claim run");
 
     console.log(`Received run "${run.id}"`);
     await handle(run, { supabase });

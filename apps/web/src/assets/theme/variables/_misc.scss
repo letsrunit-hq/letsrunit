@@ -19,12 +19,17 @@ $badgeFontWeight: 700 !default;
 $badgeFontSize: 0.75rem !default;
 
 $tagPadding: 0.25rem 0.625rem !default;
+$tagPaddingSmall: 0 0.5rem !default;
 $tagFontSize: 1rem !default;
 $tagBorderRadius: $buttonBorderRadius !default;
 
 $tagBg: rgba($primaryColor, 0.1) !default;
 $tagTextColor: $primaryColor !default;
 $tagBorder: 1px solid color-mix(in oklab, $primaryColor 30%, transparent) !default;
+
+$secondaryTagBg: rgba($shade300, 0.1) !default;
+$secondaryTagTextColor: $shade300 !default;
+$secondaryTagBorder: 1px solid color-mix(in oklab, $shade300 30%, transparent) !default;
 
 $successTagBg: rgba(#4ade80, 0.1) !default;
 $successTagTextColor: #00d492 !default;

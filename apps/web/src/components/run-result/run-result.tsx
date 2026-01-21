@@ -2,8 +2,10 @@
 
 import { RunTimeline, RunTimelineSkeleton } from '@/components/run-timeline';
 import { Screenshot } from '@/components/screenshot';
+import { SubtleHeader } from '@/components/subtle-header';
 import type { Artifact, Feature, Journal, Project, Run, RunStatus } from '@letsrunit/model';
-import { CalendarClock, CheckCircle2, Clock, Globe2, Monitor, XCircle } from 'lucide-react';
+import ISO6391 from 'iso-639-1';
+import { CalendarClock, CheckCircle2, Clock, Globe2, Languages, Monitor, XCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Button } from 'primereact/button';
 import { Tag } from 'primereact/tag';
@@ -29,8 +31,6 @@ export function RunResult({ project, feature, run, journal, loading, children }:
 
   const durationMs = run.startedAt && run.finishedAt ? run.finishedAt.getTime() - run.startedAt.getTime() : undefined;
   const duration = typeof durationMs === 'number' ? `${(durationMs / 1000).toFixed(1)}s` : undefined;
-
-  const description = run.type === 'explore' ? project?.description : feature?.description;
 
   const statusIcon = (status: RunStatus | undefined) => {
     switch (status) {
@@ -59,7 +59,7 @@ export function RunResult({ project, feature, run, journal, loading, children }:
           <div>
             <h1 className="m-0 text-base text-white font-normal">{runTitle?.message ?? feature?.name ?? run.target}</h1>
 
-            {description && <div className="mt-1 text-sm">{description}</div>}
+            {feature?.description && <div className="mt-1 text-sm">{feature?.description}</div>}
           </div>
           <div className="flex align-items-center gap-2">
             {run && run.status !== 'queued' && run.status !== 'running' && (
@@ -68,7 +68,6 @@ export function RunResult({ project, feature, run, journal, loading, children }:
             {duration && <span className="text-500 mono">{duration}</span>}
           </div>
         </div>
-
         <div className="flex align-items-baseline gap-4 mb-3 text-sm">
           <div className="flex align-items-center gap-2">
             <Globe2 size={16} aria-hidden="true" /> <span>Chrome 120</span>
@@ -91,9 +90,26 @@ export function RunResult({ project, feature, run, journal, loading, children }:
             </div>
           )}
         </div>
-
         {/* Screenshot placeholder */}
         <Screenshot src={screenshot?.url} alt={screenshot?.name} width={1920} height={1080} />
+        {run.type === 'explore' && project?.description && (
+          <div>
+            <SubtleHeader className="mt-6 mb-3">Project info</SubtleHeader>
+            <h4 className="mb-1">
+              {project!.title}
+              {project.lang && (
+                <Tag
+                  value={ISO6391.getName(project.lang) || project.lang}
+                  icon={<Languages width={14} />}
+                  rounded
+                  className="ml-3 text-sm vertical-align-bottom"
+                  severity="secondary"
+                />
+              )}
+            </h4>
+            {project!.description}
+          </div>
+        )}
 
         {children}
       </div>

@@ -20,9 +20,6 @@ export async function handle(run: Run, { supabase, journal }: Partial<HandleOpti
   );
 
   try {
-    const started = await updateRunStatus(run.id, 'running', { supabase });
-    if (!started) return;
-
     const result = await execRun(run, { supabase, journal });
     await updateRunStatus(run.id, result, { supabase });
   } catch (error) {
