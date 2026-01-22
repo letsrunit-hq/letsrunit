@@ -1,4 +1,5 @@
-import type { NextConfig } from 'next';
+import type { NextConfig } from "next";
+import path from "node:path";
 
 const nextConfig: NextConfig = {
   // Silence Sass deprecation warnings for `@import` while we keep vendor theme structure
@@ -12,10 +13,11 @@ const nextConfig: NextConfig = {
     ],
   },
   serverExternalPackages: ['@google-cloud/tasks'],
+  outputFileTracingRoot: path.join(__dirname, '../../'),
   outputFileTracingIncludes: {
     '/*': [
-      './node_modules/@google-cloud/tasks/build/protos/*.json',
-      './node_modules/@google-cloud/tasks/build/**/src/**/*.json',
+      'node_modules/@google-cloud/tasks/build/protos/*.json',
+      'node_modules/@google-cloud/tasks/build/**/src/**/*.json',
     ],
   },
   turbopack: {

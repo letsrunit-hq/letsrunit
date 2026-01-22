@@ -5,6 +5,7 @@
   place-items: center;
   padding: 2rem;
   color: #ededed;
+  /*noinspection CssUnknownTarget*/
   background: #000000 url('/topography.svg') repeat;
 }
 
@@ -32,7 +33,7 @@
 .subtitle {
   margin-top: 0.25rem;
   text-align: center;
-  font-size: clamp(1rem, 1.5vw + 0.8rem, 2rem);
+  font-size: clamp(1rem, 1.5vw + 0.8rem, 1.9rem);
   opacity: 0.9;
 }
 

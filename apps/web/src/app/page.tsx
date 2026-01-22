@@ -15,7 +15,7 @@ export default function Home() {
             <Image src={Logo} width={640} height={111} alt="letsrunit logo" className={styles.logo} priority />
           </div>
           <p className={styles.subtitle}>
-            Vibe<span>.</span> Run<span>.</span> Test<span>.</span>
+            You paste a URL<span>.</span> We test your site<span>.</span>
           </p>
           <ExploreForm
             className={styles.formRow}
