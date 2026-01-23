@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 import path from "node:path";
 
+console.log('Tracing root:', path.join(__dirname, '../../'));
+
 const nextConfig: NextConfig = {
   // Silence Sass deprecation warnings for `@import` while we keep vendor theme structure
   sassOptions: {
