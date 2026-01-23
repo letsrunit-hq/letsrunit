@@ -6,7 +6,6 @@ export const typeDefinitions = [
   keysParameter(),
 
   booleanParameter('visible', 'hidden'),
-  booleanParameter('see', 'dont see', /((?:don'?t )?see)/),
   booleanParameter('enabled', 'disabled', /((?:en|dis)abled)/),
   booleanParameter('checked', 'unchecked', /((?:un)?checked)/),
   booleanParameter('contains', 'not contains', /((?:not )?contains)/),
