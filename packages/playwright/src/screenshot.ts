@@ -7,7 +7,7 @@ export async function screenshot(page: Page, options?: PageScreenshotOptions): P
     ? await screenshotWithMask(page, options)
     : await page.screenshot(options);
 
-  return new File([buffer], `screenshot-${hash(buffer)}.png`, { type: 'image/png' });
+  return new File([new Uint8Array(buffer)], `screenshot-${hash(buffer)}.png`, { type: 'image/png' });
 }
 
 async function screenshotWithMask(page: Page, options: PageScreenshotOptions): Promise<Buffer> {

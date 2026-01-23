@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, type Mock, vi } from 'vitest';
 import { setSliderValue } from '../../src/field/slider';
 
 describe('setSliderValue', () => {
@@ -255,7 +255,7 @@ describe('setSliderValue', () => {
 
     // Test moving down
     callCount = 0;
-    pageMock.mouse.move.mockClear();
+    (pageMock.mouse.move as Mock).mockClear();
     await setSliderValue({ el: sliderMock, tag: 'div', type: null }, 30);
     // Center is 200. Test move should be 200 - 20 = 180
     expect(pageMock.mouse.move).toHaveBeenNthCalledWith(2, 180, 110);

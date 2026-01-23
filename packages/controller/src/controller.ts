@@ -136,15 +136,17 @@ export class Controller {
       await scrollToCenter(locators[0]);
     }
 
-    const screenshotBefore = await this.makeScreenshot({ mask: locators });
     const urlBefore = this.world.page.url();
+    const screenshotBefore = urlBefore !== 'about:blank' ? await this.makeScreenshot({ mask: locators }) : undefined;
     const htmlBefore = await this.makeHtmlFile();
     await this.journal.start(step.text, { artifacts: clean([screenshotBefore, htmlBefore]) });
 
     const result = await run();
 
+    const urlAfter = this.world.page.url();
     const screenshotAfter =
-      !step.text.startsWith('Then') && this.world.page.url() === urlBefore && (await this.areAllVisible(locators))
+      (!screenshotBefore && urlAfter !== 'about:blank') ||
+      (!step.text.startsWith('Then') && urlAfter === urlBefore && (await this.areAllVisible(locators)))
         ? await this.makeScreenshot({ mask: locators })
         : undefined;
 
@@ -200,6 +202,8 @@ export class Controller {
   }
 
   private async areAllVisible(locators: Locator[]): Promise<boolean> {
+    if (locator.length === 0) return true;
+
     const visible = await Promise.all(locators.map((l) => l.isVisible()));
     return visible.every(Boolean);
   }
