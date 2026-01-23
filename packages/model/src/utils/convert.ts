@@ -57,6 +57,6 @@ export function toData<TSchema extends z.ZodObject>(schema: TSchema) {
 
 export function toFilter<TSchema extends z.ZodObject>(schema: TSchema, filter: Partial<z.infer<TSchema>>): string {
   const data = toData(schema.partial())(filter);
-  const parts = Object.entries(data).map((val, field) => `${field}=eq.${val}`);
+  const parts = Object.entries(data).map(([field, val]) => `${field}=eq.${val}`);
   return parts.join(',');
 }

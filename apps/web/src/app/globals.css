@@ -54,6 +54,12 @@ div[role="link"]{
   min-height: 100dvh; /* full viewport height including mobile dynamic bars */
 }
 
+.mono {
+  white-space: pre;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .subtle-border {
   border-color: #444 !important;
 }

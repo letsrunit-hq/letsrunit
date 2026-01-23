@@ -59,7 +59,7 @@ export function RunHistory({
               <div className="flex align-items-center gap-3">
                 {run.status !== 'queued' && run.status !== 'running' && (
                   <Chip
-                    className={cn('tile tile-sm', run.status === 'passed' ? 'tile-green' : 'tile-red')}
+                    className={cn('tile tile-sm hidden sm:flex', run.status === 'passed' ? 'tile-green' : 'tile-red')}
                     aria-label={run.status}
                     icon={
                       run.status === 'passed' ? <CheckCircle2 key="icon" size={20} /> : <XCircle key="icon" size={20} />
@@ -70,7 +70,7 @@ export function RunHistory({
                 <div className="min-w-0">
                   <div className={cn(styles.title, 'flex align-items-center gap-2')}>
                     {showName && <span className="text-400">{run.name}</span>}
-                    {!showName && <span className="mono text-sm text-400">#{run.id}</span>}
+                    {!showName && <span className="mono text-sm text-400 max-w-10rem md:max-w-max">#{run.id}</span>}
 
                     {run.type === 'generate' && <Tag className="text-xs" value={run.type} />}
                     {run.status === 'error' && <Tag className="text-xs" value="error" severity="danger" />}

@@ -5780,6 +5780,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"areagrid@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "areagrid@npm:1.0.1"
+  peerDependencies:
+    react: ">=18"
+    react-dom: ">=18"
+  checksum: 10c0/5a2d5e71b1c57dce648d5d9aae7cc5dfafd649834edd7e69cf47b4220ca11b3c0e45e78188c02cb7517f091843a77a5b3f0536aedf8cc99bd4b9cc056e3c8b3a
+  languageName: node
+  linkType: hard
+
 "argparse@npm:^2.0.1":
   version: 2.0.1
   resolution: "argparse@npm:2.0.1"
@@ -14947,6 +14957,7 @@ __metadata:
     "@types/react": "npm:^19.2.9"
     "@types/react-dom": "npm:^19.2.3"
     "@vercel/analytics": "npm:^1.6.1"
+    areagrid: "npm:^1.0.1"
     cross-env: "npm:^10.1.0"
     geist: "npm:^1.5.1"
     google-auth-library: "npm:^10.5.0"

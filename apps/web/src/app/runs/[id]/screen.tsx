@@ -44,7 +44,7 @@ export default function Screen(initial: ScreenOptions) {
   return (
     <>
       <main className={`p-3 ${styles.container}`}>
-        <BreadCrumb model={crumbs} className="mb-5" />
+        <BreadCrumb model={crumbs} className="mb-5 hidden lg:block" />
 
         <RunResult project={project!} feature={feature} run={run!} loading={loading} journal={journal}>
           <SubtleHeader className="mt-6 mb-3">Run History</SubtleHeader>

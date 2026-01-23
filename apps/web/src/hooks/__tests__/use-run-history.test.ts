@@ -13,7 +13,6 @@ vi.mock('@letsrunit/model', async () => {
     listRuns: vi.fn(),
     getFeatureName: vi.fn(),
     fromData: vi.fn(() => (data: any) => data),
-    toFilter: vi.fn(() => 'filter'),
   };
 });
 
@@ -41,15 +40,13 @@ function createMockClient() {
 
   const removeChannel = vi.fn().mockResolvedValue(undefined);
 
-  const client = {
+  return {
     channel: vi.fn(() => channel),
     removeChannel: removeChannel,
     __trigger: (table: string, payload?: any) => {
       (handlers[table] ?? []).forEach((h) => h(payload));
     },
   } as any;
-
-  return client;
 }
 
 function makeRun(overrides: Partial<Run>): Run {

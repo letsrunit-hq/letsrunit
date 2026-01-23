@@ -21,11 +21,13 @@ export async function storeSuggestions(
   const { status, error } = await supabase.from('features').insert(
     features.map((f) => {
       const converted = toData(StoreSuggestionsSchema)(f as any);
-      const { done, ...rest } = converted as any;
+      const { done, comments, ...rest } = converted as any;
+      const cm = [comments, done && `Definition of done: ${done}`].filter(Boolean).join('\n');
+
       return {
         project_id: projectId,
         ...rest,
-        comments: f.done ? `Definition of done: ${f.done}` : (converted.comments ?? null),
+        comments: cm,
         created_by: opts.by?.id,
       };
     }),

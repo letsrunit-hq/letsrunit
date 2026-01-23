@@ -23,12 +23,17 @@ export const FeatureSchema = z.object({
   updatedBy: UUIDSchema.nullable().describe('Account id that updated the feature'),
 });
 
-export const SuggestionSchema = FeatureSchema
-  .pick({ projectId: true, name: true, path: true, description: true })
-  .partial({ name: true, path: true })
+export const SuggestionSchema = FeatureSchema.pick({
+  projectId: true,
+  name: true,
+  path: true,
+  description: true,
+  comments: true,
+})
+  .partial({ name: true, path: true, comments: true })
   .extend({
     done: z.string().optional().describe('Definition of done'),
-  }).passthrough();
+  });
 
 export type Feature = z.infer<typeof FeatureSchema>;
 export type Suggestion = z.infer<typeof SuggestionSchema>;

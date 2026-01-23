@@ -1,13 +1,30 @@
+import { startTestRun } from '@/actions/run';
 import type { Project, Run } from '@letsrunit/model';
-import { render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import RunResult from './run-result';
 
+const { push } = vi.hoisted(() => ({
+  push: vi.fn(),
+}));
+
 vi.mock('next/navigation', () => ({
   useRouter: vi.fn(() => ({
-    push: vi.fn(),
+    push,
   })),
+}));
+
+vi.mock('@/actions/explore', () => ({
+  startExploreRun: vi.fn(),
+}));
+
+vi.mock('@/actions/generate', () => ({
+  startGenerateRun: vi.fn(),
+}));
+
+vi.mock('@/actions/run', () => ({
+  startTestRun: vi.fn(),
 }));
 
 const baseEntry = {
@@ -126,5 +143,34 @@ describe('RunResult component', () => {
 
     // Should render skeletons on the timeline side
     expect(document.querySelectorAll('.p-skeleton').length).toBeGreaterThan(0);
+  });
+
+  it('shows a retry button when the run failed', async () => {
+    const run: Run = {
+      id: '5b555555-5555-4555-8555-555555555555',
+      type: 'test',
+      projectId: '2b222222-2222-4222-8222-222222222222',
+      featureId: '6b666666-6666-4666-8666-666666666666',
+      target: 'https://example.com/login',
+      status: 'failed',
+      error: 'Some error',
+      startedAt: new Date(),
+      finishedAt: new Date(),
+      createdAt: new Date(),
+    } as any;
+
+    vi.mocked(startTestRun).mockResolvedValue('7b777777-7777-4777-8777-777777777777');
+
+    render(<RunResult run={run} />);
+
+    const retryBtn = screen.getByRole('button', { name: /retry/i });
+    expect(retryBtn).toBeInTheDocument();
+
+    await act(async () => {
+      fireEvent.click(retryBtn);
+    });
+
+    expect(startTestRun).toHaveBeenCalledWith(run.featureId);
+    await vi.waitFor(() => expect(push).toHaveBeenCalledWith('/runs/7b777777-7777-4777-8777-777777777777'));
   });
 });

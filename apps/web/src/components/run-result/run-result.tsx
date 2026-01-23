@@ -1,15 +1,20 @@
 'use client';
 
+import { startExploreRun } from '@/actions/explore';
+import { startGenerateRun } from '@/actions/generate';
+import { startTestRun } from '@/actions/run';
 import { RunTimeline, RunTimelineSkeleton } from '@/components/run-timeline';
 import { Screenshot } from '@/components/screenshot';
 import { SubtleHeader } from '@/components/subtle-header';
-import type { Artifact, Feature, Journal, Project, Run, RunStatus } from '@letsrunit/model';
+import type { Artifact, Feature, Journal, Project, Run } from '@letsrunit/model';
+import { AreaGrid, AreaSlot } from 'areagrid';
 import ISO6391 from 'iso-639-1';
-import { CalendarClock, CheckCircle2, Clock, Globe2, Languages, Monitor, XCircle } from 'lucide-react';
+import { Languages } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Button } from 'primereact/button';
 import { Tag } from 'primereact/tag';
 import React, { useEffect } from 'react';
+import RunHeader from '../run-header/run-header';
 import styles from './run-result.module.css';
 
 export interface JournalProps {
@@ -23,24 +28,27 @@ export interface JournalProps {
 
 export function RunResult({ project, feature, run, journal, loading, children }: JournalProps) {
   const [screenshot, setScreenshot] = React.useState<Artifact | null>(null);
+  const [retrying, setRetrying] = React.useState(false);
   const router = useRouter();
 
-  const runTitle = journal?.entries.find((j) => j.type === 'title');
-  const statusSeverity =
-    run.status === 'passed' ? 'success' : run.status === 'failed' || run.status === 'error' ? 'danger' : 'info';
-
-  const durationMs = run.startedAt && run.finishedAt ? run.finishedAt.getTime() - run.startedAt.getTime() : undefined;
-  const duration = typeof durationMs === 'number' ? `${(durationMs / 1000).toFixed(1)}s` : undefined;
-
-  const statusIcon = (status: RunStatus | undefined) => {
-    switch (status) {
-      case 'passed':
-        return <CheckCircle2 size={14} />;
-      case 'failed':
-      case 'error':
-        return <XCircle size={14} />;
-      case 'running':
-        return <Clock size={14} />;
+  const onRetry = async () => {
+    setRetrying(true);
+    try {
+      let runId: string;
+      switch (run.type) {
+        case 'explore':
+          runId = await startExploreRun(run.target, { projectId: run.projectId });
+          break;
+        case 'generate':
+          runId = await startGenerateRun(run.featureId!);
+          break;
+        case 'test':
+          runId = await startTestRun(run.featureId!);
+          break;
+      }
+      router.push(`/runs/${runId}`);
+    } finally {
+      setRetrying(false);
     }
   };
 
@@ -51,46 +59,44 @@ export function RunResult({ project, feature, run, journal, loading, children }:
   }, [run.status, journal?.entries]);
 
   return (
-    <div className="grid">
-      {/* Left side - Screenshot and Info */}
-      <div className="col-12 md:col-8">
-        {/* Header */}
-        <div className="flex align-items-center justify-content-between mb-3 gap-2">
-          <div>
-            <h1 className="m-0 text-base text-white font-normal">{runTitle?.message ?? feature?.name ?? run.target}</h1>
-            {feature?.description && <div className="mt-1 text-sm">{feature?.description}</div>}
-          </div>
-          <div className="flex align-items-center gap-2">
-            {run && run.status !== 'queued' && run.status !== 'running' && (
-              <Tag icon={statusIcon(run.status)} value={run.status} severity={statusSeverity} />
-            )}
-            {duration && <span className="text-500 mono">{duration}</span>}
-          </div>
-        </div>
-        <div className="flex align-items-baseline gap-4 mb-3 text-sm">
-          <div className="flex align-items-center gap-2">
-            <Globe2 size={16} aria-hidden="true" /> <span>Chrome 120</span>
-          </div>
-          <div className="flex align-items-center gap-2">
-            <Monitor size={16} aria-hidden="true" /> <span>1920&times;1080</span>
-          </div>
-          {run.startedAt && (
-            <div className="flex align-items-center gap-2">
-              <CalendarClock size={16} aria-hidden="true" />
-              <span>
-                {run.startedAt.toLocaleString('en-UK', {
-                  day: 'numeric',
-                  month: 'short',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </span>
-            </div>
-          )}
-        </div>
-        {/* Screenshot placeholder */}
+    <AreaGrid
+      areas={{
+        base: `
+          "header"
+          "screenshot"
+          "timeline"
+          "project"
+          "children"
+        `,
+        lg: `
+          "header timeline"
+          "screenshot timeline"
+          "project timeline"
+          "children timeline"
+        `,
+      }}
+      columns={{
+        base: '1fr',
+        lg: '2fr 1fr',
+      }}
+      breakpoints={{
+        sm: '576px',
+        md: '768px',
+        lg: '992px',
+        xl: '1200px',
+        '2xl': '1440px',
+      }}
+      gap="0.25rem 2rem"
+    >
+      <AreaSlot name="header">
+        <RunHeader run={run} journal={journal} feature={feature} />
+      </AreaSlot>
+
+      <AreaSlot name="screenshot">
         <Screenshot src={screenshot?.url} alt={screenshot?.name} width={1920} height={1080} />
+      </AreaSlot>
+
+      <AreaSlot name="project">
         {run.type === 'explore' && project?.description && (
           <div>
             <SubtleHeader className="mt-6 mb-3">Project info</SubtleHeader>
@@ -109,16 +115,16 @@ export function RunResult({ project, feature, run, journal, loading, children }:
             {project!.description}
           </div>
         )}
+      </AreaSlot>
 
-        {children}
-      </div>
+      <AreaSlot name="children">{children}</AreaSlot>
 
-      {/* Right side - Run Timeline */}
-      <div className="col-12 md:col-4 pl-6">
+      <AreaSlot name="timeline">
         <div className={styles.timeline}>
           {loading && <RunTimelineSkeleton />}
           {!loading && (
             <RunTimeline
+              className="mt-2 lg:mt-0"
               type={run.type}
               status={run.status}
               entries={journal?.entries ?? []}
@@ -128,9 +134,19 @@ export function RunResult({ project, feature, run, journal, loading, children }:
           {run.type === 'explore' && run.status === 'passed' && project && (
             <Button label="Continue" className="w-full mt-6" onClick={() => router.push(`/projects/${project.id}`)} />
           )}
+          {(run.status === 'failed' || run.status === 'error') && (
+            <Button
+              label="Retry"
+              className="w-full mt-6"
+              onClick={onRetry}
+              loading={retrying}
+              severity="secondary"
+              outlined
+            />
+          )}
         </div>
-      </div>
-    </div>
+      </AreaSlot>
+    </AreaGrid>
   );
 }
 

@@ -34,7 +34,7 @@ export function RunTimelineSkeleton() {
   return (
     <>
       <div className="mb-5">
-        <h2 className="text-base text-white mb-3">Test Steps</h2>
+        <h2 className="text-base text-white mb-2">Test Steps</h2>
         <Skeleton width="10rem" height="0.875rem" />
       </div>
 

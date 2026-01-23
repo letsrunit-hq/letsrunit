@@ -26,6 +26,7 @@ interface ExtendedRunStep extends RunStep {
 }
 
 export interface RunTimelineProps {
+  className?: string;
   status: RunStatus;
   entries: JournalEntry[];
   onSelect?: (key: JournalEntry) => void;
@@ -110,24 +111,22 @@ function contentTemplate(item: ExtendedRunStep) {
   );
 }
 
-export function RunTimeline({ type, status, entries, onSelect }: RunTimelineProps) {
+export function RunTimeline({ className, type, status, entries, onSelect }: RunTimelineProps) {
   const [selectedIndex, setSelectedIndex] = React.useState<number | null>(null);
 
-  const filtered = useMemo(
-    () => entries.filter((e) => mapTypeToStatus(e.type) !== null),
-    [entries],
-  );
+  const filtered = useMemo(() => entries.filter((e) => mapTypeToStatus(e.type) !== null), [entries]);
 
   const steps: RunStep[] = useMemo(
-    () => filtered.map((e) => ({
-      keyword: e.message.match(/^(Given|When|Then|And|But|\*)\s.*$/)?.[1],
-      text: e.message.replace(/^(Given|When|Then|And|But|\*)\s+/, ''),
-      status: mapTypeToStatus(e.type) as StepStatus,
-      duration: formatDuration(e.duration),
-      hasScreenshot: Boolean(e.screenshot),
-      description: e.meta.description,
-    })),
-    [filtered]
+    () =>
+      filtered.map((e) => ({
+        keyword: e.message.match(/^(Given|When|Then|And|But|\*)\s.*$/)?.[1],
+        text: e.message.replace(/^(Given|When|Then|And|But|\*)\s+/, ''),
+        status: mapTypeToStatus(e.type) as StepStatus,
+        duration: formatDuration(e.duration),
+        hasScreenshot: Boolean(e.screenshot),
+        description: e.meta.description,
+      })),
+    [filtered],
   );
 
   // when status is not running, ensure first step (with screenshot) is selected by default
@@ -182,11 +181,11 @@ export function RunTimeline({ type, status, entries, onSelect }: RunTimelineProp
   const failedCount = steps.filter((s) => s.status === 'failed').length;
 
   return (
-    <>
+    <div className={className}>
       <div className="mb-4">
         <div className="flex align-items-center justify-content-between">
           <div>
-            <h2 className="text-base text-white mb-2">Test Steps</h2>
+            <h2 className="text-base text-white mb-1">Test Steps</h2>
             <p className="opacity-50 m-0">
               {completed} of {total} completed
             </p>
@@ -247,7 +246,7 @@ export function RunTimeline({ type, status, entries, onSelect }: RunTimelineProp
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

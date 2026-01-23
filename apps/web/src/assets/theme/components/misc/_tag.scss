@@ -7,10 +7,7 @@
     font-weight: $badgeFontWeight;
     padding: $tagPadding;
     border: $tagBorder;
-
-    &.text-sm {
-      padding: 0 0.5rem;
-    }
+    border-radius: $tagBorderRadius;
 
     &.p-tag-secondary {
         background-color: $secondaryTagBg;
@@ -45,9 +42,6 @@
     * + .p-tag-value {
         margin-left: 0.5rem;
     }
-    &.text-sm * + .p-tag-value {
-        margin-left: 0.25rem;
-    }
 
     .p-tag-icon {
         margin-right: math.div($inlineSpacing, 2);
@@ -56,6 +50,24 @@
         &.p-icon {
             width: $badgeFontSize;
             height: $badgeFontSize;
+        }
+    }
+
+    &.text-sm {
+        padding: 0 0.5rem;
+
+        * + .p-tag-value {
+            margin-left: 0.25rem;
+        }
+    }
+
+    @media screen and (min-width: 768px) {
+        &.md\:text-base {
+          padding: $tagPadding;
+
+          * + .p-tag-value {
+            margin-left: 0.5rem;
+          }
         }
     }
 }

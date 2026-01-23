@@ -245,8 +245,9 @@
 
         &:not(:disabled):hover {
             background: rgba($secondaryButtonBg, $textButtonHoverBgOpacity);
-            color: $secondaryButtonBg;
+            color: $secondaryButtonTextHoverColor;
             border: $outlinedButtonBorder;
+            border-color: $secondaryButtonTextHoverColor;
         }
 
         &:not(:disabled):active {
