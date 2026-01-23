@@ -1,7 +1,7 @@
-import ISO6391 from 'iso-639-1';
 import { hash } from '@letsrunit/utils';
-import { generate } from './generate';
 import type { Cache } from 'cache-manager';
+import ISO6391 from 'iso-639-1';
+import { generate } from './generate';
 
 const PROMPT_TEXT = `Translate the text from English to {lang}.`;
 const PROMPT_JSON = `Translate all text values within the provided JSON string from English to {lang}. Keep the JSON structure identical, translating only object values (never keys), array elements, or string contents. Do not alter numbers, booleans, nulls, or formatting. Return valid JSON.`;
@@ -9,6 +9,7 @@ const PROMPT_JSON = `Translate all text values within the provided JSON string f
 interface TranslateOptions {
   cache?: Cache;
   prompt?: string;
+  model?: 'large' | 'medium' | 'small';
   reasoningEffort?: 'minimal' | 'low' | 'medium';
 }
 
@@ -43,7 +44,10 @@ export async function translate<T extends JSONValue = JSONValue>(
       ISO6391.getName(lang) || lang,
     );
 
-    const translated = await generate(prompt, str, { model: 'small', reasoningEffort: options.reasoningEffort });
+    const translated = await generate(prompt, str, {
+      model: options.model || 'small',
+      reasoningEffort: options.reasoningEffort,
+    });
 
     return isString ? translated : JSON.parse(translated);
   });
