@@ -42,6 +42,9 @@ export function ExploreForm({
     try {
       setIsSubmitting(true);
       await ensureSignedIn();
+
+      // TODO: Check if there's already a project for the URL; if so go to the project
+
       const runId = await startExploreRun(url);
       router.push(`/runs/${runId}`);
     } catch (e) {
