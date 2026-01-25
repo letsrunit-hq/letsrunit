@@ -1,4 +1,8 @@
+import { startExploreRun } from '@/actions/explore';
+import { useToast } from '@/context/toast-context';
+import { findProjectByUrl } from '@letsrunit/model';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { useRouter } from 'next/navigation';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { ExploreForm } from './explore-form';
@@ -17,6 +21,14 @@ vi.mock('@/actions/explore', () => {
     __resolveRunId: (id: string) => (resolveFn as (v: string) => void)(id),
   };
 });
+
+vi.mock('@letsrunit/model', () => ({
+  findProjectByUrl: vi.fn(() => Promise.resolve(null)),
+}));
+
+vi.mock('@/libs/supabase/browser', () => ({
+  connect: vi.fn(() => ({})),
+}));
 
 vi.mock('next/navigation', () => ({
   useRouter: vi.fn(() => ({
@@ -60,16 +72,16 @@ describe('ExploreForm', () => {
     mod.__resolveRunId('run_123');
 
     // wait for state updates to flush so act() is satisfied
-    await waitFor(() => {
-      expect(input).not.toBeDisabled();
-      expect(button).not.toBeDisabled();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(input).not.toBeDisabled();
+        expect(button).not.toBeDisabled();
+      },
+      { timeout: 10000 },
+    );
   }, 15000);
 
   it('shows error toast if startExploreRun fails', async () => {
-    const { startExploreRun } = await import('@/actions/explore');
-    const { useToast } = await import('@/context/toast-context');
-
     const toast = {
       show: vi.fn(),
     };
@@ -91,8 +103,31 @@ describe('ExploreForm', () => {
           severity: 'error',
           summary: 'Error',
           detail: 'Failed to start run',
-        })
+        }),
       );
+    });
+  });
+
+  it('redirects to project page if project already exists', async () => {
+    const router = useRouter();
+    const push = vi.fn();
+    vi.mocked(useRouter).mockReturnValue({ push } as any);
+
+    vi.mocked(findProjectByUrl).mockResolvedValueOnce({
+      id: 'project_123',
+    } as any);
+
+    render(<ExploreForm placeholder="https://www.example.com" buttonLabel="Run it." />);
+
+    const input = screen.getByLabelText('website-input') as HTMLInputElement;
+    const button = screen.getByRole('button', { name: /run it\./i });
+
+    fireEvent.change(input, { target: { value: 'test.com' } });
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      expect(findProjectByUrl).toHaveBeenCalledWith('https://test.com', expect.any(Object));
+      expect(push).toHaveBeenCalledWith('/projects/project_123');
     });
   });
 });

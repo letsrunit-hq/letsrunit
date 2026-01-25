@@ -81,3 +81,15 @@ div[role="link"]{
     padding-right: 0;
   }
 }
+
+.border-primary-subtle {
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
+.bg-primary-subtle {
+  background: linear-gradient(
+    to right,
+    rgba(245, 158, 11, 0.1),
+    rgba(249, 115, 22, 0.1),
+    rgba(245, 158, 11, 0.1)
+  );
+}

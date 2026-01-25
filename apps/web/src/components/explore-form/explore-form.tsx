@@ -3,6 +3,8 @@
 import { startExploreRun } from '@/actions/explore';
 import { useToast } from '@/context/toast-context';
 import { ensureSignedIn } from '@/libs/auth';
+import { connect } from '@/libs/supabase/browser';
+import { findProjectByUrl } from '@letsrunit/model';
 import { cn } from '@letsrunit/utils';
 import { useRouter } from 'next/navigation';
 import { Button } from 'primereact/button';
@@ -43,7 +45,11 @@ export function ExploreForm({
       setIsSubmitting(true);
       await ensureSignedIn();
 
-      // TODO: Check if there's already a project for the URL; if so go to the project
+      const project = await findProjectByUrl(url, { supabase: connect() });
+      if (project) {
+        router.push(`/projects/${project.id}`);
+        return;
+      }
 
       const runId = await startExploreRun(url);
       router.push(`/runs/${runId}`);

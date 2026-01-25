@@ -1,5 +1,7 @@
+import { GuestModeBanner } from '@/components/guest-mode-banner';
 import { ProjectFeatures } from '@/components/project-features';
 import { ProjectPanel } from '@/components/project-panel';
+import { getUser } from '@/libs/auth';
 import { connect as connectServerSupabase } from '@/libs/supabase/server';
 import { getProject, listFeatures, maybe } from '@letsrunit/model';
 import { cn, isUUID } from '@letsrunit/utils';
@@ -24,9 +26,12 @@ export default async function Page({ params }: PageProps) {
   if (!project) return notFound();
 
   const features = await listFeatures(id, { supabase });
+  const user = await getUser({ supabase });
 
   return (
     <div className={`${styles.container} p-4 md:p-6 lg:p-7`}>
+      {user.is_anonymous && <GuestModeBanner className="mb-6" />}
+
       <div className="mb-4">
         <div className="flex flex-column md:flex-row align-items-start md:align-items-center justify-content-between">
           <div className="flex flex-row align-items-center mb-3 md:mb-0">
@@ -35,7 +40,12 @@ export default async function Page({ params }: PageProps) {
           </div>
           <div className="flex flex-row gap-2 justify-content-end">
             <Link href={`/projects/${id}/runs`} passHref>
-              <Button aria-label="Run history" icon={<History key="icon" size={24} />} severity="secondary" />
+              <Button
+                aria-label="Run history"
+                icon={<History key="icon" size={24} className="mr-2" />}
+                label="Runs"
+                severity="secondary"
+              />
             </Link>
             <Button aria-label="Settings" icon={<Settings key="icon" size={24} />} severity="secondary" />
           </div>

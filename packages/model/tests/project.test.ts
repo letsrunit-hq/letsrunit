@@ -1,14 +1,30 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { describe, expect, it, vi } from 'vitest';
-import { createProject, updateProject } from '../src';
+import { createProject, findProjectByUrl, updateProject } from '../src/project';
 
 class FakeTableQuery {
   public ops: any[];
   private readonly table: string;
+  private data: any = null;
 
-  constructor(table: string, ops: any[]) {
+  constructor(table: string, ops: any[], data: any = null) {
     this.table = table;
     this.ops = ops;
+    this.data = data;
+  }
+  select() {
+    return this;
+  }
+  eq(column: string, value: any) {
+    this.ops.push({ type: 'eq', table: this.table, column, value });
+    return this;
+  }
+  abortSignal() {
+    return this;
+  }
+  async maybeSingle() {
+    this.ops.push({ type: 'maybeSingle', table: this.table });
+    return { data: this.data, error: null };
   }
   async insert(payload: any) {
     this.ops.push({ type: 'insert', table: this.table, payload });
@@ -28,7 +44,10 @@ class FakeTableQuery {
 class FakeSupabase implements Partial<SupabaseClient> {
   public ops: any[] = [];
   public storage: any;
-  constructor() {
+  public data: any = null;
+
+  constructor(data: any = null) {
+    this.data = data;
     const self = this;
     const uploads: any[] = [];
     const buckets: any[] = [];
@@ -55,7 +74,7 @@ class FakeSupabase implements Partial<SupabaseClient> {
     } as any;
   }
   from(table: string) {
-    return new FakeTableQuery(table, this.ops) as any;
+    return new FakeTableQuery(table, this.ops, this.data) as any;
   }
 }
 
@@ -157,5 +176,43 @@ describe('project lib', () => {
     } else {
       process.env.ARTIFACT_BUCKET = prev;
     }
+  });
+
+  it('findProjectByUrl queries projects by url', async () => {
+    const mockData = {
+      id: '11111111-1111-4111-a111-111111111111',
+      account_id: '22222222-2222-4222-a222-222222222222',
+      url: 'https://example.com',
+      title: 'Example',
+      description: 'Description',
+      image: 'https://example.com/image.png',
+      favicon: 'https://example.com/favicon.ico',
+      screenshot: 'https://example.com/screenshot.png',
+      lang: 'en',
+      login_available: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      created_by: '22222222-2222-4222-a222-222222222222',
+      updated_by: '22222222-2222-4222-a222-222222222222',
+    };
+    const supabase = new FakeSupabase(mockData) as unknown as SupabaseClient;
+
+    const project = await findProjectByUrl('https://example.com', { supabase });
+
+    expect(project).toBeTruthy();
+    expect(project?.id).toBe(mockData.id);
+    expect(project?.url).toBe(mockData.url);
+
+    const ops = (supabase as any).ops;
+    expect(ops.find((o: any) => o.type === 'eq' && o.column === 'url' && o.value === 'https://example.com')).toBeTruthy();
+    expect(ops.find((o: any) => o.type === 'maybeSingle')).toBeTruthy();
+  });
+
+  it('findProjectByUrl returns null if not found', async () => {
+    const supabase = new FakeSupabase(null) as unknown as SupabaseClient;
+
+    const project = await findProjectByUrl('https://example.com', { supabase });
+
+    expect(project).toBeNull();
   });
 });

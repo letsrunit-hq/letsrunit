@@ -54,6 +54,25 @@ export async function createProject(
   return id;
 }
 
+export async function findProjectByUrl(url: string, opts: ReadOptions = {}): Promise<Project | null> {
+  const supabase = opts.supabase ?? connect();
+
+  if (!url.match(/^https?:\/\//)) {
+    url = `https://${url}`;
+  }
+
+  const { data, error } = await supabase
+    .from('projects')
+    .select<'projects', Data<Project>>()
+    .eq('url', url)
+    .abortSignal(maybeSignal(opts))
+    .maybeSingle();
+
+  if (error) throw new DBError(0, error);
+
+  return data ? fromData(ProjectSchema)(data) : null;
+}
+
 const UpdateProjectSchema = ProjectSchema.omit({ id: true }).partial();
 
 export async function updateProject(
