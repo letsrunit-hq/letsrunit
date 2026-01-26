@@ -53,6 +53,10 @@
   width: 100%;
   background-color: #ffffff;
   color: #4b5563;
+
+  &::placeholder {
+    color: #bbbbbb;
+  }
 }
 
 .button {

@@ -103,3 +103,18 @@ export async function loginWithOAuth(
     if (error) throw error;
   }
 }
+
+export async function linkIdentity(
+  params: { provider: Provider; redirectTo?: string },
+  opts: { supabase?: SupabaseClient } = {},
+) {
+  const client = opts.supabase ?? supabase();
+
+  const { error } = await client.auth.linkIdentity({
+    provider: params.provider,
+    options: {
+      redirectTo: params.redirectTo,
+    },
+  });
+  if (error) throw error;
+}
