@@ -3,7 +3,7 @@ import { realScrubHtml } from '../src/scrub-html';
 
 describe('scrubHtml', () => {
   it('removes the head element by default', async () => {
-    const html = '<html><head><title>Hidden</title></head><body><main>Content</main></body></html>';
+    const html = '<html><head><name>Hidden</name></head><body><main>Content</main></body></html>';
     const page = { html, url: 'https://example.com' };
 
     const output = await realScrubHtml(page);
@@ -222,14 +222,14 @@ describe('scrubHtml', () => {
   it('uses aggressive attribute stripping when stripAttributes=2', async () => {
     const html = [
       '<body>',
-      '<a href="/x" title="t" rel="noopener" target="_blank" data-qa="keep" referrerpolicy="no-referrer" onclick="x()">L</a>',
+      '<a href="/x" name="t" rel="noopener" target="_blank" data-qa="keep" referrerpolicy="no-referrer" onclick="x()">L</a>',
       '</body>',
     ].join('');
     const page = { html, url: 'https://example.com' };
 
     const output = await realScrubHtml(page, { stripAttributes: 2 });
 
-    // aggressive keeps href, src, alt, title and specific data/aria test ids; drops rel/target/referrerpolicy/onclick
-    expect(output).toBe('<a href="/x" title="t" data-qa="keep">L</a>');
+    // aggressive keeps href, src, alt, name and specific data/aria test ids; drops rel/target/referrerpolicy/onclick
+    expect(output).toBe('<a href="/x" name="t" data-qa="keep">L</a>');
   });
 });

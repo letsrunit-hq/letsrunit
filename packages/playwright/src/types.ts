@@ -7,8 +7,8 @@ export interface Snapshot {
 }
 
 export interface PageInfo {
-  /** Page title (from <title> or meta tags) */
-  title?: string;
+  /** Page name (from <title> or meta tags) */
+  name?: string;
 
   /** Short page description (meta description or OG/Twitter) */
   description?: string;

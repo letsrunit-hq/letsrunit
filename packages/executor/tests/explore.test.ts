@@ -34,17 +34,16 @@ describe('explore', () => {
     };
     vi.mocked(Controller.launch).mockResolvedValue(mockController as any);
 
-    const mockPageInfo = { title: 'Test Page', url: 'https://example.com/test', screenshot: 'screenshot.png' };
+    const mockPageInfo = { name: 'Test Page', url: 'https://example.com/test', screenshot: 'screenshot.png' };
     vi.mocked(extractPageInfo).mockResolvedValue(mockPageInfo as any);
 
     vi.mocked(describePage).mockResolvedValue('Page Content');
 
     const mockAssessment = {
+      websiteName: 'Assessment Name',
       purpose: 'Test Purpose',
       loginAvailable: true,
-      actions: [
-        { name: 'Action 1', description: 'Desc 1', done: 'Done 1' }
-      ]
+      actions: [{ name: 'Action 1', description: 'Desc 1', done: 'Done 1' }],
     };
     vi.mocked(assessPage).mockResolvedValue(mockAssessment);
 
@@ -52,9 +51,11 @@ describe('explore', () => {
 
     const result = await explore(target, {}, process);
 
-    expect(Controller.launch).toHaveBeenCalledWith(expect.objectContaining({
-      baseURL: 'https://example.com',
-    }));
+    expect(Controller.launch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        baseURL: 'https://example.com',
+      }),
+    );
     expect(mockController.run).toHaveBeenCalledWith('Feature: Explore');
     expect(extractPageInfo).toHaveBeenCalledWith(mockPage);
     expect(describePage).toHaveBeenCalledWith(expect.objectContaining(mockPage), 'markdown');
@@ -62,16 +63,17 @@ describe('explore', () => {
 
     expect(process).toHaveBeenCalledWith(
       expect.objectContaining({
+        name: 'Assessment Name',
         purpose: 'Test Purpose',
         loginAvailable: true,
-        url: 'https://example.com'
+        url: 'https://example.com',
       }),
       expect.arrayContaining([
         expect.objectContaining({
           name: 'Action 1',
-          run: expect.any(Function)
-        })
-      ])
+          run: expect.any(Function),
+        }),
+      ]),
     );
 
     expect(mockController.close).toHaveBeenCalled();

@@ -51,6 +51,17 @@ describe('AI Functions', () => {
   });
 
   describe('assessPage', () => {
+    it('should include websiteName when provided', async () => {
+      vi.mocked(generate).mockResolvedValue({
+        websiteName: 'MySite',
+        purpose: 'Testing',
+        loginAvailable: false,
+        actions: [],
+      });
+      const result = await assessPage('<html></html>');
+      expect(result.websiteName).toBe('MySite');
+    });
+
     it('should call generate with correct prompt for HTML', async () => {
       vi.mocked(generate).mockResolvedValue({ purpose: 'P', loginAvailable: true, actions: [] });
       await assessPage('<html></html>');
@@ -75,9 +86,13 @@ describe('AI Functions', () => {
   describe('describePage', () => {
     it('should describe page', async () => {
       vi.mocked(generate).mockResolvedValue('Generated Markdown');
-      const result = await describePage({ url: 'https://example.com', html: 'h', info: { url: 'https://example.com', title: 'T' } as any });
+      const result = await describePage({
+        url: 'https://example.com',
+        html: 'h',
+        info: { url: 'https://example.com', name: 'T' } as any,
+      });
       expect(result).toContain('Generated Markdown');
-      expect(result).toContain('title: T');
+      expect(result).toContain('name: T');
     });
   });
 
@@ -92,13 +107,19 @@ describe('AI Functions', () => {
   describe('detectPageChanges', () => {
     it('should detect changes', async () => {
       vi.mocked(generate).mockResolvedValue('Then I see X\nThen I do not see Y');
-      const result = await detectPageChanges({ html: 'h1', url: 'https://example.com' }, { html: 'h2', url: 'https://example.com' });
+      const result = await detectPageChanges(
+        { html: 'h1', url: 'https://example.com' },
+        { html: 'h2', url: 'https://example.com' },
+      );
       expect(result).toEqual(['Then I see X', 'Then I do not see Y']);
     });
 
     it('should handle no changes', async () => {
       vi.mocked(generate).mockResolvedValue('Then I do not see any changes');
-      const result = await detectPageChanges({ html: 'h1', url: 'https://example.com' }, { html: 'h2', url: 'https://example.com' });
+      const result = await detectPageChanges(
+        { html: 'h1', url: 'https://example.com' },
+        { html: 'h2', url: 'https://example.com' },
+      );
       expect(result).toEqual([]);
     });
   });

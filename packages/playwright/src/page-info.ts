@@ -23,7 +23,7 @@ export async function extractPageInfo(options: MetascraperOptions & Partial<Snap
 
   return {
     url: meta.url || options.url,
-    title: meta.title || undefined,
+    name: meta.title || undefined,
     description: meta.description || undefined,
     image: meta.image || undefined,
     favicon: meta.logo || undefined,
