@@ -36,7 +36,7 @@ export default async function Page({ params }: PageProps) {
         <div className="flex flex-column md:flex-row align-items-start md:align-items-center justify-content-between">
           <div className="flex flex-row align-items-center mb-3 md:mb-0">
             {project.favicon && <Chip className={cn('tile', project.favicon, 'mr-3')} image={project.favicon} />}
-            <h1 className={styles.title}>{project.title}</h1>
+            <h1 className={styles.title}>{project.name}</h1>
           </div>
           <div className="flex flex-row gap-2 justify-content-end">
             <Link href={`/projects/${id}/runs`} passHref>

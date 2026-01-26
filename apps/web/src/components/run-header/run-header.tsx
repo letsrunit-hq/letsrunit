@@ -13,7 +13,7 @@ export type RunHeaderProps = {
 };
 
 export function RunHeader({ className, run, feature, journal }: RunHeaderProps) {
-  const runTitle = journal?.entries.find((j) => j.type === 'title');
+  const runTitle = journal?.entries.find((j) => j.type === 'name');
   const statusSeverity =
     run.status === 'passed' ? 'success' : run.status === 'failed' || run.status === 'error' ? 'danger' : 'info';
 

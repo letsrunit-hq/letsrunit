@@ -34,7 +34,7 @@ export default async function Page({ params }: PageProps) {
               <Button className="mr-4" aria-label="Run history" text icon={<ArrowLeft key="icon" size={24} />} severity="secondary" />
             </Link>
             {project.favicon && <Chip className={cn('tile', project.favicon, 'mr-3')} image={project.favicon} />}
-            <h1 className={styles.title}>{project.title}</h1>
+            <h1 className={styles.title}>{project.name}</h1>
           </div>
           <div className="flex flex-row gap-2 justify-content-end">
           </div>

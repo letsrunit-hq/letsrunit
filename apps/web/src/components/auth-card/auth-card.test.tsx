@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { AuthCard } from './auth-card';
 
 describe('AuthCard', () => {
-  it('renders title and subtitle', () => {
+  it('renders name and subtitle', () => {
     render(
       <AuthCard title="Test Title" subtitle="Test Subtitle">
         <div>Content</div>

@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { getJournal } from '../src';
 import { randomUUID } from 'node:crypto';
+import { describe, expect, it } from 'vitest';
+import { getJournal } from '../src';
 
 class FakeTableQuery {
   public ops: any[];
@@ -94,7 +94,7 @@ describe('journal lib', () => {
       // Title resets prepare map
       {
         id: '3',
-        type: 'title',
+        type: 'name',
         message: 'New section',
         meta: {},
         artifacts: [],
@@ -103,7 +103,7 @@ describe('journal lib', () => {
         updated_at: createdAt,
         updated_by: null,
       },
-      // Prepare B then failure B appears but since after title, no replacement occurs
+      // Prepare B then failure B appears but since after name, no replacement occurs
       {
         id: '4',
         type: 'prepare',
@@ -133,7 +133,7 @@ describe('journal lib', () => {
     expect(journal.runId).toBe(runId);
     // Entries should be:
     // 1) success (replacing prepare A) with only screenshot artifacts (url truthy)
-    // 2) title
+    // 2) name
     // 3) failure B appended (prepare B was replaced by failure B)
     expect(journal.entries.length).toBe(3);
 
@@ -144,7 +144,7 @@ describe('journal lib', () => {
     expect(e1.screenshot!.name.startsWith('screenshot-')).toBe(true);
     expect(!!e1.screenshot!.url).toBe(true);
 
-    expect(e2.type).toBe('title');
+    expect(e2.type).toBe('name');
 
     expect(e3.type).toBe('failure');
   });
@@ -229,13 +229,63 @@ describe('journal lib', () => {
 
     (supabase as any).setRows([
       // Case 1: start then failure
-      { id: 'x1', type: 'start', message: 'Case 1', meta: {}, artifacts: [], created_at: t0, created_by: null, updated_at: t0, updated_by: null },
-      { id: 'x2', type: 'failure', message: 'Case 1', meta: {}, artifacts: [], created_at: t1, created_by: null, updated_at: t1, updated_by: null },
+      {
+        id: 'x1',
+        type: 'start',
+        message: 'Case 1',
+        meta: {},
+        artifacts: [],
+        created_at: t0,
+        created_by: null,
+        updated_at: t0,
+        updated_by: null,
+      },
+      {
+        id: 'x2',
+        type: 'failure',
+        message: 'Case 1',
+        meta: {},
+        artifacts: [],
+        created_at: t1,
+        created_by: null,
+        updated_at: t1,
+        updated_by: null,
+      },
       // Separator
-      { id: 'ttl', type: 'title', message: 'sep', meta: {}, artifacts: [], created_at: t1, created_by: null, updated_at: t1, updated_by: null },
+      {
+        id: 'ttl',
+        type: 'name',
+        message: 'sep',
+        meta: {},
+        artifacts: [],
+        created_at: t1,
+        created_by: null,
+        updated_at: t1,
+        updated_by: null,
+      },
       // Case 2: prepare then success (no start)
-      { id: 'y1', type: 'prepare', message: 'Case 2', meta: {}, artifacts: [], created_at: t1, created_by: null, updated_at: t1, updated_by: null },
-      { id: 'y2', type: 'success', message: 'Case 2', meta: {}, artifacts: [], created_at: t2, created_by: null, updated_at: t2, updated_by: null },
+      {
+        id: 'y1',
+        type: 'prepare',
+        message: 'Case 2',
+        meta: {},
+        artifacts: [],
+        created_at: t1,
+        created_by: null,
+        updated_at: t1,
+        updated_by: null,
+      },
+      {
+        id: 'y2',
+        type: 'success',
+        message: 'Case 2',
+        meta: {},
+        artifacts: [],
+        created_at: t2,
+        created_by: null,
+        updated_at: t2,
+        updated_by: null,
+      },
     ]);
 
     const journal = await getJournal(runId as any, { supabase });

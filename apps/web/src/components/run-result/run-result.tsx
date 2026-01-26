@@ -101,7 +101,7 @@ export function RunResult({ project, feature, run, journal, loading, children }:
           <div>
             <SubtleHeader className="mt-6 mb-3">Project info</SubtleHeader>
             <h4 className="mb-1">
-              {project!.title}
+              {project!.name}
               {project.lang && (
                 <Tag
                   value={ISO6391.getName(project.lang) || project.lang}

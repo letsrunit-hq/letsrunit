@@ -38,7 +38,7 @@ export function journalFromData(runId: UUID, raw: JournalEntryData[]): Journal {
   for (const e of raw) {
     const item = entryFromData(e);
 
-    if (item.type === 'title') {
+    if (item.type === 'name') {
       prepareEntries.clear();
     }
 

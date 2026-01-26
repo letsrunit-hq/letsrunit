@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS public.projects
 
     -- begin fields generated automatically from the template inputs
     url text,
-    title text,
+    name text,
     description text,
     image text,
     favicon text,

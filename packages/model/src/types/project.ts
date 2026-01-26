@@ -7,7 +7,7 @@ export const ProjectSchema = z.object({
   id: UUIDSchema,
   accountId: UUIDSchema,
   url: z.url().describe('Canonical URL to the home page'),
-  title: z.string().nullable().describe('Human-readable web app title'),
+  name: z.string().nullable().describe('Human-readable web app name'),
   description: z.string().nullable().describe('Short description of the web application'),
   image: z.url().nullable().describe('Public URL of the primary image'),
   favicon: z.url().nullable().describe('Public URL of the favicon'),

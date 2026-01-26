@@ -11,7 +11,7 @@ BEGIN
         CREATE TYPE public.journal_entry_type AS ENUM (
             'debug',
             'info',
-            'title',
+            'name',
             'warn',
             'error',
             'prepare',

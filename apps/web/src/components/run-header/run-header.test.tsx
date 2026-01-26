@@ -20,7 +20,7 @@ const mockRun = {
 } as any;
 
 describe('RunHeader', () => {
-  it('renders run target when no feature or title is provided', () => {
+  it('renders run target when no feature or name is provided', () => {
     render(<RunHeader run={mockRun} />);
     expect(screen.getByText('https://example.com')).toBeInTheDocument();
   });
@@ -35,12 +35,12 @@ describe('RunHeader', () => {
     expect(screen.getByText('Test Description')).toBeInTheDocument();
   });
 
-  it('renders journal title if provided (overrides feature name)', () => {
+  it('renders journal name if provided (overrides feature name)', () => {
     const feature = {
       name: 'Test Feature',
     } as any;
     const journal = {
-      entries: [{ type: 'title', message: 'Journal Title' }],
+      entries: [{ type: 'name', message: 'Journal Title' }],
     } as any;
     render(<RunHeader run={mockRun} feature={feature} journal={journal} />);
     expect(screen.getByText('Journal Title')).toBeInTheDocument();

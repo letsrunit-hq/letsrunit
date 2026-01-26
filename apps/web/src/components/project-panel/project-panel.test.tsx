@@ -1,16 +1,16 @@
+import type { Project } from '@letsrunit/model';
+import { render, screen } from '@testing-library/react';
+import ISO6391 from 'iso-639-1';
 import React from 'react';
 import { describe, expect, it } from 'vitest';
-import { render, screen } from '@testing-library/react';
 import { ProjectPanel } from './project-panel';
-import type { Project } from '@letsrunit/model';
-import ISO6391 from 'iso-639-1';
 
 describe('ProjectPanel', () => {
   const project: Project = {
     id: '00000000-0000-0000-0000-000000000001',
     accountId: '00000000-0000-0000-0000-000000000002',
     url: 'https://ecommerce.example.com',
-    title: 'Ecommerce Demo',
+    name: 'Ecommerce Demo',
     description: 'Full-stack e-commerce platform with BDD testing',
     image: null,
     favicon: null,

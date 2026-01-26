@@ -85,7 +85,7 @@ describe('project lib', () => {
     const id = await createProject(
       {
         url: 'https://example.com',
-        title: 'Example',
+        name: 'Example',
         description: undefined,
         loginAvailable: true,
       },
@@ -204,7 +204,9 @@ describe('project lib', () => {
     expect(project?.url).toBe(mockData.url);
 
     const ops = (supabase as any).ops;
-    expect(ops.find((o: any) => o.type === 'eq' && o.column === 'url' && o.value === 'https://example.com')).toBeTruthy();
+    expect(
+      ops.find((o: any) => o.type === 'eq' && o.column === 'url' && o.value === 'https://example.com'),
+    ).toBeTruthy();
     expect(ops.find((o: any) => o.type === 'maybeSingle')).toBeTruthy();
   });
 

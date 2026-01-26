@@ -1,9 +1,17 @@
 import { z } from 'zod';
 import { type Data, UUIDSchema } from './utils';
 
-export const EntryTypeSchema = z.enum(
-  ['debug', 'info', 'title', 'warn', 'error', 'prepare', 'start', 'success', 'failure'],
-);
+export const EntryTypeSchema = z.enum([
+  'debug',
+  'info',
+  'name',
+  'warn',
+  'error',
+  'prepare',
+  'start',
+  'success',
+  'failure',
+]);
 
 export const ArtifactSchema = z.object({
   name: z.string().describe('Human-readable name of the artifact'),

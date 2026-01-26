@@ -34,29 +34,35 @@ export default async function explore(
     controller = await Controller.launch({ headless: opts.headless, baseURL: base, journal, debug: true });
     const { page } = await controller.run(makeFeature({ name: `Explore website "${base}"`, steps }));
     const pageInfo = await extractPageInfo(page);
-    const title = pageInfo.title ?? pageInfo.url;
+    const name = pageInfo.name ?? pageInfo.url;
 
     await journal
       .batch()
-      .prepare(`Reading page "${title}"`) // Step 3
+      .prepare(`Reading page "${name}"`) // Step 3
       .prepare('Determining user stories') // Step 4
       .flush();
 
     const content = await journal.do(
-      `Reading page "${title}"`,
+      `Reading page "${name}"`,
       () => describePage({ ...page, info: pageInfo }, 'markdown'),
       () => (pageInfo.screenshot ? { artifacts: [pageInfo.screenshot] } : {}),
     );
 
     await journal.debug(content);
 
-    const { actions, ...appInfo } = await journal.do(
+    const { actions, ...assessment } = await journal.do(
       'Determining user stories',
       () => assessPage(content),
       (result) => ({
         meta: { result, description: `Found ${result.actions.length} user stories` },
       }),
     );
+
+    const appInfo: AppInfo = {
+      ...pageInfo,
+      ...assessment,
+      name: assessment.websiteName ?? pageInfo.name ?? pageInfo.url,
+    };
 
     await journal
       .batch()
@@ -75,7 +81,7 @@ export default async function explore(
       path,
       run: () =>
         generateFeature({
-          controller,
+          controller: controller!,
           feature: {
             ...action,
             comments: `Definition of done: ${action.done}`,
@@ -87,7 +93,7 @@ export default async function explore(
     }));
 
     const { base: appUrl } = splitUrl(pageInfo.url);
-    await process({ ...pageInfo, ...appInfo, url: appUrl }, preparedActions);
+    await process({ ...appInfo, url: appUrl }, preparedActions);
 
     return { status: 'passed' };
   } catch (e) {

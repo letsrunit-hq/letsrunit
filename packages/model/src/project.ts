@@ -40,7 +40,7 @@ export async function createProject(
 
   const { status, error } = await supabase.from('projects').insert({
     ...toData(CreateProjectSchema)({
-      title: project.url.replace(/https?:\/\/(www\.)?/, ''),
+      name: project.url.replace(/https?:\/\/(www\.)?/, ''),
       ...project,
       createdAt: new Date(),
       updatedAt: new Date(),

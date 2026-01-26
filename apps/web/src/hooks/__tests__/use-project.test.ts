@@ -77,7 +77,7 @@ describe('useProject', () => {
     });
 
     await waitFor(() => {
-      expect(result.current.project?.title).toBe('Updated Project');
+      expect(result.current.project?.name).toBe('Updated Project');
     });
   });
 

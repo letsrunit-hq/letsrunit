@@ -10,7 +10,7 @@ import React from 'react';
 import 'geist/font/sans';
 
 export const metadata: Metadata = {
-  title: 'Vibe Testing done right | letsrunit.',
+  name: 'Vibe Testing done right | letsrunit.',
   description: 'Fully automated testing for your web application',
 };
 

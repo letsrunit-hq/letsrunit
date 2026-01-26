@@ -102,7 +102,7 @@ describe('RunResult component', () => {
     expect(screen.queryByText('screenshot-1.png')).toBeNull();
     expect(screen.queryByText('screenshot-2.png')).toBeNull();
 
-    // No card title rendered
+    // No card name rendered
     expect(screen.queryByText('RunResult')).toBeNull();
   });
 

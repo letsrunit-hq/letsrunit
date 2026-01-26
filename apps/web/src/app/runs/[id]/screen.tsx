@@ -30,7 +30,7 @@ export default function Screen(initial: ScreenOptions) {
   const { feature, error: featureError } = useFeature(initial.feature ?? undefined);
   if (featureError) throw new Error(featureError);
 
-  const crumbs = [{ label: project?.title || '...', url: `/projects/${project!.id}` }, { label: `Run #${run!.id}` }];
+  const crumbs = [{ label: project?.name || '...', url: `/projects/${project!.id}` }, { label: `Run #${run!.id}` }];
 
   if (run!.status === 'queued') {
     return (
@@ -52,7 +52,9 @@ export default function Screen(initial: ScreenOptions) {
             projectId={run!.projectId}
             featureId={run!.featureId || undefined}
             type={run!.featureId ? undefined : run!.type}
-            runs={initial.history} currentRunId={run!.id} />
+            runs={initial.history}
+            currentRunId={run!.id}
+          />
         </RunResult>
       </main>
     </>

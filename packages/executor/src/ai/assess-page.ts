@@ -19,18 +19,24 @@ Do **not invent** features, flows, or pages that aren’t clearly present or imp
 
 Extract the following:
 
-1. **Purpose**
+1. **Website Name**
+
+   * The name of the website, company, or project.
+   * Determine this based on the title, metadata, or prominent branding in the content.
+   * If it cannot be determined, skip this field.
+
+2. **Purpose**
 
    * A concise sentence describing the core purpose of the site or web app.
    * Use plain, natural language — no slogans, no fluff.
    * Example: \`"Buy and manage running gear through an online store."\`
 
-2. **Login Availability**
+3. **Login Availability**
 
    * Return \`true\` if elements like *Sign in*, *Log in*, *Sign up*, *Create account*, or OAuth buttons are found.
    * Otherwise, return \`false\`.
 
-3. **Actions (1 to 5)**
+4. **Actions (1 to 5)**
 
    * List **only** actions that a **new visitor can initiate directly** from the visible content — without logging in or navigating to other pages.
    * Ignore descriptions of multi-step processes unless **step 1 is clearly user-initiable on the current page**.
@@ -73,8 +79,9 @@ Extract the following:
 
 \`\`\`json
 {
+  "websiteName": "Dutch Runners",
   "purpose": "Buy and manage running gear through an online store.",
-  "login_available": true,
+  "loginAvailable": true,
   "actions": [
     {
       "name": "Buy running shoes",
