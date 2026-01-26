@@ -1,7 +1,19 @@
 import type { NextConfig } from 'next';
+import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-console.log('Tracing root:', path.join(__dirname, '../../'));
+const dir = path.dirname(fileURLToPath(import.meta.url));
+
+const tracingRoot = path.join(dir, '../../');
+console.log('Tracing root using dirname:', tracingRoot);
+
+const protosPath = path.join(tracingRoot, 'node_modules/@google-cloud/tasks/build/protos');
+if (fs.existsSync(protosPath)) {
+  console.log('Files in @google-cloud/tasks/build/protos:', fs.readdirSync(protosPath));
+} else {
+  console.log('Path not found: @google-cloud/tasks/build/protos');
+}
 
 const nextConfig: NextConfig = {
   // Silence Sass deprecation warnings for `@import` while we keep vendor theme structure
@@ -15,7 +27,7 @@ const nextConfig: NextConfig = {
     ],
   },
   serverExternalPackages: ['@google-cloud/tasks'],
-  outputFileTracingRoot: path.join(__dirname, '../../'),
+  outputFileTracingRoot: path.join(dir, '../../'),
   outputFileTracingIncludes: {
     '/*': [
       'node_modules/@google-cloud/tasks/build/protos/*.json',
