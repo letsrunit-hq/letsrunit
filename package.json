@@ -24,5 +24,9 @@
     "supabase": "^2.72.8",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.53.1"
+  },
+  "dependencies": {
+    "@icons-pack/react-simple-icons": "^13.8.0",
+    "simple-icons": "^16.6.1"
   }
 }
