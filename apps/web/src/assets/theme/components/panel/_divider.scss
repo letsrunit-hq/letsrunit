@@ -1,6 +1,7 @@
 .p-divider {
     .p-divider-content {
-        background-color: $panelContentBg;
+        background-color: $dividerContentBg;
+        color: $dividerContentColor;
     }
 
     &.p-divider-horizontal {

@@ -1,7 +1,7 @@
-import { motion } from 'motion/react';
-import React from 'react';
-import { Card } from 'primereact/card';
 import { Settings } from 'lucide-react';
+import { motion } from 'motion/react';
+import { Card } from 'primereact/card';
+import React from 'react';
 import './queue-status.css';
 
 export function QueueStatus() {
@@ -13,7 +13,7 @@ export function QueueStatus() {
       className="w-full"
       style={{ maxWidth: '28rem', position: 'relative', zIndex: 100 }}
     >
-      <Card className="queue-status-card border-round-xl shadow-4 p-4">
+      <Card className="border-round-xl p-4">
         <div className="flex flex-column align-items-center text-center gap-3">
           <div className="relative">
             <motion.div

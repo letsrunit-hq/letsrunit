@@ -1,34 +1,14 @@
 'use client';
 
-import { cn } from '@letsrunit/utils';
 import { Clock, Sparkles } from 'lucide-react';
-import { motion } from 'motion/react';
 import Link from 'next/link';
 import { Button } from 'primereact/button';
 import React from 'react';
+import { ShimmerPanel } from '../shimmer-panel';
 
 export function GuestModeBanner({ className }: { className?: string }) {
   return (
-    <div className={cn('relative overflow-hidden border-round-xl border-1 border-primary-subtle bg-primary-subtle py-3 px-4', className)}>
-      {/* Subtle animated gradient overlay */}
-      <motion.div
-        className="absolute inset-0 z-10"
-        style={{
-          top: 0,
-          height: '100%',
-          width: '100%',
-          background: 'linear-gradient(to right, transparent, rgba(245, 158, 11, 0.05), transparent)',
-        }}
-        animate={{
-          x: ['-100%', '100%'],
-        }}
-        transition={{
-          duration: 3,
-          repeat: Infinity,
-          ease: 'linear',
-        }}
-      />
-
+    <ShimmerPanel className={className}>
       <div className="relative flex align-items-center gap-4">
         {/* Icon */}
         <div
@@ -61,7 +41,7 @@ export function GuestModeBanner({ className }: { className?: string }) {
           </Link>
         </div>
       </div>
-    </div>
+    </ShimmerPanel>
   );
 }
 

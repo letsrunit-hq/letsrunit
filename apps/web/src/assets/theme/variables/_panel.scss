@@ -47,8 +47,8 @@ $accordionHeaderActiveHoverBg: $hoverBg !default;
 $accordionHeaderActiveHoverBorderColor: $shade600 !default;
 $accordionHeaderTextActiveHoverColor: $shade000 !default;
 
-$accordionContentBorder: $panelContentBorder !default;
-$accordionContentBg: $panelContentBg !default;
+$accordionContentBorder: 1px solid $shade800 !default;
+$accordionContentBg: rgba($shade900, 0.9) !default;
 $accordionContentTextColor: $panelContentTextColor !default;
 $accordionContentPadding: $panelContentPadding !default;
 
@@ -85,6 +85,10 @@ $scrollPanelTrackBorder: 0 none !default;
 $scrollPanelTrackBg: $shade600 !default;
 
 //card
+$cardBg: #101010 !default;
+$cardBorderColor: $shade800 !default;
+$cardBorder: 1px solid $shade800 !default;
+$cardFilter: blur(12px) !default;
 $cardBodyPadding: 1.25rem !default;
 $cardTitleFontSize: 1.5rem !default;
 $cardTitleFontWeight: 700 !default;
@@ -92,8 +96,7 @@ $cardSubTitleFontWeight: 400 !default;
 $cardSubTitleColor: $shade100 !default;
 $cardContentPadding: 1.25rem 0 !default;
 $cardFooterPadding: 1.25rem 0 0 0 !default;
-$cardShadow: 0 2px 1px -1px rgba(0, 0, 0, 0.2), 0 1px 1px 0 rgba(0, 0, 0, 0.14),
-0 1px 3px 0 rgba(0, 0, 0, 0.12) !default;
+$cardShadow: none !default;
 
 //divider
 $dividerHorizontalMargin: 1.25rem 0 !default;
@@ -101,8 +104,10 @@ $dividerHorizontalPadding: 0 1.25rem !default;
 $dividerVerticalMargin: 0 1.25rem !default;
 $dividerVerticalPadding: 1.25rem 0 !default;
 $dividerSize: 1px !default;
-$dividerColor: $shade600 !default;
+$dividerColor: $shade800 !default;
+$dividerContentBg: $cardBg;
+$dividerContentColor: $shade100 !default;
 
 //splitter
 $splitterGutterBg: rgba(255, 255, 255, 0.03) !default;
-$splitterGutterHandleBg: $shade600 !default;
+$splitterGutterHandleBg: $shade800 !default;

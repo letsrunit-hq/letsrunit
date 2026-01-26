@@ -1,13 +1,13 @@
 'use client';
 
 import { startExploreRun } from '@/actions/explore';
+import { ShimmerButton } from '@/components/shimmer-button';
 import { useToast } from '@/context/toast-context';
 import { ensureSignedIn } from '@/libs/auth';
 import { connect } from '@/libs/supabase/browser';
 import { findProjectByUrl } from '@letsrunit/model';
 import { cn } from '@letsrunit/utils';
 import { useRouter } from 'next/navigation';
-import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import React, { useCallback, useState } from 'react';
 
@@ -36,7 +36,7 @@ export function ExploreForm({
   const [url, setUrl] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const isValid = url.match(/^(https?:\/\/)?([\w\-]+\.[\w\-]+|localhost)/);
+  const isValid = !!url.match(/^(https?:\/\/)?([\w\-]+\.[\w\-]+|localhost)/);
 
   const onSubmitUrl = useCallback(async () => {
     if (!isValid) return;
@@ -77,11 +77,12 @@ export function ExploreForm({
         disabled={isSubmitting}
         invalid={url !== '' && !isValid}
       />
-      <Button
+      <ShimmerButton
         type="submit"
         label={buttonLabel}
         size="large"
         className={buttonClassName}
+        shimmer={isValid}
         disabled={isSubmitting}
         loading={isSubmitting}
       />
