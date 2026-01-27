@@ -1,5 +1,4 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { File } from 'node:buffer';
 
 const ARTIFACT_BUCKET = process.env.ARTIFACT_BUCKET || 'artifacts';
 const ensuredBuckets: string[] = [];

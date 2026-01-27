@@ -1,5 +1,4 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { File as NodeFile } from 'node:buffer';
 import { describe, expect, it, vi } from 'vitest';
 import { createProject, findProjectByUrl, getProject, listProjects, updateProject } from '../src';
 
@@ -160,7 +159,7 @@ describe('project lib', () => {
     const supabase = new FakeSupabase() as unknown as SupabaseClient;
 
     const projectId = '11111111-1111-1111-1111-111111111111';
-    const file = new NodeFile([new Uint8Array([1, 2, 3])], 'screenshot.png', { type: 'image/png' });
+    const file = new File([new Uint8Array([1, 2, 3])], 'screenshot.png', { type: 'image/png' });
 
     // set env for bucket
     const prev = process.env.ARTIFACT_BUCKET;

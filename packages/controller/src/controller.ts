@@ -23,7 +23,6 @@ import {
   type PageScreenshotOptions,
   selectors,
 } from '@playwright/test';
-import { File } from 'node:buffer';
 import { runner } from './runner';
 import type { Result } from './types';
 
@@ -168,7 +167,7 @@ export class Controller {
     try {
       const html = await formatHtml(this.world.page);
       const filename = await hashKey('{hash}.html', html);
-      return new File([Buffer.from(html, 'utf8')], filename);
+      return new File([html], filename, { type: 'text/html' });
     } catch (e) {
       const message = (e as any).message ?? String(e);
       await this.journal.warn(`Failed to get HTML of ${this.world.page.url()}: ${message}`, {

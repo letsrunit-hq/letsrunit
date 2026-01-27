@@ -1,6 +1,5 @@
 import { hashKey } from '@letsrunit/utils';
 import type { Page, PageScreenshotOptions } from '@playwright/test';
-import { File } from 'node:buffer';
 
 export async function screenshot(page: Page, options?: PageScreenshotOptions): Promise<File> {
   const buffer = options?.mask?.length ? await screenshotWithMask(page, options) : await page.screenshot(options);

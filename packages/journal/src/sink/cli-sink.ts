@@ -1,6 +1,5 @@
 import { statusSymbol } from '@letsrunit/utils';
 import { cursorLeft, cursorUp, eraseDown } from 'ansi-escapes';
-import { File } from 'node:buffer';
 import { writeFile } from 'node:fs/promises';
 import YAML from 'yaml';
 import type { JournalEntry, Sink } from '../types';

@@ -1,5 +1,3 @@
-import type { File } from 'node:buffer';
-
 export interface JournalEntry {
   timestamp: number;
   type: 'debug' | 'info' | 'title' | 'warn' | 'error' | 'prepare' | 'start' | 'success' | 'failure';
