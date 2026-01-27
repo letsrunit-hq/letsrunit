@@ -27,11 +27,11 @@ const nextConfig: NextConfig = {
     ],
   },
   serverExternalPackages: ['@google-cloud/tasks'],
-  outputFileTracingRoot: path.join(dir, '../../'),
+  outputFileTracingRoot: tracingRoot,
   outputFileTracingIncludes: {
     '/*': [
-      'node_modules/@google-cloud/tasks/build/protos/*.json',
-      'node_modules/@google-cloud/tasks/build/**/src/**/*.json',
+      '../../node_modules/@google-cloud/tasks/build/protos/*.json',
+      '../../node_modules/@google-cloud/tasks/build/**/src/**/*.json',
     ],
   },
   turbopack: {
