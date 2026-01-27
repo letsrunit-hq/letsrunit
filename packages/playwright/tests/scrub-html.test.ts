@@ -3,12 +3,12 @@ import { realScrubHtml } from '../src/scrub-html';
 
 describe('scrubHtml', () => {
   it('removes the head element by default', async () => {
-    const html = '<html><head><title>Hidden</title></head><body><main>Content</main></body></html>';
+    const html = '<html><head><title>Hidden</title></head><body><main>Content</main><footer>Footer</footer></body></html>';
     const page = { html, url: 'https://example.com' };
 
     const output = await realScrubHtml(page);
 
-    expect(output).toBe('<main>Content</main>');
+    expect(output).toBe('<main>Content</main><footer>Footer</footer>');
   });
 
   it('removes infrastructure tags such as script/style/template', async () => {

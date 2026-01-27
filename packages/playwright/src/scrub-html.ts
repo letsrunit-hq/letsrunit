@@ -176,36 +176,13 @@ export async function realScrubHtml(
   const dom = new JSDOM(html, { url });
   const doc = dom.window.document;
 
-  // 2) optionally remove <head>
-  if (o.dropHead) {
-    const head = doc.querySelector('head');
-    if (head) {
-      head.remove();
-    }
-  }
-
-  // 1) pick <main> (if requested) and remember if we did
-  const pickedMain = o.pickMain ? pickMainIfRequested(doc) : false;
-
-  // 3) drop infra/noise (and svg if asked)
+  if (o.pickMain) pickMain(doc);
   dropInfraAndSvg(doc, !!o.dropSvg);
-
-  // 4) drop hidden/inert nodes
   if (o.dropHidden) dropHiddenTrees(doc);
-
-  // 5) strip attributes and sanitize links
   if (o.stripAttributes) stripAttributesAndSanitize(doc, o.stripAttributes);
-
-  // 6) remove comments
-  if (o.dropComments) removeHtmlComments(doc);
-
-  // 7) replace <br> in headings
+  if (o.dropComments) dropHtmlComments(doc);
   if (o.replaceBrInHeadings) replaceBrsInHeadings(doc);
-
-  // 8) limit lists/rows
   if (o.limitLists >= 0) limitListsAndRows(doc, o.limitLists);
-
-  // 9) normalize whitespace
   if (o.normalizeWhitespace) normalizeWhitespace(doc.body);
 
   return doc.body.innerHTML;
@@ -262,18 +239,13 @@ function normalizeWhitespace(root: Element) {
 
 // Split-out helper steps (top-level, no nested functions)
 
-function pickMainIfRequested(doc: Document): boolean {
+function pickMain(doc: Document): boolean {
   const main = doc.querySelector('main');
   if (!main) return false;
   const clone = main.cloneNode(true);
   doc.body.innerHTML = '';
   doc.body.appendChild(clone);
   return true;
-}
-
-function removeHead(doc: Document) {
-  const head = doc.querySelector('head');
-  if (head) head.remove();
 }
 
 function dropInfraAndSvg(doc: Document, dropSvg: boolean) {
@@ -323,7 +295,7 @@ function stripAttributesAndSanitize(doc: Document, level: 0 | 1 | 2) {
   });
 }
 
-function removeHtmlComments(doc: Document) {
+function dropHtmlComments(doc: Document) {
   const nf = doc.defaultView?.NodeFilter;
   const SHOW_COMMENT = nf?.SHOW_COMMENT ?? 128; // fallback constant
 
