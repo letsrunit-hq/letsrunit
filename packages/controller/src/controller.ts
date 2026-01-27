@@ -13,7 +13,7 @@ import {
   scrollToCenter,
   snapshot,
 } from '@letsrunit/playwright';
-import { clean, hash, omit, type RequireOnly } from '@letsrunit/utils';
+import { clean, hashKey, omit, type RequireOnly } from '@letsrunit/utils';
 import {
   type Browser,
   type BrowserContextOptions,
@@ -167,7 +167,8 @@ export class Controller {
   private async makeHtmlFile(): Promise<File | undefined> {
     try {
       const html = await formatHtml(this.world.page);
-      return new File([Buffer.from(html, 'utf8')], hash(html) + '.html');
+      const filename = await hashKey('{hash}.html', html);
+      return new File([Buffer.from(html, 'utf8')], filename);
     } catch (e) {
       const message = (e as any).message ?? String(e);
       await this.journal.warn(`Failed to get HTML of ${this.world.page.url()}: ${message}`, {

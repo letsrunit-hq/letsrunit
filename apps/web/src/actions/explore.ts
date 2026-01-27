@@ -4,8 +4,8 @@ import { getUser } from '@/libs/auth';
 import { queueRun } from '@/libs/run';
 import { connect } from '@/libs/supabase/server';
 import { createProject } from '@letsrunit/model';
+import type { UUID } from '@letsrunit/utils';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { type UUID } from 'node:crypto';
 
 interface StartExploreOpts {
   projectId?: UUID;

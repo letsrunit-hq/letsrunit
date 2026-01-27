@@ -1,13 +1,12 @@
-import { hash } from '@letsrunit/utils';
+import { hashKey } from '@letsrunit/utils';
 import type { Page, PageScreenshotOptions } from '@playwright/test';
 import { File } from 'node:buffer';
 
 export async function screenshot(page: Page, options?: PageScreenshotOptions): Promise<File> {
-  const buffer = options?.mask?.length
-    ? await screenshotWithMask(page, options)
-    : await page.screenshot(options);
+  const buffer = options?.mask?.length ? await screenshotWithMask(page, options) : await page.screenshot(options);
+  const filename = await hashKey(`screenshot-{hash}.png`, buffer);
 
-  return new File([new Uint8Array(buffer)], `screenshot-${hash(buffer)}.png`, { type: 'image/png' });
+  return new File([new Uint8Array(buffer)], filename, { type: 'image/png' });
 }
 
 async function screenshotWithMask(page: Page, options: PageScreenshotOptions): Promise<Buffer> {

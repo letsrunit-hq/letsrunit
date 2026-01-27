@@ -2,11 +2,11 @@ import { RunHistory } from '@/components/run-history';
 import { SubtleHeader } from '@/components/subtle-header';
 import { connect as connectServerSupabase } from '@/libs/supabase/server';
 import { getProject, listRuns, maybe } from '@letsrunit/model';
+import type { UUID } from '@letsrunit/utils';
 import { cn, isUUID } from '@letsrunit/utils';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import type { UUID } from 'node:crypto';
 import { Button } from 'primereact/button';
 import { Chip } from 'primereact/chip';
 import React from 'react';
@@ -31,13 +31,18 @@ export default async function Page({ params }: PageProps) {
         <div className="flex flex-column md:flex-row align-items-start md:align-items-center justify-content-between">
           <div className="flex flex-row align-items-center mb-3 md:mb-0">
             <Link href={`/projects/${id}`} passHref>
-              <Button className="mr-4" aria-label="Run history" text icon={<ArrowLeft key="icon" size={24} />} severity="secondary" />
+              <Button
+                className="mr-4"
+                aria-label="Run history"
+                text
+                icon={<ArrowLeft key="icon" size={24} />}
+                severity="secondary"
+              />
             </Link>
             {project.favicon && <Chip className={cn('tile', project.favicon, 'mr-3')} image={project.favicon} />}
             <h1 className={styles.title}>{project.name}</h1>
           </div>
-          <div className="flex flex-row gap-2 justify-content-end">
-          </div>
+          <div className="flex flex-row gap-2 justify-content-end"></div>
         </div>
       </div>
 

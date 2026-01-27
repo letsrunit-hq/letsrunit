@@ -2,9 +2,8 @@ import { explore, generate, refineSuggestion, run } from '@letsrunit/executor';
 import { makeFeature } from '@letsrunit/gherkin';
 import { CliSink, Journal } from '@letsrunit/journal';
 import { getMailbox } from '@letsrunit/mailbox';
-import { asFilename } from '@letsrunit/utils';
+import { asFilename, randomUUID } from '@letsrunit/utils';
 import { Command } from 'commander';
-import { randomUUID } from 'node:crypto';
 import fs from 'node:fs/promises';
 import { runExplore } from './run-explore';
 

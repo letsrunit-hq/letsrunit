@@ -3,8 +3,8 @@
 import { useAbortController } from '@/hooks/use-abort-controller';
 import useSupabase from '@/hooks/use-supabase';
 import { type Feature, FeatureSchema, fromData, listFeatures, type Run, RunSchema } from '@letsrunit/model';
+import type { UUID } from '@letsrunit/utils';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { UUID } from 'node:crypto';
 import { useCallback, useEffect, useState } from 'react';
 
 export interface UseFeatureListOptions {

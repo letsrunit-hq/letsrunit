@@ -12,9 +12,9 @@ import { useToast } from '@/context/toast-context';
 import { useFeatureList } from '@/hooks/use-feature-list';
 import { optionalConfirm } from '@/libs/optional-confirm';
 import type { Feature, Suggestion } from '@letsrunit/model';
+import type { UUID } from '@letsrunit/utils';
 import { Archive, Search, TriangleAlert } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import type { UUID } from 'node:crypto';
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
 import { IconField } from 'primereact/iconfield';
 import { InputIcon } from 'primereact/inputicon';
@@ -99,7 +99,9 @@ export function ProjectFeatures({ className, projectId, baseUrl, features: initi
       header: 'Regenerate',
       icon: 'pi pi-exclamation-triangle',
       accept: async () => {
-        const runId = await startGenerateRun(isFeature(feature) ? feature.id : { projectId, ...feature } as Suggestion);
+        const runId = await startGenerateRun(
+          isFeature(feature) ? feature.id : ({ projectId, ...feature } as Suggestion),
+        );
         router.push(`/runs/${runId}`);
       },
     });
@@ -108,7 +110,7 @@ export function ProjectFeatures({ className, projectId, baseUrl, features: initi
   const run = async (feature: Feature) => {
     const runId = await startTestRun(feature.id);
     router.push(`/runs/${runId}`);
-  }
+  };
 
   const filteredFeatures = features.filter((f) => {
     if (!f.enabled && !showArchived) return false;

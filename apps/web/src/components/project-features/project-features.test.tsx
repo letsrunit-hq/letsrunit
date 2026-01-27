@@ -1,6 +1,6 @@
 import type { Feature } from '@letsrunit/model';
+import type { UUID } from '@letsrunit/utils';
 import { render, screen } from '@testing-library/react';
-import type { UUID } from 'node:crypto';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ProjectFeatures } from './project-features';

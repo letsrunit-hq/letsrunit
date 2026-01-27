@@ -4,9 +4,9 @@ import { useAbortController } from '@/hooks/use-abort-controller';
 import { useStateWithRef } from '@/hooks/use-state-with-ref';
 import useSupabase from '@/hooks/use-supabase';
 import { fromData, getFeatureName, listRuns, type Run, RunSchema, type RunType, toFilter } from '@letsrunit/model';
+import type { UUID } from '@letsrunit/utils';
 import { clean } from '@letsrunit/utils';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { UUID } from 'node:crypto';
 import { useCallback, useEffect, useState } from 'react';
 
 export interface UseRunHistoryOptions {
@@ -67,8 +67,9 @@ export function useRunHistory(
 
         if (!featureId && run.featureId) {
           // Name is not in payload; copy it if replacing, otherwise fetch it
-          run.name = runsRef.current.find((r) => r.id === run.id)?.name
-            ?? (await getFeatureName(run.featureId, { supabase: client, signal }));
+          run.name =
+            runsRef.current.find((r) => r.id === run.id)?.name ??
+            (await getFeatureName(run.featureId, { supabase: client, signal }));
         }
 
         setRuns((prev) => sortRuns([...prev.filter((r) => r.id !== run.id), run], limit));

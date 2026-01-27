@@ -1,9 +1,9 @@
 import { useAbortController } from '@/hooks/use-abort-controller';
 import useSupabase from '@/hooks/use-supabase';
 import { type Data, type Feature, FeatureSchema, fromData, getFeature } from '@letsrunit/model';
+import type { UUID } from '@letsrunit/utils';
 import { isEntity } from '@letsrunit/utils';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { UUID } from 'node:crypto';
 import { useEffect, useState } from 'react';
 
 export interface UseFeatureOptions {

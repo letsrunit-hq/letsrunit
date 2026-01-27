@@ -3,10 +3,10 @@
 import useRunHistory from '@/hooks/use-run-history';
 import { formatDurationMs } from '@/libs/date-time';
 import type { Run, RunType } from '@letsrunit/model';
+import type { UUID } from '@letsrunit/utils';
 import { cn } from '@letsrunit/utils';
 import { CheckCircle2, XCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import type { UUID } from 'node:crypto';
 import { Chip } from 'primereact/chip';
 import { Panel } from 'primereact/panel';
 import { ProgressSpinner } from 'primereact/progressspinner';
@@ -66,7 +66,9 @@ export function RunHistory({
                     }
                   />
                 )}
-                {(run.status === 'queued' || run.status === 'running') && <ProgressSpinner style={{ width: 38, height: 38 }} strokeWidth="8" /> }
+                {(run.status === 'queued' || run.status === 'running') && (
+                  <ProgressSpinner style={{ width: 38, height: 38 }} strokeWidth="8" />
+                )}
                 <div className="min-w-0">
                   <div className={cn(styles.title, 'flex align-items-center gap-2')}>
                     {showName && <span className="text-400">{run.name}</span>}
