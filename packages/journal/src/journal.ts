@@ -1,4 +1,3 @@
-import type { File } from 'node:buffer';
 import { JournalBatch } from './journal-batch';
 import { NoSink } from './sink';
 import type { JournalEntry, Sink } from './types';

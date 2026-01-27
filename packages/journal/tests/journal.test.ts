@@ -1,7 +1,6 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { JournalEntry, Sink } from '../src';
 import { Journal } from '../src';
-import { File } from 'node:buffer';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 class DummySink implements Sink {
   public readonly published: JournalEntry[] = [];
@@ -39,10 +38,7 @@ describe('Journal', () => {
     const sink = new DummySink();
     const journal = new Journal(sink);
 
-    const artifacts = [
-      new File([new Uint8Array([1])], 'file1.txt'),
-      new File([new Uint8Array([2])], 'image.png'),
-    ];
+    const artifacts = [new File([new Uint8Array([1])], 'file1.txt'), new File([new Uint8Array([2])], 'image.png')];
     const meta = { a: 1, b: 'two' };
     await journal.info('Has extras', { artifacts, meta });
 

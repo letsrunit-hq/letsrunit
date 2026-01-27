@@ -1,4 +1,3 @@
-import { File } from 'node:buffer';
 import type { Readable } from 'node:stream';
 
 type AttachData = string | Buffer | Readable;
