@@ -6,9 +6,9 @@
 // - Collapses whitespace in text nodes (but NOT inside <pre>/<code>)
 // - Does NOT change tag names, does NOT unwrap containers, does NOT reorder content
 
-import { hash } from '@letsrunit/utils';
 import { memoize } from '@letsrunit/utils/src/memoize';
 import type { Page } from '@playwright/test';
+import stringify from 'fast-json-stable-stringify';
 import { JSDOM } from 'jsdom';
 import { isPage } from './utils/type-check';
 
@@ -161,7 +161,7 @@ export async function scrubHtml(
 const memoizedScrubHtml = memoize(realScrubHtml, {
   max: 16,
   ttl: 10 * 60_000,
-  cacheKey: (args) => hash({ html: args[0].html, url: args[0].url, ...args[1] }),
+  cacheKey: (args) => stringify({ html: args[0].html, url: args[0].url, ...args[1] }),
 });
 
 /**
@@ -176,11 +176,16 @@ export async function realScrubHtml(
   const dom = new JSDOM(html, { url });
   const doc = dom.window.document;
 
+  // 2) optionally remove <head>
+  if (o.dropHead) {
+    const head = doc.querySelector('head');
+    if (head) {
+      head.remove();
+    }
+  }
+
   // 1) pick <main> (if requested) and remember if we did
   const pickedMain = o.pickMain ? pickMainIfRequested(doc) : false;
-
-  // 2) optionally remove <head>
-  if (o.dropHead && !pickedMain) removeHead(doc);
 
   // 3) drop infra/noise (and svg if asked)
   dropInfraAndSvg(doc, !!o.dropSvg);

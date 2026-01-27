@@ -12,6 +12,7 @@
     "@letsrunit/utils": "workspace:*",
     "@playwright/test": "^1.57.0",
     "diff": "^8.0.3",
+    "fast-json-stable-stringify": "^2.1.0",
     "jsdom": "^27.4.0",
     "metascraper-description": "^5.49.15",
     "metascraper-image": "^5.49.15",

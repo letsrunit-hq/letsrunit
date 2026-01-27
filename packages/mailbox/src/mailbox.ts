@@ -1,5 +1,5 @@
+import type { UUID } from '@letsrunit/utils';
 import { clean, uuidToTag } from '@letsrunit/utils';
-import type { UUID } from 'node:crypto';
 import { MAILBOX_DOMAIN, TESTMAIL_DOMAIN, TESTMAIL_NAMESPACE } from './constants';
 
 export function getMailbox(seed: UUID, name?: string, domain?: string) {

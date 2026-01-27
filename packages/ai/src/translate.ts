@@ -1,4 +1,4 @@
-import { hash } from '@letsrunit/utils';
+import { hashKey } from '@letsrunit/utils';
 import type { Cache } from 'cache-manager';
 import ISO6391 from 'iso-639-1';
 import { generate } from './generate';
@@ -36,7 +36,7 @@ export async function translate<T extends JSONValue = JSONValue>(
   const str = isString ? input : JSON.stringify(input, null, 2);
 
   const cache = options.cache ?? dummyCache;
-  const cacheKey = hash(str) + `:en:${lang}`;
+  const cacheKey = await hashKey(`{hash}:en:${lang}`, str);
 
   return cache.wrap(cacheKey, async () => {
     const prompt = (options.prompt ?? (isString ? PROMPT_TEXT : PROMPT_JSON)).replaceAll(

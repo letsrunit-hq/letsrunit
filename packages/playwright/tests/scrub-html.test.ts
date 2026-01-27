@@ -3,7 +3,7 @@ import { realScrubHtml } from '../src/scrub-html';
 
 describe('scrubHtml', () => {
   it('removes the head element by default', async () => {
-    const html = '<html><head><name>Hidden</name></head><body><main>Content</main></body></html>';
+    const html = '<html><head><title>Hidden</title></head><body><main>Content</main></body></html>';
     const page = { html, url: 'https://example.com' };
 
     const output = await realScrubHtml(page);

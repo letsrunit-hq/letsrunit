@@ -1,4 +1,4 @@
-import { hash } from '@letsrunit/utils';
+import { hashKey } from '@letsrunit/utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { translate } from '../src';
 import { mockAi } from '../src/generate';
@@ -26,7 +26,7 @@ describe('translate', () => {
   });
 
   it('translates string inputs and caches the generated value', async () => {
-    const cacheKey = `${hash('Hello world')}:en:fr`;
+    const cacheKey = await hashKey('{hash}:en:fr', 'Hello world');
     const cache = {
       wrap: vi.fn(async (_key: string, fn: () => Promise<any>) => await fn()),
     } as any;
@@ -66,7 +66,7 @@ describe('translate', () => {
   });
 
   it('returns cached values without invoking the AI model', async () => {
-    const cacheKey = `${hash('Needs cache')}:en:es`;
+    const cacheKey = await hashKey(`{hash}:en:es`, 'Needs cache');
     const cache = {
       wrap: vi.fn().mockResolvedValue('Desde caché'),
     } as any;

@@ -1,6 +1,8 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { locator as resolveLocator } from '@letsrunit/playwright';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { contain, see } from '../../src/steps/assert';
+import { expectOrNot } from '../../src/utils/test-helpers';
 import { runStep } from '../helpers';
-import { see, contain } from '../../src/steps/assert';
 
 vi.mock('@letsrunit/playwright', () => ({
   locator: vi.fn(async (_page: any, selector: string) => {
@@ -24,9 +26,6 @@ vi.mock('../../src/utils/test-helpers', () => {
   } as any;
 });
 
-import { locator as resolveLocator } from '@letsrunit/playwright';
-import { expectOrNot } from '../../src/utils/test-helpers';
-
 type Locator = { locator?: (s: string) => any };
 
 afterEach(() => {
@@ -41,12 +40,12 @@ describe('steps/assert (definitions)', () => {
   it('waits for element to be visible or hidden with timeout 5000', async () => {
     const page = {} as any;
 
-    await runStep(see, 'I see `#thing`', { page } as any);
+    await runStep(see, 'I see that the page contains `#thing`', { page } as any);
     expect(resolveLocator).toHaveBeenLastCalledWith(page, '#thing');
     expect(toBeVisible).toHaveBeenLastCalledWith({ timeout: 5000 });
     expect(expectOrNot).toHaveBeenLastCalledWith(elementLocatorMock, true);
 
-    await runStep(see, 'I dont see `.item`', { page } as any);
+    await runStep(see, 'I see that the page not contains `.item`', { page } as any);
     expect(resolveLocator).toHaveBeenLastCalledWith(page, '.item');
     expect(toBeVisible).toHaveBeenLastCalledWith({ timeout: 5000 });
     expect(expectOrNot).toHaveBeenLastCalledWith(elementLocatorMock, false);

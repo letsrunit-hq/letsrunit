@@ -1,5 +1,5 @@
+import stringify from 'fast-json-stable-stringify';
 import { LRUCache } from 'lru-cache';
-import { hash } from './hash';
 
 interface MemoOptions {
   ttl?: number;
@@ -8,11 +8,7 @@ interface MemoOptions {
 }
 
 export function memoize<F extends (...args: any[]) => any>(fn: F, opts: MemoOptions = {}): F {
-  const {
-    ttl,
-    max = 1000,
-    cacheKey = hash,
-  } = opts;
+  const { ttl, max = 1000, cacheKey = stringify } = opts;
 
   const cache = new LRUCache<string, any>({ ttl, max });
 
