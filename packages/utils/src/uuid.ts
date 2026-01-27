@@ -1,8 +1,12 @@
-import type { UUID } from 'node:crypto';
-import { NIL, v5 as uuidv5, validate } from 'uuid';
+import { NIL, v4 as uuidv4, v5 as uuidv5, validate } from 'uuid';
+import type { UUID } from './types';
 
 export function isUUID(value: string): value is UUID {
   return validate(value);
+}
+
+export function randomUUID(): UUID {
+  return uuidv4() as UUID;
 }
 
 export function fixedUUID(index: string | number, group = ''): UUID {

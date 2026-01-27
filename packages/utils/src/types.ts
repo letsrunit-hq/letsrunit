@@ -1,3 +1,5 @@
+export type UUID = `${string}-${string}-${string}-${string}-${string}`;
+
 export type RequireOnly<T, K extends keyof T> = Required<Pick<T, K>> & Partial<Omit<T, K>>;
 export type RequiredAndOptional<T, KR extends keyof T, KO extends keyof T> = Required<Pick<T, KR>> & Partial<Pick<T, KO>>;
 
