@@ -2362,6 +2362,8 @@ __metadata:
     "@supabase/supabase-js": "npm:^2.91.0"
     camelcase-keys: "npm:^10.0.1"
     snakecase-keys: "npm:^9.0.2"
+    tsc: "npm:^2.0.4"
+    typescript: "npm:^5.9.3"
     vitest: "npm:^4.0.17"
     zod: "npm:^4.3.5"
   languageName: unknown
@@ -14131,6 +14133,15 @@ __metadata:
   version: 0.1.13
   resolution: "ts-interface-checker@npm:0.1.13"
   checksum: 10c0/232509f1b84192d07b81d1e9b9677088e590ac1303436da1e92b296e9be8e31ea042e3e1fd3d29b1742ad2c959e95afe30f63117b8f1bc3a3850070a5142fea7
+  languageName: node
+  linkType: hard
+
+"tsc@npm:^2.0.4":
+  version: 2.0.4
+  resolution: "tsc@npm:2.0.4"
+  bin:
+    tsc: bin/tsc
+  checksum: 10c0/4651d344891d995e62ab7ca64ce0a8597bbdc2d392886c9956d15caab4dc9bfe86e759d3385b3f97c49fb5294194a161d6812673e3f51e46357c82482f32c3ab
   languageName: node
   linkType: hard
 

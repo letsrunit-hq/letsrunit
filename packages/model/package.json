@@ -9,6 +9,8 @@
   "packageManager": "yarn@4.10.3",
   "main": "src/index.ts",
   "devDependencies": {
+    "tsc": "^2.0.4",
+    "typescript": "^5.9.3",
     "vitest": "^4.0.17"
   },
   "dependencies": {
