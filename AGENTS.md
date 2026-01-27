@@ -2,9 +2,9 @@
 
 ```
 apps/
-  cli/      Command line interface
-  web/      Next.js app
-  worker/   Cloud Run service (Cloud Tasks → handle job)
+  cli/          Command line interface
+  web/          Next.js app
+  worker/       Cloud Run service (Cloud Tasks → handle job)
 packages/
   ai/           LLM interactions
   bdd/          BDD step definitions
@@ -19,7 +19,7 @@ packages/
   utils/        common TypeScript utilities
 compat/
   react/        React compatibility tests
-infra/        GCP deploy scripts
+infra/          GCP deploy scripts
 ```
 
 ---

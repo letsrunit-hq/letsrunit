@@ -2,7 +2,14 @@ import { File } from 'node:buffer';
 import { randomUUID, type UUID } from 'node:crypto';
 import { z } from 'zod';
 import { connect } from './supabase';
-import { type Data, type Project, ProjectSchema, type ReadOptions, type WriteOptions } from './types';
+import {
+  type Data,
+  type Project,
+  ProjectBaseSchema,
+  ProjectSchema,
+  type ReadOptions,
+  type WriteOptions,
+} from './types';
 import { authorize, authorizeForAccount } from './utils/auth';
 import { fromData, toData } from './utils/convert';
 import { DBError } from './utils/db-error';
@@ -14,39 +21,22 @@ export async function getProject(id: UUID, opts: ReadOptions = {}): Promise<Proj
 
   const { data, status, error } = await supabase
     .from('projects')
-    .select<
-      'projects',
-      Data<Project> & {
-        features: { count: number }[];
-        suggestions: { count: number }[];
-        runs: { status: string }[];
-      }
-    >(
+    .select(
       `
       *,
-      features:features(count),
-      suggestions:suggestions(count),
+      tests:features!left(count),
+      suggestions:features!left(count),
       runs:runs(status)
     `,
     )
+    .is('tests.body', 'not.null')
+    .is('suggestions.body', 'null')
     .eq('id', id)
     .abortSignal(maybeSignal(opts))
     .single();
 
   if (error) throw new DBError(status, error);
-
-  const testsCount = data.features?.[0]?.count ?? 0;
-  const suggestionsCount = data.suggestions?.[0]?.count ?? 0;
-  const runs = data.runs ?? [];
-  const passedRuns = runs.filter((r) => r.status === 'passed').length;
-  const passRate = runs.length > 0 ? Math.round((passedRuns / runs.length) * 100) : 0;
-
-  return fromData(ProjectSchema)({
-    ...data,
-    tests_count: testsCount,
-    suggestions_count: suggestionsCount,
-    pass_rate: passRate,
-  });
+  return fromData(ProjectSchema)(data as any);
 }
 
 export async function listProjects(opts: ReadOptions = {}): Promise<Project[]> {
@@ -54,42 +44,24 @@ export async function listProjects(opts: ReadOptions = {}): Promise<Project[]> {
 
   const { data, status, error } = await supabase
     .from('projects')
-    .select<
-      'projects',
-      (Data<Project> & {
-        features: { count: number }[];
-        suggestions: { count: number }[];
-        runs: { status: string }[];
-      })[]
-    >(
+    .select(
       `
       *,
-      features:features(count),
-      suggestions:suggestions(count),
+      tests:features!left(count),
+      suggestions:features!left(count),
       runs:runs(status)
     `,
     )
+    .is('tests.body', 'not.null')
+    .is('suggestions.body', 'null')
     .abortSignal(maybeSignal(opts));
 
   if (error) throw new DBError(status, error);
 
-  return data.map((item) => {
-    const testsCount = item.features?.[0]?.count ?? 0;
-    const suggestionsCount = item.suggestions?.[0]?.count ?? 0;
-    const runs = item.runs ?? [];
-    const passedRuns = runs.filter((r) => r.status === 'passed').length;
-    const passRate = runs.length > 0 ? Math.round((passedRuns / runs.length) * 100) : 0;
-
-    return fromData(ProjectSchema)({
-      ...item,
-      tests_count: testsCount,
-      suggestions_count: suggestionsCount,
-      pass_rate: passRate,
-    });
-  });
+  return (data as any[]).map(fromData(ProjectSchema));
 }
 
-const CreateProjectSchema = ProjectSchema.omit({ id: true }).partial().required({ url: true });
+const CreateProjectSchema = ProjectBaseSchema.omit({ id: true }).partial().required({ url: true });
 
 export async function createProject(
   project: z.infer<typeof CreateProjectSchema>,
@@ -97,6 +69,7 @@ export async function createProject(
 ): Promise<UUID> {
   const supabase = opts.supabase ?? connect();
   const id = randomUUID();
+  const now = new Date();
 
   if (opts.by?.id) {
     project.accountId ??= opts.by.id as UUID;
@@ -107,8 +80,8 @@ export async function createProject(
     ...toData(CreateProjectSchema)({
       name: project.url.replace(/https?:\/\/(www\.)?/, ''),
       ...project,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: now,
+      updatedAt: now,
     }),
     id,
     created_by: opts.by?.id,
@@ -138,7 +111,7 @@ export async function findProjectByUrl(url: string, opts: ReadOptions = {}): Pro
   return data ? fromData(ProjectSchema)(data) : null;
 }
 
-const UpdateProjectSchema = ProjectSchema.omit({ id: true }).partial();
+const UpdateProjectSchema = ProjectBaseSchema.omit({ id: true }).partial();
 
 export async function updateProject(
   id: UUID,

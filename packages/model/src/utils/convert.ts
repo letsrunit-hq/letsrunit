@@ -38,25 +38,29 @@ function serializeDates<T>(value: T): SerializeDates<T> {
   return value as SerializeDates<T>;
 }
 
-export function fromData<TSchema extends z.ZodObject>(schema: TSchema) {
+export function fromData<TSchema extends z.ZodTypeAny>(schema: TSchema) {
   return (record: Data<z.infer<TSchema>>): z.infer<TSchema> => {
-    const camel = camelcaseKeys(record, { deep: true });
+    const camel = camelcaseKeys(record as any, { deep: true });
     return schema.parse(camel);
   };
 }
 
-export function toData<TSchema extends z.ZodObject>(schema: TSchema) {
+export function toData<TSchema extends z.ZodTypeAny>(schema: TSchema) {
   return (input: z.infer<TSchema>): Data<z.infer<TSchema>> => {
     const parsed = schema.parse(input);
     const dated = serializeDates(parsed);
     const cleaned = pruneUndefined(dated);
 
-    return snakecaseKeys(cleaned, { deep: true });
+    return snakecaseKeys(cleaned as any, { deep: true }) as any;
   };
 }
 
-export function toFilter<TSchema extends z.ZodObject>(schema: TSchema, filter: Partial<z.infer<TSchema>>): string {
-  const data = toData(schema.partial())(filter);
+export function toFilter<TSchema extends z.ZodTypeAny>(
+  schema: TSchema,
+  filter: Partial<z.infer<TSchema>>,
+): string {
+  const partialSchema = (schema as any).partial ? (schema as any).partial() : schema;
+  const data = toData(partialSchema)(filter);
   const parts = Object.entries(data).map(([field, val]) => `${field}=eq.${val}`);
   return parts.join(',');
 }
