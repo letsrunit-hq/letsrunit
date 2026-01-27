@@ -1,5 +1,5 @@
+import { randomUUID } from '@letsrunit/utils';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { randomUUID } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { getJournal } from '../src';
 

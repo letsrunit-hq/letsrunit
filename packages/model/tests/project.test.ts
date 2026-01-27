@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { File as NodeFile } from 'node:buffer';
 import { describe, expect, it, vi } from 'vitest';
-import { createProject, findProjectByUrl, getProject, listProjects, updateProject } from '../src/project';
+import { createProject, findProjectByUrl, getProject, listProjects, updateProject } from '../src';
 
 class FakeTableQuery {
   public ops: any[];

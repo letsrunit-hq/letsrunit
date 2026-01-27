@@ -1,4 +1,4 @@
-import type { UUID } from 'node:crypto';
+import type { UUID } from '@letsrunit/utils';
 import { connect } from '../supabase';
 import type { ReadOptions, WriteOptions } from '../types';
 import { DBError } from './db-error';

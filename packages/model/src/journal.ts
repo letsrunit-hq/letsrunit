@@ -1,4 +1,4 @@
-import type { UUID } from 'node:crypto';
+import type { UUID } from '@letsrunit/utils';
 import { connect } from './supabase';
 import {
   type Artifact,

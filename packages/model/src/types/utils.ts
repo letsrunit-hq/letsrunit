@@ -1,4 +1,4 @@
-import type { UUID } from 'node:crypto';
+import type { UUID } from '@letsrunit/utils';
 import type { SnakeCaseKeys } from 'snakecase-keys';
 import { z } from 'zod';
 

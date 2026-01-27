@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { randomUUID } from '@letsrunit/utils';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { describe, expect, it } from 'vitest';
 import { storeSuggestions } from '../src';
-import { randomUUID } from 'node:crypto';
 
 class FakeTableQuery {
   public ops: any[];

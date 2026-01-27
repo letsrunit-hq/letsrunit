@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { randomUUID } from '@letsrunit/utils';
+import { describe, expect, it } from 'vitest';
 import { fromData, RunSchema } from '../src';
-import { randomUUID } from 'node:crypto';
 
 describe('RunSchema name preprocessing', () => {
   const base = {

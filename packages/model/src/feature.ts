@@ -1,4 +1,4 @@
-import { randomUUID, type UUID } from 'node:crypto';
+import { randomUUID, type UUID } from '@letsrunit/utils';
 import { z } from 'zod';
 import { connect } from './supabase';
 import { type Data, type Feature, FeatureSchema, type ReadOptions, SuggestionSchema, type WriteOptions } from './types';
