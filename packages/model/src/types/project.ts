@@ -19,9 +19,6 @@ export const ProjectBaseSchema = z.object({
   createdBy: UUIDSchema.describe('Account id that created the project'),
   updatedAt: z.coerce.date().describe('Timestamp when the project was last updated'),
   updatedBy: UUIDSchema.describe('Account id that last updated the project'),
-  testsCount: z.number().readonly().default(0).describe('Number of tests in the project'),
-  suggestionsCount: z.number().readonly().default(0).describe('Number of suggestions for the project'),
-  passRate: z.number().readonly().default(0).describe('Percentage of passing tests'),
 });
 
 export const ProjectSchema = z.preprocess(
@@ -31,10 +28,10 @@ export const ProjectSchema = z.preprocess(
     const out = { ...rest };
 
     if (tests !== undefined) {
-      out.testsCount = Array.isArray(tests) ? tests[0]?.count ?? 0 : tests;
+      out.testsCount = Array.isArray(tests) ? (tests[0]?.count ?? 0) : tests;
     }
     if (suggestions !== undefined) {
-      out.suggestionsCount = Array.isArray(suggestions) ? suggestions[0]?.count ?? 0 : suggestions;
+      out.suggestionsCount = Array.isArray(suggestions) ? (suggestions[0]?.count ?? 0) : suggestions;
     }
     if (runs !== undefined) {
       if (Array.isArray(runs)) {
@@ -50,7 +47,11 @@ export const ProjectSchema = z.preprocess(
     }
     return out;
   },
-  ProjectBaseSchema,
+  ProjectBaseSchema.extend({
+    testsCount: z.number().readonly().optional().describe('Number of tests in the project'),
+    suggestionsCount: z.number().readonly().optional().describe('Number of suggestions for the project'),
+    passRate: z.number().readonly().optional().describe('Percentage of passing tests'),
+  }),
 );
 
 export type Project = z.infer<typeof ProjectBaseSchema>;

@@ -12,9 +12,8 @@ export const RunSchema = z.object({
   name: z // Supabase join may return { name: { name: string } }. Normalize to string | null.
     .preprocess(
       (v) => (typeof v === 'object' && v !== null && 'name' in v && typeof v.name === 'string' ? v.name : v),
-      z.string().nullable(),
+      z.string().nullable().optional(),
     )
-    .optional()
     .readonly()
     .describe('The name of the feature'),
   target: z.url().describe('The target URL for the run'),

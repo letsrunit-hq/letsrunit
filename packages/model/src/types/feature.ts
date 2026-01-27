@@ -12,11 +12,7 @@ export const FeatureSchema = z.object({
   body: z.string().nullable().describe('Gherkin feature background and steps'),
   enabled: z.boolean().default(true).describe('Disabled features are not run'),
   lastRun: z
-    .preprocess(
-      (v) => Array.isArray(v) ? v[0] : v,
-      RunSchema.nullable(),
-    )
-    .optional()
+    .preprocess((v) => (Array.isArray(v) ? v[0] : v), RunSchema.nullable().optional())
     .readonly()
     .describe('Last run of this feature'),
   createdAt: z.coerce.date().describe('Timestamp when the feature was created'),

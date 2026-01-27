@@ -28,7 +28,7 @@ export async function getProject(id: UUID, opts: ReadOptions = {}): Promise<Proj
       runs:runs(status)
     `,
     )
-    .is('tests.body', 'not.null')
+    .not('tests.body', 'is', 'null')
     .is('suggestions.body', 'null')
     .eq('id', id)
     .abortSignal(maybeSignal(opts))
@@ -51,7 +51,7 @@ export async function listProjects(opts: ReadOptions = {}): Promise<Project[]> {
       runs:runs(status)
     `,
     )
-    .is('tests.body', 'not.null')
+    .not('tests.body', 'is', 'null')
     .is('suggestions.body', 'null')
     .abortSignal(maybeSignal(opts));
 

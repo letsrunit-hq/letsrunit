@@ -4,7 +4,7 @@ import { type Data, UUIDSchema } from './utils';
 export const EntryTypeSchema = z.enum([
   'debug',
   'info',
-  'name',
+  'title',
   'warn',
   'error',
   'prepare',
