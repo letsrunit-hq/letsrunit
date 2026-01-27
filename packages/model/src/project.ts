@@ -14,14 +14,79 @@ export async function getProject(id: UUID, opts: ReadOptions = {}): Promise<Proj
 
   const { data, status, error } = await supabase
     .from('projects')
-    .select<'projects', Data<Project>>()
+    .select<
+      'projects',
+      Data<Project> & {
+        features: { count: number }[];
+        suggestions: { count: number }[];
+        runs: { status: string }[];
+      }
+    >(
+      `
+      *,
+      features:features(count),
+      suggestions:suggestions(count),
+      runs:runs(status)
+    `,
+    )
     .eq('id', id)
     .abortSignal(maybeSignal(opts))
     .single();
 
   if (error) throw new DBError(status, error);
 
-  return fromData(ProjectSchema)(data);
+  const testsCount = data.features?.[0]?.count ?? 0;
+  const suggestionsCount = data.suggestions?.[0]?.count ?? 0;
+  const runs = data.runs ?? [];
+  const passedRuns = runs.filter((r) => r.status === 'passed').length;
+  const passRate = runs.length > 0 ? Math.round((passedRuns / runs.length) * 100) : 0;
+
+  return fromData(ProjectSchema)({
+    ...data,
+    tests_count: testsCount,
+    suggestions_count: suggestionsCount,
+    pass_rate: passRate,
+  });
+}
+
+export async function listProjects(opts: ReadOptions = {}): Promise<Project[]> {
+  const supabase = opts.supabase ?? connect();
+
+  const { data, status, error } = await supabase
+    .from('projects')
+    .select<
+      'projects',
+      (Data<Project> & {
+        features: { count: number }[];
+        suggestions: { count: number }[];
+        runs: { status: string }[];
+      })[]
+    >(
+      `
+      *,
+      features:features(count),
+      suggestions:suggestions(count),
+      runs:runs(status)
+    `,
+    )
+    .abortSignal(maybeSignal(opts));
+
+  if (error) throw new DBError(status, error);
+
+  return data.map((item) => {
+    const testsCount = item.features?.[0]?.count ?? 0;
+    const suggestionsCount = item.suggestions?.[0]?.count ?? 0;
+    const runs = item.runs ?? [];
+    const passedRuns = runs.filter((r) => r.status === 'passed').length;
+    const passRate = runs.length > 0 ? Math.round((passedRuns / runs.length) * 100) : 0;
+
+    return fromData(ProjectSchema)({
+      ...item,
+      tests_count: testsCount,
+      suggestions_count: suggestionsCount,
+      pass_rate: passRate,
+    });
+  });
 }
 
 const CreateProjectSchema = ProjectSchema.omit({ id: true }).partial().required({ url: true });

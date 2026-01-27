@@ -19,6 +19,9 @@ export const ProjectSchema = z.object({
   createdBy: UUIDSchema.describe('Account id that created the project'),
   updatedAt: z.coerce.date().describe('Timestamp when the project was last updated'),
   updatedBy: UUIDSchema.describe('Account id that last updated the project'),
+  testsCount: z.number().default(0).describe('Number of tests in the project'),
+  suggestionsCount: z.number().default(0).describe('Number of suggestions for the project'),
+  passRate: z.number().default(0).describe('Percentage of passing tests'),
 });
 
 export type Project = z.infer<typeof ProjectSchema>;

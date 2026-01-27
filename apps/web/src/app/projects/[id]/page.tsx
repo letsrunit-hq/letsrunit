@@ -4,14 +4,14 @@ import { ProjectPanel } from '@/components/project-panel';
 import { getUser } from '@/libs/auth';
 import { connect as connectServerSupabase } from '@/libs/supabase/server';
 import { getProject, listFeatures, maybe } from '@letsrunit/model';
-import { cn, isUUID } from '@letsrunit/utils';
+import { isUUID } from '@letsrunit/utils';
 import { History, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { UUID } from 'node:crypto';
 import { Button } from 'primereact/button';
-import { Chip } from 'primereact/chip';
 import React from 'react';
+import Tile from '../../../components/tile/tile';
 import styles from './page.module.css';
 
 type PageProps = { params: Promise<{ id: UUID }> };
@@ -35,7 +35,7 @@ export default async function Page({ params }: PageProps) {
       <div className="mb-4">
         <div className="flex flex-column md:flex-row align-items-start md:align-items-center justify-content-between">
           <div className="flex flex-row align-items-center mb-3 md:mb-0">
-            {project.favicon && <Chip className={cn('tile', project.favicon, 'mr-3')} image={project.favicon} />}
+            {project.favicon && <Tile className="mr-3" image={project.favicon} />}
             <h1 className={styles.title}>{project.name}</h1>
           </div>
           <div className="flex flex-row gap-2 justify-content-end">

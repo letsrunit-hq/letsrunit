@@ -46,6 +46,11 @@ div[role="link"]{
   cursor: pointer;
 }
 
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
 .center {
   display: flex;
   flex-direction: column;

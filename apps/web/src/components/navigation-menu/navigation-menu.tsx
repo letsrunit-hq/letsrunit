@@ -176,17 +176,17 @@ export function NavigationMenu() {
             <button
               onClick={toggle}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-zinc-900 transition-colors ${
-                collapsed ? 'justify-center' : ''
+                collapsed ? 'justify-content-center' : ''
               }`}
               title={collapsed ? selectedOrg.name : undefined}
             >
-              <Building2 className="w-5 h-5 text-zinc-400 flex-shrink-0" />
+              <Building2 className="w-5 h-5 text-zinc-400" />
               {!collapsed && (
                 <>
                   <span className="flex-1 text-left text-sm text-white truncate font-medium">
                     {selectedOrg.name}
                   </span>
-                  <ChevronDown className="w-4 h-4 text-zinc-400 flex-shrink-0" />
+                  <ChevronDown className="w-4 h-4 text-zinc-400" />
                 </>
               )}
             </button>
@@ -199,11 +199,11 @@ export function NavigationMenu() {
         <Link
           href={`/org/${selectedOrg.id}/settings`}
           className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-zinc-400 hover:text-white hover:bg-zinc-900 ${
-            collapsed ? 'justify-center' : ''
+            collapsed ? 'justify-content-center' : ''
           }`}
           title={collapsed ? 'Organization Settings' : undefined}
         >
-          <Settings className="w-5 h-5 flex-shrink-0" />
+          <Settings className="w-5 h-5" />
           {!collapsed && <span className="font-medium">Organization Settings</span>}
         </Link>
       </div>
@@ -232,7 +232,7 @@ export function NavigationMenu() {
               }`}
               title={collapsed ? selectedProject.name : undefined}
             >
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center">
                 <span className="text-white text-sm font-medium">
                   {selectedProject.name.charAt(0)}
                 </span>
@@ -245,7 +245,7 @@ export function NavigationMenu() {
                     </div>
                     <div className="text-zinc-500 text-xs truncate">{selectedOrg.name}</div>
                   </div>
-                  <ChevronDown className="w-4 h-4 text-zinc-400 flex-shrink-0" />
+                  <ChevronDown className="w-4 h-4 text-zinc-400" />
                 </>
               )}
             </button>
@@ -264,7 +264,7 @@ export function NavigationMenu() {
           } ${collapsed ? 'justify-center' : ''}`}
           title={collapsed ? 'Dashboard' : undefined}
         >
-          <LayoutDashboard className="w-5 h-5 flex-shrink-0" />
+          <LayoutDashboard className="w-5 h-5" />
           {!collapsed && <span className="font-medium">Dashboard</span>}
         </Link>
         <Link
@@ -276,7 +276,7 @@ export function NavigationMenu() {
           } ${collapsed ? 'justify-center' : ''}`}
           title={collapsed ? 'Run History' : undefined}
         >
-          <History className="w-5 h-5 flex-shrink-0" />
+          <History className="w-5 h-5" />
           {!collapsed && <span className="font-medium">Run History</span>}
         </Link>
         <Link
@@ -288,7 +288,7 @@ export function NavigationMenu() {
           } ${collapsed ? 'justify-center' : ''}`}
           title={collapsed ? 'Settings' : undefined}
         >
-          <Settings className="w-5 h-5 flex-shrink-0" />
+          <Settings className="w-5 h-5" />
           {!collapsed && <span className="font-medium">Project Settings</span>}
         </Link>
       </nav>
@@ -307,7 +307,7 @@ export function NavigationMenu() {
                 }`}
                 title={collapsed ? 'John Doe' : undefined}
               >
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center">
                   <User className="w-4 h-4 text-white" />
                 </div>
                 {!collapsed && (
