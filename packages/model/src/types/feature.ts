@@ -14,8 +14,10 @@ export const FeatureSchema = z.object({
   lastRun: z
     .preprocess(
       (v) => Array.isArray(v) ? v[0] : v,
-      RunSchema.nullable().optional(),
+      RunSchema.nullable(),
     )
+    .optional()
+    .readonly()
     .describe('Last run of this feature'),
   createdAt: z.coerce.date().describe('Timestamp when the feature was created'),
   createdBy: UUIDSchema.nullable().describe('Account id that created the feature'),
