@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@google-cloud/tasks": "^6.2.1",
+    "@icons-pack/react-simple-icons": "^13.8.0",
     "@letsrunit/model": "workspace:*",
     "@letsrunit/utils": "workspace:*",
     "@supabase/ssr": "^0.8.0",
@@ -30,6 +31,7 @@
     "react-dom": "19.2.3",
     "react-timeago": "^8.3.0",
     "sass": "^1.97.2",
+    "simple-icons": "^16.6.1",
     "zod": "^4.3.5"
   },
   "devDependencies": {
