@@ -6,6 +6,12 @@ const { GCP_PROJECT_ID, GCP_PROJECT_NUMBER, GCP_SERVICE_ACCOUNT_EMAIL, GCP_WIF_P
   process.env;
 
 export function getCloudTasksClient() {
+  if (!GCP_WIF_POOL_ID) {
+    return new CloudTasksClient({
+      projectId: GCP_PROJECT_ID,
+    });
+  }
+
   const authClient = ExternalAccountClient.fromJSON({
     type: 'external_account',
     audience: `//iam.googleapis.com/projects/${GCP_PROJECT_NUMBER}/locations/global/workloadIdentityPools/${GCP_WIF_POOL_ID}/providers/${GCP_WIF_PROVIDER_ID}`,

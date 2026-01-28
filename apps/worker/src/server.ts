@@ -19,7 +19,7 @@ app.post('/tasks/run', async (c) => {
   if (!run?.id) return c.json({ success: false, error: 'Missing run.id' }, 400);
 
   const claimed = await updateRunStatus(run.id, 'running', { supabase });
-  if (claimed) return c.json({ success: false, error: 'Run not queued' }, 404);
+  if (!claimed) return c.json({ success: false, error: 'Run not queued' }, 404);
 
   try {
     await handle(run, { supabase });
