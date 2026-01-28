@@ -1,14 +1,7 @@
 import { randomUUID, type UUID } from '@letsrunit/utils';
 import { z } from 'zod';
 import { connect } from './supabase';
-import {
-  type Data,
-  type Project,
-  ProjectBaseSchema,
-  ProjectSchema,
-  type ReadOptions,
-  type WriteOptions,
-} from './types';
+import { type Project, ProjectBaseSchema, ProjectSchema, type ReadOptions, type WriteOptions } from './types';
 import { authorize, authorizeForAccount } from './utils/auth';
 import { fromData, toData } from './utils/convert';
 import { DBError } from './utils/db-error';
@@ -35,7 +28,7 @@ export async function getProject(id: UUID, opts: ReadOptions = {}): Promise<Proj
     .single();
 
   if (error) throw new DBError(status, error);
-  return fromData(ProjectSchema)(data as any);
+  return fromData(ProjectSchema)(data);
 }
 
 export async function listProjects(opts: ReadOptions = {}): Promise<Project[]> {
@@ -57,7 +50,7 @@ export async function listProjects(opts: ReadOptions = {}): Promise<Project[]> {
 
   if (error) throw new DBError(status, error);
 
-  return (data as any[]).map(fromData(ProjectSchema));
+  return data.map(fromData(ProjectSchema));
 }
 
 const CreateProjectSchema = ProjectBaseSchema.omit({ id: true }).partial().required({ url: true });
@@ -100,7 +93,14 @@ export async function findProjectByUrl(url: string, opts: ReadOptions = {}): Pro
 
   const { data, error } = await supabase
     .from('projects')
-    .select<'projects', Data<Project>>()
+    .select(
+      `
+      *,
+      tests:features!left(count),
+      suggestions:features!left(count),
+      runs:runs(status)
+    `,
+    )
     .eq('url', url)
     .abortSignal(maybeSignal(opts))
     .maybeSingle();

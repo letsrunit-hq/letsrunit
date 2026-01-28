@@ -46,12 +46,12 @@ export function ExploreForm({
       await ensureSignedIn();
 
       const project = await findProjectByUrl(url, { supabase: connect() });
-      if (project) {
+      if (project && (project.testsCount ?? 0) + (project.suggestionsCount ?? 0) > 0) {
         router.push(`/projects/${project.id}`);
         return;
       }
 
-      const runId = await startExploreRun(url);
+      const runId = await startExploreRun(url, { projectId: project?.id });
       router.push(`/runs/${runId}`);
     } catch (e) {
       toast.show({

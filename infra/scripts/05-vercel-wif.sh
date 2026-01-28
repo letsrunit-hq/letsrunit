@@ -14,6 +14,7 @@ POOL_ID="${POOL_ID:-vercel}"
 PROVIDER_ID="${PROVIDER_ID:-vercel}"
 ISSUER_MODE="${ISSUER_MODE:-team}" # team | global
 
+TASKS_INVOKER_SA_NAME="${TASKS_INVOKER_SA_NAME:-tasks-invoker-sa}"
 WEB_SA_NAME="${WEB_SA_NAME:-web-sa}"
 
 create_sa_if_missing() {
@@ -122,6 +123,18 @@ main() {
     --project "$PROJECT" \
     --member="$principal" \
     --role="roles/iam.serviceAccountTokenCreator"
+
+  gcloud iam service-accounts add-iam-policy-binding "$web_sa_email" \
+    --project "$PROJECT" \
+    --member="$principal" \
+    --role="roles/iam.serviceAccountUser"
+
+  local tasks_invoker_sa_email="${TASKS_INVOKER_SA_NAME}@${PROJECT}.iam.gserviceaccount.com"
+  echo "Allow web SA to act as tasks-invoker SA"
+  gcloud iam service-accounts add-iam-policy-binding "$tasks_invoker_sa_email" \
+    --project "$PROJECT" \
+    --member="serviceAccount:${web_sa_email}" \
+    --role="roles/iam.serviceAccountUser"
 
   local worker_url
   worker_url="$(gcloud run services describe worker --platform managed --region "$REGION" --project "$PROJECT" --format 'value(status.url)' 2>/dev/null || echo "PENDING_DEPLOYMENT")"
