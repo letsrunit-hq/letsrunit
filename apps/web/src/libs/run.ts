@@ -28,7 +28,15 @@ export async function queueRun(run: RunInput, opts: WriteOptions) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: Buffer.from(JSON.stringify(fullRun)),
+        body: Buffer.from(
+          JSON.stringify({
+            ...fullRun,
+            startedAt: fullRun.startedAt?.toISOString(),
+            finishedAt: fullRun.finishedAt?.toISOString(),
+            createdAt: fullRun.createdAt?.toISOString(),
+            updatedAt: fullRun.updatedAt?.toISOString(),
+          }),
+        ),
         oidcToken: {
           serviceAccountEmail: invokerSa,
           audience: workerUrl,
@@ -36,7 +44,12 @@ export async function queueRun(run: RunInput, opts: WriteOptions) {
       },
     };
 
-    await client.createTask({ parent, task });
+    try {
+      await client.createTask({ parent, task });
+    } catch (error) {
+      console.error('Failed to create task:', error);
+      throw error;
+    }
   }
 
   return id;
