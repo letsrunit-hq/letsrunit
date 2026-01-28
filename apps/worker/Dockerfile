@@ -13,7 +13,7 @@ RUN yarn workspaces focus worker
 RUN yarn workspace worker build
 
 # Stage 2: runner
-FROM mcr.microsoft.com/playwright:v1.50.0 AS runner
+FROM mcr.microsoft.com/playwright:v1.57.0-noble AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
