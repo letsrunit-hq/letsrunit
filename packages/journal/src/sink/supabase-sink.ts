@@ -1,5 +1,5 @@
-import { SupabaseClient } from "@supabase/supabase-js";
-import type { JournalEntry, Sink } from "../types";
+import { SupabaseClient } from '@supabase/supabase-js';
+import type { JournalEntry, Sink } from '../types';
 
 interface SupabaseSinkOptions {
   supabase: SupabaseClient;
@@ -64,7 +64,11 @@ export class SupabaseSink implements Sink {
 
     const stored: any[] = [];
 
-    for (const artifact of artifacts) {
+    const uniqueArtifacts = artifacts.filter(
+      (artifact, index, self) => index === self.findIndex((a) => a.name === artifact.name),
+    );
+
+    for (const artifact of uniqueArtifacts) {
       const path = `${this.projectId}/${artifact.name}`;
       const { error } = await this.supabase.storage
         .from(this.bucket)

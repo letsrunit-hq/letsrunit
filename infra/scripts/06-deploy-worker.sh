@@ -27,6 +27,8 @@ gcloud run deploy worker \
   --image "$IMAGE" \
   --service-account="worker-runtime-sa@${PROJECT}.iam.gserviceaccount.com" \
   --region "$REGION" \
+  --memory 1Gi \
+  --concurrency 1 \
   --set-env-vars "GCP_PROJECT=${PROJECT},GCP_REGION=${REGION}" \
   --set-secrets="SUPABASE_URL=SUPABASE_URL:latest,SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY:latest,TESTMAIL_API_KEY=TESTMAIL_API_KEY:latest,LANGSMITH_ENDPOINT=LANGSMITH_ENDPOINT:latest,LANGSMITH_API_KEY=LANGSMITH_API_KEY:latest,OPENAI_API_KEY=OPENAI_API_KEY:latest" \
   --no-allow-unauthenticated \
