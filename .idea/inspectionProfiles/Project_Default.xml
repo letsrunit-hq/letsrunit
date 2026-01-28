@@ -30,5 +30,13 @@
       </scope>
       <option name="myAdditionalRequiredHtmlAttributes" value="" />
     </inspection_tool>
+    <inspection_tool class="UnnecessaryLocalVariableJS" enabled="true" level="WARNING" enabled_by_default="true">
+      <scope name="Tests" level="TEXT ATTRIBUTES" enabled="true" editorAttributes="CONSIDERATION_ATTRIBUTES">
+        <option name="m_ignoreImmediatelyReturnedVariables" value="false" />
+        <option name="m_ignoreAnnotatedVariables" value="false" />
+      </scope>
+      <option name="m_ignoreImmediatelyReturnedVariables" value="false" />
+      <option name="m_ignoreAnnotatedVariables" value="false" />
+    </inspection_tool>
   </profile>
 </component>
