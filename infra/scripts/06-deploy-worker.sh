@@ -13,7 +13,7 @@ REPO_NAME="letsrunit"
 IMAGE="${REGION}-docker.pkg.dev/${PROJECT}/${REPO_NAME}/worker:latest"
 
 echo "Configuring Docker authentication for ${REGION}..."
-gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
+gcloud auth configure-docker "${REGION}-docker.pkg.dev"
 
 echo "Building worker image: ${IMAGE}"
 docker build -t "$IMAGE" -f apps/worker/Dockerfile .

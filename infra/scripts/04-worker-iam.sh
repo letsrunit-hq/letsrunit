@@ -37,8 +37,7 @@ main() {
     gcloud secrets add-iam-policy-binding "$secret" \
       --project "$PROJECT" \
       --member "$worker_runtime_sa" \
-      --role "roles/secretmanager.secretAccessor" \
-      --quiet
+      --role "roles/secretmanager.secretAccessor"
   done
 
   # Ensure Cloud Run service agent can pull images from this repo
@@ -51,8 +50,7 @@ main() {
     --project "$PROJECT" \
     --location "$REGION" \
     --member "serviceAccount:${run_agent}" \
-    --role "roles/artifactregistry.reader" \
-    --quiet || true
+    --role "roles/artifactregistry.reader" || true
 
   echo "Worker IAM configured."
 }

@@ -26,7 +26,6 @@ gcloud artifacts repositories add-iam-policy-binding "$REPO_NAME" \
   --project="$PROJECT" \
   --location="$REGION" \
   --member="serviceAccount:${RUN_AGENT}" \
-  --role="roles/artifactregistry.reader" \
-  --quiet || true
+  --role="roles/artifactregistry.reader" || true
 
 echo "Artifact Registry configured."

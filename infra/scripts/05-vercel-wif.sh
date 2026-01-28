@@ -29,13 +29,20 @@ create_sa_if_missing() {
 
 enable_api_if_possible() {
   local api="$1"
-  gcloud services enable "$api" --project "$PROJECT" --quiet >/dev/null 2>&1 || true
+  gcloud services enable "$api" --project "$PROJECT" >/dev/null 2>&1 || true
 }
 
 create_pool_if_missing() {
-  if gcloud iam workload-identity-pools describe "$POOL_ID" \
-    --project "$PROJECT" --location "global" >/dev/null 2>&1; then
-    echo "Workload Identity Pool exists: ${POOL_ID}"
+  local state
+  state=$(gcloud iam workload-identity-pools describe "$POOL_ID" \
+    --project "$PROJECT" --location "global" --format='value(state)' 2>/dev/null || echo "NOT_FOUND")
+
+  if [[ "$state" == "ACTIVE" ]]; then
+    echo "Workload Identity Pool exists and is ACTIVE: ${POOL_ID}"
+  elif [[ "$state" == "DELETED" ]]; then
+    echo "Workload Identity Pool exists but is DELETED. Undeleting: ${POOL_ID}"
+    gcloud iam workload-identity-pools undelete "$POOL_ID" \
+      --project "$PROJECT" --location "global" >/dev/null
   else
     echo "Creating Workload Identity Pool: ${POOL_ID}"
     gcloud iam workload-identity-pools create "$POOL_ID" \
@@ -46,9 +53,17 @@ create_pool_if_missing() {
 }
 
 create_provider_if_missing() {
-  if gcloud iam workload-identity-pools providers describe "$PROVIDER_ID" \
-    --project "$PROJECT" --location "global" --workload-identity-pool "$POOL_ID" >/dev/null 2>&1; then
-    echo "Workload Identity Provider exists: ${PROVIDER_ID}"
+  local state
+  state=$(gcloud iam workload-identity-pools providers describe "$PROVIDER_ID" \
+    --project "$PROJECT" --location "global" --workload-identity-pool "$POOL_ID" --format='value(state)' 2>/dev/null || echo "NOT_FOUND")
+
+  if [[ "$state" == "ACTIVE" ]]; then
+    echo "Workload Identity Provider exists and is ACTIVE: ${PROVIDER_ID}"
+    return 0
+  elif [[ "$state" == "DELETED" ]]; then
+    echo "Workload Identity Provider exists but is DELETED. Undeleting: ${PROVIDER_ID}"
+    gcloud iam workload-identity-pools providers undelete "$PROVIDER_ID" \
+      --project "$PROJECT" --location "global" --workload-identity-pool "$POOL_ID" >/dev/null
     return 0
   fi
 
@@ -84,8 +99,7 @@ main() {
     --project "$PROJECT" \
     --location "$REGION" \
     --member "$web_sa_member" \
-    --role "roles/cloudtasks.enqueuer" \
-    --quiet
+    --role "roles/cloudtasks.enqueuer"
 
   create_pool_if_missing
   create_provider_if_missing
@@ -102,17 +116,15 @@ main() {
   gcloud iam service-accounts add-iam-policy-binding "$web_sa_email" \
     --project "$PROJECT" \
     --member="$principal" \
-    --role="roles/iam.workloadIdentityUser" \
-    --quiet
+    --role="roles/iam.workloadIdentityUser"
 
   gcloud iam service-accounts add-iam-policy-binding "$web_sa_email" \
     --project "$PROJECT" \
     --member="$principal" \
-    --role="roles/iam.serviceAccountTokenCreator" \
-    --quiet
+    --role="roles/iam.serviceAccountTokenCreator"
 
   local worker_url
-  worker_url="$(gcloud run services describe worker --platform managed --region "$REGION" --project "$PROJECT" --format 'value(status.url)')"
+  worker_url="$(gcloud run services describe worker --platform managed --region "$REGION" --project "$PROJECT" --format 'value(status.url)' 2>/dev/null || echo "PENDING_DEPLOYMENT")"
 
   cat <<EOF
 

@@ -34,8 +34,7 @@ main() {
     --project "$PROJECT" \
     --region "$REGION" \
     --member "$tasks_invoker_sa" \
-    --role "roles/run.invoker" \
-    --quiet
+    --role "roles/run.invoker"
 
   echo "Worker invoker binding configured."
 }

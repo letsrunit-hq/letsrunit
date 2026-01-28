@@ -15,6 +15,15 @@ safe() {
   "$@" >/dev/null 2>&1 || true
 }
 
+confirm() {
+  local prompt="$1"
+  local answer
+  echo -n "$prompt [y/N]? "
+  read -n 1 -r answer
+  echo
+  [[ "$answer" =~ ^[Yy]$ ]]
+}
+
 is_google_managed_sa() {
   # Google-managed service agents and some system accounts cannot/should not be deleted.
   local email="$1"
@@ -36,11 +45,13 @@ mapfile -t RUN_SERVICES < <(
     --region "$REGION" \
     --format 'value(metadata.name)' 2>/dev/null || true
 )
-for s in "${RUN_SERVICES[@]}"; do
-  [[ -z "$s" ]] && continue
-  echo "  Deleting Cloud Run service: $s"
-  safe gcloud run services delete "$s" --platform managed --project "$PROJECT" --region "$REGION" --quiet
-done
+if [[ ${#RUN_SERVICES[@]} -gt 0 ]] && confirm "Delete all ${#RUN_SERVICES[@]} Cloud Run services"; then
+  for s in "${RUN_SERVICES[@]}"; do
+    [[ -z "$s" ]] && continue
+    echo "  Deleting Cloud Run service: $s"
+    safe gcloud run services delete "$s" --platform managed --project "$PROJECT" --region "$REGION"
+  done
+fi
 
 echo "2) Cloud Tasks queues in ${REGION}"
 mapfile -t QUEUES < <(
@@ -49,11 +60,13 @@ mapfile -t QUEUES < <(
     --location "$REGION" \
     --format 'value(name)' 2>/dev/null | sed -E 's#.*/queues/##' || true
 )
-for q in "${QUEUES[@]}"; do
-  [[ -z "$q" ]] && continue
-  echo "  Deleting queue: $q"
-  safe gcloud tasks queues delete "$q" --project "$PROJECT" --location "$REGION" --quiet
-done
+if [[ ${#QUEUES[@]} -gt 0 ]] && confirm "Purge all ${#QUEUES[@]} Cloud Tasks queues"; then
+  for q in "${QUEUES[@]}"; do
+    [[ -z "$q" ]] && continue
+    echo "  Purging queue: $q"
+    safe gcloud tasks queues purge "$q" --project "$PROJECT" --location "$REGION"
+  done
+fi
 
 echo "3) Artifact Registry repos in ${REGION}"
 mapfile -t REPOS < <(
@@ -62,21 +75,25 @@ mapfile -t REPOS < <(
     --location "$REGION" \
     --format 'value(name)' 2>/dev/null | sed -E 's#.*/repositories/##' || true
 )
-for r in "${REPOS[@]}"; do
-  [[ -z "$r" ]] && continue
-  echo "  Deleting repo: $r"
-  safe gcloud artifacts repositories delete "$r" --project "$PROJECT" --location "$REGION" --quiet
-done
+if [[ ${#REPOS[@]} -gt 0 ]] && confirm "Delete all ${#REPOS[@]} Artifact Registry repos"; then
+  for r in "${REPOS[@]}"; do
+    [[ -z "$r" ]] && continue
+    echo "  Deleting repo: $r"
+    safe gcloud artifacts repositories delete "$r" --project "$PROJECT" --location "$REGION"
+  done
+fi
 
 echo "4) Secret Manager, delete ALL secrets"
 mapfile -t SECRETS < <(
   gcloud secrets list --project "$PROJECT" --format 'value(name)' 2>/dev/null || true
 )
-for s in "${SECRETS[@]}"; do
-  [[ -z "$s" ]] && continue
-  echo "  Deleting secret: $s"
-  safe gcloud secrets delete "$s" --project "$PROJECT" --quiet
-done
+if [[ ${#SECRETS[@]} -gt 0 ]] && confirm "Delete all ${#SECRETS[@]} secrets"; then
+  for s in "${SECRETS[@]}"; do
+    [[ -z "$s" ]] && continue
+    echo "  Deleting secret: $s"
+    safe gcloud secrets delete "$s" --project "$PROJECT"
+  done
+fi
 
 echo "5) Workload Identity Pools (global), delete ALL pools and providers"
 mapfile -t POOLS < <(
@@ -85,45 +102,54 @@ mapfile -t POOLS < <(
     --location global \
     --format 'value(name)' 2>/dev/null | sed -E 's#.*/workloadIdentityPools/##' || true
 )
-for p in "${POOLS[@]}"; do
-  [[ -z "$p" ]] && continue
-  echo "  Deleting providers in pool: $p"
-  mapfile -t PROVS < <(
-    gcloud iam workload-identity-pools providers list \
-      --project "$PROJECT" \
-      --location global \
-      --workload-identity-pool "$p" \
-      --format 'value(name)' 2>/dev/null | sed -E 's#.*/providers/##' || true
-  )
-  for pr in "${PROVS[@]}"; do
-    [[ -z "$pr" ]] && continue
-    echo "    Deleting provider: $pr"
-    safe gcloud iam workload-identity-pools providers delete "$pr" \
-      --project "$PROJECT" --location global --workload-identity-pool "$p" --quiet
+if [[ ${#POOLS[@]} -gt 0 ]] && confirm "Empty all ${#POOLS[@]} Workload Identity pools (delete providers)"; then
+  for p in "${POOLS[@]}"; do
+    [[ -z "$p" ]] && continue
+    echo "  Deleting providers in pool: $p"
+    mapfile -t PROVS < <(
+      gcloud iam workload-identity-pools providers list \
+        --project "$PROJECT" \
+        --location global \
+        --workload-identity-pool "$p" \
+        --format 'value(name)' 2>/dev/null | sed -E 's#.*/providers/##' || true
+    )
+    for pr in "${PROVS[@]}"; do
+      [[ -z "$pr" ]] && continue
+      echo "    Deleting provider: $pr"
+      safe gcloud iam workload-identity-pools providers delete "$pr" \
+        --project "$PROJECT" --location global --workload-identity-pool "$p"
+    done
   done
+fi
 
-  echo "  Deleting pool: $p"
-  safe gcloud iam workload-identity-pools delete "$p" --project "$PROJECT" --location global --quiet
-done
-
-echo "6) IAM Service Accounts, delete ALL user-managed service accounts"
+echo "6) IAM Service Accounts, clean ALL user-managed service accounts (remove IAM bindings)"
 mapfile -t SERVICE_ACCOUNTS < <(
   gcloud iam service-accounts list \
     --project "$PROJECT" \
     --format 'value(email)' 2>/dev/null || true
 )
 
+# Filter out google managed SAs before prompting
+USER_MANAGED_SAS=()
 for email in "${SERVICE_ACCOUNTS[@]}"; do
   [[ -z "$email" ]] && continue
-
-  if is_google_managed_sa "$email"; then
-    echo "  Skipping Google-managed/service-agent SA: $email"
-    continue
+  if ! is_google_managed_sa "$email"; then
+    USER_MANAGED_SAS+=("$email")
   fi
-
-  echo "  Deleting service account: $email"
-  safe gcloud iam service-accounts delete "$email" --project "$PROJECT" --quiet
 done
+
+if [[ ${#USER_MANAGED_SAS[@]} -gt 0 ]] && confirm "Clean all ${#USER_MANAGED_SAS[@]} user-managed service accounts"; then
+  for email in "${USER_MANAGED_SAS[@]}"; do
+    echo "  Cleaning service account (removing bindings): $email"
+    # Remove all IAM policy bindings ON the service account (like impersonation)
+    safe gcloud iam service-accounts set-iam-policy "$email" /dev/null --project "$PROJECT"
+
+    # Remove the service account from project-level IAM roles
+    # This is trickier as gcloud doesn't have a simple "remove member from all roles"
+    # But we can get the policy and filter out the member.
+    # For now, let's at least clear the SA's own policy which handles WIF impersonation.
+  done
+fi
 
 echo
 echo "Done."
