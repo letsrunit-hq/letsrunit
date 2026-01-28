@@ -105,6 +105,9 @@ jobs:
     name: Notify Vercel
     needs: [supabase, web, packages, compat]
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
     steps:
       - uses: 'vercel/repository-dispatch/actions/status@v1'
         with:
