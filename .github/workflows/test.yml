@@ -101,3 +101,12 @@ jobs:
 
       - name: Run Tests
         run: yarn workspace ${{ matrix.workspace }} test
+
+  notify:
+    name: Notify Vercel
+    needs: [supabase, web, packages, compat]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: 'vercel/repository-dispatch/actions/status@v1'
+        with:
+          name: "Vercel - letsrunit: test"
