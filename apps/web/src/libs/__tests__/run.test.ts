@@ -51,9 +51,39 @@ describe('queueRun', () => {
         httpRequest: expect.objectContaining({
           url: 'https://worker-url/tasks/run',
           body: Buffer.from(JSON.stringify(mockRun)),
+          oidcToken: expect.objectContaining({
+            serviceAccountEmail: 'test-project@appspot.gserviceaccount.com',
+          }),
         }),
       }),
     });
+  });
+
+  it('should use GCP_TASKS_INVOKER_SA_EMAIL if provided', async () => {
+    process.env.GCP_PROJECT_ID = 'test-project';
+    process.env.GCP_WORKER_URL = 'https://worker-url';
+    process.env.GCP_TASKS_INVOKER_SA_EMAIL = 'invoker@test.iam.gserviceaccount.com';
+
+    const mockCreateTask = vi.fn().mockResolvedValue([{}]);
+    vi.mocked(getRun).mockResolvedValue({ id: 'test' } as any);
+    vi.mocked(getCloudTasksClient).mockReturnValue({
+      createTask: mockCreateTask,
+      queuePath: vi.fn(),
+    } as any);
+
+    await queueRun({ type: 'test', target: 'http://localhost' } as any, {});
+
+    expect(mockCreateTask).toHaveBeenCalledWith(
+      expect.objectContaining({
+        task: expect.objectContaining({
+          httpRequest: expect.objectContaining({
+            oidcToken: expect.objectContaining({
+              serviceAccountEmail: 'invoker@test.iam.gserviceaccount.com',
+            }),
+          }),
+        }),
+      })
+    );
   });
 
   it('should not add to queue if not configured', async () => {

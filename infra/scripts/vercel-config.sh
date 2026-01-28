@@ -7,9 +7,11 @@ set -euo pipefail
 WEB_SA_NAME="${WEB_SA_NAME:-web-sa}"
 POOL_ID="${POOL_ID:-vercel}"
 PROVIDER_ID="${PROVIDER_ID:-vercel}"
+TASKS_INVOKER_SA_NAME="${TASKS_INVOKER_SA_NAME:-tasks-invoker-sa}"
 QUEUE_NAME="${QUEUE_NAME:-runs}"
 
 web_sa_email="${WEB_SA_NAME}@${PROJECT}.iam.gserviceaccount.com"
+tasks_invoker_sa_email="${TASKS_INVOKER_SA_NAME}@${PROJECT}.iam.gserviceaccount.com"
 project_number="$(gcloud projects describe "$PROJECT" --format='value(projectNumber)')"
 worker_url="$(gcloud run services describe worker --platform managed --region "$REGION" --project "$PROJECT" --format 'value(status.url)' 2>/dev/null || echo "NOT_DEPLOYED_YET")"
 
@@ -18,6 +20,7 @@ vars=(
   "GCP_PROJECT_ID=${PROJECT}"
   "GCP_PROJECT_NUMBER=${project_number}"
   "GCP_SERVICE_ACCOUNT_EMAIL=${web_sa_email}"
+  "GCP_TASKS_INVOKER_SA_EMAIL=${tasks_invoker_sa_email}"
   "GCP_WIF_POOL_ID=${POOL_ID}"
   "GCP_WIF_PROVIDER_ID=${PROVIDER_ID}"
   "GCP_WORKER_URL=${worker_url}"

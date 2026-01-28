@@ -10,7 +10,10 @@ export async function queueRun(run: RunInput, opts: WriteOptions) {
   const location = process.env.GCP_REGION || 'europe-west1';
   const project = process.env.GCP_PROJECT_ID || 'letsrunit';
   const workerUrl = process.env.GCP_WORKER_URL;
-  const invokerSa = process.env.GCP_SERVICE_ACCOUNT_EMAIL || `${project}@appspot.gserviceaccount.com`;
+  const invokerSa =
+    process.env.GCP_TASKS_INVOKER_SA_EMAIL ||
+    process.env.GCP_SERVICE_ACCOUNT_EMAIL ||
+    `${project}@appspot.gserviceaccount.com`;
 
   if (workerUrl) {
     const client = getCloudTasksClient();
