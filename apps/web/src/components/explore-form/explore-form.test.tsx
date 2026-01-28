@@ -47,6 +47,30 @@ vi.mock('@/libs/auth', () => ({
 }));
 
 describe('ExploreForm', () => {
+  it('starts a new run', async () => {
+    const push = vi.fn();
+    vi.mocked(useRouter).mockReturnValue({ push } as any);
+
+    render(<ExploreForm placeholder="https://www.example.com" buttonLabel="Run it." />);
+
+    const input = screen.getByLabelText('website-input') as HTMLInputElement;
+    const button = screen.getByRole('button', { name: /run it\./i });
+
+    fireEvent.change(input, { target: { value: 'example.com' } });
+    fireEvent.click(button);
+
+    // Get the module to resolve the promise
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mod: any = await import('@/actions/explore');
+    mod.__resolveRunId('run_123');
+
+    await waitFor(() => {
+      expect(findProjectByUrl).toHaveBeenCalledWith('https://example.com', expect.any(Object));
+      expect(startExploreRun).toHaveBeenCalledWith('https://example.com', { projectId: undefined });
+      expect(push).toHaveBeenCalledWith('/runs/run_123');
+    });
+  });
+
   it('disables input and shows loading on button after submit is clicked', async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mod: any = await import('@/actions/explore');
@@ -59,7 +83,7 @@ describe('ExploreForm', () => {
     expect(input).toBeInTheDocument();
     expect(button).toBeInTheDocument();
 
-    fireEvent.change(input, { target: { value: 'https://test.com' } });
+    fireEvent.change(input, { target: { value: 'https://example.com' } });
     fireEvent.click(button);
 
     // While promise is pending, input and button should be disabled
@@ -94,7 +118,7 @@ describe('ExploreForm', () => {
     const input = screen.getByLabelText('website-input') as HTMLInputElement;
     const button = screen.getByRole('button', { name: /run it\./i });
 
-    fireEvent.change(input, { target: { value: 'https://test.com' } });
+    fireEvent.change(input, { target: { value: 'https://example.com' } });
     fireEvent.click(button);
 
     await waitFor(() => {
@@ -109,12 +133,13 @@ describe('ExploreForm', () => {
   });
 
   it('redirects to project page if project already exists', async () => {
-    const router = useRouter();
     const push = vi.fn();
     vi.mocked(useRouter).mockReturnValue({ push } as any);
 
     vi.mocked(findProjectByUrl).mockResolvedValueOnce({
       id: 'project_123',
+      testsCount: 1,
+      suggestionsCount: 0,
     } as any);
 
     render(<ExploreForm placeholder="https://www.example.com" buttonLabel="Run it." />);
@@ -122,12 +147,41 @@ describe('ExploreForm', () => {
     const input = screen.getByLabelText('website-input') as HTMLInputElement;
     const button = screen.getByRole('button', { name: /run it\./i });
 
-    fireEvent.change(input, { target: { value: 'test.com' } });
+    fireEvent.change(input, { target: { value: 'example.com' } });
     fireEvent.click(button);
 
     await waitFor(() => {
-      expect(findProjectByUrl).toHaveBeenCalledWith('https://test.com', expect.any(Object));
+      expect(findProjectByUrl).toHaveBeenCalledWith('https://example.com', expect.any(Object));
       expect(push).toHaveBeenCalledWith('/projects/project_123');
+    });
+  });
+
+  it('does not redirect to project with no tests', async () => {
+    const push = vi.fn();
+    vi.mocked(useRouter).mockReturnValue({ push } as any);
+
+    vi.mocked(findProjectByUrl).mockResolvedValueOnce({
+      id: 'project_123',
+      testsCount: 0,
+      suggestionsCount: 0,
+    } as any);
+
+    render(<ExploreForm placeholder="https://www.example.com" buttonLabel="Run it." />);
+
+    const input = screen.getByLabelText('website-input') as HTMLInputElement;
+    const button = screen.getByRole('button', { name: /run it\./i });
+
+    fireEvent.change(input, { target: { value: 'example.com' } });
+    fireEvent.click(button);
+
+    const mod: any = await import('@/actions/explore');
+    mod.__resolveRunId('run_123');
+
+    await waitFor(() => {
+      expect(findProjectByUrl).toHaveBeenCalledWith('https://example.com', expect.any(Object));
+      expect(startExploreRun).toHaveBeenCalledWith('https://example.com', { projectId: 'project_123' });
+      expect(push).not.toHaveBeenCalledWith('/projects/project_123');
+      expect(push).toHaveBeenCalledWith('/runs/run_123');
     });
   });
 });

@@ -96,7 +96,6 @@ jobs:
         run: yarn install --immutable
 
       - name: Install Playwright Browsers
-        if: matrix.workspace == '@letsrunit/compat-react'
         run: yarn workspace ${{ matrix.workspace }} playwright install --with-deps
 
       - name: Run Tests

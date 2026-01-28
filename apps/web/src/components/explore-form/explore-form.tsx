@@ -41,17 +41,19 @@ export function ExploreForm({
   const onSubmitUrl = useCallback(async () => {
     if (!isValid) return;
 
+    const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
+
     try {
       setIsSubmitting(true);
       await ensureSignedIn();
 
-      const project = await findProjectByUrl(url, { supabase: connect() });
-      if (project && (project.testsCount ?? 0) + (project.suggestionsCount ?? 0) > 0) {
+      const project = await findProjectByUrl(normalizedUrl, { supabase: connect() });
+      if (project && ((project.testsCount ?? 0) + (project.suggestionsCount ?? 0)) > 0) {
         router.push(`/projects/${project.id}`);
         return;
       }
 
-      const runId = await startExploreRun(url, { projectId: project?.id });
+      const runId = await startExploreRun(normalizedUrl, { projectId: project?.id });
       router.push(`/runs/${runId}`);
     } catch (e) {
       toast.show({

@@ -94,7 +94,7 @@ describe('journal lib', () => {
       // Title resets prepare map
       {
         id: '3',
-        type: 'name',
+        type: 'title',
         message: 'New section',
         meta: {},
         artifacts: [],
@@ -103,7 +103,7 @@ describe('journal lib', () => {
         updated_at: createdAt,
         updated_by: null,
       },
-      // Prepare B then failure B appears but since after name, no replacement occurs
+      // Prepare B then failure B appears but since after title, no replacement occurs
       {
         id: '4',
         type: 'prepare',
@@ -133,7 +133,7 @@ describe('journal lib', () => {
     expect(journal.runId).toBe(runId);
     // Entries should be:
     // 1) success (replacing prepare A) with only screenshot artifacts (url truthy)
-    // 2) name
+    // 2) title
     // 3) failure B appended (prepare B was replaced by failure B)
     expect(journal.entries.length).toBe(3);
 
@@ -144,7 +144,7 @@ describe('journal lib', () => {
     expect(e1.screenshot!.name.startsWith('screenshot-')).toBe(true);
     expect(!!e1.screenshot!.url).toBe(true);
 
-    expect(e2.type).toBe('name');
+    expect(e2.type).toBe('title');
 
     expect(e3.type).toBe('failure');
   });
@@ -254,7 +254,7 @@ describe('journal lib', () => {
       // Separator
       {
         id: 'ttl',
-        type: 'name',
+        type: 'title',
         message: 'sep',
         meta: {},
         artifacts: [],

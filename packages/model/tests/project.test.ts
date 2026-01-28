@@ -23,6 +23,10 @@ class FakeTableQuery {
     this.ops.push({ type: 'is', table: this.table, column, value });
     return this;
   }
+  not(column: string, operator: string, value: any) {
+    this.ops.push({ type: 'not', table: this.table, column, operator, value });
+    return this;
+  }
   abortSignal() {
     return this;
   }
@@ -271,7 +275,7 @@ describe('project lib', () => {
         id: '33333333-3333-4333-a333-333333333333',
         url: 'https://p2.com',
         tests: [],
-        suggestions: [{ count: 10 }],
+        suggestions: [],
         runs: [],
         account_id: '22222222-2222-4222-a222-222222222222',
         created_at: new Date().toISOString(),
@@ -290,7 +294,7 @@ describe('project lib', () => {
     expect(projects[0].passRate).toBe(100);
 
     expect(projects[1].url).toBe('https://p2.com');
-    expect(projects[1].suggestionsCount).toBe(10);
-    expect(projects[1].passRate).toBe(0);
+    expect(projects[1].suggestionsCount).toBe(0);
+    expect(projects[1].passRate).toBeUndefined();
   });
 });
