@@ -1,4 +1,4 @@
-import { ArrowUp, Lightbulb, ListChecks, Network } from 'lucide-react';
+import { ArrowRight, ArrowUp, Lightbulb, ListChecks, Network } from 'lucide-react';
 import Image from 'next/image';
 import Logo from '../assets/logo.svg';
 import { BackToTopButton } from '../components/back-to-top-button';
@@ -46,20 +46,20 @@ export default function Home() {
             <div className={styles.card}>
               <Network className={styles.cardIcon} aria-hidden="true" />
               <h3>
-                E2E tests &mdash; generated<span>.</span>
+                Generate E2E tests<span>.</span>
               </h3>
               <p>
-                Point us at your staging site. We map flows, identify critical paths and draft clean Gherkin scenarios
-                you can commit on day one.
+                Point us at your staging site. We map flows, identify critical paths and draft clean Gherkin scenarios.
               </p>
             </div>
             <div className={styles.card}>
               <ListChecks className={styles.cardIcon} aria-hidden="true" />
               <h3>
-                Reproduce &rarr; Report &rarr; Recover<span>.</span>
+                Reproduce <ArrowRight width={16} style={{ verticalAlign: '-6px' }} /> Report{' '}
+                <ArrowRight width={16} style={{ verticalAlign: '-6px' }} /> Recover<span>.</span>
               </h3>
               <p>
-                Turn vague “it’s broken” into precise, repeatable steps with screenshots, traces and a ready‑to‑run
+                Turn vague "it’s broken" into precise, repeatable steps with screenshots, traces and a ready‑to‑run
                 failing test attached.
               </p>
             </div>
@@ -68,10 +68,7 @@ export default function Home() {
               <h3>
                 BDD clarity on red builds<span>.</span>
               </h3>
-              <p>
-                When a spec fails, we explain the why — which step, which rule, and the state the app was in — so you
-                can fix, not forage.
-              </p>
+              <p>When a spec fails, we explain the why; which step, which rule, and the state the app was in.</p>
             </div>
           </div>
 
