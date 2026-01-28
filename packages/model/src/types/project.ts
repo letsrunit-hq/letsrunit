@@ -36,8 +36,8 @@ export const ProjectSchema = z.preprocess(
 
     if (Array.isArray(runs)) {
       const passed = runs.filter((r: any) => r.status === 'passed').length;
-      const failed = runs.filter((r: any) => r.status === 'failed' || r.status === 'error').length;
-      out.passRate = Math.round((passed / (passed + failed)) * 100);
+      const all = runs.filter((r: any) => ['passed', 'failed', 'error'].includes(r.status)).length;
+      if (all > 0) out.passRate = Math.round((passed / all) * 100);
     } else if (runs !== undefined) {
       out.passRate = runs;
     }
