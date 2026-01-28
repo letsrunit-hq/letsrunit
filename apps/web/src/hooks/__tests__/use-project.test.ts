@@ -49,7 +49,7 @@ vi.mock('@/libs/supabase/browser', () => ({
 }));
 
 describe('useProject', () => {
-  const project = { id: 'proj-1', title: 'My Project' };
+  const project = { id: 'proj-1', name: 'My Project' };
 
   it('fetches project on mount and clears loading', async () => {
     const mockClient = createMockClient();
@@ -73,7 +73,7 @@ describe('useProject', () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     act(() => {
-      mockClient.__trigger('projects', { new: { id: 'proj-1', title: 'Updated Project' } });
+      mockClient.__trigger('projects', { new: { id: 'proj-1', name: 'Updated Project' } });
     });
 
     await waitFor(() => {

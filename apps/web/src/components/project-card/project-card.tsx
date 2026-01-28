@@ -13,7 +13,7 @@ export interface ProjectCardProps {
   className?: string;
 }
 
-function getPassRateColor(rate: number) {
+function getPassRateColor(rate = 0) {
   if (rate >= 90) return 'text-emerald-400';
   if (rate >= 70) return 'text-orange-400';
   return 'text-red-400';
@@ -56,7 +56,9 @@ export function ProjectCard({ project, className }: ProjectCardProps) {
       </div>
       <div className="flex align-items-center gap-2 ml-auto">
         <TrendingUp className="w-4 h-4 text-zinc-400" />
-        <span className={cn('font-medium', getPassRateColor(project.passRate))}>{project.passRate}%</span>
+        <span className={cn('font-medium', getPassRateColor(project.passRate))}>
+          {project.passRate ? `${project.passRate}%` : '–'}
+        </span>
       </div>
     </div>
   );

@@ -40,7 +40,7 @@ describe('RunHeader', () => {
       name: 'Test Feature',
     } as any;
     const journal = {
-      entries: [{ type: 'name', message: 'Journal Title' }],
+      entries: [{ type: 'title', message: 'Journal Title' }],
     } as any;
     render(<RunHeader run={mockRun} feature={feature} journal={journal} />);
     expect(screen.getByText('Journal Title')).toBeInTheDocument();

@@ -33,18 +33,15 @@ export const ProjectSchema = z.preprocess(
     if (suggestions !== undefined) {
       out.suggestionsCount = Array.isArray(suggestions) ? (suggestions[0]?.count ?? 0) : suggestions;
     }
-    if (runs !== undefined) {
-      if (Array.isArray(runs)) {
-        if (runs.length === 0) {
-          out.passRate = 0;
-        } else {
-          const passedRuns = runs.filter((r: any) => r.status === 'passed').length;
-          out.passRate = Math.round((passedRuns / runs.length) * 100);
-        }
-      } else {
-        out.passRate = runs;
-      }
+
+    if (Array.isArray(runs)) {
+      const passed = runs.filter((r: any) => r.status === 'passed').length;
+      const failed = runs.filter((r: any) => r.status === 'failed' || r.status === 'error').length;
+      out.passRate = Math.round((passed / (passed + failed)) * 100);
+    } else if (runs !== undefined) {
+      out.passRate = runs;
     }
+
     return out;
   },
   ProjectBaseSchema.extend({
@@ -54,4 +51,4 @@ export const ProjectSchema = z.preprocess(
   }),
 );
 
-export type Project = z.infer<typeof ProjectBaseSchema>;
+export type Project = z.infer<typeof ProjectSchema>;
