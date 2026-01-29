@@ -12,7 +12,8 @@ begin
   set
     status = 'error',
     error = 'Run timed out',
-    updated_at = now()
+    updated_at = now(),
+    finished_at = now()
   where
     status in ('queued', 'running')
     and created_at < now() - max_time;

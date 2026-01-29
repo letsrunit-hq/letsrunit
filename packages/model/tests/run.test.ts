@@ -98,6 +98,17 @@ describe('run lib', () => {
     expect(second.values.finished_at).toBeTypeOf('string');
   });
 
+  it('updateRunStatus saves error message and sets finished_at', async () => {
+    const supabase = new FakeSupabase() as unknown as SupabaseClient;
+    const id = randomUUID();
+
+    await updateRunStatus(id, { status: 'error', error: 'Something went wrong' }, { supabase });
+    const op = (supabase as any).ops.find((o: any) => o.type === 'update' && o.table === 'runs');
+    expect(op.values.status).toBe('error');
+    expect(op.values.error).toBe('Something went wrong');
+    expect(op.values.finished_at).toBeTypeOf('string');
+  });
+
   it('updateRunStatus only allows updates from queued/running and prevents running -> queued', async () => {
     const supabase = new FakeSupabase() as unknown as SupabaseClient;
     const id = randomUUID();

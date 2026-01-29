@@ -88,9 +88,9 @@ export async function updateRunStatus(
   const supabase = opts.supabase ?? connect();
   const { status, error } = typeof result === 'object' ? result : { status: result };
 
-  const data: Partial<Data<Run>> = { status, error };
+  const data: Partial<Data<Run>> = toData(RunSchema.partial())({ status, error });
   if (status === 'running') data.started_at = new Date().toISOString();
-  if (status === 'passed' || status === 'failed') data.finished_at = new Date().toISOString();
+  if (status === 'passed' || status === 'failed' || status === 'error') data.finished_at = new Date().toISOString();
 
   await authorize('runs', runId, { supabase, by: opts.by });
 
