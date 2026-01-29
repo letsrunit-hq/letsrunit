@@ -15,7 +15,7 @@ function makeEntry(partial: Partial<JournalEntry> = {}): JournalEntry {
 describe('SupabaseSink', () => {
   const runId = 'run-123';
   const projectId = 'project-123';
-  let consoleMock: { error: ReturnType<typeof vi.fn> };
+  let consoleMock: { error: ReturnType<typeof vi.fn>; warn: ReturnType<typeof vi.fn> };
   let insertMock: ReturnType<typeof vi.fn>;
   let uploadMock: ReturnType<typeof vi.fn>;
   let getPublicUrlMock: ReturnType<typeof vi.fn>;
@@ -26,7 +26,7 @@ describe('SupabaseSink', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }));
 
-    consoleMock = { error: vi.fn() };
+    consoleMock = { error: vi.fn(), warn: vi.fn() };
 
     insertMock = vi.fn().mockResolvedValue({ error: null });
     fromTableMock = vi.fn((_table: string) => ({ insert: insertMock }));
@@ -43,7 +43,7 @@ describe('SupabaseSink', () => {
   });
 
   it('inserts a log row', async () => {
-    const sink = new SupabaseSink({ supabase: client, run: { id: runId, projectId }, console: consoleMock });
+    const sink = new SupabaseSink({ supabase: client, run: { id: runId, projectId }, console: consoleMock as any });
 
     await sink.publish(makeEntry({ message: 'No files', artifacts: [] }));
 
@@ -71,7 +71,7 @@ describe('SupabaseSink', () => {
       supabase: client,
       run: { id: runId, projectId },
       bucket: 'artifacts',
-      console: consoleMock,
+      console: consoleMock as any,
     });
 
     const bytes = new Uint8Array([1, 2, 3]);
@@ -106,7 +106,7 @@ describe('SupabaseSink', () => {
       supabase: client,
       run: { id: runId, projectId },
       bucket: 'artifacts',
-      console: consoleMock,
+      console: consoleMock as any,
     });
 
     const bytes = new Uint8Array([1, 2, 3]);
@@ -137,7 +137,7 @@ describe('SupabaseSink', () => {
       supabase: client,
       run: { id: runId, projectId },
       bucket: 'artifacts',
-      console: consoleMock,
+      console: consoleMock as any,
     });
 
     const bytes = new Uint8Array([9, 9]);

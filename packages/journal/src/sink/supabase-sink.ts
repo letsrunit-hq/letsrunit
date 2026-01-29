@@ -6,7 +6,7 @@ interface SupabaseSinkOptions {
   run: { id: string; projectId: string };
   tableName?: string;
   bucket?: string;
-  console?: { error: (...args: any[]) => void };
+  console?: { error: (...args: any[]) => void; warn: (...args: any[]) => void };
 }
 
 export class SupabaseSink implements Sink {
@@ -15,7 +15,7 @@ export class SupabaseSink implements Sink {
   private readonly runId: string;
   private readonly tableName: string;
   private readonly bucket?: string;
-  private readonly console: { error: (...args: any[]) => void };
+  private readonly console: { error: (...args: any[]) => void; warn: (...args: any[]) => void };
   private bucketEnsured = false;
 
   constructor(options: SupabaseSinkOptions) {
@@ -53,7 +53,7 @@ export class SupabaseSink implements Sink {
       await this.supabase.storage?.createBucket?.(this.bucket, { public: true });
       this.bucketEnsured = true;
     } catch (error) {
-      this.console.error(error);
+      this.console.warn(error);
     }
   }
 
@@ -89,7 +89,7 @@ export class SupabaseSink implements Sink {
           size: artifact.size,
         });
       } catch (error) {
-        this.console.error('SupabaseSink upload failed:', error);
+        this.console.warn('SupabaseSink upload failed:', error);
       }
     }
 
