@@ -24,6 +24,8 @@ describe('SupabaseSink', () => {
   let client: any;
 
   beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }));
+
     consoleMock = { error: vi.fn() };
 
     insertMock = vi.fn().mockResolvedValue({ error: null });
@@ -64,7 +66,7 @@ describe('SupabaseSink', () => {
     expect(getPublicUrlMock).not.toHaveBeenCalled();
   });
 
-  it('uploads artifacts to storage', async () => {
+  it('uploads artifacts to storage if not exists', async () => {
     const sink = new SupabaseSink({
       supabase: client,
       run: { id: runId, projectId },
@@ -82,14 +84,48 @@ describe('SupabaseSink', () => {
 
     await sink.publish(makeEntry({ message: 'With file', artifacts: [artifact] }));
 
+    // HEAD request to check existence
+    expect(fetch).toHaveBeenCalledWith(`https://cdn.example/${projectId}/a.txt`, { method: 'HEAD' });
+
     // Upload called with correct bucket and path
     expect(storageFromMock).toHaveBeenCalledWith('artifacts');
-    expect(uploadMock).toHaveBeenCalledWith(`${projectId}/a.txt`, bytes, { upsert: false, contentType: 'text/plain' });
+    expect(uploadMock).toHaveBeenCalledWith(`${projectId}/a.txt`, bytes, { upsert: true, contentType: 'text/plain' });
 
     // Insert contains artifacts with public URL
     expect(insertMock).toBeCalledWith(
       expect.objectContaining({
         artifacts: [{ name: 'a.txt', url: `https://cdn.example/${projectId}/a.txt`, size: bytes.length }],
+      }),
+    );
+  });
+
+  it('skips upload if artifact already exists', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({ ok: true } as Response);
+
+    const sink = new SupabaseSink({
+      supabase: client,
+      run: { id: runId, projectId },
+      bucket: 'artifacts',
+      console: consoleMock,
+    });
+
+    const bytes = new Uint8Array([1, 2, 3]);
+    const artifact: any = {
+      name: 'exists.txt',
+      size: bytes.length,
+      bytes: vi.fn().mockResolvedValue(bytes),
+      type: 'text/plain',
+    };
+
+    await sink.publish(makeEntry({ message: 'Exists', artifacts: [artifact] }));
+
+    expect(fetch).toHaveBeenCalledWith(`https://cdn.example/${projectId}/exists.txt`, { method: 'HEAD' });
+    expect(uploadMock).not.toHaveBeenCalled();
+
+    // Still inserts row with artifact info
+    expect(insertMock).toBeCalledWith(
+      expect.objectContaining({
+        artifacts: [{ name: 'exists.txt', url: `https://cdn.example/${projectId}/exists.txt`, size: bytes.length }],
       }),
     );
   });
@@ -110,7 +146,6 @@ describe('SupabaseSink', () => {
     await sink.publish(makeEntry({ message: 'Upload fails', artifacts: [artifact] }));
 
     expect(uploadMock).toHaveBeenCalled();
-    expect(getPublicUrlMock).not.toHaveBeenCalled();
 
     // Insert should have empty artifacts
     expect(insertMock).toBeCalledWith(expect.objectContaining({ artifacts: [] }));

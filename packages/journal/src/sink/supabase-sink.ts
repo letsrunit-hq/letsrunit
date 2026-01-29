@@ -71,19 +71,21 @@ export class SupabaseSink implements Sink {
     for (const artifact of uniqueArtifacts) {
       try {
         const path = `${this.projectId}/${artifact.name}`;
-        const { error } = await this.supabase.storage
-          .from(this.bucket)
-          .upload(path, await artifact.bytes(), { contentType: artifact.type, upsert: false });
-
-        if (error && Number((error as any).statusCode) !== 409) {
-          throw error;
-        }
-
         const { data } = this.supabase.storage.from(this.bucket).getPublicUrl(path);
+        const publicUrl = data.publicUrl;
+
+        const exists = await this.artifactExists(publicUrl);
+
+        if (!exists) {
+          const { error } = await this.supabase.storage
+            .from(this.bucket)
+            .upload(path, await artifact.bytes(), { contentType: artifact.type, upsert: true });
+          if (error) throw error;
+        }
 
         stored.push({
           name: artifact.name,
-          url: data.publicUrl,
+          url: publicUrl,
           size: artifact.size,
         });
       } catch (error) {
@@ -92,5 +94,14 @@ export class SupabaseSink implements Sink {
     }
 
     return stored;
+  }
+
+  private async artifactExists(url: string): Promise<boolean> {
+    try {
+      const response = await fetch(url, { method: 'HEAD' });
+      return response.ok;
+    } catch {
+      return false;
+    }
   }
 }
