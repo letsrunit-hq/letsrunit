@@ -12,6 +12,15 @@ async function ensureBucket(supabase: SupabaseClient, bucket: string) {
   } catch {}
 }
 
+async function artifactExists(url: string): Promise<boolean> {
+  try {
+    const response = await fetch(url, { method: 'HEAD' });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
 export async function saveScreenshot(
   projectId: string,
   screenshot: File,
@@ -21,16 +30,22 @@ export async function saveScreenshot(
   await ensureBucket(supabase, bucket);
 
   const path = `${projectId}/${screenshot.name}`;
-  const bytes = await screenshot.bytes();
-  const { error: uploadError } = await supabase.storage
-    .from(bucket)
-    .upload(path, bytes, { contentType: screenshot.type, upsert: false });
-
-  if (uploadError && Number((uploadError as any).statusCode) !== 409) {
-    throw new Error(`Failed to upload screenshot to bucket '${bucket}'`, { cause: uploadError });
-  }
 
   const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+  const publicUrl = data.publicUrl;
 
-  return data.publicUrl;
+  const exists = await artifactExists(publicUrl);
+
+  if (!exists) {
+    const bytes = await screenshot.bytes();
+    const { error: uploadError } = await supabase.storage
+      .from(bucket)
+      .upload(path, bytes, { contentType: screenshot.type, upsert: true });
+
+    if (uploadError) {
+      throw new Error(`Failed to upload screenshot to bucket '${bucket}'`, { cause: uploadError });
+    }
+  }
+
+  return publicUrl;
 }
