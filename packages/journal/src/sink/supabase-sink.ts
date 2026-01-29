@@ -1,5 +1,5 @@
-import { SupabaseClient } from '@supabase/supabase-js';
-import type { JournalEntry, Sink } from '../types';
+import { SupabaseClient } from "@supabase/supabase-js";
+import type { JournalEntry, Sink } from "../types";
 
 interface SupabaseSinkOptions {
   supabase: SupabaseClient;
@@ -69,23 +69,26 @@ export class SupabaseSink implements Sink {
     );
 
     for (const artifact of uniqueArtifacts) {
-      const path = `${this.projectId}/${artifact.name}`;
-      const { error } = await this.supabase.storage
-        .from(this.bucket)
-        .upload(path, await artifact.bytes(), { contentType: artifact.type, upsert: false });
+      try {
+        const path = `${this.projectId}/${artifact.name}`;
+        const { error } = await this.supabase.storage
+          .from(this.bucket)
+          .upload(path, await artifact.bytes(), { contentType: artifact.type, upsert: false });
 
-      if (error && Number((error as any).statusCode) !== 409) {
+        if (error && Number((error as any).statusCode) !== 409) {
+          throw error;
+        }
+
+        const { data } = this.supabase.storage.from(this.bucket).getPublicUrl(path);
+
+        stored.push({
+          name: artifact.name,
+          url: data.publicUrl,
+          size: artifact.size,
+        });
+      } catch (error) {
         this.console.error('SupabaseSink upload failed:', error);
-        continue;
       }
-
-      const { data } = this.supabase.storage.from(this.bucket).getPublicUrl(path);
-
-      stored.push({
-        name: artifact.name,
-        url: data.publicUrl,
-        size: artifact.size,
-      });
     }
 
     return stored;
