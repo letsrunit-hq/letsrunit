@@ -1,5 +1,5 @@
-import { SupabaseClient } from "@supabase/supabase-js";
-import type { JournalEntry, Sink } from "../types";
+import { SupabaseClient } from '@supabase/supabase-js';
+import type { JournalEntry, Sink } from '../types';
 
 interface SupabaseSinkOptions {
   supabase: SupabaseClient;

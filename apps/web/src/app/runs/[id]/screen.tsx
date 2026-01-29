@@ -36,7 +36,7 @@ export default function Screen(initial: ScreenOptions) {
     return (
       <main className="p-3 center">
         <AnimatedBackground waiting />
-        <QueueStatus />
+        <QueueStatus startTime={run?.createdAt} />
       </main>
     );
   }

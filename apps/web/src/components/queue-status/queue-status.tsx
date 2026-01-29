@@ -1,10 +1,30 @@
 import { Settings } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Card } from 'primereact/card';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './queue-status.css';
 
-export function QueueStatus() {
+interface QueueStatusProps {
+  startTime?: Date;
+}
+
+export function QueueStatus({ startTime }: QueueStatusProps) {
+  const [isTakingLonger, setIsTakingLonger] = useState(false);
+
+  useEffect(() => {
+    if (!startTime) return;
+
+    const checkTime = () => {
+      const diff = Date.now() - startTime.getTime();
+      setIsTakingLonger(diff > 60 * 1000);
+    };
+
+    checkTime();
+    const interval = setInterval(checkTime, 5000);
+
+    return () => clearInterval(interval);
+  }, [startTime]);
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
@@ -54,6 +74,16 @@ export function QueueStatus() {
             <div className="mb-2 text-500">Estimated Wait Time</div>
             <div className="text-color">&lt; 1 minute</div>
           </div>
+
+          {isTakingLonger && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-primary text-sm font-medium mt-2"
+            >
+              This is taking longer than expected, there may be issues
+            </motion.div>
+          )}
         </div>
       </Card>
 
