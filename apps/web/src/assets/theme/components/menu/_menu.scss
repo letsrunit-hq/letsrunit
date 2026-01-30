@@ -30,4 +30,42 @@
 		border-top: $divider;
 		margin: $menuSeparatorMargin;
 	}
+
+    /* Sidebar Menu styling */
+    &.bg-transparent {
+        .p-menuitem-link {
+            transition: background-color $transitionDuration, color $transitionDuration;
+
+            .p-menuitem-icon {
+                color: $shade400;
+            }
+
+            .p-menuitem-text {
+                color: $shade400;
+                font-weight: 500;
+            }
+
+            &:hover {
+                background: $shade900;
+                .p-menuitem-text {
+                    color: $shade000;
+                }
+                .p-menuitem-icon {
+                    color: $shade000;
+                }
+            }
+        }
+
+        .p-menuitem.p-highlight > .p-menuitem-link {
+            background: rgba($primaryColor, 0.1);
+
+            .p-menuitem-text {
+                color: $primaryColor;
+            }
+
+            .p-menuitem-icon {
+                color: $primaryColor;
+            }
+        }
+    }
 }

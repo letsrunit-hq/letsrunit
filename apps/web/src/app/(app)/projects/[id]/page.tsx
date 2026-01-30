@@ -1,6 +1,7 @@
 import { GuestModeBanner } from '@/components/guest-mode-banner';
 import { ProjectFeatures } from '@/components/project-features';
 import { ProjectPanel } from '@/components/project-panel';
+import Tile from '@/components/tile/tile';
 import { getUser } from '@/libs/auth';
 import { connect as connectServerSupabase } from '@/libs/supabase/server';
 import { getProject, listFeatures, maybe } from '@letsrunit/model';
@@ -11,7 +12,6 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Button } from 'primereact/button';
 import React from 'react';
-import Tile from '../../../components/tile/tile';
 import styles from './page.module.css';
 
 type PageProps = { params: Promise<{ id: UUID }> };

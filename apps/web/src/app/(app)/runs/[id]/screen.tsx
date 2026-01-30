@@ -2,15 +2,15 @@
 
 import { AnimatedBackground } from '@/components/animated-background';
 import { QueueStatus } from '@/components/queue-status';
+import { RunHistory } from '@/components/run-history/run-history';
 import { RunResult } from '@/components/run-result';
 import { SubtleHeader } from '@/components/subtle-header';
-import useFeature from '@/hooks/use-feature';
-import useProject from '@/hooks/use-project';
+import { useFeature } from '@/hooks/use-feature';
+import { useProject } from '@/hooks/use-project';
 import { useRun } from '@/hooks/use-run';
 import type { Feature, Project, Run } from '@letsrunit/model';
 import { BreadCrumb } from 'primereact/breadcrumb';
 import React from 'react';
-import RunHistory from '../../../components/run-history/run-history';
 import styles from './screen.module.css';
 
 interface ScreenOptions {

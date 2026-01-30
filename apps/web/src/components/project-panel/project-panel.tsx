@@ -1,9 +1,10 @@
-import React from 'react';
-import { Panel } from 'primereact/panel';
-import type { Project } from '@letsrunit/model';
-import { ExternalLink } from 'lucide-react';
 import { Screenshot } from '@/components/screenshot';
+import type { Project } from '@letsrunit/model';
+import { cn } from '@letsrunit/utils';
 import ISO6391 from 'iso-639-1';
+import { ExternalLink } from 'lucide-react';
+import { Panel } from 'primereact/panel';
+import React from 'react';
 
 export type ProjectPanelProps = {
   className?: string;
@@ -21,7 +22,7 @@ export function ProjectPanel({ className, project }: ProjectPanelProps) {
   }, [project.url]);
 
   return (
-    <Panel className={className}>
+    <Panel className={cn(className, 'mobile-full')}>
       <div className="flex flex-column md:flex-row gap-4">
         {/* Left column - Screenshot */}
         <div className="w-full md:w-5">

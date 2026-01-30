@@ -30,7 +30,7 @@ export default async function Page({ params }: PageProps) {
       <div className="mb-4">
         <div className="flex flex-column md:flex-row align-items-start md:align-items-center justify-content-between">
           <div className="flex flex-row align-items-center mb-3 md:mb-0">
-            <Link href={`/projects/${id}`} passHref>
+            <Link href={`/apps/web/src/app/(app)/projects/${id}`} passHref>
               <Button
                 className="mr-4"
                 aria-label="Run history"

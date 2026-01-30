@@ -1,9 +1,9 @@
 'use client';
 
 import { DropdownMenu } from '@/components/dropdown-menu';
+import { cn } from '@letsrunit/utils';
 import {
   Building2,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   History,
@@ -15,63 +15,57 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
+import { Menu } from 'primereact/menu';
 import { MenuItem } from 'primereact/menuitem';
 import React, { useState } from 'react';
 
-interface Project {
+export interface Project {
   id: string;
   name: string;
 }
 
-interface Organization {
-  id: string;
+export interface Organization {
+  account_id: string;
   name: string;
 }
 
-const projects: Project[] = [
-  { id: '1', name: 'E-commerce Platform' },
-  { id: '2', name: 'Mobile App Tests' },
-  { id: '3', name: 'Admin Dashboard' },
-];
+export interface UserInfo {
+  name: string;
+  email: string;
+}
 
-const organizations: Organization[] = [
-  { id: '1', name: 'Acme Corp' },
-  { id: '2', name: 'My Personal Workspace' },
-];
+export interface NavigationMenuProps {
+  organizations: Organization[];
+  projects: Project[];
+  selectedOrg: Organization;
+  selectedProject: Project;
+  user: UserInfo;
+}
 
-export function NavigationMenu() {
+export function NavigationMenu({ organizations, projects, selectedOrg, selectedProject, user }: NavigationMenuProps) {
   const [collapsed, setCollapsed] = useState(false);
-  const [selectedProject] = useState(projects[0]);
-  const [selectedOrg] = useState(organizations[0]);
 
   const pathname = usePathname();
   const { projectId } = useParams() as { projectId?: string };
 
   const isActive = (path: string) => {
     if (path === 'dashboard')
-      return (
-        pathname.includes('/project/') &&
-        !pathname.includes('/history') &&
-        !pathname.includes('/settings')
-      );
+      return pathname.includes('/project/') && !pathname.includes('/history') && !pathname.includes('/settings');
     if (path === 'history') return pathname.includes('/history');
     if (path === 'settings') return pathname.includes('/settings');
+    if (path === 'org-settings') return pathname.includes('/org/') && pathname.includes('/settings');
     return false;
   };
+
+  const isAnyActive = (paths: string[]) => paths.some(isActive);
 
   const orgMenuItems: MenuItem[] = [
     {
       label: 'Organizations',
-      template: (item) => (
-        <div className="px-3 py-2 text-xs font-medium text-zinc-500 uppercase tracking-wider">
-          {item.label}
-        </div>
-      ),
     },
     ...organizations.map((org) => ({
       label: org.name,
-      icon: <Building2 className="w-4 h-4 mr-2" />,
-      className: selectedOrg.id === org.id ? 'bg-orange-500/10 text-orange-400' : 'text-zinc-300',
+      icon: <Building2 className="mr-2" />,
       command: () => {
         /* handle org change */
       },
@@ -79,7 +73,7 @@ export function NavigationMenu() {
     { separator: true },
     {
       label: 'Create organization',
-      icon: <Plus className="w-4 h-4 mr-2" />,
+      icon: <Plus className="mr-2" />,
       command: () => {
         /* handle create */
       },
@@ -89,49 +83,21 @@ export function NavigationMenu() {
   const projectMenuItems: MenuItem[] = [
     {
       label: 'All Projects',
-      template: () => (
-        <Link
-          href="/projects"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-zinc-300 hover:bg-zinc-800 transition-colors mb-2"
-        >
-          <div className="w-4 h-4 rounded bg-gradient-to-br from-orange-500 to-amber-600" />
-          <span className="font-medium text-sm">All Projects</span>
-        </Link>
-      ),
     },
     { separator: true },
     {
       label: 'Projects',
-      template: (item) => (
-        <div className="px-3 py-2 text-xs font-medium text-zinc-500 uppercase tracking-wider">
-          {item.label}
-        </div>
-      ),
     },
     ...projects.map((project) => ({
       label: project.name,
-      template: () => (
-        <Link
-          href={`/project/${project.id}`}
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-            selectedProject.id === project.id
-              ? 'bg-orange-500/10 text-orange-400'
-              : 'text-zinc-300 hover:bg-zinc-800'
-          }`}
-        >
-          <div
-            className={`w-2 h-2 rounded-full ${
-              selectedProject.id === project.id ? 'bg-orange-400' : 'bg-zinc-600'
-            }`}
-          />
-          <span className="font-medium text-sm">{project.name}</span>
-        </Link>
-      ),
+      command: () => {
+        /* handle project change */
+      },
     })),
     { separator: true },
     {
       label: 'Create new project',
-      icon: <Plus className="w-4 h-4 mr-2" />,
+      icon: <Plus className="mr-2" />,
       command: () => {
         /* handle create */
       },
@@ -141,188 +107,167 @@ export function NavigationMenu() {
   const userMenuItems: MenuItem[] = [
     {
       label: 'User Settings',
-      icon: <Settings className="w-4 h-4 mr-2" />,
-      template: (item) => (
-        <Link
-          href="/user/settings"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-zinc-300 hover:bg-zinc-800 transition-colors"
-        >
-          <Settings className="w-4 h-4" />
-          <span className="text-sm">{item.label}</span>
-        </Link>
-      ),
+      icon: <Settings className="mr-2" />,
+      command: () => {
+        /* handle navigate */
+      },
     },
     {
       label: 'Sign out',
-      icon: <LogOut className="w-4 h-4 mr-2 text-red-400" />,
-      className: 'text-red-400',
+      icon: <LogOut className="mr-2" />,
       command: () => {
         /* handle sign out */
       },
     },
   ];
 
+  const renderItem = (item: MenuItem) => {
+    const active = item.id ? isActive(item.id) : false;
+
+    return (
+      <Link
+        href={item.url || '#'}
+        className={cn(
+          'p-menuitem-link flex align-items-center gap-3 px-3 py-2-5 border-round-lg',
+          collapsed ? 'justify-content-center' : '',
+        )}
+        title={collapsed ? item.label : undefined}
+      >
+        <span className={cn('p-menuitem-icon', active && 'p-highlight')}>
+          {item.icon}
+        </span>
+        {!collapsed && (
+          <span className={cn('p-menuitem-text', active && 'p-highlight')}>
+            {item.label}
+          </span>
+        )}
+      </Link>
+    );
+  };
+
+  const navMenuItems: MenuItem[] = [
+    {
+      template: () => (
+        <div className="h-4rem flex align-items-center px-4">
+          <DropdownMenu
+            model={orgMenuItems}
+            className={cn(
+              'w-full flex align-items-center gap-3 px-3 py-2-5 border-round-lg transition-colors',
+              collapsed ? 'justify-content-center' : '',
+            )}
+            title={selectedOrg.name}
+            variant={collapsed ? 'icon' : 'full'}
+            selectedItem={{
+              name: selectedOrg.name,
+              icon: <Building2 />,
+            }}
+          />
+        </div>
+      ),
+    },
+    {
+      id: 'org-settings',
+      label: 'Organization Settings',
+      icon: <Settings />,
+      url: `/org/${selectedOrg.account_id}/settings`,
+      template: renderItem,
+    },
+    {
+      template: () => <div className="px-4 py-2"><div className="border-bottom-1" /></div>,
+    },
+    {
+      template: () => (
+        <div className="p-4">
+          <DropdownMenu
+            model={projectMenuItems}
+            className={cn(
+              'w-full flex align-items-center gap-3 px-3 py-2-5 border-round-lg transition-colors group',
+              collapsed ? 'justify-content-center' : '',
+            )}
+            title={selectedProject.name}
+            variant={collapsed ? 'icon' : 'full'}
+            selectedItem={{
+              name: selectedProject.name,
+              subtext: selectedOrg.name,
+              image: selectedProject.name,
+            }}
+          />
+        </div>
+      ),
+    },
+    {
+      id: 'dashboard',
+      label: 'Dashboard',
+      icon: <LayoutDashboard />,
+      url: `/project/${projectId || '1'}`,
+      template: renderItem,
+    },
+    {
+      id: 'history',
+      label: 'Run History',
+      icon: <History />,
+      url: `/project/${projectId || '1'}/history`,
+      template: renderItem,
+    },
+    {
+      id: 'settings',
+      label: 'Project Settings',
+      icon: <Settings />,
+      url: `/project/${projectId || '1'}/settings`,
+      template: renderItem,
+    },
+    {
+      template: () => <div className="flex-grow-1" />,
+    },
+    {
+      template: () => (
+        <div className="p-4">
+          <DropdownMenu
+            model={userMenuItems}
+            className={cn(
+              'w-full flex align-items-center gap-3 px-3 py-2-5 border-round-lg transition-colors',
+              collapsed ? 'justify-content-center' : '',
+            )}
+            title={collapsed ? user.name : undefined}
+            variant={collapsed ? 'icon' : 'full'}
+            selectedItem={{
+              name: user.name,
+              subtext: user.email,
+              icon: (
+                <div className="avatar">
+                  <User style={{ width: '1rem', height: '1rem' }} />
+                </div>
+              ),
+            }}
+          />
+        </div>
+      ),
+    },
+  ];
+
   return (
     <aside
-      className={`hidden lg:flex flex-col h-screen bg-zinc-950 border-r border-zinc-800 sticky top-0 transition-all duration-300 ease-in-out ${
-        collapsed ? 'w-20' : 'w-[280px]'
-      }`}
+      className={cn(
+        'hidden lg:flex flex-column h-screen sticky top-0 transition-all transition-duration-300 transition-ease-in-out',
+        collapsed ? 'w-5rem' : 'w-18rem',
+      )}
     >
-      {/* Header - Organization Dropdown */}
-      <div className="h-16 flex items-center px-4">
-        <DropdownMenu
-          model={orgMenuItems}
-          trigger={(toggle) => (
-            <button
-              onClick={toggle}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-zinc-900 transition-colors ${
-                collapsed ? 'justify-content-center' : ''
-              }`}
-              title={collapsed ? selectedOrg.name : undefined}
-            >
-              <Building2 className="w-5 h-5 text-zinc-400" />
-              {!collapsed && (
-                <>
-                  <span className="flex-1 text-left text-sm text-white truncate font-medium">
-                    {selectedOrg.name}
-                  </span>
-                  <ChevronDown className="w-4 h-4 text-zinc-400" />
-                </>
-              )}
-            </button>
-          )}
-        />
-      </div>
-
-      {/* Organization Settings */}
-      <div className="px-4 pb-4 border-b border-zinc-800 text-sm">
-        <Link
-          href={`/org/${selectedOrg.id}/settings`}
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-zinc-400 hover:text-white hover:bg-zinc-900 ${
-            collapsed ? 'justify-content-center' : ''
-          }`}
-          title={collapsed ? 'Organization Settings' : undefined}
-        >
-          <Settings className="w-5 h-5" />
-          {!collapsed && <span className="font-medium">Organization Settings</span>}
-        </Link>
-      </div>
+      <Menu
+        model={navMenuItems}
+        className="w-full h-full border-none bg-transparent flex flex-column py-0 overflow-y-auto"
+      />
 
       {/* Collapse Toggle */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="absolute -right-3 top-20 w-6 h-6 bg-zinc-900 border border-zinc-800 rounded-full flex items-center justify-center hover:bg-zinc-800 transition-colors z-10"
+        className="collapse-toggle"
       >
         {collapsed ? (
-          <ChevronRight className="w-3 h-3 text-zinc-400" />
+          <ChevronRight style={{ width: '0.75rem', height: '0.75rem' }} />
         ) : (
-          <ChevronLeft className="w-3 h-3 text-zinc-400" />
+          <ChevronLeft style={{ width: '0.75rem', height: '0.75rem' }} />
         )}
       </button>
-
-      {/* Project Switcher */}
-      <div className="p-4">
-        <DropdownMenu
-          model={projectMenuItems}
-          trigger={(toggle) => (
-            <button
-              onClick={toggle}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-zinc-900 transition-colors group ${
-                collapsed ? 'justify-center' : ''
-              }`}
-              title={collapsed ? selectedProject.name : undefined}
-            >
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center">
-                <span className="text-white text-sm font-medium">
-                  {selectedProject.name.charAt(0)}
-                </span>
-              </div>
-              {!collapsed && (
-                <>
-                  <div className="flex-1 text-left overflow-hidden">
-                    <div className="text-white font-medium text-sm truncate">
-                      {selectedProject.name}
-                    </div>
-                    <div className="text-zinc-500 text-xs truncate">{selectedOrg.name}</div>
-                  </div>
-                  <ChevronDown className="w-4 h-4 text-zinc-400" />
-                </>
-              )}
-            </button>
-          )}
-        />
-      </div>
-
-      {/* Navigation Links */}
-      <nav className="flex-1 px-4 pb-4 space-y-1 overflow-y-auto text-sm">
-        <Link
-          href={`/project/${projectId || '1'}`}
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
-            isActive('dashboard')
-              ? 'bg-orange-500/10 text-orange-400'
-              : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
-          } ${collapsed ? 'justify-center' : ''}`}
-          title={collapsed ? 'Dashboard' : undefined}
-        >
-          <LayoutDashboard className="w-5 h-5" />
-          {!collapsed && <span className="font-medium">Dashboard</span>}
-        </Link>
-        <Link
-          href={`/project/${projectId || '1'}/history`}
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
-            isActive('history')
-              ? 'bg-orange-500/10 text-orange-400'
-              : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
-          } ${collapsed ? 'justify-center' : ''}`}
-          title={collapsed ? 'Run History' : undefined}
-        >
-          <History className="w-5 h-5" />
-          {!collapsed && <span className="font-medium">Run History</span>}
-        </Link>
-        <Link
-          href={`/project/${projectId || '1'}/settings`}
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
-            isActive('settings')
-              ? 'bg-orange-500/10 text-orange-400'
-              : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
-          } ${collapsed ? 'justify-center' : ''}`}
-          title={collapsed ? 'Settings' : undefined}
-        >
-          <Settings className="w-5 h-5" />
-          {!collapsed && <span className="font-medium">Project Settings</span>}
-        </Link>
-      </nav>
-
-      {/* Bottom Section */}
-      <div className="border-zinc-800">
-        {/* User Menu */}
-        <div className="p-4">
-          <DropdownMenu
-            model={userMenuItems}
-            trigger={(toggle) => (
-              <button
-                onClick={toggle}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-zinc-900 transition-colors ${
-                  collapsed ? 'justify-center' : ''
-                }`}
-                title={collapsed ? 'John Doe' : undefined}
-              >
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center">
-                  <User className="w-4 h-4 text-white" />
-                </div>
-                {!collapsed && (
-                  <>
-                    <div className="flex-1 text-left overflow-hidden">
-                      <div className="text-white font-medium text-sm truncate">John Doe</div>
-                      <div className="text-zinc-500 text-xs truncate">john@example.com</div>
-                    </div>
-                  </>
-                )}
-              </button>
-            )}
-          />
-        </div>
-      </div>
     </aside>
   );
 }
