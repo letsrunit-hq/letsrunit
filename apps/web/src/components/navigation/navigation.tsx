@@ -1,9 +1,12 @@
 import { NavigationMenu } from '@/components/navigation-menu/navigation-menu';
+import { ensureSignedIn } from '@/libs/auth';
 import { connect } from '@/libs/supabase/server';
 import React from 'react';
 
 export async function Navigation() {
   const supabase = await connect();
+
+  await ensureSignedIn({ supabase });
 
   const {
     data: { user },

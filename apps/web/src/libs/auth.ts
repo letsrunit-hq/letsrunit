@@ -1,6 +1,16 @@
 import type { Provider, SupabaseClient, User } from '@supabase/supabase-js';
 import { connect as supabase } from './supabase/browser';
 
+export async function isUser(opts: { supabase?: SupabaseClient } = {}): Promise<boolean | 'anonymous'> {
+  const client = opts.supabase ?? supabase();
+
+  const { data } = await client.auth.getUser();
+
+  if (!data.user) return false;
+  if (data.user.is_anonymous) return 'anonymous';
+  return true;
+}
+
 export async function ensureSignedIn(opts: { supabase?: SupabaseClient } = {}) {
   const client = opts.supabase ?? supabase();
 
@@ -21,10 +31,7 @@ export async function getUser(opts: { supabase?: SupabaseClient } = {}): Promise
   return data.user;
 }
 
-export async function login(
-  params: { email: string; password: string },
-  opts: { supabase?: SupabaseClient } = {},
-) {
+export async function login(params: { email: string; password: string }, opts: { supabase?: SupabaseClient } = {}) {
   const client = opts.supabase ?? supabase();
 
   const {

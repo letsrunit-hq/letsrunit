@@ -248,7 +248,7 @@ export function NavigationMenu({ organizations, projects, selectedOrg, selectedP
   return (
     <aside
       className={cn(
-        'hidden lg:flex flex-column h-screen sticky top-0 transition-all transition-duration-300 transition-ease-in-out',
+        'hidden lg:flex flex-column h-screen fixed left-0 top-0 transition-all transition-duration-300 transition-ease-in-out',
         collapsed ? 'w-5rem' : 'w-18rem',
       )}
     >
