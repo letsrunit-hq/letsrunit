@@ -87,6 +87,9 @@ div[role="link"]{
   }
 }
 
+.border-subtle {
+  border-color: #222 !important;
+}
 .border-primary-subtle {
   border-color: rgba(245, 158, 11, 0.3) !important;
 }

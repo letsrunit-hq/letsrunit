@@ -1,7 +1,10 @@
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+import Link from 'next/link';
+import { Avatar } from 'primereact/avatar';
+import { Button } from 'primereact/button';
 import { Menu } from 'primereact/menu';
-import { MenuItem } from 'primereact/menuitem';
-import React, { useRef } from 'react';
+import { MenuItem, type MenuItemOptions } from 'primereact/menuitem';
+import React, { useMemo, useRef, useState } from 'react';
 
 export type DropdownMenuProps = {
   className?: string;
@@ -12,53 +15,88 @@ export type DropdownMenuProps = {
     name: string;
     subtext?: string;
     icon?: React.ReactNode;
-    image?: string;
   };
+};
+
+const mapMenuItem = (item: MenuItem): MenuItem => {
+  if (item.url && !item.template) {
+    return {
+      ...item,
+      template: (item: MenuItem, options: MenuItemOptions) => (
+        <div className="p-menuitem-content">
+          <Link href={item.url!} className={options.className} target={item.target} onClick={options.onClick}>
+            {item.icon && <span className={options.iconClassName}>{item.icon}</span>}
+            <span className={options.labelClassName}>{item.label}</span>
+          </Link>
+        </div>
+      ),
+    };
+  }
+
+  if (item.items) {
+    return {
+      ...item,
+      items: item.items.map((subItems) =>
+        Array.isArray(subItems) ? subItems.map(mapMenuItem) : mapMenuItem(subItems),
+      ) as MenuItem[] | MenuItem[][],
+    };
+  }
+
+  return item;
 };
 
 export function DropdownMenu({ className, title, model, variant = 'full', selectedItem }: DropdownMenuProps) {
   const menu = useRef<Menu>(null);
+  const [visible, setVisible] = useState(false);
+
+  const enhancedModel = useMemo(() => model.map(mapMenuItem), [model]);
 
   const toggle = (event: React.MouseEvent | React.KeyboardEvent) => {
     menu.current?.toggle(event);
   };
 
   const renderContent = () => {
+    if (!selectedItem) return null;
+
     if (variant === 'icon') {
-      if (selectedItem?.icon) return selectedItem.icon;
-      if (selectedItem?.image) {
-        return (
-          <div className="avatar">
-            <span>{selectedItem.name.charAt(0)}</span>
-          </div>
-        );
-      }
-      return null;
+      return selectedItem.icon ?? <Avatar label={selectedItem.name.charAt(0)} />;
     }
 
     return (
       <>
-        {selectedItem?.icon && selectedItem.icon}
-        {selectedItem?.image && (
-          <div className="avatar">
-            <span>{selectedItem.name.charAt(0)}</span>
-          </div>
-        )}
+        {selectedItem.icon ?? <Avatar label={selectedItem.name.charAt(0)} />}
         <div className="flex-1 text-left overflow-hidden">
-          <div className="white-space-nowrap overflow-hidden text-overflow-ellipsis font-medium text-sm">{selectedItem?.name}</div>
-          {selectedItem?.subtext && <div className="white-space-nowrap overflow-hidden text-overflow-ellipsis text-xs">{selectedItem.subtext}</div>}
+          <div className="white-space-nowrap overflow-hidden text-overflow-ellipsis font-medium text-sm">
+            {selectedItem?.name}
+          </div>
+          {selectedItem?.subtext && (
+            <div className="white-space-nowrap overflow-hidden text-overflow-ellipsis text-xs">
+              {selectedItem.subtext}
+            </div>
+          )}
         </div>
-        <ChevronDown style={{ width: '1rem', height: '1rem' }} />
+        {visible ? (
+          <ChevronUp width="1rem" height="1rem" data-testid="chevron-up" />
+        ) : (
+          <ChevronDown width="1rem" height="1rem" data-testid="chevron-down" />
+        )}
       </>
     );
   };
 
   return (
     <>
-      <Menu model={model} popup ref={menu} />
-      <button type="button" onClick={toggle} className={className} title={title}>
+      <Menu
+        className="w-16rem"
+        model={enhancedModel}
+        popup
+        ref={menu}
+        onShow={() => setVisible(true)}
+        onHide={() => setVisible(false)}
+      />
+      <Button type="button" onClick={toggle} className={className} title={title} text severity="contrast">
         {renderContent()}
-      </button>
+      </Button>
     </>
   );
 }

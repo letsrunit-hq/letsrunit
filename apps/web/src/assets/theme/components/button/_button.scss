@@ -628,6 +628,18 @@
                 border-color: transparent;
                 color: $contrastButtonBg;
             }
+
+            .p-menuitem & {
+                &:not(:disabled):hover {
+                    background: $shade900;
+                    color: $shade000;
+                }
+
+                &:not(:disabled):active {
+                    background: $shade900;
+                    color: $shade000;
+                }
+            }
         }
     }
 }

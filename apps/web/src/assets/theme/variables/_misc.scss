@@ -48,7 +48,7 @@ $dangerTagTextColor: #ff6467 !default;
 $dangerTagBorder: 1px solid color-mix(in oklab, #fb2c36 30%, transparent) !default;
 
 //avatar
-$avatarBg: $shade600 !default;
+$avatarBg: linear-gradient(to bottom right, $primaryColor, $primaryLightColor) !default;
 $avatarTextColor: $textColor !default;
 
 //chip

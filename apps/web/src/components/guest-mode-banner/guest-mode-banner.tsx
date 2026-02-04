@@ -15,7 +15,7 @@ export function GuestModeBanner({ className }: { className?: string }) {
         <Tile
           className="hidden md:flex"
           style={{ background: 'linear-gradient(to bottom right, rgba(245, 158, 11, 0.2), rgba(249, 115, 22, 0.2))' }}
-          icon={<UserX size={20} className="text-primary-400" />}
+          icon={<UserX key="icon" size={20} className="text-primary-400" />}
         />
 
         {/* Content */}

@@ -1,5 +1,6 @@
 'use client';
 
+import { Tile } from '@/components/tile';
 import useRunHistory from '@/hooks/use-run-history';
 import { formatDurationMs } from '@/libs/date-time';
 import type { Run, RunType } from '@letsrunit/model';
@@ -7,7 +8,6 @@ import type { UUID } from '@letsrunit/utils';
 import { cn } from '@letsrunit/utils';
 import { CheckCircle2, XCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { Chip } from 'primereact/chip';
 import { Panel } from 'primereact/panel';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Tag } from 'primereact/tag';
@@ -58,8 +58,9 @@ export function RunHistory({
             <div className="flex align-items-center justify-content-between gap-3">
               <div className="flex align-items-center gap-3">
                 {run.status !== 'queued' && run.status !== 'running' && (
-                  <Chip
-                    className={cn('tile tile-sm hidden sm:flex', run.status === 'passed' ? 'tile-green' : 'tile-red')}
+                  <Tile
+                    size="sm"
+                    className={cn('hidden sm:flex', run.status === 'passed' ? 'tile-green' : 'tile-red')}
                     aria-label={run.status}
                     icon={
                       run.status === 'passed' ? <CheckCircle2 key="icon" size={20} /> : <XCircle key="icon" size={20} />

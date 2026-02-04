@@ -1,39 +1,34 @@
 import { NavigationMenu } from '@/components/navigation-menu/navigation-menu';
-import { ensureSignedIn } from '@/libs/auth';
+import { getUser } from '@/libs/auth';
+import { getPathname, getSelected } from '@/libs/nav';
 import { connect } from '@/libs/supabase/server';
+import { maybe } from '@letsrunit/model';
 import React from 'react';
 
 export async function Navigation() {
   const supabase = await connect();
 
-  await ensureSignedIn({ supabase });
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return null;
-  }
+  const user = await getUser({ supabase }).catch(maybe);
+  if (!user) return null;
 
   const { data: accounts } = await supabase.rpc('get_accounts');
-  const { data: projects } = await supabase.from('projects').select('id, name');
-
-  const selectedOrg = accounts?.[0] || { account_id: '', name: '' };
-  const selectedProject = projects?.[0] || { id: '', name: '' };
+  const organizations = (accounts || []).filter((a: any) => !a.personal_account && a.account_id !== user.id);
+  const { data: projects } = await supabase.from('projects').select('id, name, favicon');
 
   const userInfo = {
     name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
     email: user.email || '',
   };
 
+  const pathname = await getPathname();
+  const selected = await getSelected(pathname, { supabase });
+
   return (
     <NavigationMenu
-      organizations={accounts || []}
+      organizations={organizations}
       projects={projects || []}
-      selectedOrg={selectedOrg}
-      selectedProject={selectedProject}
       user={userInfo}
+      selected={selected}
     />
   );
 }

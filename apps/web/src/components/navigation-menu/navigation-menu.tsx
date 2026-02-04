@@ -1,6 +1,8 @@
 'use client';
 
 import { DropdownMenu } from '@/components/dropdown-menu';
+import type { Selected } from '@/libs/nav';
+import type { Project } from '@letsrunit/model';
 import { cn } from '@letsrunit/utils';
 import {
   Building2,
@@ -14,15 +16,11 @@ import {
   User,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useParams, usePathname } from 'next/navigation';
+import { Avatar } from 'primereact/avatar';
 import { Menu } from 'primereact/menu';
 import { MenuItem } from 'primereact/menuitem';
 import React, { useState } from 'react';
-
-export interface Project {
-  id: string;
-  name: string;
-}
+import Tile from '../tile/tile';
 
 export interface Organization {
   account_id: string;
@@ -36,40 +34,38 @@ export interface UserInfo {
 
 export interface NavigationMenuProps {
   organizations: Organization[];
-  projects: Project[];
-  selectedOrg: Organization;
-  selectedProject: Project;
+  projects: Pick<Project, 'id' | 'name' | 'favicon'>[];
   user: UserInfo;
+  selected: Selected;
 }
 
-export function NavigationMenu({ organizations, projects, selectedOrg, selectedProject, user }: NavigationMenuProps) {
+export function NavigationMenu({ organizations, projects, user, selected }: NavigationMenuProps) {
   const [collapsed, setCollapsed] = useState(false);
 
-  const pathname = usePathname();
-  const { projectId } = useParams() as { projectId?: string };
+  const selectedOrg = organizations.find((o) => o.account_id === selected.org);
+  const selectedProject = projects.find((p) => p.id === selected.project);
 
-  const isActive = (path: string) => {
-    if (path === 'dashboard')
-      return pathname.includes('/project/') && !pathname.includes('/history') && !pathname.includes('/settings');
-    if (path === 'history') return pathname.includes('/history');
-    if (path === 'settings') return pathname.includes('/settings');
-    if (path === 'org-settings') return pathname.includes('/org/') && pathname.includes('/settings');
-    return false;
-  };
-
-  const isAnyActive = (paths: string[]) => paths.some(isActive);
+  const isActive = (id: string) => selected.page === id;
 
   const orgMenuItems: MenuItem[] = [
     {
-      label: 'Organizations',
+      label: 'Personal',
+      icon: <User className="mr-2" />,
+      url: '/projects',
     },
-    ...organizations.map((org) => ({
-      label: org.name,
-      icon: <Building2 className="mr-2" />,
-      command: () => {
-        /* handle org change */
-      },
-    })),
+    ...(organizations.length > 0
+      ? [
+          { separator: true },
+          {
+            label: 'Organizations',
+            items: organizations.map((org) => ({
+              label: org.name,
+              icon: <Building2 className="mr-2" />,
+              url: `/org/${org.account_id}/projects`,
+            })),
+          },
+        ]
+      : []),
     { separator: true },
     {
       label: 'Create organization',
@@ -81,18 +77,9 @@ export function NavigationMenu({ organizations, projects, selectedOrg, selectedP
   ];
 
   const projectMenuItems: MenuItem[] = [
-    {
-      label: 'All Projects',
-    },
-    { separator: true },
-    {
-      label: 'Projects',
-    },
     ...projects.map((project) => ({
-      label: project.name,
-      command: () => {
-        /* handle project change */
-      },
+      label: project.name ?? 'unnamed',
+      url: `/projects/${project.id}`,
     })),
     { separator: true },
     {
@@ -133,14 +120,8 @@ export function NavigationMenu({ organizations, projects, selectedOrg, selectedP
         )}
         title={collapsed ? item.label : undefined}
       >
-        <span className={cn('p-menuitem-icon', active && 'p-highlight')}>
-          {item.icon}
-        </span>
-        {!collapsed && (
-          <span className={cn('p-menuitem-text', active && 'p-highlight')}>
-            {item.label}
-          </span>
-        )}
+        <span className={cn('p-menuitem-icon', active && 'p-highlight')}>{item.icon}</span>
+        {!collapsed && <span className={cn('p-menuitem-text', active && 'p-highlight')}>{item.label}</span>}
       </Link>
     );
   };
@@ -148,107 +129,86 @@ export function NavigationMenu({ organizations, projects, selectedOrg, selectedP
   const navMenuItems: MenuItem[] = [
     {
       template: () => (
-        <div className="h-4rem flex align-items-center px-4">
-          <DropdownMenu
-            model={orgMenuItems}
-            className={cn(
-              'w-full flex align-items-center gap-3 px-3 py-2-5 border-round-lg transition-colors',
-              collapsed ? 'justify-content-center' : '',
-            )}
-            title={selectedOrg.name}
-            variant={collapsed ? 'icon' : 'full'}
-            selectedItem={{
-              name: selectedOrg.name,
-              icon: <Building2 />,
-            }}
-          />
+        <DropdownMenu
+          model={orgMenuItems}
+          className={cn(
+            'w-full flex align-items-center gap-3 px-3 py-2-5 border-round-lg',
+            collapsed ? 'justify-content-center' : '',
+          )}
+          title={selectedOrg?.name || 'Personal'}
+          variant={collapsed ? 'icon' : 'full'}
+          selectedItem={{
+            name: selectedOrg?.name || 'Personal',
+            icon: selectedOrg?.name ? <Building2 /> : <User />,
+          }}
+        />
+      ),
+    },
+    {
+      id: 'org/settings',
+      label: 'Organization Settings',
+      icon: <Settings />,
+      url: `/org/${selectedOrg?.account_id}/settings`,
+      visible: !!selectedOrg,
+      template: renderItem,
+    },
+    {
+      visible: !!selectedProject,
+      template: () => (
+        <div className="py-2">
+          <div className="border-bottom-1 border-subtle" />
         </div>
       ),
     },
     {
-      id: 'org-settings',
-      label: 'Organization Settings',
-      icon: <Settings />,
-      url: `/org/${selectedOrg.account_id}/settings`,
-      template: renderItem,
-    },
-    {
-      template: () => <div className="px-4 py-2"><div className="border-bottom-1" /></div>,
-    },
-    {
-      template: () => (
-        <div className="p-4">
+      template: () =>
+        selectedProject ? (
           <DropdownMenu
             model={projectMenuItems}
             className={cn(
               'w-full flex align-items-center gap-3 px-3 py-2-5 border-round-lg transition-colors group',
               collapsed ? 'justify-content-center' : '',
             )}
-            title={selectedProject.name}
+            title={selectedProject.name || 'unnamed'}
             variant={collapsed ? 'icon' : 'full'}
             selectedItem={{
-              name: selectedProject.name,
-              subtext: selectedOrg.name,
-              image: selectedProject.name,
+              name: selectedProject.name || 'unnamed',
+              subtext: selectedOrg?.name || 'Personal',
+              icon: selectedProject.favicon ? <Tile size="xs" image={selectedProject.favicon} /> : undefined,
             }}
           />
-        </div>
-      ),
+        ) : null,
     },
     {
-      id: 'dashboard',
+      id: 'project',
       label: 'Dashboard',
       icon: <LayoutDashboard />,
-      url: `/project/${projectId || '1'}`,
+      url: `/projects/${selected.project || '1'}`,
       template: renderItem,
+      visible: !!selectedProject,
     },
     {
-      id: 'history',
+      id: 'project/runs',
       label: 'Run History',
       icon: <History />,
-      url: `/project/${projectId || '1'}/history`,
+      url: `/projects/${selected.project || '1'}/runs`,
       template: renderItem,
+      visible: !!selectedProject,
     },
     {
-      id: 'settings',
+      id: 'project/settings',
       label: 'Project Settings',
       icon: <Settings />,
-      url: `/project/${projectId || '1'}/settings`,
+      url: `/projects/${selected.project || '1'}/settings`,
       template: renderItem,
-    },
-    {
-      template: () => <div className="flex-grow-1" />,
-    },
-    {
-      template: () => (
-        <div className="p-4">
-          <DropdownMenu
-            model={userMenuItems}
-            className={cn(
-              'w-full flex align-items-center gap-3 px-3 py-2-5 border-round-lg transition-colors',
-              collapsed ? 'justify-content-center' : '',
-            )}
-            title={collapsed ? user.name : undefined}
-            variant={collapsed ? 'icon' : 'full'}
-            selectedItem={{
-              name: user.name,
-              subtext: user.email,
-              icon: (
-                <div className="avatar">
-                  <User style={{ width: '1rem', height: '1rem' }} />
-                </div>
-              ),
-            }}
-          />
-        </div>
-      ),
+      visible: !!selectedProject,
     },
   ];
 
   return (
     <aside
       className={cn(
-        'hidden lg:flex flex-column h-screen fixed left-0 top-0 transition-all transition-duration-300 transition-ease-in-out',
+        'hidden lg:flex flex-column h-screen fixed left-0 top-0 transition-all transition-duration-300 transition-ease-in-out p-3',
         collapsed ? 'w-5rem' : 'w-18rem',
       )}
     >
@@ -257,11 +217,23 @@ export function NavigationMenu({ organizations, projects, selectedOrg, selectedP
         className="w-full h-full border-none bg-transparent flex flex-column py-0 overflow-y-auto"
       />
 
+      <DropdownMenu
+        model={userMenuItems}
+        className={cn(
+          'w-full flex align-items-center gap-3 px-3 py-2-5 border-round-lg transition-colors',
+          collapsed ? 'justify-content-center' : '',
+        )}
+        title={collapsed ? user.name : undefined}
+        variant={collapsed ? 'icon' : 'full'}
+        selectedItem={{
+          name: user.name,
+          subtext: user.email,
+          icon: <Avatar icon={<User width="1rem" />} />,
+        }}
+      />
+
       {/* Collapse Toggle */}
-      <button
-        onClick={() => setCollapsed(!collapsed)}
-        className="collapse-toggle"
-      >
+      <button onClick={() => setCollapsed(!collapsed)} className="collapse-toggle">
         {collapsed ? (
           <ChevronRight style={{ width: '0.75rem', height: '0.75rem' }} />
         ) : (

@@ -185,17 +185,4 @@
             background: $shade800;
         }
     }
-
-    .avatar {
-        width: 2rem; /* w-8 */
-        height: 2rem; /* h-8 */
-        border-radius: 0.5rem; /* rounded-lg */
-        background: linear-gradient(to bottom right, $primaryColor, $primaryLightColor);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: $primaryTextColor;
-        font-size: 0.875rem; /* text-sm */
-        font-weight: 500;
-    }
 }
