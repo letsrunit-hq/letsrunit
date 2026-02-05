@@ -2376,6 +2376,7 @@ __metadata:
     "@letsrunit/utils": "workspace:*"
     "@playwright/test": "npm:^1.57.0"
     "@types/jsdom": "npm:^27.0.0"
+    case: "npm:^1.6.3"
     diff: "npm:^8.0.3"
     fast-json-stable-stringify: "npm:^2.1.0"
     jsdom: "npm:^27.4.0"
@@ -6412,6 +6413,13 @@ __metadata:
     tslib: "npm:^2.0.3"
     upper-case-first: "npm:^2.0.2"
   checksum: 10c0/6a034af73401f6e55d91ea35c190bbf8bda21714d4ea8bb8f1799311d123410a80f0875db4e3236dc3f97d74231ff4bf1c8783f2be13d7733c7d990c57387281
+  languageName: node
+  linkType: hard
+
+"case@npm:^1.6.3":
+  version: 1.6.3
+  resolution: "case@npm:1.6.3"
+  checksum: 10c0/43fcbb1dff1c4add94dd2bc98bd923d6616f10bff6959adf686d192c3db7d7ced35410761e1ac94cc4a1f5c41c86406ad79d390805539e421e8a77e553f67223
   languageName: node
   linkType: hard
 
