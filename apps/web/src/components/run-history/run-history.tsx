@@ -6,6 +6,7 @@ import { formatDurationMs } from '@/libs/date-time';
 import type { Run, RunType } from '@letsrunit/model';
 import type { UUID } from '@letsrunit/utils';
 import { cn } from '@letsrunit/utils';
+import { title } from 'case';
 import { CheckCircle2, XCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Panel } from 'primereact/panel';
@@ -72,13 +73,13 @@ export function RunHistory({
                 )}
                 <div className="min-w-0">
                   <div className={cn(styles.title, 'flex align-items-center gap-2')}>
-                    {showName && <span className="text-400">{run.name}</span>}
+                    {showName && <span className="text-900">{run.name || title(run.type)}</span>}
                     {!showName && <span className="mono text-sm text-400 max-w-10rem md:max-w-max">#{run.id}</span>}
 
                     {run.type === 'generate' && <Tag className="text-xs" value={run.type} />}
                     {run.status === 'error' && <Tag className="text-xs" value="error" severity="danger" />}
                   </div>
-                  <div className={cn(styles.meta, 'text-500 text-xs')}>
+                  <div className={cn(styles.meta, 'text-400 text-xs')}>
                     {showName && <span className="mono">#{run.id}</span>}
                     {!showName && <TimeAgo date={run.startedAt || run.createdAt} live={false} />}
                   </div>

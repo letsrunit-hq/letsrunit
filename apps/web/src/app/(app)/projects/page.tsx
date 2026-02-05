@@ -8,11 +8,8 @@ export default async function Page() {
   const projects = await listProjects({ supabase });
 
   return (
-    <div className={`container w-max- p-4 md:p-6 lg:p-7`}>
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-white m-0">Projects</h1>
-        <p className="text-zinc-400 mt-2">Manage and monitor your automated testing projects.</p>
-      </div>
+    <div>
+      <h1 className="text-3xl font-bold text-white">Personal Projects</h1>
 
       <div className="grid">
         {projects.map((project) => (

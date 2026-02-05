@@ -64,7 +64,7 @@ export function ProjectCard({ project, className }: ProjectCardProps) {
   );
 
   return (
-    <Link href={`/project/${project.id}`} className="no-underline block h-full group">
+    <Link href={`/projects/${project.id}`} className="no-underline block h-full group">
       <Card
         header={header}
         footer={footer}

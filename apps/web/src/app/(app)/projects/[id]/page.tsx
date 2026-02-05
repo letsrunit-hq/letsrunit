@@ -26,7 +26,7 @@ export default async function Page({ params }: PageProps) {
       <div className="mb-4">
         <div className="flex flex-row align-items-center mb-3 md:mb-0">
           {project.favicon && <Tile className="mr-3" image={project.favicon} />}
-          <h1 className="mb-1">{project.name}</h1>
+          <h1 className="my-1">{project.name}</h1>
         </div>
       </div>
 
