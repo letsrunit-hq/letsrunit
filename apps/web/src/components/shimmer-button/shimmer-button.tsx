@@ -7,18 +7,11 @@ export type ShimmerButtonProps = ButtonProps & {
   shimmer?: boolean;
 };
 
-export function ShimmerButton({
-  shimmer = true,
-  children,
-  className,
-  label,
-  ...props
-}: ShimmerButtonProps) {
+export function ShimmerButton({ shimmer = true, children, className, label, ...props }: ShimmerButtonProps) {
+  const hasLabel = Boolean(label || children);
+
   return (
-    <Button
-      className={cn('relative overflow-hidden', className)}
-      {...props}
-    >
+    <Button className={cn('relative overflow-hidden', className, !hasLabel && 'p-button-icon-only')} {...props}>
       {shimmer && (
         <motion.div
           data-testid="shimmer-effect"
@@ -36,9 +29,9 @@ export function ShimmerButton({
           }}
         />
       )}
-      <div className="relative flex align-items-center justify-content-center gap-2 w-full">
-        {label || children}
-      </div>
+      {hasLabel && (
+        <div className="relative flex align-items-center justify-content-center gap-2 w-full">{label || children}</div>
+      )}
     </Button>
   );
 }

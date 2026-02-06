@@ -9,7 +9,7 @@ import { ShimmerPanel } from '../shimmer-panel';
 
 export function GuestModeBanner({ className }: { className?: string }) {
   return (
-    <ShimmerPanel className={className}>
+    <ShimmerPanel className={className} pt={{ content: { className: 'p-3 lg:p-6' } }}>
       <div className="relative flex flex-column md:flex-row align-items-center column-gap-4 row-gap-3">
         {/* Icon */}
         <Tile
@@ -33,7 +33,7 @@ export function GuestModeBanner({ className }: { className?: string }) {
         </div>
 
         {/* Actions */}
-        <div className="flex align-items-center gap-3">
+        <div className="hidden lg:flex align-items-center gap-3">
           <Link href="/auth/signup">
             <Button label="Create Account" />
           </Link>

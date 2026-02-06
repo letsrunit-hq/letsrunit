@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { NavigationMenu } from './navigation-menu';
 
 const mockProps = {
@@ -16,6 +16,7 @@ const mockProps = {
 
 describe('NavigationMenu', () => {
   it('renders organizations and projects', () => {
+    vi.stubGlobal('innerWidth', 1920);
     render(<NavigationMenu {...mockProps} />);
 
     // Check for organization name (can be multiple if dropdown is in DOM)
@@ -31,6 +32,7 @@ describe('NavigationMenu', () => {
   });
 
   it('renders Personal as default when no organization is selected', () => {
+    vi.stubGlobal('innerWidth', 1920);
     const propsWithoutOrg = {
       ...mockProps,
       selected: {
@@ -46,6 +48,7 @@ describe('NavigationMenu', () => {
   });
 
   it('renders without projects when no project is selected', () => {
+    vi.stubGlobal('innerWidth', 1920);
     const propsWithoutProject = {
       ...mockProps,
       selected: {
@@ -82,6 +85,7 @@ describe('NavigationMenu', () => {
   });
 
   it('handles collapse transition correctly', () => {
+    vi.stubGlobal('innerWidth', 1920);
     const { container } = render(<NavigationMenu {...mockProps} />);
     const aside = container.querySelector('aside');
     const toggleButton = container.querySelector('.collapse-toggle');
@@ -108,6 +112,25 @@ describe('NavigationMenu', () => {
 
     // Click toggle to expand
     fireEvent.click(toggleButton!);
+    expect(aside).not.toHaveClass('collapsed');
+    expect(screen.queryByText('Dashboard')).toBeInTheDocument();
+  });
+
+  it('shows collapsed by default if screen width is < 1440px', () => {
+    vi.stubGlobal('innerWidth', 1024);
+    const { container } = render(<NavigationMenu {...mockProps} />);
+    const aside = container.querySelector('aside');
+
+    // It should be collapsed initially if width < 1440
+    expect(aside).toHaveClass('collapsed');
+    expect(screen.queryByText('Dashboard')).not.toBeInTheDocument();
+  });
+
+  it('shows expanded by default if screen width is >= 1440px', () => {
+    vi.stubGlobal('innerWidth', 1440);
+    const { container } = render(<NavigationMenu {...mockProps} />);
+    const aside = container.querySelector('aside');
+
     expect(aside).not.toHaveClass('collapsed');
     expect(screen.queryByText('Dashboard')).toBeInTheDocument();
   });

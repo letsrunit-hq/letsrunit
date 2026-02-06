@@ -34,6 +34,26 @@ vi.mock('@/hooks/use-selected', () => ({
   useSelected: vi.fn(() => ({})),
 }));
 
+vi.mock('next/navigation', () => ({
+  useRouter: vi.fn(() => ({
+    push: vi.fn(),
+  })),
+  usePathname: vi.fn(() => '/'),
+}));
+
+vi.mock('@/libs/auth', () => ({
+  isLoggedIn: vi.fn(() => Promise.resolve(true)),
+  getUser: vi.fn(() =>
+    Promise.resolve({
+      id: 'user-123',
+      email: 'test@example.com',
+      user_metadata: { full_name: 'Test User' },
+      is_anonymous: false,
+    }),
+  ),
+  logout: vi.fn(),
+}));
+
 // Mock NavigationMenu to avoid deep rendering issues
 vi.mock('@/components/navigation/navigation-menu/navigation-menu', () => ({
   NavigationMenu: vi.fn(() => <div data-testid="navigation-menu" />),

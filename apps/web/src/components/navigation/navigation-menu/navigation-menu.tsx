@@ -5,6 +5,8 @@ import { DropdownMenu } from '@/components/dropdown-menu';
 import type { Organization, UserInfo } from '@/components/navigation';
 import { Tile } from '@/components/tile';
 import type { Selected } from '@/hooks/use-selected';
+
+import { useWindowSize } from '@/hooks/use-window-size';
 import type { Project } from '@letsrunit/model';
 import { cn } from '@letsrunit/utils';
 import { Building2, History, LayoutDashboard, LogOut, Plus, Settings, User, UserPlus } from 'lucide-react';
@@ -13,17 +15,25 @@ import { Avatar } from 'primereact/avatar';
 import { Button } from 'primereact/button';
 import { Menu } from 'primereact/menu';
 import { MenuItem } from 'primereact/menuitem';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 export interface NavigationMenuProps {
   organizations: Organization[];
   projects: Pick<Project, 'id' | 'name' | 'favicon'>[];
   user: UserInfo;
   selected: Selected;
+  className?: string;
 }
 
-export function NavigationMenu({ organizations, projects, user, selected }: NavigationMenuProps) {
-  const [navState, setNavState] = useState<'expanded' | 'collapsing' | 'collapsed'>('expanded');
+export function NavigationMenu({ organizations, projects, user, selected, className }: NavigationMenuProps) {
+  const { width } = useWindowSize();
+  const [navState, setNavState] = useState<'expanded' | 'collapsing' | 'collapsed'>('collapsed');
+
+  useEffect(() => {
+    if (width === undefined) return;
+    setNavState(width < 1440 ? 'collapsed' : 'expanded');
+  }, [width]);
+
   const isCollapsed = navState === 'collapsed';
   const isExpandingOrExpanded = navState === 'expanded' || navState === 'collapsing';
 
@@ -178,7 +188,7 @@ export function NavigationMenu({ organizations, projects, user, selected }: Navi
       id: 'project',
       label: 'Dashboard',
       icon: <LayoutDashboard />,
-      url: `/projects/${selected.project || '1'}`,
+      url: selected.project ? `/projects/${selected.project}` : '#',
       template: renderItem,
       visible: !!selectedProject,
     },
@@ -186,7 +196,7 @@ export function NavigationMenu({ organizations, projects, user, selected }: Navi
       id: 'project/runs',
       label: 'Run History',
       icon: <History />,
-      url: `/projects/${selected.project || '1'}/runs`,
+      url: selected.project ? `/projects/${selected.project}/runs` : '#',
       template: renderItem,
       visible: !!selectedProject,
     },
@@ -194,7 +204,7 @@ export function NavigationMenu({ organizations, projects, user, selected }: Navi
       id: 'project/settings',
       label: 'Project Settings',
       icon: <Settings />,
-      url: `/projects/${selected.project || '1'}/settings`,
+      url: selected.project ? `/projects/${selected.project}/settings` : '#',
       template: renderItem,
       visible: !!selectedProject,
     },
@@ -203,8 +213,9 @@ export function NavigationMenu({ organizations, projects, user, selected }: Navi
   return (
     <aside
       className={cn(
-        'hidden lg:block h-screen fixed left-0 top-0 transition-all transition-duration-300 transition-ease-in-out p-3',
+        'h-screen transition-all transition-duration-300 transition-ease-in-out p-3',
         navState === 'expanded' ? 'w-18rem' : 'w-5rem collapsed',
+        className,
       )}
       onTransitionEnd={onTransitionEnd}
     >

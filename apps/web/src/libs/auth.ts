@@ -125,3 +125,9 @@ export async function linkIdentity(
   });
   if (error) throw error;
 }
+
+export async function logout(opts: { supabase?: SupabaseClient } = {}) {
+  const client = opts.supabase ?? supabase();
+  const { error } = await client.auth.signOut();
+  if (error) throw error;
+}

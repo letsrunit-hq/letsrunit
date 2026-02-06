@@ -116,8 +116,31 @@ main {
     rgba(245, 158, 11, 0.1)
   );
 }
+.bg-subtle {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(20px);
+}
 
 .py-2-5 {
   padding-top: 0.75rem !important;
   padding-bottom: 0.75rem !important;
+}
+
+.seamless-menu ul {
+  list-style-type: none;
+  padding: 0;
+
+  > li {
+    padding: 0.25rem;
+  }
+
+  > li[role="separator"] {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    margin-bottom: 0.5rem;
+  }
+
+  .menu-icon {
+    width: 2rem;
+    text-align: center;
+  }
 }
