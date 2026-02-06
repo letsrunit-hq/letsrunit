@@ -9,10 +9,9 @@ import type { Selected } from '@/hooks/use-selected';
 import { useWindowSize } from '@/hooks/use-window-size';
 import type { Project } from '@letsrunit/model';
 import { cn } from '@letsrunit/utils';
-import { Building2, History, LayoutDashboard, LogOut, Plus, Settings, User, UserPlus } from 'lucide-react';
+import { Building2, History, LayoutDashboard, LogOut, Plus, Settings, User } from 'lucide-react';
 import Link from 'next/link';
 import { Avatar } from 'primereact/avatar';
-import { Button } from 'primereact/button';
 import { Menu } from 'primereact/menu';
 import { MenuItem } from 'primereact/menuitem';
 import React, { useEffect, useState } from 'react';
@@ -240,14 +239,6 @@ export function NavigationMenu({ organizations, projects, user, selected, classN
                 subtext: user.email,
                 icon: <Avatar icon={<User width="1rem" />} />,
               }}
-            />
-          )}
-
-          {user.isAnonymous && (
-            <Button
-              className="w-full"
-              icon={isCollapsed ? <UserPlus /> : undefined}
-              label={isCollapsed ? undefined : 'Create account'}
             />
           )}
         </div>

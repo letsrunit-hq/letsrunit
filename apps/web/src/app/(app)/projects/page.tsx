@@ -3,13 +3,16 @@ import { connect as connectServerSupabase } from '@/libs/supabase/server';
 import { listProjects } from '@letsrunit/model';
 import React from 'react';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function Page() {
   const supabase = await connectServerSupabase();
   const projects = await listProjects({ supabase });
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-white">Personal Projects</h1>
+      <h1 className="hidden lg:block text-3xl font-bold text-white">Personal Projects</h1>
 
       <div className="grid">
         {projects.map((project) => (
