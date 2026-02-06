@@ -1,7 +1,7 @@
 import { useSupabase } from '@/hooks/use-supabase';
 import { isLoggedIn } from '@/libs/auth';
 import { act, renderHook, waitFor } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useAuthStatus } from '../use-auth-status';
 
 vi.mock('@/libs/auth', () => ({
@@ -13,6 +13,10 @@ vi.mock('@/hooks/use-supabase', () => ({
 }));
 
 describe('useAuthStatus', () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
   const mockOnAuthStateChange = vi.fn(() => ({
     data: { subscription: { unsubscribe: vi.fn() } },
   }));
@@ -43,12 +47,12 @@ describe('useAuthStatus', () => {
     await waitFor(() => expect(result.current).toBe(false));
 
     // Simulate auth state change
-    const callback = mockOnAuthStateChange.mock.calls[0][0];
+    const [callback] = mockOnAuthStateChange.mock.calls[0] as any;
 
     await act(async () => {
       callback('SIGNED_IN', null);
       // Wait for all microtasks to complete
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     await waitFor(() => expect(result.current).toBe(true));
