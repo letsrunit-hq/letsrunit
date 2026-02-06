@@ -1,5 +1,6 @@
-import { isLoggedIn } from '@/libs/auth';
-import { connect } from '@/libs/supabase/server';
+'use client';
+
+import useAuthStatus from '@/hooks/use-auth-status';
 import { User } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from 'primereact/button';
@@ -9,9 +10,12 @@ export type AuthButtonProps = {
   className?: string;
 };
 
-export async function AuthButton({ className }: AuthButtonProps) {
-  const supabase = await connect();
-  const loggedIn = await isLoggedIn({ supabase });
+export function AuthButton({ className }: AuthButtonProps) {
+  const loggedIn = useAuthStatus();
+
+  if (loggedIn === null) {
+    return null;
+  }
 
   const label = loggedIn ? 'Dashboard' : 'Login';
   const href = loggedIn ? '/projects' : '/auth/login';
