@@ -9,7 +9,7 @@ import { ShimmerPanel } from '../shimmer-panel';
 
 export function GuestModeBanner({ className }: { className?: string }) {
   return (
-    <ShimmerPanel className={className} pt={{ content: { className: 'p-3 lg:p-6' } }}>
+    <ShimmerPanel className={className} pt={{ content: { className: 'p-2 lg:p-4' } }}>
       <div className="relative flex flex-column md:flex-row align-items-center column-gap-4 row-gap-3">
         {/* Icon */}
         <Tile

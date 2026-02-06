@@ -9,7 +9,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
 
   return (
     <div className="container p-4 md:p-6 lg:p-7`}">
-      {loggedIn === 'anonymous' && <GuestModeBanner className="mb-6" />}
+      {loggedIn === 'anonymous' && <GuestModeBanner className="mb-4 lg:mb-6" />}
       {children}
     </div>
   );
