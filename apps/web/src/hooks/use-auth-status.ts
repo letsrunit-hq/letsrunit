@@ -26,15 +26,15 @@ export function useAuthStatus() {
 
     checkAuth();
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(() => {
+    const subscription = supabase.auth.onAuthStateChange(() => {
       checkAuth();
     });
 
     return () => {
       mounted = false;
-      subscription.unsubscribe();
+      if (subscription.data?.subscription) {
+        subscription.data.subscription.unsubscribe();
+      }
     };
   }, [supabase]);
 

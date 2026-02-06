@@ -45,8 +45,10 @@ describe('useAuthStatus', () => {
     // Simulate auth state change
     const callback = mockOnAuthStateChange.mock.calls[0][0];
 
-    act(() => {
+    await act(async () => {
       callback('SIGNED_IN', null);
+      // Wait for all microtasks to complete
+      await new Promise(resolve => setTimeout(resolve, 0));
     });
 
     await waitFor(() => expect(result.current).toBe(true));
