@@ -35,7 +35,7 @@ vi.mock('@/hooks/use-selected', () => ({
 }));
 
 // Mock NavigationMenu to avoid deep rendering issues
-vi.mock('@/components/navigation-menu/navigation-menu', () => ({
+vi.mock('@/components/navigation/navigation-menu/navigation-menu', () => ({
   NavigationMenu: vi.fn(() => <div data-testid="navigation-menu" />),
 }));
 

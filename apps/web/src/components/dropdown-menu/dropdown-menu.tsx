@@ -1,10 +1,10 @@
-import { ChevronDown, ChevronUp } from 'lucide-react';
 import Link from 'next/link';
 import { Avatar } from 'primereact/avatar';
 import { Button } from 'primereact/button';
 import { Menu } from 'primereact/menu';
 import { MenuItem, type MenuItemOptions } from 'primereact/menuitem';
 import React, { useMemo, useRef, useState } from 'react';
+import Chevron from '../chevron/chevron';
 
 export type DropdownMenuProps = {
   className?: string;
@@ -55,35 +55,6 @@ export function DropdownMenu({ className, title, model, variant = 'full', select
     menu.current?.toggle(event);
   };
 
-  const renderContent = () => {
-    if (!selectedItem) return null;
-
-    if (variant === 'icon') {
-      return selectedItem.icon ?? <Avatar label={selectedItem.name.charAt(0)} />;
-    }
-
-    return (
-      <>
-        {selectedItem.icon ?? <Avatar label={selectedItem.name.charAt(0)} />}
-        <div className="flex-1 text-left overflow-hidden">
-          <div className="white-space-nowrap overflow-hidden text-overflow-ellipsis font-medium text-sm">
-            {selectedItem?.name}
-          </div>
-          {selectedItem?.subtext && (
-            <div className="white-space-nowrap overflow-hidden text-overflow-ellipsis text-xs">
-              {selectedItem.subtext}
-            </div>
-          )}
-        </div>
-        {visible ? (
-          <ChevronUp width="1rem" height="1rem" data-testid="chevron-up" />
-        ) : (
-          <ChevronDown width="1rem" height="1rem" data-testid="chevron-down" />
-        )}
-      </>
-    );
-  };
-
   return (
     <>
       <Menu
@@ -95,7 +66,20 @@ export function DropdownMenu({ className, title, model, variant = 'full', select
         onHide={() => setVisible(false)}
       />
       <Button type="button" onClick={toggle} className={className} title={title} text severity="contrast">
-        {renderContent()}
+        {selectedItem && (selectedItem.icon ?? <Avatar label={selectedItem.name.charAt(0)} />)}
+        {selectedItem && variant === 'full' && (
+          <div className="flex-1 text-left overflow-hidden">
+            <div className="white-space-nowrap overflow-hidden text-overflow-ellipsis font-medium text-sm">
+              {selectedItem?.name}
+            </div>
+            {selectedItem?.subtext && (
+              <div className="white-space-nowrap overflow-hidden text-overflow-ellipsis text-xs">
+                {selectedItem.subtext}
+              </div>
+            )}
+          </div>
+        )}
+        {variant === 'full' && <Chevron width="1rem" height="1rem" open={visible} />}
       </Button>
     </>
   );

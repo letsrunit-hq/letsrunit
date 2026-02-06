@@ -13,12 +13,13 @@ export async function AuthButton({ className }: AuthButtonProps) {
   const supabase = await connect();
   const loggedIn = await isLoggedIn({ supabase });
 
-  const label = loggedIn === true ? 'Dashboard' : 'Login';
-  const href = loggedIn === true ? '/projects' : '/auth/login';
+  const label = loggedIn ? 'Dashboard' : 'Login';
+  const href = loggedIn ? '/projects' : '/auth/login';
+  const icon = loggedIn ? undefined : <User width="1rem" className="mr-1" />;
 
   return (
     <Link href={href} className={className} prefetch={false}>
-      <Button label={label} icon={<User width="1rem" className="mr-1" />} size="small" />
+      <Button label={label} icon={icon} size="small" />
     </Link>
   );
 }

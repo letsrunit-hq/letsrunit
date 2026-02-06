@@ -1,23 +1,13 @@
 'use client';
 
+import { Chevron } from '@/components/chevron';
 import { DropdownMenu } from '@/components/dropdown-menu';
 import type { Organization, UserInfo } from '@/components/navigation';
 import { Tile } from '@/components/tile';
 import type { Selected } from '@/hooks/use-selected';
 import type { Project } from '@letsrunit/model';
 import { cn } from '@letsrunit/utils';
-import {
-  Building2,
-  ChevronLeft,
-  ChevronRight,
-  History,
-  LayoutDashboard,
-  LogOut,
-  Plus,
-  Settings,
-  User,
-  UserPlus,
-} from 'lucide-react';
+import { Building2, History, LayoutDashboard, LogOut, Plus, Settings, User, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { Avatar } from 'primereact/avatar';
 import { Button } from 'primereact/button';
@@ -33,12 +23,26 @@ export interface NavigationMenuProps {
 }
 
 export function NavigationMenu({ organizations, projects, user, selected }: NavigationMenuProps) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [navState, setNavState] = useState<'expanded' | 'collapsing' | 'collapsed'>('expanded');
+  const isCollapsed = navState === 'collapsed';
+  const isExpandingOrExpanded = navState === 'expanded' || navState === 'collapsing';
 
   const selectedOrg = organizations.find((o) => o.account_id === selected.org);
   const selectedProject = projects.find((p) => p.id === selected.project);
 
   const isActive = (id: string) => selected.page === id;
+
+  const handleToggle = () => {
+    setNavState((prev) => (prev === 'collapsed' ? 'expanded' : 'collapsing'));
+  };
+
+  const onTransitionEnd = (e: React.TransitionEvent) => {
+    if (e.propertyName === 'width' && e.target === e.currentTarget) {
+      if (navState === 'collapsing') {
+        setNavState('collapsed');
+      }
+    }
+  };
 
   const orgMenuItems: MenuItem[] = [
     {
@@ -107,13 +111,13 @@ export function NavigationMenu({ organizations, projects, user, selected }: Navi
       <Link
         href={item.url || '#'}
         className={cn(
-          'p-menuitem-link flex align-items-center gap-3 px-3 py-2-5 border-round-lg',
-          collapsed ? 'justify-content-center' : '',
+          'p-menuitem-link flex align-items-center gap-3 px-3 py-2-5 border-round-lg white-space-nowrap w-full',
+          isCollapsed ? 'justify-content-center' : '',
         )}
-        title={collapsed ? item.label : undefined}
+        title={isCollapsed ? item.label : undefined}
       >
         <span className={cn('p-menuitem-icon', active && 'p-highlight')}>{item.icon}</span>
-        {!collapsed && <span className={cn('p-menuitem-text', active && 'p-highlight')}>{item.label}</span>}
+        {isExpandingOrExpanded && <span className={cn('p-menuitem-text', active && 'p-highlight')}>{item.label}</span>}
       </Link>
     );
   };
@@ -124,11 +128,11 @@ export function NavigationMenu({ organizations, projects, user, selected }: Navi
         <DropdownMenu
           model={orgMenuItems}
           className={cn(
-            'w-full flex align-items-center gap-3 px-3 py-2-5 border-round-lg',
-            collapsed ? 'justify-content-center' : '',
+            'w-full flex align-items-center gap-3 py-2-5 border-round-lg',
+            isCollapsed ? 'justify-content-center px-0' : '',
           )}
           title={selectedOrg?.name || 'Personal'}
-          variant={collapsed ? 'icon' : 'full'}
+          variant={isCollapsed ? 'icon' : 'full'}
           selectedItem={{
             name: selectedOrg?.name || 'Personal',
             icon: selectedOrg?.name ? <Building2 /> : <User />,
@@ -158,14 +162,13 @@ export function NavigationMenu({ organizations, projects, user, selected }: Navi
           <DropdownMenu
             model={projectMenuItems}
             className={cn(
-              'w-full flex align-items-center gap-3 px-3 py-2-5 border-round-lg transition-colors group',
-              collapsed ? 'justify-content-center' : '',
+              'w-full flex align-items-center gap-3 py-2-5 border-round-lg transition-colors group',
+              isCollapsed ? 'justify-content-center px-0' : '',
             )}
             title={selectedProject.name || 'unnamed'}
-            variant={collapsed ? 'icon' : 'full'}
+            variant={isCollapsed ? 'icon' : 'full'}
             selectedItem={{
               name: selectedProject.name || 'unnamed',
-              subtext: selectedOrg?.name || 'Personal',
               icon: selectedProject.favicon ? <Tile size="xs" image={selectedProject.favicon} /> : undefined,
             }}
           />
@@ -200,43 +203,48 @@ export function NavigationMenu({ organizations, projects, user, selected }: Navi
   return (
     <aside
       className={cn(
-        'hidden lg:flex flex-column h-screen fixed left-0 top-0 transition-all transition-duration-300 transition-ease-in-out p-3',
-        collapsed ? 'w-5rem collapsed' : 'w-18rem',
+        'hidden lg:block h-screen fixed left-0 top-0 transition-all transition-duration-300 transition-ease-in-out p-3',
+        navState === 'expanded' ? 'w-18rem' : 'w-5rem collapsed',
       )}
+      onTransitionEnd={onTransitionEnd}
     >
-      <Menu
-        model={navMenuItems}
-        className="w-full h-full border-none bg-transparent flex flex-column py-0 overflow-y-auto"
-      />
+      <div className="w-full h-full overflow-hidden">
+        <div className={cn('flex flex-column h-full', isCollapsed ? 'w-full' : 'w-16rem')}>
+          <Menu
+            model={navMenuItems}
+            className="w-full h-full border-none bg-transparent flex flex-column py-0 overflow-y-auto"
+          />
 
-      {!user.isAnonymous && (
-        <DropdownMenu
-          model={userMenuItems}
-          className={cn(
-            'w-full flex align-items-center gap-3 px-3 py-2-5 border-round-lg transition-colors',
-            collapsed ? 'justify-content-center' : '',
+          {!user.isAnonymous && (
+            <DropdownMenu
+              model={userMenuItems}
+              className={cn(
+                'w-full flex align-items-center gap-3 py-2-5 border-round-lg transition-colors',
+                isCollapsed ? 'justify-content-center px-0' : '',
+              )}
+              title={user.name}
+              variant={isCollapsed ? 'icon' : 'full'}
+              selectedItem={{
+                name: user.name,
+                subtext: user.email,
+                icon: <Avatar icon={<User width="1rem" />} />,
+              }}
+            />
           )}
-          title={user.name}
-          variant={collapsed ? 'icon' : 'full'}
-          selectedItem={{
-            name: user.name,
-            subtext: user.email,
-            icon: <Avatar icon={<User width="1rem" />} />,
-          }}
-        />
-      )}
 
-      {user.isAnonymous && (
-        <Button icon={collapsed ? <UserPlus /> : undefined} label={collapsed ? undefined : 'Create account'} />
-      )}
+          {user.isAnonymous && (
+            <Button
+              className="w-full"
+              icon={isCollapsed ? <UserPlus /> : undefined}
+              label={isCollapsed ? undefined : 'Create account'}
+            />
+          )}
+        </div>
+      </div>
 
       {/* Collapse Toggle */}
-      <button onClick={() => setCollapsed(!collapsed)} className="collapse-toggle">
-        {collapsed ? (
-          <ChevronRight style={{ width: '0.75rem', height: '0.75rem' }} />
-        ) : (
-          <ChevronLeft style={{ width: '0.75rem', height: '0.75rem' }} />
-        )}
+      <button onClick={handleToggle} className="collapse-toggle">
+        <Chevron open={navState === 'expanded'} direction="horizontal" width="0.75rem" height="0.75rem" />
       </button>
     </aside>
   );

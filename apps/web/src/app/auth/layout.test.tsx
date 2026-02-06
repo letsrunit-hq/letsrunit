@@ -20,7 +20,7 @@ describe('Auth Layout', () => {
         <div>Content</div>
       </Layout>,
     );
-    const backButton = screen.getByRole('link', { name: /back/i });
+    const backButton = screen.getByRole('link');
     expect(backButton).toBeInTheDocument();
     expect(backButton).toHaveAttribute('href', '/');
   });

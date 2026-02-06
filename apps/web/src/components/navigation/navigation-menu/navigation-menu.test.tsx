@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it } from 'vitest';
 import { NavigationMenu } from './navigation-menu';
@@ -6,7 +6,7 @@ import { NavigationMenu } from './navigation-menu';
 const mockProps = {
   organizations: [{ account_id: '1', name: 'Acme Corp' }],
   projects: [{ id: '1', name: 'E-commerce Platform' }],
-  user: { name: 'John Doe', email: 'john@example.com' },
+  user: { name: 'John Doe', email: 'john@example.com', isAnonymous: false },
   selected: {
     org: '1',
     project: '1',
@@ -79,5 +79,36 @@ describe('NavigationMenu', () => {
     render(<NavigationMenu {...propsWithoutOrgs} />);
 
     expect(screen.queryByText('Organizations')).not.toBeInTheDocument();
+  });
+
+  it('handles collapse transition correctly', () => {
+    const { container } = render(<NavigationMenu {...mockProps} />);
+    const aside = container.querySelector('aside');
+    const toggleButton = container.querySelector('.collapse-toggle');
+
+    expect(aside).not.toHaveClass('collapsed');
+    expect(screen.getByText('Dashboard')).toBeInTheDocument();
+
+    // Click toggle to start collapsing
+    fireEvent.click(toggleButton!);
+    expect(aside).toHaveClass('collapsed');
+    // During transition (collapsing), labels should still be visible because we use isExpandingOrExpanded
+    // Note: We need to use queryByText and check if it exists because getByText fails if not found
+    expect(screen.queryByText('Dashboard')).toBeInTheDocument();
+
+    // Simulate transition end on a DIFFERENT property - should NOT trigger collapse
+    fireEvent.transitionEnd(aside!, { propertyName: 'opacity' });
+    expect(screen.queryByText('Dashboard')).toBeInTheDocument();
+
+    // Simulate transition end on width
+    fireEvent.transitionEnd(aside!, { propertyName: 'width' });
+
+    // After transition, it should be fully collapsed and labels hidden
+    expect(screen.queryByText('Dashboard')).not.toBeInTheDocument();
+
+    // Click toggle to expand
+    fireEvent.click(toggleButton!);
+    expect(aside).not.toHaveClass('collapsed');
+    expect(screen.queryByText('Dashboard')).toBeInTheDocument();
   });
 });

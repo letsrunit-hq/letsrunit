@@ -32,7 +32,7 @@ describe('AuthButton', () => {
 
     const link = screen.getByRole('link', { name: /login/i });
     expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute('href', '/login');
+    expect(link).toHaveAttribute('href', '/auth/login');
     expect(link).toHaveClass('test-class');
   });
 });

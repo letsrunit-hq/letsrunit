@@ -11,7 +11,7 @@ describe('GuestModeBanner', () => {
     expect(screen.getByText('Expires in 24 hours')).toBeInTheDocument();
     expect(
       screen.getByText(
-        /Your project is temporary. Create a free account to save it forever and unlock team features./i,
+        /Your project is temporary. Create a free account to save it forever./i,
       ),
     ).toBeInTheDocument();
   });

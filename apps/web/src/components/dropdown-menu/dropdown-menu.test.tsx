@@ -15,12 +15,12 @@ describe('DropdownMenu', () => {
     expect(triggerBtn).toHaveAttribute('title', 'test-title');
     expect(screen.getByText('Test Item')).toBeInTheDocument();
     expect(screen.getByText('Subtext')).toBeInTheDocument();
-    expect(screen.getByTestId('chevron-down')).toBeInTheDocument();
+    expect(screen.getByTestId('chevron-closed')).toBeInTheDocument();
 
     fireEvent.click(triggerBtn);
 
     expect(screen.getByText('Item 1')).toBeInTheDocument();
-    expect(screen.getByTestId('chevron-up')).toBeInTheDocument();
+    expect(screen.getByTestId('chevron-open')).toBeInTheDocument();
   });
 
   it('renders in icon variant', () => {

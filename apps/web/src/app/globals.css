@@ -51,16 +51,15 @@ main {
   transition: padding 0.3s ease-in-out;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 992px) {
   aside:not(.collapsed) + main {
-    padding-left: 18rem;
+    padding-left: 17rem;
   }
 
   aside.collapsed + main {
-    padding-left: 6rem;
+    padding-left: 4rem;
   }
 }
-
 
 .container {
   max-width: 1400px;
@@ -119,5 +118,6 @@ main {
 }
 
 .py-2-5 {
-  padding: 0.75rem !important;
+  padding-top: 0.75rem !important;
+  padding-bottom: 0.75rem !important;
 }
