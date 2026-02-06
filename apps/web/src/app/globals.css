@@ -46,6 +46,22 @@ div[role="link"]{
   cursor: pointer;
 }
 
+main {
+  min-height: 100vh;
+  transition: padding 0.3s ease-in-out;
+}
+
+@media (min-width: 1024px) {
+  aside:not(.collapsed) + main {
+    padding-left: 18rem;
+  }
+
+  aside.collapsed + main {
+    padding-left: 6rem;
+  }
+}
+
+
 .container {
   max-width: 1400px;
   margin: 0 auto;

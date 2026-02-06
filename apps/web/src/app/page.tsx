@@ -1,6 +1,7 @@
 import { ArrowRight, ArrowUp, Lightbulb, ListChecks, Network } from 'lucide-react';
 import Image from 'next/image';
 import Logo from '../assets/logo.svg';
+import { AuthButton } from '../components/auth-button';
 import { BackToTopButton } from '../components/back-to-top-button';
 import { ExploreForm } from '../components/explore-form';
 import { ScrollDownButton } from '../components/scroll-down-button';
@@ -8,7 +9,9 @@ import styles from './page.module.css';
 
 export default function Home() {
   return (
-    <main>
+    <>
+      <AuthButton className="fixed top-0 right-0 m-4 z-5" />
+      <main>
       <section className={styles.container}>
         <div className={styles.hero}>
           <div className={styles.logoWrap}>
@@ -139,5 +142,6 @@ export default function Home() {
         </div>
       </section>
     </main>
+    </>
   );
 }

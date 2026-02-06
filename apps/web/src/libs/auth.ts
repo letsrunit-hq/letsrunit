@@ -1,7 +1,7 @@
 import type { Provider, SupabaseClient, User } from '@supabase/supabase-js';
 import { connect as supabase } from './supabase/browser';
 
-export async function isUser(opts: { supabase?: SupabaseClient } = {}): Promise<boolean | 'anonymous'> {
+export async function isLoggedIn(opts: { supabase?: SupabaseClient } = {}): Promise<boolean | 'anonymous'> {
   const client = opts.supabase ?? supabase();
 
   const { data } = await client.auth.getUser();

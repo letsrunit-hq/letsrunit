@@ -74,7 +74,7 @@ export default async function Page() {
 
   // -------- Next.js Layout (app router) --------
   plop.setGenerator('layout', {
-    description: 'Create app/<path>/layout.tsx + test',
+    description: 'Create app/<path>/layout.tsx',
     prompts: [{ type: 'input', name: 'path', message: 'Segment for layout, e.g. dashboard:' }],
     actions: [
       {
@@ -85,21 +85,7 @@ export default async function Page() {
 export default function Layout({ children }: { children: React.ReactNode }) {
   return <section data-segment="{{appPath path}}">{children}</section>;
 }`,
-      },
-      {
-        type: 'add',
-        path: 'src/app/{{kebabPath path}}/layout.test.tsx',
-        template: `import React from 'react';
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import Layout from './layout';
-
-describe('layout {{appPath path}}', () => {
-  it('wraps children', () => {
-    render(<Layout><div>child</div></Layout>);
-  });
-});`,
-      },
+      }
     ],
   });
 

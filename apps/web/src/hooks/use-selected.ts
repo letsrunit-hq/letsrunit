@@ -1,7 +1,12 @@
-import type { Selected } from '@/libs/nav';
 import { connect } from '@/libs/supabase/browser';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+
+export interface Selected {
+  org?: string;
+  project?: string;
+  page?: string;
+}
 
 export function useSelected() {
   const pathname = usePathname();
@@ -45,7 +50,7 @@ export function useSelected() {
       setSelected(newSelected);
     };
 
-    fetchExtra();
+    void fetchExtra();
   }, [pathname]);
 
   return selected;

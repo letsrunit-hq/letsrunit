@@ -1,7 +1,9 @@
 'use client';
 
 import { DropdownMenu } from '@/components/dropdown-menu';
-import type { Selected } from '@/libs/nav';
+import type { Organization, UserInfo } from '@/components/navigation';
+import { Tile } from '@/components/tile';
+import type { Selected } from '@/hooks/use-selected';
 import type { Project } from '@letsrunit/model';
 import { cn } from '@letsrunit/utils';
 import {
@@ -14,23 +16,14 @@ import {
   Plus,
   Settings,
   User,
+  UserPlus,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Avatar } from 'primereact/avatar';
+import { Button } from 'primereact/button';
 import { Menu } from 'primereact/menu';
 import { MenuItem } from 'primereact/menuitem';
 import React, { useState } from 'react';
-import Tile from '../tile/tile';
-
-export interface Organization {
-  account_id: string;
-  name: string;
-}
-
-export interface UserInfo {
-  name: string;
-  email: string;
-}
 
 export interface NavigationMenuProps {
   organizations: Organization[];
@@ -70,6 +63,7 @@ export function NavigationMenu({ organizations, projects, user, selected }: Navi
     {
       label: 'Create organization',
       icon: <Plus className="mr-2" />,
+      disabled: true,
       command: () => {
         /* handle create */
       },
@@ -85,9 +79,7 @@ export function NavigationMenu({ organizations, projects, user, selected }: Navi
     {
       label: 'Create new project',
       icon: <Plus className="mr-2" />,
-      command: () => {
-        /* handle create */
-      },
+      url: '/',
     },
   ];
 
@@ -209,7 +201,7 @@ export function NavigationMenu({ organizations, projects, user, selected }: Navi
     <aside
       className={cn(
         'hidden lg:flex flex-column h-screen fixed left-0 top-0 transition-all transition-duration-300 transition-ease-in-out p-3',
-        collapsed ? 'w-5rem' : 'w-18rem',
+        collapsed ? 'w-5rem collapsed' : 'w-18rem',
       )}
     >
       <Menu
@@ -217,20 +209,26 @@ export function NavigationMenu({ organizations, projects, user, selected }: Navi
         className="w-full h-full border-none bg-transparent flex flex-column py-0 overflow-y-auto"
       />
 
-      <DropdownMenu
-        model={userMenuItems}
-        className={cn(
-          'w-full flex align-items-center gap-3 px-3 py-2-5 border-round-lg transition-colors',
-          collapsed ? 'justify-content-center' : '',
-        )}
-        title={collapsed ? user.name : undefined}
-        variant={collapsed ? 'icon' : 'full'}
-        selectedItem={{
-          name: user.name,
-          subtext: user.email,
-          icon: <Avatar icon={<User width="1rem" />} />,
-        }}
-      />
+      {!user.isAnonymous && (
+        <DropdownMenu
+          model={userMenuItems}
+          className={cn(
+            'w-full flex align-items-center gap-3 px-3 py-2-5 border-round-lg transition-colors',
+            collapsed ? 'justify-content-center' : '',
+          )}
+          title={user.name}
+          variant={collapsed ? 'icon' : 'full'}
+          selectedItem={{
+            name: user.name,
+            subtext: user.email,
+            icon: <Avatar icon={<User width="1rem" />} />,
+          }}
+        />
+      )}
+
+      {user.isAnonymous && (
+        <Button icon={collapsed ? <UserPlus /> : undefined} label={collapsed ? undefined : 'Create account'} />
+      )}
 
       {/* Collapse Toggle */}
       <button onClick={() => setCollapsed(!collapsed)} className="collapse-toggle">

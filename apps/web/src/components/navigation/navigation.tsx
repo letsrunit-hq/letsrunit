@@ -1,11 +1,12 @@
 'use client';
 
-import { NavigationMenu } from '@/components/navigation-menu/navigation-menu';
+import { NavigationMenu } from '@/components/navigation/navigation-menu/navigation-menu';
+import type { Organization, UserInfo } from '@/components/navigation/types';
 import { useSelected } from '@/hooks/use-selected';
+import { getUser, isLoggedIn } from '@/libs/auth';
 import { connect } from '@/libs/supabase/browser';
-import type { Project } from '@letsrunit/model';
+import { type Project } from '@letsrunit/model';
 import React, { useEffect, useState } from 'react';
-import type { Organization, UserInfo } from '../navigation-menu/navigation-menu';
 
 export function Navigation() {
   const [user, setUser] = useState<UserInfo | null>(null);
@@ -19,23 +20,21 @@ export function Navigation() {
     async function fetchData() {
       const supabase = connect();
 
-      const {
-        data: { user: authUser },
-      } = await supabase.auth.getUser();
-      if (!authUser) {
+      if (!(await isLoggedIn({ supabase }))) {
         setLoading(false);
         return;
       }
 
+      const authUser = await getUser({ supabase });
       const userInfo: UserInfo = {
-        name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
+        name: authUser.user_metadata?.full_name || 'User',
         email: authUser.email || '',
+        isAnonymous: authUser.is_anonymous,
       };
       setUser(userInfo);
 
       const { data: accounts } = await supabase.rpc('get_accounts');
-      const orgs = (accounts || []).filter((a: any) => !a.personal_account && a.account_id !== authUser.id);
-      setOrganizations(orgs);
+      setOrganizations((accounts || []).filter((a: any) => !a.personal_account));
 
       const { data: projectsData } = await supabase.from('projects').select('id, name, favicon');
       setProjects(projectsData || []);
@@ -43,14 +42,12 @@ export function Navigation() {
       setLoading(false);
     }
 
-    fetchData();
+    void fetchData();
   }, []);
 
   if (loading || !user) return null;
 
-  return (
-    <NavigationMenu organizations={organizations} projects={projects} user={user} selected={selected} />
-  );
+  return <NavigationMenu organizations={organizations} projects={projects} user={user} selected={selected} />;
 }
 
 export default Navigation;
