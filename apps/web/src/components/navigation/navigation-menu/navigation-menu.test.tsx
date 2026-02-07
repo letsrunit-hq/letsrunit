@@ -1,15 +1,16 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
-import { NavigationMenu } from './navigation-menu';
+import { fixedUUID } from "@letsrunit/utils";
+import { fireEvent, render, screen } from "@testing-library/react";
+import React from "react";
+import { describe, expect, it, vi } from "vitest";
+import { NavigationMenu } from "./navigation-menu";
 
 const mockProps = {
   organizations: [{ account_id: '1', name: 'Acme Corp' }],
-  projects: [{ id: '1', name: 'E-commerce Platform' }],
+  projects: [{ id: fixedUUID(1, 'projects'), name: 'E-commerce Platform' }],
   user: { name: 'John Doe', email: 'john@example.com', isAnonymous: false },
   selected: {
     org: '1',
-    project: '1',
+    project: fixedUUID(1, 'projects'),
     page: 'project',
   },
 };
@@ -116,7 +117,7 @@ describe('NavigationMenu', () => {
     expect(screen.queryByText('Dashboard')).toBeInTheDocument();
   });
 
-  it('shows collapsed by default if screen width is < 1440px', () => {
+  it('shows collapsed by default if screen width is < 1920', () => {
     vi.stubGlobal('innerWidth', 1024);
     const { container } = render(<NavigationMenu {...mockProps} />);
     const aside = container.querySelector('aside');
@@ -126,8 +127,8 @@ describe('NavigationMenu', () => {
     expect(screen.queryByText('Dashboard')).not.toBeInTheDocument();
   });
 
-  it('shows expanded by default if screen width is >= 1440px', () => {
-    vi.stubGlobal('innerWidth', 1440);
+  it('shows expanded by default if screen width is >= 1920px', () => {
+    vi.stubGlobal('innerWidth', 1920);
     const { container } = render(<NavigationMenu {...mockProps} />);
     const aside = container.querySelector('aside');
 

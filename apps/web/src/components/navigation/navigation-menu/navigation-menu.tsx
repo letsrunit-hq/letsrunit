@@ -30,7 +30,7 @@ export function NavigationMenu({ organizations, projects, user, selected, classN
 
   useEffect(() => {
     if (width === undefined) return;
-    setNavState(width < 2000 ? 'collapsed' : 'expanded');
+    setNavState(width < 1920 ? 'collapsed' : 'expanded');
   }, [width]);
 
   const isCollapsed = navState === 'collapsed';
