@@ -1,5 +1,5 @@
-import React from 'react';
 import { cn } from '@letsrunit/utils';
+import React from 'react';
 
 export type StatsToolbarProps = {
   className?: string;
@@ -11,9 +11,14 @@ export type StatsToolbarProps = {
 
 export function StatsToolbar({ className, totalFeatures, activeTests, suggestions, passRate }: StatsToolbarProps) {
   const passRateDisplay = typeof passRate === 'number' ? `${passRate}%` : passRate;
-  const passRateStyle = typeof passRate !== 'number'
-    ? ''
-    : passRate === 100 ? 'text-green-600' : passRate >= 75 ? 'text-yellow-600' : 'text-red-600';
+  const passRateStyle =
+    typeof passRate !== 'number'
+      ? ''
+      : passRate === 100
+        ? 'text-green-600'
+        : passRate >= 75
+          ? 'text-yellow-600'
+          : 'text-red-600';
 
   return (
     <div className={cn('mt-5 pt-4 text-center', className)} style={{ borderTop: '1px solid var(--surface-border)' }}>
@@ -22,16 +27,16 @@ export function StatsToolbar({ className, totalFeatures, activeTests, suggestion
           <div className="muted mb-2">Total Features</div>
           <div>{totalFeatures}</div>
         </div>
-        <div className="col-6 md:col-3">
-          <div className="muted mb-2">Test cases</div>
+        <div className="col-4 md:col-3">
+          <div className="muted mb-2 text-sm sm:text-base">Test cases</div>
           <div>{activeTests}</div>
         </div>
-        <div className="col-6 md:col-3">
-          <div className="muted mb-2">Suggestions</div>
+        <div className="col-4 md:col-3">
+          <div className="muted mb-2 text-sm sm:text-base">Suggestions</div>
           <div>{suggestions}</div>
         </div>
-        <div className="col-12 md:col-3">
-          <div className="muted mb-2">Pass Rate</div>
+        <div className="col-4 md:col-3">
+          <div className="muted mb-2 text-sm sm:text-base">Pass Rate</div>
           <div className={passRateStyle}>{passRateDisplay}</div>
         </div>
       </div>

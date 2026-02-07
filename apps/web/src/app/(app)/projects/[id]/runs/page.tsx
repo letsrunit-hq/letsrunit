@@ -23,14 +23,12 @@ export default async function Page({ params }: PageProps) {
 
   return (
     <div>
-      <div className="mb-4">
-        <div className="flex flex-column md:flex-row align-items-start md:align-items-center justify-content-between">
-          <div className="flex flex-row align-items-center mb-3 md:mb-0">
-            {project.favicon && <Chip className={cn('tile', project.favicon, 'mr-3')} image={project.favicon} />}
-            <h1 className="my-1">{project.name}</h1>
-          </div>
-          <div className="flex flex-row gap-2 justify-content-end"></div>
+      <div className="hidden lg:flex flex-column md:flex-row align-items-start md:align-items-center justify-content-between mb-4">
+        <div className="flex flex-row align-items-center mb-3 md:mb-0">
+          {project.favicon && <Chip className={cn('tile', project.favicon, 'mr-3')} image={project.favicon} />}
+          <h1 className="my-1">{project.name}</h1>
         </div>
+        <div className="flex flex-row gap-2 justify-content-end"></div>
       </div>
 
       <SubtleHeader className="mb-3">Run History</SubtleHeader>

@@ -89,7 +89,9 @@ export function Navigation() {
   ];
 
   const bottomTabItems: MenuItem[] = [];
-  if (selected.project) {
+  if (!selected.page) {
+    // do nothing
+  } else if (selected.project) {
     bottomTabItems.push(
       {
         label: 'Dashboard',
@@ -131,65 +133,64 @@ export function Navigation() {
     );
   });
 
-  if (width !== undefined && width < 1024) {
+  if (width !== undefined && width >= 992) {
     return (
-      <>
-        <MobileNavBar
-          selectedProject={selectedProject}
-          selectedOrgName={selectedOrg?.name}
-          onMenuClick={() => setSidebarVisible(true)}
-          onProjectClick={() => setProjectMenuVisible(true)}
-          isAnonymous={user.isAnonymous}
-          className="lg:hidden"
-        />
-        <Sidebar
-          visible={sidebarVisible}
-          onHide={() => setSidebarVisible(false)}
-          position="right"
-          className="w-18rem p-0"
-        >
-          <div className="flex flex-column h-full">
-            <div className="p-4 border-bottom-1 border-subtle">
-              <div className="font-bold text-xl">{user.name}</div>
-              <div className="text-color-secondary">{user.email}</div>
-            </div>
-            <Menu
-              model={userMenuItems}
-              className="w-full border-none"
-              pt={{
-                menuitem: { className: 'p-0' },
-                action: { className: 'p-menuitem-link' },
-              }}
-            />
-          </div>
-        </Sidebar>
-        <Sidebar
-          visible={projectMenuVisible}
-          onHide={() => setProjectMenuVisible(false)}
-          position="top"
-          className="h-auto p-0"
-          showCloseIcon={false}
-          pt={{ header: { className: 'hidden'}, content: { className: 'pt-2' } }}
-        >
-          <MobileProjectMenu
-            organizations={organizations}
-            projects={projects}
-            onItemClick={() => setProjectMenuVisible(false)}
-          />
-        </Sidebar>
-        {bottomTabItems.length > 0 && <BottomTabMenu model={bottomTabItems} activeIndex={activeTabIndex} />}
-      </>
+      <NavigationMenu
+        organizations={organizations}
+        projects={projects}
+        user={user}
+        selected={selected}
+        className="hidden lg:block fixed left-0 top-0"
+      />
     );
   }
 
   return (
-    <NavigationMenu
-      organizations={organizations}
-      projects={projects}
-      user={user}
-      selected={selected}
-      className="hidden lg:block fixed left-0 top-0"
-    />
+    <>
+      <MobileNavBar
+        selectedProject={selectedProject}
+        selectedOrgName={selectedOrg?.name}
+        onMenuClick={() => setSidebarVisible(true)}
+        onProjectClick={() => setProjectMenuVisible(true)}
+        isAnonymous={user.isAnonymous}
+      />
+      <Sidebar
+        visible={sidebarVisible}
+        onHide={() => setSidebarVisible(false)}
+        position="right"
+        className="w-18rem p-0"
+      >
+        <div className="flex flex-column h-full">
+          <div className="p-4 border-bottom-1 border-subtle">
+            <div className="font-bold text-xl">{user.name}</div>
+            <div className="text-color-secondary">{user.email}</div>
+          </div>
+          <Menu
+            model={userMenuItems}
+            className="w-full border-none"
+            pt={{
+              menuitem: { className: 'p-0' },
+              action: { className: 'p-menuitem-link' },
+            }}
+          />
+        </div>
+      </Sidebar>
+      <Sidebar
+        visible={projectMenuVisible}
+        onHide={() => setProjectMenuVisible(false)}
+        position="top"
+        className="h-auto p-0"
+        showCloseIcon={false}
+        pt={{ header: { className: 'hidden'}, content: { className: 'pt-2' } }}
+      >
+        <MobileProjectMenu
+          organizations={organizations}
+          projects={projects}
+          onItemClick={() => setProjectMenuVisible(false)}
+        />
+      </Sidebar>
+      {bottomTabItems.length > 0 && <BottomTabMenu model={bottomTabItems} activeIndex={activeTabIndex} />}
+    </>
   );
 }
 

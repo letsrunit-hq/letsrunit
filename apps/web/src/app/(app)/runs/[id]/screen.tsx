@@ -34,29 +34,27 @@ export default function Screen(initial: ScreenOptions) {
 
   if (run!.status === 'queued') {
     return (
-      <main className="p-3 center">
+      <div className="p-3 center">
         <AnimatedBackground waiting />
         <QueueStatus startTime={run?.createdAt} />
-      </main>
+      </div>
     );
   }
 
   return (
-    <>
-      <main className={`p-3 ${styles.container}`}>
-        <BreadCrumb model={crumbs} className="mb-5 hidden lg:block" />
+    <div className={`p-3 ${styles.container}`}>
+      <BreadCrumb model={crumbs} className="mb-5 hidden lg:block" />
 
-        <RunResult project={project!} feature={feature} run={run!} loading={loading} journal={journal}>
-          <SubtleHeader className="mt-6 mb-3">Run History</SubtleHeader>
-          <RunHistory
-            projectId={run!.projectId}
-            featureId={run!.featureId || undefined}
-            type={run!.featureId ? undefined : run!.type}
-            runs={initial.history}
-            currentRunId={run!.id}
-          />
-        </RunResult>
-      </main>
-    </>
+      <RunResult project={project!} feature={feature} run={run!} loading={loading} journal={journal}>
+        <SubtleHeader className="mt-6 mb-3">Run History</SubtleHeader>
+        <RunHistory
+          projectId={run!.projectId}
+          featureId={run!.featureId || undefined}
+          type={run!.featureId ? undefined : run!.type}
+          runs={initial.history}
+          currentRunId={run!.id}
+        />
+      </RunResult>
+    </div>
   );
 }

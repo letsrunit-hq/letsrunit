@@ -14,8 +14,8 @@ export interface BottomTabMenuProps {
 
 export function BottomTabMenu({ model, activeIndex, onTabChange, className }: BottomTabMenuProps) {
   return (
-    <div
-      className={cn('fixed bottom-0 left-0 right-0 border-top-1 border-subtle bg-subtle z-5 lg:hidden', className)}
+    <nav
+      className={cn('fixed bottom-0 left-0 right-0 border-top-1 border-subtle bg-subtle z-5', className)}
     >
       <TabMenu
         model={model}
@@ -28,16 +28,17 @@ export function BottomTabMenu({ model, activeIndex, onTabChange, className }: Bo
           menuitem: { className: 'flex-1' },
           action: ({ context }: any) => ({
             className: cn(
-              'flex flex-column align-items-center justify-content-center gap-1 p-2 no-underline transition-colors duration-200',
+              'flex flex-column align-items-center justify-content-center gap-1 p-2 mt-1 no-underline transition-colors duration-200',
               context.active ? 'text-primary' : 'text-color-secondary hover:text-color',
             ),
           }),
+          inkbar: { className: 'hidden' },
           icon: { className: 'text-xl' },
           label: { className: 'text-xs' },
         }}
       />
-    </div>
-  );
+    </nav>
+    );
 }
 
 export default BottomTabMenu;

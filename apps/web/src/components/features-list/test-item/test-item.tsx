@@ -1,9 +1,9 @@
+import { Tile } from '@/components/tile';
 import type { Feature } from '@letsrunit/model';
 import { cn } from '@letsrunit/utils';
-import { Archive, ArchiveRestore, MoreVertical, Play, RefreshCcw, TestTube } from 'lucide-react';
+import { Archive, ArchiveRestore, CheckCircle2, MoreVertical, Play, RefreshCcw, TestTube, XCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Button } from 'primereact/button';
-import { Chip } from 'primereact/chip';
 import { Menu } from 'primereact/menu';
 import type { MenuItem } from 'primereact/menuitem';
 import { Panel } from 'primereact/panel';
@@ -59,20 +59,26 @@ export function TestItem({ feature, run, generate, remove, restore }: TestItemPr
         label="Run"
         onClick={() => run(feature)}
       />
-    ) : <></>;
+    ) : (
+      <></>
+    );
 
   const moreMenu =
-    items.length > 0 ? (<>
-      <Menu model={items} popup ref={menuRef} />
-      <Button
-        severity="secondary"
-        text
-        aria-label="More"
-        icon={<MoreVertical size={20} />}
-        disabled={status === 'queued' || status === 'running'}
-        onClick={(e) => menuRef.current?.toggle(e)}
-      />
-    </>) : <></>;
+    items.length > 0 ? (
+      <>
+        <Menu model={items} popup ref={menuRef} />
+        <Button
+          severity="secondary"
+          text
+          aria-label="More"
+          icon={<MoreVertical size={20} />}
+          disabled={status === 'queued' || status === 'running'}
+          onClick={(e) => menuRef.current?.toggle(e)}
+        />
+      </>
+    ) : (
+      <></>
+    );
 
   const restoreButton = restore && (
     <Button
@@ -91,11 +97,20 @@ export function TestItem({ feature, run, generate, remove, restore }: TestItemPr
   };
 
   return (
-    <Panel className="w-full odd">
+    <Panel className="w-full odd relative">
+      <div className="absolute text-blue-500 md:hidden" style={{ top: '0.75rem', right: '0.5rem' }}>
+        {feature.lastRun?.status === 'passed' && <CheckCircle2 className="text-green-500" size={20} />}
+        {feature.lastRun?.status === 'error' && <XCircle className="text-red-500" size={20} />}
+        {feature.lastRun?.status === 'failed' && <XCircle className="text-red-500" size={20} />}
+      </div>
       <div className="flex align-items-center justify-content-between gap-3">
-        <div className="flex flex-1 align-items-center gap-3" role={feature.lastRun ? 'link' : undefined} onClick={openRun}>
-          <Chip className="tile tile-green" icon={<TestTube key="icon" size={24} />} />
-          <div className="flex flex-column">
+        <div
+          className="flex flex-1 align-items-center gap-3"
+          role={feature.lastRun ? 'link' : undefined}
+          onClick={openRun}
+        >
+          <Tile className="hidden md:flex tile-green" icon={<TestTube key="icon" size={24} />} />
+          <div className="flex flex-1 flex-column">
             <h3 className={cn('m-0', 'mb-1', 'font-normal', !feature.enabled && 'line-through')}>{feature.name}</h3>
             <div className="flex align-items-center gap-3 text-300">
               {feature.lastRun && (
@@ -107,7 +122,7 @@ export function TestItem({ feature, run, generate, remove, restore }: TestItemPr
           </div>
         </div>
         <div className="hidden sm:flex align-items-center gap-2">
-          <RunStatusBadge status={feature.lastRun?.status} />
+          <RunStatusBadge className="hidden md:flex" status={feature.lastRun?.status} />
           {feature.enabled && runButton}
           {feature.enabled && moreMenu}
           {!feature.enabled && restoreButton}

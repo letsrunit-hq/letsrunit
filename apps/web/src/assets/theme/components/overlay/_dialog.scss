@@ -3,6 +3,7 @@
     box-shadow: $overlayContainerShadow;
     border: $overlayContentBorder;
     background: $overlayContentBg;
+    margin: $dialogMargin;
 
     .p-dialog-header {
         border-bottom: $dialogHeaderBorder;
@@ -74,6 +75,26 @@
 
         .p-confirm-dialog-message {
             margin-left: $inlineSpacing * 2;
+        }
+
+        .p-confirm-dialog-reject {
+            background-color: transparent;
+            color: $contrastButtonBg;
+            border-color: transparent;
+
+            &:not(:disabled):hover {
+              background: rgba($contrastButtonBg, $textButtonHoverBgOpacity);
+              border-color: transparent;
+              color: $contrastButtonBg;
+              box-shadow: none;
+            }
+
+            &:not(:disabled):active {
+              background: rgba($contrastButtonBg, $textButtonActiveBgOpacity);
+              border-color: transparent;
+              color: $contrastButtonBg;
+              box-shadow: none;
+            }
         }
     }
 }

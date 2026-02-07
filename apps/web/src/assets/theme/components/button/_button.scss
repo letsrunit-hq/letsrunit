@@ -621,12 +621,14 @@
                 background: rgba($contrastButtonBg, $textButtonHoverBgOpacity);
                 border-color: transparent;
                 color: $contrastButtonBg;
+                box-shadow: none;
             }
 
             &:not(:disabled):active {
                 background: rgba($contrastButtonBg, $textButtonActiveBgOpacity);
                 border-color: transparent;
                 color: $contrastButtonBg;
+                box-shadow: none;
             }
 
             .p-menuitem & {

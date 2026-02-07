@@ -30,6 +30,7 @@ export function SuggestionItem({ feature, generate, remove, restore }: Suggestio
         label={feature.lastRun ? 'Retry' : 'Generate & Run'}
         severity={feature.lastRun ? 'secondary' : undefined}
         onClick={() => generate(feature)}
+        className="flex-1"
       />
     ) : (
       <></>
@@ -64,18 +65,21 @@ export function SuggestionItem({ feature, generate, remove, restore }: Suggestio
   };
 
   return (
-    <Panel className="w-full even" role={feature.lastRun ? 'button' : undefined} onClick={openRun}>
-      <div className="flex align-items-center justify-content-between gap-3">
+    <Panel className="w-full even relative" role={feature.lastRun ? 'button' : undefined} onClick={openRun}>
+      <div className="absolute text-blue-500 md:hidden" style={{ top: '0.75rem', right: '0.5rem' }}>
+        <Lightbulb key="icon" size={20} />
+      </div>
+      <div className="flex flex-column sm:flex-row align-items-center justify-content-between gap-3">
         <div className="flex align-items-center gap-3">
-          <Chip className="tile tile-blue" icon={<Lightbulb key="icon" size={24} />} />
-          <div className="flex flex-column">
+          <Chip className="hidden md:flex tile tile-blue" icon={<Lightbulb key="icon" size={24} />} />
+          <div className="flex flex-1 flex-column">
             <div className="flex align-items-center gap-2 mb-1">
               <h3 className={cn('m-0', 'mb-1', 'font-normal', !feature.enabled && 'line-through')}>{feature.name}</h3>
             </div>
             {feature.description && <p className="text-300 m-0">{feature.description}</p>}
           </div>
         </div>
-        <div className="hidden sm:flex align-items-center gap-2">
+        <div className="flex align-items-center gap-2 w-full sm:w-auto">
           <RunStatusBadge status={feature.lastRun?.status} />
           {feature.enabled && generateButton}
           {feature.enabled && removeButton}

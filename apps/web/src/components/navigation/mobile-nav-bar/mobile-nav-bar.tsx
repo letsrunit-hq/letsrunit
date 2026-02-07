@@ -84,7 +84,7 @@ export function MobileNavBar({
       center={centerContents}
       end={rightContents}
       className={cn(
-        'bg-surface-ground border-none border-bottom-1 border-subtle h-4rem sticky top-0 z-5 w-full py-0',
+        'bg-subtle border-none border-bottom-1 border-noround border-subtle h-4rem fixed top-0 z-5 w-full py-0',
         className,
       )}
     />

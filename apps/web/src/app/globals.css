@@ -47,17 +47,25 @@ div[role="link"]{
 }
 
 main {
-  min-height: 100vh;
-  transition: padding 0.3s ease-in-out;
+  min-height: calc(100vh - 9rem);
+  padding-top: 4rem;
+  padding-bottom: 5rem;
 }
 
 @media (min-width: 992px) {
+  main {
+    min-height: 100vh;
+    padding-top: 0;
+    padding-bottom: 0;
+    transition: padding 0.3s ease-in-out;
+  }
+
   aside:not(.collapsed) + main {
-    padding-left: 17rem;
+    padding-left: 20rem;
   }
 
   aside.collapsed + main {
-    padding-left: 4rem;
+    padding-left: 6rem;
   }
 }
 
@@ -117,7 +125,7 @@ main {
   );
 }
 .bg-subtle {
-  background: rgba(0, 0, 0, 0.5);
+  background: oklch(0.145 0 0 / 0.8);
   backdrop-filter: blur(20px);
 }
 
