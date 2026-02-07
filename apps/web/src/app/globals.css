@@ -46,26 +46,23 @@ div[role="link"]{
   cursor: pointer;
 }
 
-main {
+main.with-nav {
   min-height: calc(100vh - 9rem);
   padding-top: 4rem;
   padding-bottom: 5rem;
 }
 
 @media (min-width: 992px) {
-  main {
+  main.with-nav {
     min-height: 100vh;
     padding-top: 0;
     padding-bottom: 0;
+    padding-left: 6rem;
     transition: padding 0.3s ease-in-out;
   }
 
-  aside:not(.collapsed) + main {
+  aside:not(.collapsed) + main.with-nav {
     padding-left: 20rem;
-  }
-
-  aside.collapsed + main {
-    padding-left: 6rem;
   }
 }
 
