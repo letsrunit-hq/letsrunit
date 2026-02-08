@@ -8,7 +8,7 @@ export function FailureExplanationsSection() {
     <section className="relative py-8 overflow-hidden">
       <div className="absolute inset-0 bg-black" />
 
-      <div className="relative z-10 max-w-5xl mx-auto px-6">
+      <div className="relative z-10 container mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -29,7 +29,7 @@ export function FailureExplanationsSection() {
             {/* Example 1: Update the test */}
             <div className="relative pl-6 border-left-3 border-orange-500 py-4">
               <div className="flex align-items-start gap-4">
-                <div className="w-3rem h-3rem border-round bg-orange-500-alpha-10 flex align-items-center justify-content-center flex-shrink-0">
+                <div className="w-3rem h-3rem border-round bg-orange-500 flex align-items-center justify-content-center flex-shrink-0" style={{ background: 'color-mix(in oklab, var(--orange-500) 10%, transparent)' }}>
                   <AlertCircle className="w-2rem h-2rem text-orange-400" />
                 </div>
                 <div className="flex-1 flex flex-column gap-4">
@@ -43,10 +43,10 @@ export function FailureExplanationsSection() {
                   </p>
 
                   <div className="flex align-items-center gap-3 pt-2">
-                    <button className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white border-none border-round font-medium cursor-pointer transition-colors">
+                    <button className="px-4 py-2 bg-orange-500 hover:surface-hover text-white border-none border-round font-medium cursor-pointer transition-colors">
                       Update Test
                     </button>
-                    <button className="px-4 py-2 bg-white-alpha-10 hover:bg-white-alpha-20 border-1 border-white-alpha-10 text-white border-round font-medium cursor-pointer flex align-items-center gap-2 transition-colors">
+                    <button className="px-4 py-2 bg-surface-hover border-1 border-white-alpha-10 text-white border-round font-medium cursor-pointer flex align-items-center gap-2 transition-colors">
                       <Github className="w-1rem h-1rem" />
                       Create Issue
                     </button>
@@ -58,7 +58,7 @@ export function FailureExplanationsSection() {
             {/* Example 2: Fix the code */}
             <div className="relative pl-6 border-left-3 border-red-500 py-4">
               <div className="flex align-items-start gap-4">
-                <div className="w-3rem h-3rem border-round bg-red-500-alpha-10 flex align-items-center justify-content-center flex-shrink-0">
+                <div className="w-3rem h-3rem border-round bg-red-500 flex align-items-center justify-content-center flex-shrink-0" style={{ background: 'color-mix(in oklab, var(--red-500) 10%, transparent)' }}>
                   <AlertCircle className="w-2rem h-2rem text-red-400" />
                 </div>
                 <div className="flex-1 flex flex-column gap-4">
@@ -75,11 +75,11 @@ export function FailureExplanationsSection() {
                   <div className="flex align-items-center gap-3 pt-2">
                     <button
                       disabled
-                      className="px-4 py-2 bg-white-alpha-10 text-500 border-none border-round font-medium cursor-not-allowed"
+                      className="px-4 py-2 bg-surface-hover text-500 border-none border-round font-medium cursor-not-allowed"
                     >
                       Update Test
                     </button>
-                    <button className="px-4 py-2 bg-white-alpha-10 hover:bg-white-alpha-20 border-1 border-white-alpha-10 text-white border-round font-medium cursor-pointer flex align-items-center gap-2 transition-colors">
+                    <button className="px-4 py-2 bg-surface-hover border-1 border-white-alpha-10 text-white border-round font-medium cursor-pointer flex align-items-center gap-2 transition-colors">
                       <Github className="w-1rem h-1rem" />
                       Create Issue
                     </button>

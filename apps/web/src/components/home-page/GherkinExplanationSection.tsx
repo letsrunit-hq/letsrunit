@@ -8,7 +8,7 @@ export function GherkinExplanationSection() {
     <section className="relative py-8 overflow-hidden">
       <div className="absolute inset-0 bg-black" />
 
-      <div className="relative z-10 max-w-5xl mx-auto px-6">
+      <div className="relative z-10 container mx-auto px-6">
         {/* Immediate reveal */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -40,18 +40,13 @@ export function GherkinExplanationSection() {
 
           {/* Example */}
           <div className="relative">
-            <div
-              className="absolute -inset-1 border-round-2xl blur-xl"
-              style={{ background: 'linear-gradient(to right, rgba(255,140,0,0.05), transparent)' }}
-            />
-
             <Panel
               header="login.feature"
               className="relative overflow-hidden"
               pt={{
-                header: { className: 'bg-zinc-900 border-1 px-4 py-2' },
-                title: { className: 'text-xs text-500 font-mono' },
-                content: { className: 'text-100 font-mono flex flex-column gap-2 bg-zinc-950' },
+                header: { className: 'surface-0 border-1 px-4 py-2' },
+                title: { className: 'text-xs text-500 font-monospace' },
+                content: { className: 'text-100 font-monospace flex flex-column gap-2 surface-b' },
               }}
             >
               <div className="text-500">Scenario: User logs in</div>

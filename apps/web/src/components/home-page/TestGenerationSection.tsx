@@ -25,9 +25,7 @@ export function TestGenerationSection() {
 
   return (
     <section className="relative py-8 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-black via-orange-950/5 to-black" />
-
-      <div className="relative z-10 max-w-5xl mx-auto px-6">
+      <div className="relative z-10 container mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}

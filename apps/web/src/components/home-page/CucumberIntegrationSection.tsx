@@ -7,9 +7,7 @@ import { Card } from 'primereact/card';
 export function CucumberIntegrationSection() {
   return (
     <section className="relative py-8 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-black via-orange-950/5 to-black" />
-
-      <div className="relative z-10 max-w-5xl mx-auto px-6">
+      <div className="relative z-10 container mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -26,7 +24,7 @@ export function CucumberIntegrationSection() {
                 tests like any other Cucumber suite.
               </p>
 
-              <div className="bg-zinc-950 border-1 border-white-alpha-10 border-round p-5 font-mono text-sm">
+              <div className="surface-b border-1 border-white-alpha-10 border-round p-5 font-monospace text-sm">
                 <div className="text-500 mb-3">$ npm install @cucumber/cucumber</div>
                 <div className="text-500 mb-3">$ npx letsrunit init</div>
                 <div className="text-orange-400">
@@ -44,8 +42,8 @@ export function CucumberIntegrationSection() {
           {/* Integration points */}
           <div className="flex flex-column md:flex-row gap-4">
             <Card
-              className="flex-1 border-1 border-white-alpha-10 border-round-xl"
-              style={{ background: 'linear-gradient(to bottom right, rgba(255,255,255,0.05), transparent)' }}
+              className="flex-1 border-1 border-white-alpha-10 border-round-2xl"
+              style={{ background: 'color-mix(in oklab, white 5%, transparent)' }}
               pt={{
                 body: { className: 'p-6' },
                 content: { className: 'p-0 flex flex-column gap-4' },
@@ -59,8 +57,8 @@ export function CucumberIntegrationSection() {
             </Card>
 
             <Card
-              className="flex-1 border-1 border-white-alpha-10 border-round-xl"
-              style={{ background: 'linear-gradient(to bottom right, rgba(255,255,255,0.05), transparent)' }}
+              className="flex-1 border-1 border-white-alpha-10 border-round-2xl"
+              style={{ background: 'color-mix(in oklab, white 5%, transparent)' }}
               pt={{
                 body: { className: 'p-6' },
                 content: { className: 'p-0 flex flex-column gap-4' },
@@ -74,8 +72,8 @@ export function CucumberIntegrationSection() {
             </Card>
 
             <Card
-              className="flex-1 border-1 border-white-alpha-10 border-round-xl"
-              style={{ background: 'linear-gradient(to bottom right, rgba(255,255,255,0.05), transparent)' }}
+              className="flex-1 border-1 border-white-alpha-10 border-round-2xl"
+              style={{ background: 'color-mix(in oklab, white 5%, transparent)' }}
               pt={{
                 body: { className: 'p-6' },
                 content: { className: 'p-0 flex flex-column gap-4' },
