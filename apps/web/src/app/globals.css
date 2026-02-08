@@ -57,8 +57,11 @@ main.with-nav {
     min-height: 100vh;
     padding-top: 0;
     padding-bottom: 0;
-    padding-left: 6rem;
     transition: padding 0.3s ease-in-out;
+  }
+
+  aside.collapsed + main.with-nav {
+    padding-left: 6rem;
   }
 
   aside:not(.collapsed) + main.with-nav {

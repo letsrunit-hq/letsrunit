@@ -5,6 +5,7 @@ import { MobileNavBar } from '@/components/navigation/mobile-nav-bar/mobile-nav-
 import { MobileProjectMenu } from '@/components/navigation/mobile-project-menu/mobile-project-menu';
 import { NavigationMenu } from '@/components/navigation/navigation-menu/navigation-menu';
 import type { Organization, UserInfo } from '@/components/navigation/types';
+import { useCookies } from '@/hooks/use-cookies';
 import { useSelected } from '@/hooks/use-selected';
 import { useWindowSize } from '@/hooks/use-window-size';
 import { getUser, isLoggedIn, logout } from '@/libs/auth';
@@ -27,6 +28,7 @@ export function Navigation() {
 
   const selected = useSelected();
   const { width } = useWindowSize();
+  const { getCookie } = useCookies();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -65,6 +67,8 @@ export function Navigation() {
   };
 
   if (loading || !user) return null;
+
+  const showNav = getCookie('nav-preferences') || !user.isAnonymous;
 
   const selectedOrg = organizations.find((o) => o.account_id === selected.org);
   const selectedProject = projects.find((p) => p.id === selected.project);
@@ -145,6 +149,8 @@ export function Navigation() {
     );
   }
 
+  if (!showNav) return null;
+
   return (
     <>
       <MobileNavBar
@@ -181,7 +187,7 @@ export function Navigation() {
         position="top"
         className="h-auto p-0"
         showCloseIcon={false}
-        pt={{ header: { className: 'hidden'}, content: { className: 'pt-2' } }}
+        pt={{ header: { className: 'hidden' }, content: { className: 'pt-2' } }}
       >
         <MobileProjectMenu
           organizations={organizations}

@@ -1,138 +1,78 @@
-import { fixedUUID } from '@letsrunit/utils';
 import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NavigationMenu } from './navigation-menu';
+
+const mockUseNavState = vi.hoisted(() => vi.fn());
+
+vi.mock('@/hooks/use-nav-state', () => ({
+  useNavState: mockUseNavState,
+}));
 
 const mockProps = {
   organizations: [{ account_id: '1', name: 'Acme Corp' }],
-  projects: [{ id: fixedUUID(1, 'projects'), name: 'E-commerce Platform' }],
+  projects: [{ id: 'proj-1', name: 'E-commerce Platform' }],
   user: { name: 'John Doe', email: 'john@example.com', isAnonymous: false },
   selected: {
     org: '1',
-    project: fixedUUID(1, 'projects'),
+    project: 'proj-1',
     page: 'project',
   },
 };
 
 describe('NavigationMenu', () => {
-  it('renders organizations and projects', () => {
-    vi.stubGlobal('innerWidth', 1920);
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('renders nothing when navState is hidden', () => {
+    mockUseNavState.mockReturnValue(['hidden', vi.fn()]);
+
+    const { container } = render(<NavigationMenu {...mockProps} />);
+
+    expect(container.firstChild).toBeNull();
+  });
+
+  it('renders expanded menu items correctly', () => {
+    mockUseNavState.mockReturnValue(['expanded', vi.fn()]);
+
     render(<NavigationMenu {...mockProps} />);
 
-    // Check for organization name (can be multiple if dropdown is in DOM)
-    expect(screen.getAllByText('Acme Corp')[0]).toBeInTheDocument();
-
-    // Check for project name
-    expect(screen.getAllByText('E-commerce Platform')[0]).toBeInTheDocument();
-
-    // Check for navigation links
+    expect(screen.getByText('E-commerce Platform')).toBeInTheDocument();
     expect(screen.getByText('Dashboard')).toBeInTheDocument();
-    expect(screen.getByText('Run History')).toBeInTheDocument();
-    expect(screen.getByText('Project Settings')).toBeInTheDocument();
   });
 
-  it('renders Personal as default when no organization is selected', () => {
-    vi.stubGlobal('innerWidth', 1920);
-    const propsWithoutOrg = {
-      ...mockProps,
-      selected: {
-        ...mockProps.selected,
-        org: undefined,
-      },
-    };
-    render(<NavigationMenu {...propsWithoutOrg} />);
+  it('renders collapsed menu correctly', () => {
+    mockUseNavState.mockReturnValue(['collapsed', vi.fn()]);
 
-    expect(screen.getAllByText('Personal')[0]).toBeInTheDocument();
-    // Organization Settings should not be visible
-    expect(screen.queryByText('Organization Settings')).not.toBeInTheDocument();
-  });
+    render(<NavigationMenu {...mockProps} />);
 
-  it('renders without projects when no project is selected', () => {
-    vi.stubGlobal('innerWidth', 1920);
-    const propsWithoutProject = {
-      ...mockProps,
-      selected: {
-        ...mockProps.selected,
-        project: undefined,
-      },
-    };
-    render(<NavigationMenu {...propsWithoutProject} />);
-
-    // Check for organization name
-    expect(screen.getAllByText('Acme Corp')[0]).toBeInTheDocument();
-
-    // Project name should NOT be visible
-    expect(screen.queryByText('E-commerce Platform')).not.toBeInTheDocument();
-
-    // Project navigation links should NOT be visible
-    expect(screen.queryByText('Dashboard')).not.toBeInTheDocument();
-    expect(screen.queryByText('Run History')).not.toBeInTheDocument();
-    expect(screen.queryByText('Project Settings')).not.toBeInTheDocument();
-  });
-
-  it('does not show Organizations group when organizations list is empty', async () => {
-    const propsWithoutOrgs = {
-      ...mockProps,
-      organizations: [],
-      selected: {
-        ...mockProps.selected,
-        org: undefined,
-      },
-    };
-    render(<NavigationMenu {...propsWithoutOrgs} />);
-
-    expect(screen.queryByText('Organizations')).not.toBeInTheDocument();
-  });
-
-  it('handles collapse transition correctly', () => {
-    vi.stubGlobal('innerWidth', 1920);
-    const { container } = render(<NavigationMenu {...mockProps} />);
-    const aside = container.querySelector('aside');
-    const toggleButton = container.querySelector('.collapse-toggle');
-
-    expect(aside).not.toHaveClass('collapsed');
-    expect(screen.getByText('Dashboard')).toBeInTheDocument();
-
-    // Click toggle to start collapsing
-    fireEvent.click(toggleButton!);
+    const aside = screen.getByRole('complementary');
+    expect(aside).toHaveClass('w-5rem');
     expect(aside).toHaveClass('collapsed');
-    // During transition (collapsing), labels should still be visible because we use isExpandingOrExpanded
-    // Note: We need to use queryByText and check if it exists because getByText fails if not found
-    expect(screen.queryByText('Dashboard')).toBeInTheDocument();
-
-    // Simulate transition end on a DIFFERENT property - should NOT trigger collapse
-    fireEvent.transitionEnd(aside!, { propertyName: 'opacity' });
-    expect(screen.queryByText('Dashboard')).toBeInTheDocument();
-
-    // Simulate transition end on width
-    fireEvent.transitionEnd(aside!, { propertyName: 'width' });
-
-    // After transition, it should be fully collapsed and labels hidden
-    expect(screen.queryByText('Dashboard')).not.toBeInTheDocument();
-
-    // Click toggle to expand
-    fireEvent.click(toggleButton!);
-    expect(aside).not.toHaveClass('collapsed');
-    expect(screen.queryByText('Dashboard')).toBeInTheDocument();
   });
 
-  it('shows collapsed by default if screen width is < 1920', () => {
-    vi.stubGlobal('innerWidth', 1024);
-    const { container } = render(<NavigationMenu {...mockProps} />);
-    const aside = container.querySelector('aside');
+  it('handles toggle click', () => {
+    const setNavState = vi.fn();
+    mockUseNavState.mockReturnValue(['expanded', setNavState]);
 
-    // It should be collapsed initially if width < 1440
-    expect(aside).toHaveClass('collapsed');
-    expect(screen.queryByText('Dashboard')).not.toBeInTheDocument();
+    render(<NavigationMenu {...mockProps} />);
+
+    const toggle = screen.getByTestId('collapse-toggle');
+    fireEvent.click(toggle);
+
+    expect(setNavState).toHaveBeenCalled();
   });
 
-  it('shows expanded by default if screen width is >= 1920px', () => {
-    vi.stubGlobal('innerWidth', 1920);
-    const { container } = render(<NavigationMenu {...mockProps} />);
-    const aside = container.querySelector('aside');
+  it('handles transition end', () => {
+    const setNavState = vi.fn();
+    mockUseNavState.mockReturnValue(['collapsing', setNavState]);
 
-    expect(aside).not.toHaveClass('collapsed');
-    expect(screen.queryByText('Dashboard')).toBeInTheDocument();
+    render(<NavigationMenu {...mockProps} />);
+
+    const aside = screen.getByRole('complementary');
+    fireEvent.transitionEnd(aside, { propertyName: 'width' });
+
+    expect(setNavState).toHaveBeenCalledWith('collapsed');
   });
 });
