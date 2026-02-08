@@ -1,8 +1,8 @@
-import { fixedUUID } from "@letsrunit/utils";
-import { fireEvent, render, screen } from "@testing-library/react";
-import React from "react";
-import { describe, expect, it, vi } from "vitest";
-import { NavigationMenu } from "./navigation-menu";
+import { fixedUUID } from '@letsrunit/utils';
+import { fireEvent, render, screen } from '@testing-library/react';
+import React from 'react';
+import { describe, expect, it, vi } from 'vitest';
+import { NavigationMenu } from './navigation-menu';
 
 const mockProps = {
   organizations: [{ account_id: '1', name: 'Acme Corp' }],

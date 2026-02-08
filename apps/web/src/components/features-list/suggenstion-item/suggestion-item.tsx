@@ -1,10 +1,10 @@
 import { RunStatusBadge } from '@/components/run-status-badge';
+import { Tile } from '@/components/tile';
 import type { Feature } from '@letsrunit/model';
 import { cn } from '@letsrunit/utils';
 import { ArchiveRestore, Lightbulb, X, Zap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Button } from 'primereact/button';
-import { Chip } from 'primereact/chip';
 import { Panel } from 'primereact/panel';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import React from 'react';
@@ -71,7 +71,7 @@ export function SuggestionItem({ feature, generate, remove, restore }: Suggestio
       </div>
       <div className="flex flex-column sm:flex-row align-items-center justify-content-between gap-3">
         <div className="flex align-items-center gap-3">
-          <Chip className="hidden md:flex tile tile-blue" icon={<Lightbulb key="icon" size={24} />} />
+          <Tile className="hidden md:flex tile-blue" icon={<Lightbulb key="icon" size={24} />} />
           <div className="flex flex-1 flex-column">
             <div className="flex align-items-center gap-2 mb-1">
               <h3 className={cn('m-0', 'mb-1', 'font-normal', !feature.enabled && 'line-through')}>{feature.name}</h3>
