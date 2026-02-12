@@ -4,6 +4,7 @@ import { SiGithub } from '@icons-pack/react-simple-icons';
 import { AlertCircle } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Button } from 'primereact/button';
+import { Tag } from 'primereact/tag';
 
 export function FailureExplanationsSection() {
   return (
@@ -35,7 +36,7 @@ export function FailureExplanationsSection() {
                   <AlertCircle className="w-2rem h-2rem text-orange-400" />
                 </div>
                 <div className="flex-1 flex flex-column gap-4">
-                  <div className="text-sm text-orange-400 font-medium">Update required</div>
+                  <Tag value="Update required" severity="warning" />
                   <p className="text-300 line-height-3 m-0">
                     A new checkbox labeled "I agree to the terms & conditions" has been added to the registration form.
                     This checkbox is required and must be checked before the form can be submitted.
@@ -59,7 +60,7 @@ export function FailureExplanationsSection() {
                   <AlertCircle className="w-2rem h-2rem text-red-400" />
                 </div>
                 <div className="flex-1 flex flex-column gap-4">
-                  <div className="text-sm text-red-400 font-medium">Possible regression</div>
+                  <Tag value="Possible regression" severity="danger" />
                   <p className="text-300 line-height-3 m-0">
                     The "Proceed to payment" button was removed from the cart page. With this button gone, there's no
                     clear way for users to continue to payment from the cart.
