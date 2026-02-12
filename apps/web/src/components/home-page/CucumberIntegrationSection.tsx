@@ -47,11 +47,9 @@ export function CucumberIntegrationSection() {
           {/* Integration points */}
           <div className="flex flex-column md:flex-row gap-4">
             <Card
-              className="flex-1 border-1 border-white-alpha-10 border-round-2xl"
-              style={{ background: 'color-mix(in oklab, white 5%, transparent)' }}
+              className="flex-1"
               pt={{
-                body: { className: 'p-6' },
-                content: { className: 'p-0 flex flex-column gap-4' },
+                content: { className: 'flex flex-column gap-4' },
               }}
             >
               <Package className="w-2rem h-2rem text-orange-500" />
@@ -62,11 +60,9 @@ export function CucumberIntegrationSection() {
             </Card>
 
             <Card
-              className="flex-1 border-1 border-white-alpha-10 border-round-2xl"
-              style={{ background: 'color-mix(in oklab, white 5%, transparent)' }}
+              className="flex-1"
               pt={{
-                body: { className: 'p-6' },
-                content: { className: 'p-0 flex flex-column gap-4' },
+                content: { className: 'flex flex-column gap-4' },
               }}
             >
               <GitBranch className="w-2rem h-2rem text-orange-500" />
@@ -77,11 +73,9 @@ export function CucumberIntegrationSection() {
             </Card>
 
             <Card
-              className="flex-1 border-1 border-white-alpha-10 border-round-2xl"
-              style={{ background: 'color-mix(in oklab, white 5%, transparent)' }}
+              className="flex-1"
               pt={{
-                body: { className: 'p-6' },
-                content: { className: 'p-0 flex flex-column gap-4' },
+                content: { className: 'flex flex-column gap-4' },
               }}
             >
               <Activity className="w-2rem h-2rem text-orange-500" />

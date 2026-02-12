@@ -44,9 +44,8 @@ export function GherkinExplanationSection() {
               header="login.feature"
               className="relative overflow-hidden"
               pt={{
-                header: { className: 'surface-0 border-1 px-4 py-2' },
                 title: { className: 'text-xs text-500 font-monospace' },
-                content: { className: 'text-100 font-monospace flex flex-column gap-2 surface-b' },
+                content: { className: 'text-100 font-monospace flex flex-column gap-2' },
               }}
             >
               <div className="text-500">Scenario: User logs in</div>
