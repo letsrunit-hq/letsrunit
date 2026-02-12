@@ -3,6 +3,7 @@
 import { Activity, GitBranch, Package } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Card } from 'primereact/card';
+import { Panel } from 'primereact/panel';
 
 export function CucumberIntegrationSection() {
   return (
@@ -24,13 +25,17 @@ export function CucumberIntegrationSection() {
                 tests like any other Cucumber suite.
               </p>
 
-              <div className="surface-b border-1 border-white-alpha-10 border-round p-5 font-monospace text-sm">
-                <div className="text-500 mb-3">$ npm install @cucumber/cucumber</div>
-                <div className="text-500 mb-3">$ npx letsrunit init</div>
+              <Panel
+                pt={{
+                  content: { className: 'font-monospace text-sm flex flex-column gap-3' },
+                }}
+              >
+                <div className="text-500">$ npm install @cucumber/cucumber</div>
+                <div className="text-500">$ npx letsrunit init</div>
                 <div className="text-orange-400">
                   $ npx cucumber-js features/ --format progress --format @letsrunit/reporter
                 </div>
-              </div>
+              </Panel>
 
               <p className="m-0">
                 The tests integrate into existing CI without special setup. This is not a new test ecosystem. It's
