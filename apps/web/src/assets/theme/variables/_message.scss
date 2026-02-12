@@ -1,7 +1,7 @@
 //message
-$messageMargin: 1rem 0 !default;
-$messagePadding: 1.25rem 1.75rem !default;
-$messageBorderWidth: 0 0 0 6px !default;
+$messageMargin: 0 !default;
+$messagePadding: 1.25rem 1.5rem !default;
+$messageBorderWidth: 0 0 0 4px !default;
 $messageIconFontSize: 1.5rem !default;
 $messageTextFontSize: 1rem !default;
 $messageTextFontWeight: 500 !default;
@@ -33,10 +33,10 @@ $successMessageBg: rgba(16, 185, 129, 0.2) !default;
 $successMessageBorder: solid #10b981 !default;
 $successMessageTextColor: #6ee7b7 !default;
 $successMessageIconColor: #6ee7b7 !default;
-$warningMessageBg: rgba(234, 179, 8, 0.2) !default;
-$warningMessageBorder: solid #eab308 !default;
-$warningMessageTextColor: #fde047 !default;
-$warningMessageIconColor: #fde047 !default;
+$warningMessageBg: rgba(249, 115, 22, 0.1) !default;
+$warningMessageBorder: solid #f97316 !default;
+$warningMessageTextColor: #fdba74 !default;
+$warningMessageIconColor: #fb923c !default;
 $errorMessageBg: rgba(239, 68, 68, 0.2) !default;
 $errorMessageBorder: solid #ef4444 !default;
 $errorMessageTextColor: #fca5a5 !default;
