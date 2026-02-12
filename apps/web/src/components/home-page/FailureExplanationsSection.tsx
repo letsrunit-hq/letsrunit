@@ -1,7 +1,9 @@
 'use client';
 
-import { AlertCircle, Github } from 'lucide-react';
+import { SiGithub } from '@icons-pack/react-simple-icons';
+import { AlertCircle } from 'lucide-react';
 import { motion } from 'motion/react';
+import { Button } from 'primereact/button';
 
 export function FailureExplanationsSection() {
   return (
@@ -43,13 +45,8 @@ export function FailureExplanationsSection() {
                   </p>
 
                   <div className="flex align-items-center gap-3 pt-2">
-                    <button className="px-4 py-2 bg-orange-500 hover:surface-hover text-white border-none border-round font-medium cursor-pointer transition-colors">
-                      Update Test
-                    </button>
-                    <button className="px-4 py-2 bg-surface-hover border-1 border-white-alpha-10 text-white border-round font-medium cursor-pointer flex align-items-center gap-2 transition-colors">
-                      <Github className="w-1rem h-1rem" />
-                      Create Issue
-                    </button>
+                    <Button label="Update Test" />
+                    <Button label="Create Issue" icon={<SiGithub size={16} />} severity="secondary" />
                   </div>
                 </div>
               </div>
@@ -73,16 +70,8 @@ export function FailureExplanationsSection() {
                   </p>
 
                   <div className="flex align-items-center gap-3 pt-2">
-                    <button
-                      disabled
-                      className="px-4 py-2 bg-surface-hover text-500 border-none border-round font-medium cursor-not-allowed"
-                    >
-                      Update Test
-                    </button>
-                    <button className="px-4 py-2 bg-surface-hover border-1 border-white-alpha-10 text-white border-round font-medium cursor-pointer flex align-items-center gap-2 transition-colors">
-                      <Github className="w-1rem h-1rem" />
-                      Create Issue
-                    </button>
+                    <Button label="Update Test" disabled />
+                    <Button label="Create Issue" icon={<SiGithub size={16} />} severity="secondary" />
                   </div>
                 </div>
               </div>
