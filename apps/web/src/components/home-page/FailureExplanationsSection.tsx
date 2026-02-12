@@ -4,6 +4,7 @@ import { SiGithub } from '@icons-pack/react-simple-icons';
 import { AlertCircle } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Button } from 'primereact/button';
+import { Message } from 'primereact/message';
 import { Tag } from 'primereact/tag';
 
 export function FailureExplanationsSection() {
@@ -30,11 +31,10 @@ export function FailureExplanationsSection() {
           {/* Failure examples */}
           <div className="mt-8 flex flex-column gap-6">
             {/* Example 1: Update the test */}
-            <div className="relative pl-6 border-left-3 border-orange-500 py-4">
-              <div className="flex align-items-start gap-4">
-                <div className="w-3rem h-3rem border-round bg-orange-500 flex align-items-center justify-content-center flex-shrink-0" style={{ background: 'color-mix(in oklab, var(--orange-500) 10%, transparent)' }}>
-                  <AlertCircle className="w-2rem h-2rem text-orange-400" />
-                </div>
+            <Message
+              severity="warn"
+              icon={<AlertCircle className="w-2rem h-2rem" />}
+              content={
                 <div className="flex-1 flex flex-column gap-4">
                   <Tag value="Update required" severity="warning" />
                   <p className="text-300 line-height-3 m-0">
@@ -50,15 +50,14 @@ export function FailureExplanationsSection() {
                     <Button label="Create Issue" icon={<SiGithub size={16} />} severity="secondary" />
                   </div>
                 </div>
-              </div>
-            </div>
+              }
+            />
 
             {/* Example 2: Fix the code */}
-            <div className="relative pl-6 border-left-3 border-red-500 py-4">
-              <div className="flex align-items-start gap-4">
-                <div className="w-3rem h-3rem border-round bg-red-500 flex align-items-center justify-content-center flex-shrink-0" style={{ background: 'color-mix(in oklab, var(--red-500) 10%, transparent)' }}>
-                  <AlertCircle className="w-2rem h-2rem text-red-400" />
-                </div>
+            <Message
+              severity="error"
+              icon={<AlertCircle className="w-2rem h-2rem" />}
+              content={
                 <div className="flex-1 flex flex-column gap-4">
                   <Tag value="Possible regression" severity="danger" />
                   <p className="text-300 line-height-3 m-0">
@@ -75,8 +74,8 @@ export function FailureExplanationsSection() {
                     <Button label="Create Issue" icon={<SiGithub size={16} />} severity="secondary" />
                   </div>
                 </div>
-              </div>
-            </div>
+              }
+            />
           </div>
         </motion.div>
       </div>
