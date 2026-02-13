@@ -134,6 +134,10 @@ main.with-nav {
   padding-bottom: 0.75rem !important;
 }
 
+.bg-gradient-card {
+  background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), transparent);
+}
+
 .seamless-menu ul {
   list-style-type: none;
   padding: 0;

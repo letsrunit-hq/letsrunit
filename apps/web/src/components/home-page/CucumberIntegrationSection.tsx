@@ -47,8 +47,9 @@ export function CucumberIntegrationSection() {
           {/* Integration points */}
           <div className="flex flex-column md:flex-row gap-4">
             <Card
-              className="flex-1"
+              className="flex-1 bg-gradient-card"
               pt={{
+                body: { className: 'p-4' },
                 content: { className: 'flex flex-column gap-4' },
               }}
             >
@@ -60,8 +61,9 @@ export function CucumberIntegrationSection() {
             </Card>
 
             <Card
-              className="flex-1"
+              className="flex-1 bg-gradient-card"
               pt={{
+                body: { className: 'p-4' },
                 content: { className: 'flex flex-column gap-4' },
               }}
             >
@@ -73,8 +75,9 @@ export function CucumberIntegrationSection() {
             </Card>
 
             <Card
-              className="flex-1"
+              className="flex-1 bg-gradient-card"
               pt={{
+                body: { className: 'p-4' },
                 content: { className: 'flex flex-column gap-4' },
               }}
             >
