@@ -7,11 +7,11 @@ $messageTextFontSize: 1rem !default;
 $messageTextFontWeight: 500 !default;
 
 //inline message
-$inlineMessagePadding: $inputPadding !default;
+$inlineMessagePadding: 1rem 0 1rem 1.5rem !default;
 $inlineMessageMargin: 0 !default;
 $inlineMessageIconFontSize: 1rem !default;
 $inlineMessageTextFontSize: 1rem !default;
-$inlineMessageBorderWidth: 1px !default;
+$inlineMessageBorderWidth: 0 0 0 4px !default;
 
 //toast
 $toastIconFontSize: 2rem !default;
