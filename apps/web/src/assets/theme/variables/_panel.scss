@@ -1,10 +1,10 @@
 //panel
 $panelHeaderBorderColor: var(--surface-border) !default;
-$panelHeaderBorder: 1px solid var(--surface-border) !default;
-$panelHeaderBg: $shade900 !default;
+$panelHeaderBorder: none !default;
+$panelHeaderBg: $shade800 !default;
 $panelHeaderTextColor: $shade000 !default;
 $panelHeaderFontWeight: 600 !default;
-$panelHeaderPadding: 0.5rem 1.5rem !default;
+$panelHeaderPadding: 0.5rem 1rem !default;
 $panelSlimHeaderPadding: 0.75rem 1rem !default;
 $panelToggleableHeaderPadding: 0.75rem 1.25rem !default;
 
@@ -13,8 +13,8 @@ $panelHeaderHoverBorderColor: $shade600 !default;
 $panelHeaderTextHoverColor: $shade000 !default;
 
 $panelContentBorderColor: var(--surface-border) !default;
-$panelContentBorder: 1px solid var(--surface-border) !default;
-$panelContentBg: $shade900 !default;
+$panelContentBorder: none !default;
+$panelContentBg: #09090b !default;
 $panelContentOddRowBg: color-mix(in oklab, $shade900 50%, transparent) !default;
 $panelContentEvenRowBg: color-mix(in oklab, $shade900 30%, transparent) !default;
 $panelContentTextColor: $shade000 !default;
