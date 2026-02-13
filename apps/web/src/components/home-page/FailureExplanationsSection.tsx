@@ -5,7 +5,6 @@ import { AlertCircle } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Button } from 'primereact/button';
 import { Message } from 'primereact/message';
-import { Tag } from 'primereact/tag';
 
 export function FailureExplanationsSection() {
   return (
@@ -33,21 +32,23 @@ export function FailureExplanationsSection() {
             {/* Example 1: Update the test */}
             <Message
               severity="warn"
-              icon={<AlertCircle className="w-2rem h-2rem" />}
               content={
-                <div className="flex-1 flex flex-column gap-4">
-                  <Tag value="Update required" severity="warning" />
-                  <p className="text-300 line-height-3 m-0">
-                    A new checkbox labeled "I agree to the terms & conditions" has been added to the registration form.
-                    This checkbox is required and must be checked before the form can be submitted.
-                  </p>
-                  <p className="text-orange-300 font-medium m-0">
-                    Update your test to check this box before clicking "Register".
-                  </p>
+                <div className="flex gap-3 flex-1">
+                  <AlertCircle size={20} className="text-orange-400 flex-shrink-0 mt-1" />
+                  <div className="flex flex-column gap-4 flex-1">
+                    <span className="text-orange-300 font-medium text-sm">Update required</span>
+                    <p className="text-300 line-height-3 m-0">
+                      A new checkbox labeled "I agree to the terms & conditions" has been added to the registration form.
+                      This checkbox is required and must be checked before the form can be submitted.
+                    </p>
+                    <p className="text-orange-300 font-medium m-0">
+                      Update your test to check this box before clicking "Register".
+                    </p>
 
-                  <div className="flex align-items-center gap-3 pt-2">
-                    <Button label="Update Test" />
-                    <Button label="Create Issue" icon={<SiGithub size={16} />} severity="secondary" />
+                    <div className="flex align-items-center gap-3 pt-2">
+                      <Button label="Update Test" />
+                      <Button label="Create Issue" icon={<SiGithub size={16} />} severity="secondary" />
+                    </div>
                   </div>
                 </div>
               }
@@ -56,22 +57,24 @@ export function FailureExplanationsSection() {
             {/* Example 2: Fix the code */}
             <Message
               severity="error"
-              icon={<AlertCircle className="w-2rem h-2rem" />}
               content={
-                <div className="flex-1 flex flex-column gap-4">
-                  <Tag value="Possible regression" severity="danger" />
-                  <p className="text-300 line-height-3 m-0">
-                    The "Proceed to payment" button was removed from the cart page. With this button gone, there's no
-                    clear way for users to continue to payment from the cart.
-                  </p>
-                  <p className="text-red-300 font-medium m-0">
-                    This appears to be a regression. The button should be restored, or the checkout flow has
-                    fundamentally changed.
-                  </p>
+                <div className="flex gap-3 flex-1">
+                  <AlertCircle size={20} className="text-red-400 flex-shrink-0 mt-1" />
+                  <div className="flex flex-column gap-4 flex-1">
+                    <span className="text-red-300 font-medium text-sm">Possible regression</span>
+                    <p className="text-300 line-height-3 m-0">
+                      The "Proceed to payment" button was removed from the cart page. With this button gone, there's no
+                      clear way for users to continue to payment from the cart.
+                    </p>
+                    <p className="text-red-300 font-medium m-0">
+                      This appears to be a regression. The button should be restored, or the checkout flow has
+                      fundamentally changed.
+                    </p>
 
-                  <div className="flex align-items-center gap-3 pt-2">
-                    <Button label="Update Test" disabled />
-                    <Button label="Create Issue" icon={<SiGithub size={16} />} severity="secondary" />
+                    <div className="flex align-items-center gap-3 pt-2">
+                      <Button label="Update Test" disabled />
+                      <Button label="Create Issue" icon={<SiGithub size={16} />} severity="secondary" />
+                    </div>
                   </div>
                 </div>
               }
