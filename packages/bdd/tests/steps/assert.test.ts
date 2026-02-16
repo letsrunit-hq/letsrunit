@@ -40,12 +40,12 @@ describe('steps/assert (definitions)', () => {
   it('waits for element to be visible or hidden with timeout 5000', async () => {
     const page = {} as any;
 
-    await runStep(see, 'I see that the page contains `#thing`', { page } as any);
+    await runStep(see, 'The page contains `#thing`', { page } as any);
     expect(resolveLocator).toHaveBeenLastCalledWith(page, '#thing');
     expect(toBeVisible).toHaveBeenLastCalledWith({ timeout: 5000 });
     expect(expectOrNot).toHaveBeenLastCalledWith(elementLocatorMock, true);
 
-    await runStep(see, 'I see that the page not contains `.item`', { page } as any);
+    await runStep(see, 'The page not contains `.item`', { page } as any);
     expect(resolveLocator).toHaveBeenLastCalledWith(page, '.item');
     expect(toBeVisible).toHaveBeenLastCalledWith({ timeout: 5000 });
     expect(expectOrNot).toHaveBeenLastCalledWith(elementLocatorMock, false);
@@ -54,13 +54,13 @@ describe('steps/assert (definitions)', () => {
   it('waits for child attachment or detachment with timeout 5000', async () => {
     const page = {} as any;
 
-    await runStep(contain, 'I see that `#list` contains text "foo"', { page } as any);
+    await runStep(contain, '`#list` contains text "foo"', { page } as any);
     expect(resolveLocator).toHaveBeenLastCalledWith(page, '#list');
     expect(parentLocatorMock.locator).toHaveBeenLastCalledWith('text="foo"i');
     expect(toBeAttached).toHaveBeenLastCalledWith({ timeout: 5000 });
     expect(expectOrNot).toHaveBeenLastCalledWith(childLocatorMock, true);
 
-    await runStep(contain, 'I see that `.cards` not contains `.card`', { page } as any);
+    await runStep(contain, '`.cards` not contains `.card`', { page } as any);
     expect(resolveLocator).toHaveBeenLastCalledWith(page, '.cards');
     expect(parentLocatorMock.locator).toHaveBeenLastCalledWith('.card');
     expect(toBeAttached).toHaveBeenLastCalledWith({ timeout: 5000 });
