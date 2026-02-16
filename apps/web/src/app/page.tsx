@@ -1,7 +1,7 @@
 import {
-  CucumberIntegrationSection,
-  FailureExplanationsSection,
-  GherkinExplanationSection,
+  FailureExplainSection,
+  GherkinSection,
+  IntegrationSection,
   TestGenerationSection,
 } from '@/components/home-page';
 import { ArrowUp } from 'lucide-react';
@@ -18,7 +18,7 @@ export default function Home() {
     <>
       <AuthButton className="absolute top-0 right-0 m-4 z-5" />
       <main className={styles.main}>
-        <section className={styles.container}>
+        <section className={styles.heroSection}>
           <div className={styles.hero}>
             <div className={styles.logoWrap}>
               <Image src={Logo} width={640} height={111} alt="letsrunit logo" className={styles.logo} priority />
@@ -45,10 +45,10 @@ export default function Home() {
         </section>
 
         <div id="learn-more">
-          <GherkinExplanationSection />
+          <GherkinSection />
           <TestGenerationSection />
-          <FailureExplanationsSection />
-          <CucumberIntegrationSection />
+          <FailureExplainSection />
+          <IntegrationSection />
         </div>
 
         <div className={styles.backTopWrap}>

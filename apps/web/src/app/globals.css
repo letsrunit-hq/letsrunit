@@ -74,6 +74,11 @@ main.with-nav {
   margin: 0 auto;
 }
 
+.container-lg {
+  max-width: 976px;
+  margin: 0 auto;
+}
+
 .center {
   display: flex;
   flex-direction: column;
@@ -155,4 +160,71 @@ main.with-nav {
     width: 2rem;
     text-align: center;
   }
+}
+
+/* the glow */
+.glow::before {
+  content: "";
+  position: absolute;
+  inset: -16px;
+  border-radius: 14px;
+  pointer-events: none;
+
+  background: linear-gradient(
+    to right,
+    rgba(249, 115, 22, 0.08),
+    transparent
+  );
+
+  filter: blur(24px);
+  z-index: 0;
+}
+
+.panel-stack {
+  position: relative;
+  margin: 0 12px 8px 0;
+}
+
+.panel-stack > .p-panel {
+  position: relative;
+  z-index: 3;
+}
+
+.panel-stack:after,
+.panel-stack:before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: oklch(0.145 0 0);
+  border: 1px solid var(--surface-border);
+  border-radius: 14px;
+}
+
+.panel-stack:before {
+  left: 5px;
+  top: 3px;
+  z-index: 2;
+}
+
+.panel-stack:after {
+  left: 12px;
+  top: 8px;
+  z-index: 1;
+}
+
+@media (min-width: 991px) {
+  .lg\:no-stack {
+    margin: 0;
+  }
+  .lg\:no-stack:before,
+  .lg\:no-stack:after {
+    display: none;
+  }
+}
+
+.font-monospace {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 14px;
+  line-height: 20px;
 }

@@ -25,7 +25,7 @@ export function TestGenerationSection() {
 
   return (
     <section className="relative py-8 overflow-hidden">
-      <div className="relative z-10 container mx-auto px-6">
+      <div className="relative z-10 container-lg mx-auto px-3 lg:px-0">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -35,18 +35,18 @@ export function TestGenerationSection() {
           {/* Left: Content */}
           <div className="flex flex-column gap-4 flex-1">
             <h2 className="text-4xl font-bold text-white m-0">Test generation</h2>
-            <div className="flex flex-column gap-4 text-xl text-300 line-height-3">
+            <div className="flex flex-column gap-4 text-lg text-500 line-height-3">
               <p className="m-0">
                 We explore your page and suggest Gherkin scenarios based on what we observe. These are starting points,
                 not final tests. You can review them and decide what is useful.
               </p>
 
-              <p className="text-base text-500 m-0">
+              <p className="text-base text-300 m-0">
                 You can generate additional scenarios later, either by re-running exploration or by giving specific
                 instructions. This lets you stay in control of what gets tested and when.
               </p>
 
-              <p className="text-base text-500 m-0">
+              <p className="text-base text-300 m-0">
                 LetsRunIt does not auto-update tests when your UI changes. Instead, it helps you understand what failed,
                 so you can choose whether the code or the test should change.
               </p>
@@ -54,7 +54,7 @@ export function TestGenerationSection() {
           </div>
 
           {/* Right: Suggestion Panels */}
-          <div className="flex flex-column gap-3 flex-1">
+          <div className="flex flex-column gap-3 flex-1 w-full lg:w-auto">
             {suggestions.map((suggestion, index) => (
               <motion.div
                 key={index}
@@ -62,20 +62,27 @@ export function TestGenerationSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
+                className={index > 0 ? 'hidden lg:block' : 'block panel-stack lg:no-stack'}
               >
-                <Panel className="w-full even relative">
+                <Panel
+                  className="w-full even relative"
+                  pt={{
+                    content: { className: 'p-3' },
+                  }}
+                >
                   <div className="absolute text-blue-500 md:hidden" style={{ top: '0.75rem', right: '0.5rem' }}>
                     <Lightbulb key="icon" size={20} />
                   </div>
-                  <div className="flex flex-column sm:flex-row align-items-center justify-content-between gap-3">
-                    <div className="flex align-items-center gap-3">
-                      <Tile className="hidden md:flex tile-blue" icon={<Lightbulb key="icon" size={24} />} />
-                      <div className="flex flex-1 flex-column">
-                        <div className="flex align-items-center gap-2 mb-1">
-                          <h3 className="m-0 mb-1 font-normal text-white">{suggestion.title}</h3>
-                        </div>
-                        <p className="text-300 m-0 text-sm">{suggestion.description}</p>
-                      </div>
+                  <div className="flex align-items-start gap-3">
+                    <Tile
+                      className="hidden md:flex"
+                      severity="info"
+                      size="sm"
+                      icon={<Lightbulb key="icon" size={20} />}
+                    />
+                    <div className="flex flex-1 flex-column">
+                      <h3 className="m-0 mb-1 font-normal text-white text-sm">{suggestion.title}</h3>
+                      <p className="text-400 line-height-3 m-0 text-sm font-light">{suggestion.description}</p>
                     </div>
                   </div>
                 </Panel>

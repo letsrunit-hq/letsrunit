@@ -2,7 +2,7 @@
   background-color: #020202;
 }
 
-.container {
+.heroSection {
   position: relative;
   min-height: calc(100vh + clamp(96px, 18vh, 220px));
   width: 100vw;
@@ -121,7 +121,7 @@
 
 /* Back to top button */
 .backTopWrap {
-  margin-top: 2rem;
+  padding-bottom: 4rem;
   display: flex;
   justify-content: center;
 }

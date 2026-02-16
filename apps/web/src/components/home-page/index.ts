@@ -1,4 +1,4 @@
-export * from './CucumberIntegrationSection';
-export * from './FailureExplanationsSection';
-export * from './GherkinExplanationSection';
+export * from './IntegrationSection';
+export * from './FailureExplainSection';
+export * from './GherkinSection';
 export * from './TestGenerationSection';
