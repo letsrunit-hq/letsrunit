@@ -1,5 +1,13 @@
 # Journal Package (`@letsrunit/journal`)
 
+## Installation
+
+```bash
+npm install @letsrunit/journal
+# or
+yarn add @letsrunit/journal
+```
+
 Logging and reporting infrastructure for test execution and AI decision processes. It provides a structured way to capture logs, artifacts (like screenshots), and metadata during automation runs.
 
 ## Exported Classes

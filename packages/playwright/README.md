@@ -1,5 +1,13 @@
 # Playwright Package (`@letsrunit/playwright`)
 
+## Installation
+
+```bash
+npm install @letsrunit/playwright
+# or
+yarn add @letsrunit/playwright
+```
+
 Low-level Playwright utilities and enhancements for `@letsrunit`. This package provides a robust set of tools for interacting with and extracting information from web pages, optimized for AI-driven automation.
 
 ## Exported Utilities

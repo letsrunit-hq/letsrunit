@@ -1,5 +1,13 @@
 # AI Package (`@letsrunit/ai`)
 
+## Installation
+
+```bash
+npm install @letsrunit/ai
+# or
+yarn add @letsrunit/ai
+```
+
 Provides AI-driven capabilities for the `letsrunit` platform, leveraging the [AI SDK](https://sdk.vercel.ai/). It serves as a unified interface for generating text or structured objects using LLMs.
 
 ## Exported Functions

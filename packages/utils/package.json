@@ -15,6 +15,7 @@
   },
   "bugs": "https://github.com/letsrunit/letsrunit/issues",
   "homepage": "https://github.com/letsrunit/letsrunit#readme",
+  "private": false,
   "type": "module",
   "main": "./src/index.ts",
   "publishConfig": {
