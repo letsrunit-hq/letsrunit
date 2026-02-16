@@ -35,6 +35,9 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
+      - name: Build packages
+        run: yarn build:packages
+
       - name: Run Tests
         run: yarn workspace ${{ matrix.workspace }} test
 
@@ -57,6 +60,9 @@ jobs:
 
       - name: Install dependencies
         run: yarn install --immutable
+
+      - name: Build packages
+        run: yarn build:packages
 
       - name: Install Playwright Browsers
         run: yarn workspace ${{ matrix.workspace }} playwright install --with-deps
