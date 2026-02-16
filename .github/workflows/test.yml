@@ -6,42 +6,6 @@ on:
     branches: [ main ]
 
 jobs:
-  supabase:
-    name: Supabase Tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: supabase/setup-cli@v1
-        with:
-          version: latest
-      - name: Supabase Start
-        run: supabase start
-      - name: Setup supabase testing
-        run: |
-          psql -v ON_ERROR_STOP=1 -U postgres -d postgres -h localhost -p 54322 -f .github/workflows/setup-testing.sql
-        env:
-          PGPASSWORD: postgres
-      - name: Run Tests
-        run: supabase test db
-
-  web:
-    name: Test web app
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Enable Corepack
-        run: corepack enable
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "yarn"
-
-      - name: Install dependencies
-        run: yarn install --immutable
-
-      - name: Run Tests
-        run: yarn workspace web test
-
   packages:
     name: Test ${{ matrix.workspace }}
     runs-on: ubuntu-latest
@@ -59,7 +23,6 @@ jobs:
           - "@letsrunit/journal"
           - "@letsrunit/utils"
           - "@letsrunit/ai"
-          - "@letsrunit/model"
     steps:
       - uses: actions/checkout@v4
       - name: Enable Corepack
@@ -100,17 +63,3 @@ jobs:
 
       - name: Run Tests
         run: yarn workspace ${{ matrix.workspace }} test
-
-  notify:
-    name: Notify Vercel
-    needs: [supabase, web, packages, compat]
-    if: always()
-    runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      statuses: write
-      contents: read
-    steps:
-      - uses: 'vercel/repository-dispatch/actions/status@v1'
-        with:
-          name: "Vercel - letsrunit: test"

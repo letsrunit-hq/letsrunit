@@ -1,5 +1,4 @@
-import { isArray, isDate, isRange } from '@letsrunit/utils';
-import { uniqueItem } from '@letsrunit/utils/src/array';
+import { isArray, isDate, isRange, uniqueItem } from '@letsrunit/utils';
 import type { Locator } from '@playwright/test';
 import { formatDate, formatDateForInput, getMonthNames } from '../utils/date';
 import { waitForAnimationsToFinish } from '../wait';

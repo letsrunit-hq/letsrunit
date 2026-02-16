@@ -1,5 +1,4 @@
-import { isRange, type Scalar } from '@letsrunit/utils';
-import { diffArray } from '@letsrunit/utils/src/array';
+import { diffArray, isRange, type Scalar } from '@letsrunit/utils';
 import type { Locator } from '@playwright/test';
 import type { Loc, SetOptions, Value } from './types';
 

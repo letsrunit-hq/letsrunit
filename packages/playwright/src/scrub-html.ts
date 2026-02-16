@@ -6,7 +6,7 @@
 // - Collapses whitespace in text nodes (but NOT inside <pre>/<code>)
 // - Does NOT change tag names, does NOT unwrap containers, does NOT reorder content
 
-import { memoize } from '@letsrunit/utils/src/memoize';
+import { memoize } from '@letsrunit/utils';
 import type { Page } from '@playwright/test';
 import stringify from 'fast-json-stable-stringify';
 import { JSDOM } from 'jsdom';
