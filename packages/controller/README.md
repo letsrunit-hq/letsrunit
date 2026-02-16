@@ -1,5 +1,13 @@
 # Controller Package (`@letsrunit/controller`)
 
+## Installation
+
+```bash
+npm install @letsrunit/controller
+# or
+yarn add @letsrunit/controller
+```
+
 Orchestrates Playwright sessions and executes Gherkin scenarios. This package serves as the bridge between high-level Gherkin steps and low-level browser automation.
 
 ## Exported Classes

@@ -1,5 +1,13 @@
 # BDD Package (`@letsrunit/bdd`)
 
+## Installation
+
+```bash
+npm install @letsrunit/bdd
+# or
+yarn add @letsrunit/bdd
+```
+
 Standard BDD step definitions and Playwright utilities for `letsrunit`. It provides the building blocks for creating and executing Gherkin-based automation.
 
 ## Exported Components

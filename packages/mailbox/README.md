@@ -1,5 +1,13 @@
 # Mailbox Package (`@letsrunit/mailbox`)
 
+## Installation
+
+```bash
+npm install @letsrunit/mailbox
+# or
+yarn add @letsrunit/mailbox
+```
+
 Utilities for interacting with mailbox services to test email-based flows (OTP, activation links, etc.). It supports multiple backends for both local development and production environments.
 
 ## Exported Functions

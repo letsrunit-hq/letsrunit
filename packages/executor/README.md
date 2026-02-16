@@ -1,5 +1,13 @@
 # Executor Package (`@letsrunit/executor`)
 
+## Installation
+
+```bash
+npm install @letsrunit/executor
+# or
+yarn add @letsrunit/executor
+```
+
 High-level engine for running complex automation tasks. It ties together AI, Controller, and BDD packages to provide the core workflows of the `letsrunit` platform.
 
 ## Exported Functions

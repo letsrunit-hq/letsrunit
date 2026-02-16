@@ -1,5 +1,13 @@
 # Gherkin Package (`@letsrunit/gherkin`)
 
+## Installation
+
+```bash
+npm install @letsrunit/gherkin
+# or
+yarn add @letsrunit/gherkin
+```
+
 Utilities for parsing and manipulating Gherkin documents. It provides models and functions to work with features, scenarios, and steps.
 
 ## Exported Functions

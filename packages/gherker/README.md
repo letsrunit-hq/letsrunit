@@ -1,5 +1,13 @@
 # Gherker Package (`@letsrunit/gherker`)
 
+## Installation
+
+```bash
+npm install @letsrunit/gherker
+# or
+yarn add @letsrunit/gherker
+```
+
 A lightweight Gherkin microrunner for executing scenarios step-by-step. It provides a simple and fast alternative to full-blown BDD frameworks, optimized for the `letsrunit` platform.
 
 ## Exported Classes

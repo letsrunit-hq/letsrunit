@@ -1,5 +1,13 @@
 # Utils Package (`@letsrunit/utils`)
 
+## Installation
+
+```bash
+npm install @letsrunit/utils
+# or
+yarn add @letsrunit/utils
+```
+
 Shared TypeScript utility functions used across the monorepo.
 
 ## Exported Functions
