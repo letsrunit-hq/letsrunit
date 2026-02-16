@@ -2,7 +2,6 @@ import type { KeyCombo } from '@letsrunit/gherkin';
 import { sleep } from '@letsrunit/utils';
 import { When } from './wrappers';
 
-const TIMEOUT = 500;
 const DELAY = 500;
 
 export const press = When('I press {keys}', async function (combo: KeyCombo) {
@@ -19,6 +18,6 @@ export const press = When('I press {keys}', async function (combo: KeyCombo) {
 });
 
 export const type = When('I type {string}', async function (value: string) {
-  await this.page.keyboard.type(value, { delay: 200, timeout: TIMEOUT });
+  await this.page.keyboard.type(value, { delay: 200 });
   await sleep(DELAY);
 });
