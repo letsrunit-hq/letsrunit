@@ -1,14 +1,43 @@
 {
   "name": "@letsrunit/controller",
-  "private": true,
+  "version": "0.1.0",
+  "description": "Browser automation controller for letsrunit",
+  "keywords": ["testing", "automation", "controller", "playwright", "letsrunit"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/letsrunit/letsrunit.git",
+    "directory": "packages/controller"
+  },
+  "bugs": "https://github.com/letsrunit/letsrunit/issues",
+  "homepage": "https://github.com/letsrunit/letsrunit#readme",
+  "private": false,
   "type": "module",
+  "main": "./src/index.ts",
+  "publishConfig": {
+    "access": "public",
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
   "scripts": {
+    "build": "../../node_modules/.bin/tsup",
     "test": "vitest run --environment jsdom",
     "test:cov": "vitest run --environment jsdom --coverage",
     "typecheck": "tsc --noEmit"
   },
   "packageManager": "yarn@4.10.3",
-  "main": "src/index.ts",
   "dependencies": {
     "@letsrunit/bdd": "workspace:*",
     "@letsrunit/gherker": "workspace:*",
