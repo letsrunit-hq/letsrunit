@@ -1,0 +1,135 @@
+name: Publish to npm
+
+on:
+  push:
+    tags:
+      - 'v*'  # Trigger on version tags like v0.1.0, v0.2.0, etc.
+
+# REQUIRED: These permissions enable OIDC token generation
+permissions:
+  contents: read
+  id-token: write  # This allows GitHub to generate OIDC tokens for npm
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build all packages
+        run: yarn build:packages
+
+      - name: Verify builds succeeded
+        run: |
+          echo "Verifying all packages have dist folders..."
+          for pkg in packages/*/dist; do
+            if [ ! -f "$pkg/index.js" ]; then
+              echo "❌ Missing index.js in $pkg"
+              exit 1
+            fi
+            if [ ! -f "$pkg/index.d.ts" ]; then
+              echo "❌ Missing index.d.ts in $pkg"
+              exit 1
+            fi
+          done
+          echo "✅ All packages built successfully"
+
+      - name: Publish packages with provenance
+        run: |
+          echo "Publishing packages in dependency order..."
+
+          # Array of packages in dependency order
+          PACKAGES=(
+            "utils"
+            "gherkin"
+            "journal"
+            "playwright"
+            "mailbox"
+            "gherker"
+            "bdd"
+            "ai"
+            "controller"
+            "executor"
+          )
+
+          for pkg in "${PACKAGES[@]}"; do
+            echo ""
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "📦 Publishing @letsrunit/$pkg..."
+            echo ""
+
+            cd "packages/$pkg"
+
+            # Publish with provenance attestation
+            # The --provenance flag uses GitHub's OIDC token to sign the package
+            # This creates a verifiable link: package → commit → workflow → actor
+            npm publish --access public --provenance
+
+            echo "✅ Published @letsrunit/$pkg"
+            cd ../..
+
+            # Small delay to avoid rate limiting
+            sleep 2
+          done
+
+          echo ""
+          echo "🎉 All packages published successfully!"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          generate_release_notes: true
+          body: |
+            ## 📦 Published Packages
+
+            All @letsrunit packages have been published to npm with version ${{ github.ref_name }}.
+
+            ### View on npm
+            - https://www.npmjs.com/org/letsrunit
+
+            ### Install
+            ```bash
+            npm install @letsrunit/executor@${{ github.ref_name }}
+            ```
+
+            ### Provenance
+            All packages are published with provenance attestations for supply chain security.
+            You can verify the build provenance on each package's npm page.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Summary
+        run: |
+          echo "## 🎉 Publish Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Published version: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Packages Published" >> $GITHUB_STEP_SUMMARY
+          echo "- @letsrunit/utils" >> $GITHUB_STEP_SUMMARY
+          echo "- @letsrunit/gherkin" >> $GITHUB_STEP_SUMMARY
+          echo "- @letsrunit/journal" >> $GITHUB_STEP_SUMMARY
+          echo "- @letsrunit/playwright" >> $GITHUB_STEP_SUMMARY
+          echo "- @letsrunit/mailbox" >> $GITHUB_STEP_SUMMARY
+          echo "- @letsrunit/gherker" >> $GITHUB_STEP_SUMMARY
+          echo "- @letsrunit/bdd" >> $GITHUB_STEP_SUMMARY
+          echo "- @letsrunit/ai" >> $GITHUB_STEP_SUMMARY
+          echo "- @letsrunit/controller" >> $GITHUB_STEP_SUMMARY
+          echo "- @letsrunit/executor" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Provenance" >> $GITHUB_STEP_SUMMARY
+          echo "✅ All packages published with provenance attestations" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "View at: https://www.npmjs.com/org/letsrunit" >> $GITHUB_STEP_SUMMARY
