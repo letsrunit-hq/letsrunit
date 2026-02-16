@@ -5,24 +5,19 @@ on:
     tags:
       - 'v*'
 
-# CRITICAL: id-token: write enables OIDC authentication with npm
 permissions:
   contents: read
   id-token: write
 
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js with npm OIDC
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: yarn install --immutable
@@ -30,99 +25,59 @@ jobs:
       - name: Build all packages
         run: yarn build:packages
 
-      - name: Verify builds succeeded
-        run: |
-          echo "Verifying all packages have dist folders..."
-          for pkg in packages/*/dist; do
-            if [ ! -f "$pkg/index.js" ]; then
-              echo "❌ Missing index.js in $pkg"
-              exit 1
-            fi
-            if [ ! -f "$pkg/index.d.ts" ]; then
-              echo "❌ Missing index.d.ts in $pkg"
-              exit 1
-            fi
-          done
-          echo "✅ All packages built successfully"
+      - name: Upload dist artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: packages/*/dist
 
-      - name: Publish packages with OIDC (NO NPM_TOKEN!)
-        run: |
-          echo "Publishing packages with OIDC authentication..."
-          echo "No NPM_TOKEN needed - using GitHub's OIDC token!"
-          echo ""
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
 
-          # Array of packages in dependency order
-          PACKAGES=(
-            "utils"
-            "gherkin"
-            "journal"
-            "playwright"
-            "mailbox"
-            "gherker"
-            "bdd"
-            "ai"
-            "controller"
-            "executor"
-          )
+    strategy:
+      matrix:
+        package:
+          - utils
+          - gherkin
+          - journal
+          - playwright
+          - mailbox
+          - gherker
+          - bdd
+          - ai
+          - controller
+          - executor
 
-          for pkg in "${PACKAGES[@]}"; do
-            echo ""
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "📦 Publishing @letsrunit/$pkg..."
-            echo ""
+    steps:
+      - uses: actions/checkout@v4
 
-            cd "packages/$pkg"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
 
-            # Publish with provenance using OIDC
-            # npm automatically uses GitHub's OIDC token (no NPM_TOKEN!)
-            npm publish --access public --provenance
+      - name: Download dist artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: packages
 
-            echo "✅ Published @letsrunit/$pkg"
-            cd ../..
+      - name: Publish @letsrunit/${{ matrix.package }}
+        run: npm publish --access public --provenance
+        working-directory: packages/${{ matrix.package }}
 
-            sleep 2
-          done
+  release:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
-          echo ""
-          echo "🎉 All packages published successfully with OIDC!"
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+    steps:
+      - uses: softprops/action-gh-release@v1
         with:
           generate_release_notes: true
           body: |
-            ## 📦 Published Packages
+            Published @letsrunit packages version ${{ github.ref_name }} to npm.
 
-            All @letsrunit packages have been published to npm with version ${{ github.ref_name }}.
-
-            ### View on npm
-            - https://www.npmjs.com/org/letsrunit
-
-            ### Install
-            ```bash
-            npm install @letsrunit/executor@${{ github.ref_name }}
-            ```
-
-            ### Security
-            - ✅ Published with OIDC (no long-lived tokens)
-            - ✅ Provenance attestations for supply chain security
-            - ✅ Verifiable link to commit and workflow
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Summary
-        run: |
-          echo "## 🎉 Publish Complete" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Published version: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Security" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Published with OIDC (no NPM_TOKEN required)" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Provenance attestations generated" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Packages Published" >> $GITHUB_STEP_SUMMARY
-          for pkg in utils gherkin journal playwright mailbox gherker bdd ai controller executor; do
-            echo "- @letsrunit/$pkg" >> $GITHUB_STEP_SUMMARY
-          done
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "View at: https://www.npmjs.com/org/letsrunit" >> $GITHUB_STEP_SUMMARY
+            View at: https://www.npmjs.com/org/letsrunit
