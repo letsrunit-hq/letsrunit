@@ -1,7 +1,7 @@
 .p-inline-message {
     padding: $inlineMessagePadding;
     margin: $inlineMessageMargin;
-    border-radius: $borderRadius;
+    border-radius: 0;
 
     &.p-inline-message-info {
         background: $infoMessageBg;

@@ -1,10 +1,10 @@
 //panel
 $panelHeaderBorderColor: var(--surface-border) !default;
-$panelHeaderBorder: 0 none !default;
-$panelHeaderBg: transparent !default;
+$panelHeaderBorder: none !default;
+$panelHeaderBg: $shade800 !default;
 $panelHeaderTextColor: $shade000 !default;
 $panelHeaderFontWeight: 600 !default;
-$panelHeaderPadding: 1rem 1.5rem !default;
+$panelHeaderPadding: 0.5rem 1rem !default;
 $panelSlimHeaderPadding: 0.75rem 1rem !default;
 $panelToggleableHeaderPadding: 0.75rem 1.25rem !default;
 
@@ -13,8 +13,8 @@ $panelHeaderHoverBorderColor: $shade600 !default;
 $panelHeaderTextHoverColor: $shade000 !default;
 
 $panelContentBorderColor: var(--surface-border) !default;
-$panelContentBorder: 1px solid var(--surface-border) !default;
-$panelContentBg: transparent !default;
+$panelContentBorder: none !default;
+$panelContentBg: #09090b !default;
 $panelContentOddRowBg: color-mix(in oklab, $shade900 50%, transparent) !default;
 $panelContentEvenRowBg: color-mix(in oklab, $shade900 30%, transparent) !default;
 $panelContentTextColor: $shade000 !default;
@@ -85,16 +85,16 @@ $scrollPanelTrackBorder: 0 none !default;
 $scrollPanelTrackBg: $shade600 !default;
 
 //card
-$cardBg: #101010 !default;
-$cardBorderColor: $shade800 !default;
-$cardBorder: 1px solid $shade800 !default;
+$cardBg: color-mix(in oklab, white 5%, transparent) !default;
+$cardBorderColor: rgba(255, 255, 255, 0.1) !default;
+$cardBorder: 1px solid rgba(255, 255, 255, 0.1) !default;
 $cardFilter: blur(12px) !default;
-$cardBodyPadding: 1.25rem !default;
+$cardBodyPadding: 3rem !default;
 $cardTitleFontSize: 1.5rem !default;
 $cardTitleFontWeight: 700 !default;
 $cardSubTitleFontWeight: 400 !default;
 $cardSubTitleColor: $shade100 !default;
-$cardContentPadding: 1.25rem 0 !default;
+$cardContentPadding: 0 !default;
 $cardFooterPadding: 1.25rem 0 0 0 !default;
 $cardShadow: none !default;
 

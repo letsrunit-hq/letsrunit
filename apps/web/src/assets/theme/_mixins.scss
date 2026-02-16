@@ -50,10 +50,12 @@
 			.p-menuitem-icon {
 				color: $menuitemIconColor;
 				margin-right: $inlineSpacing;
+        line-height: 0;
 			}
 
 			.p-submenu-icon {
 				color: $menuitemIconColor;
+        line-height: 0;
 			}
 		}
 	}

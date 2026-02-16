@@ -4,9 +4,9 @@ import { Chevron } from '@/components/chevron';
 import { DropdownMenu } from '@/components/dropdown-menu';
 import type { Organization, UserInfo } from '@/components/navigation';
 import { Tile } from '@/components/tile';
-import type { Selected } from '@/hooks/use-selected';
 
-import { useWindowSize } from '@/hooks/use-window-size';
+import { useNavState } from '@/hooks/use-nav-state';
+import type { Selected } from '@/hooks/use-selected';
 import type { Project } from '@letsrunit/model';
 import { cn } from '@letsrunit/utils';
 import { Building2, History, LayoutDashboard, LogOut, Plus, Settings, User } from 'lucide-react';
@@ -14,7 +14,7 @@ import Link from 'next/link';
 import { Avatar } from 'primereact/avatar';
 import { Menu } from 'primereact/menu';
 import { MenuItem } from 'primereact/menuitem';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 export interface NavigationMenuProps {
   organizations: Organization[];
@@ -25,16 +25,11 @@ export interface NavigationMenuProps {
 }
 
 export function NavigationMenu({ organizations, projects, user, selected, className }: NavigationMenuProps) {
-  const { width } = useWindowSize();
-  const [navState, setNavState] = useState<'expanded' | 'collapsing' | 'collapsed'>('collapsed');
+  const [navState, setNavState] = useNavState(user);
 
-  useEffect(() => {
-    if (width === undefined) return;
-    setNavState(width < 1920 ? 'collapsed' : 'expanded');
-  }, [width]);
+  if (navState === 'hidden') return null;
 
   const isCollapsed = navState === 'collapsed';
-  const isExpandingOrExpanded = navState === 'expanded' || navState === 'collapsing';
 
   const selectedOrg = organizations.find((o) => o.account_id === selected.org);
   const selectedProject = projects.find((p) => p.id === selected.project);
@@ -42,14 +37,12 @@ export function NavigationMenu({ organizations, projects, user, selected, classN
   const isActive = (id: string) => selected.page === id;
 
   const handleToggle = () => {
-    setNavState((prev) => (prev === 'collapsed' ? 'expanded' : 'collapsing'));
+    setNavState((prev) => (prev === 'expanded' ? 'collapsing' : 'expanded'));
   };
 
   const onTransitionEnd = (e: React.TransitionEvent) => {
-    if (e.propertyName === 'width' && e.target === e.currentTarget) {
-      if (navState === 'collapsing') {
-        setNavState('collapsed');
-      }
+    if (e.propertyName === 'width' && e.target === e.currentTarget && navState === 'collapsing') {
+      setNavState('collapsed');
     }
   };
 
@@ -126,7 +119,7 @@ export function NavigationMenu({ organizations, projects, user, selected, classN
         title={isCollapsed ? item.label : undefined}
       >
         <span className={cn('p-menuitem-icon', active && 'p-highlight')}>{item.icon}</span>
-        {isExpandingOrExpanded && <span className={cn('p-menuitem-text', active && 'p-highlight')}>{item.label}</span>}
+        {!isCollapsed && <span className={cn('p-menuitem-text', active && 'p-highlight')}>{item.label}</span>}
       </Link>
     );
   };
@@ -245,7 +238,7 @@ export function NavigationMenu({ organizations, projects, user, selected, classN
       </div>
 
       {/* Collapse Toggle */}
-      <button onClick={handleToggle} className="collapse-toggle">
+      <button onClick={handleToggle} className="collapse-toggle" data-testid="collapse-toggle">
         <Chevron open={navState === 'expanded'} direction="horizontal" width="0.75rem" height="0.75rem" />
       </button>
     </aside>

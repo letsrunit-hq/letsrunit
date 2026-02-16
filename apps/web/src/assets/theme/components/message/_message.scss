@@ -1,9 +1,10 @@
 .p-message {
     margin: $messageMargin;
-    border-radius: $borderRadius;
+    border-radius: 0;
 
     .p-message-wrapper {
         padding: $messagePadding;
+        align-items: flex-start;
     }
 
     .p-message-close {
@@ -85,6 +86,7 @@
     .p-message-text {
         font-size: $messageTextFontSize;
         font-weight: $messageTextFontWeight;
+        flex: 1;
     }
 
     .p-message-icon {
