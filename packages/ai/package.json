@@ -2,7 +2,12 @@
   "name": "@letsrunit/ai",
   "version": "0.1.0",
   "description": "AI integration for test generation with letsrunit",
-  "keywords": ["testing", "ai", "llm", "letsrunit"],
+  "keywords": [
+    "testing",
+    "ai",
+    "llm",
+    "letsrunit"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -13,18 +18,9 @@
   "homepage": "https://github.com/letsrunit/letsrunit#readme",
   "private": false,
   "type": "module",
-  "main": "./src/index.ts",
+  "main": "./dist/index.js",
   "publishConfig": {
-    "access": "public",
-    "main": "./dist/index.js",
-    "module": "./dist/index.js",
-    "types": "./dist/index.d.ts",
-    "exports": {
-      ".": {
-        "types": "./dist/index.d.ts",
-        "import": "./dist/index.js"
-      }
-    }
+    "access": "public"
   },
   "files": [
     "dist",
@@ -55,5 +51,13 @@
     "@vitest/coverage-v8": "4.0.17",
     "typescript": "^5.9.3",
     "vitest": "^4.0.17"
+  },
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
   }
 }
