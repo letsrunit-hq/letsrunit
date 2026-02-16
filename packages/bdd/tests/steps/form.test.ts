@@ -58,7 +58,7 @@ describe('steps/form (definitions)', () => {
 
     await runStep(typeStep, 'I type "hello"', { page } as any);
 
-    expect(type).toHaveBeenCalledWith('hello', { delay: 200, timeout: 500 });
+    expect(type).toHaveBeenCalledWith('hello', { delay: 200 });
   });
 
   it('sets a select option', async () => {
