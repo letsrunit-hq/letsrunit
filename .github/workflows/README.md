@@ -7,9 +7,9 @@ The `publish.yml` workflow automatically publishes all packages to npm when you 
 ### How it works
 
 1. **Trigger**: Pushing a git tag starting with `v` (e.g., `v0.2.0`)
-2. **OIDC**: Uses GitHub's OIDC to generate signed provenance attestations
+2. **OIDC Authentication**: Uses GitHub's OIDC token for npm authentication (NO NPM_TOKEN needed!)
 3. **Provenance**: Each package gets a verifiable link to the commit and workflow
-4. **Authentication**: Uses `NPM_TOKEN` secret for npm authentication
+4. **Trusted Publishing**: npm validates the GitHub OIDC token against configured trusted publishers
 
 ### Usage
 
@@ -32,22 +32,22 @@ The workflow will automatically:
 
 ### Setup Required
 
-#### 1. Create NPM Token
+#### Configure npm Trusted Publishing
 
-1. Go to https://www.npmjs.com/settings/YOUR_USERNAME/tokens
-2. Generate New Token → **Automation Token**
-3. Copy the token
+You need to configure each package on npm to trust this GitHub repository. See detailed instructions in `.claude/tmp/configure-npm-oidc.md`.
 
-#### 2. Add to GitHub Secrets
+**Quick summary:**
 
-1. Go to your repo → Settings → Secrets and variables → Actions
-2. New repository secret:
-   - Name: `NPM_TOKEN`
-   - Value: [paste your token]
+1. **For each package**, visit: `https://www.npmjs.com/package/@letsrunit/PACKAGE_NAME/access`
+2. **Add Trusted Publisher**:
+   - Provider: `GitHub Actions`
+   - Repository: `letsrunit/letsrunit`
+   - Workflow: `publish.yml` (or leave empty)
+   - Environment: (leave empty)
 
-#### 3. Enable OIDC (Already configured)
+3. **Repeat for all 10 packages**: utils, gherkin, journal, playwright, mailbox, gherker, bdd, ai, controller, executor
 
-The workflow already has `id-token: write` permission, which enables OIDC.
+**That's it!** No NPM_TOKEN needed. The workflow uses GitHub's OIDC token automatically.
 
 ### What is Provenance?
 
@@ -85,6 +85,24 @@ After publishing, you can see provenance at:
 
 ### Troubleshooting
 
+#### Error: "401 Unauthorized" or "403 Forbidden"
+
+**Cause**: Trusted publisher not configured for this package on npmjs.com
+
+**Solution**:
+1. Visit `https://www.npmjs.com/package/@letsrunit/PACKAGE_NAME/access`
+2. Add GitHub Actions as a trusted publisher (see Setup above)
+3. Verify repository name matches exactly: `letsrunit/letsrunit`
+
+#### Error: "OIDC token validation failed"
+
+**Cause**: GitHub OIDC token doesn't match configured publisher
+
+**Solution**:
+1. Check repository name is correct (case-sensitive!)
+2. Verify workflow filename matches (or is empty in npm config)
+3. Ensure `id-token: write` permission is set in workflow
+
 #### Error: "Provenance generation failed"
 
 Make sure the workflow has:
@@ -93,20 +111,20 @@ permissions:
   id-token: write
 ```
 
-#### Error: "NPM_TOKEN not found"
-
-Add the token to GitHub Secrets (see Setup above)
-
 #### Error: "Version already exists"
 
 You're trying to publish a version that already exists on npm. Bump the version in all package.json files before creating a new tag.
 
-### Future: Pure OIDC (No NPM_TOKEN)
+### Security Benefits of OIDC
 
-npm is working on full OIDC authentication where you won't need NPM_TOKEN at all. When available, we'll update the workflow to:
-```yaml
-- run: npm publish --provenance
-  # No NODE_AUTH_TOKEN needed!
-```
+Compared to using long-lived NPM_TOKEN:
 
-For now, we use the hybrid approach: NPM_TOKEN for auth + OIDC for provenance.
+| NPM_TOKEN | OIDC Trusted Publishing |
+|-----------|------------------------|
+| ❌ Long-lived (months/years) | ✅ Short-lived (minutes) |
+| ❌ Can be leaked | ✅ Never leaves GitHub |
+| ❌ Manual rotation needed | ✅ Auto-rotated every run |
+| ❌ Stored in GitHub Secrets | ✅ No secrets needed |
+| ❌ Works from anywhere | ✅ Only works from configured repo/workflow |
+
+The workflow uses **pure OIDC** with no long-lived tokens. GitHub generates a short-lived token for each publish, npm validates it against trusted publishers, and the token expires automatically.
