@@ -3,12 +3,12 @@ name: Publish to npm
 on:
   push:
     tags:
-      - 'v*'  # Trigger on version tags like v0.1.0, v0.2.0, etc.
+      - 'v*'
 
-# REQUIRED: These permissions enable OIDC token generation
+# CRITICAL: id-token: write enables OIDC authentication with npm
 permissions:
   contents: read
-  id-token: write  # This allows GitHub to generate OIDC tokens for npm
+  id-token: write
 
 jobs:
   publish:
@@ -18,7 +18,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js with npm OIDC
         uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -45,9 +45,11 @@ jobs:
           done
           echo "✅ All packages built successfully"
 
-      - name: Publish packages with provenance
+      - name: Publish packages with OIDC (NO NPM_TOKEN!)
         run: |
-          echo "Publishing packages in dependency order..."
+          echo "Publishing packages with OIDC authentication..."
+          echo "No NPM_TOKEN needed - using GitHub's OIDC token!"
+          echo ""
 
           # Array of packages in dependency order
           PACKAGES=(
@@ -71,22 +73,18 @@ jobs:
 
             cd "packages/$pkg"
 
-            # Publish with provenance attestation
-            # The --provenance flag uses GitHub's OIDC token to sign the package
-            # This creates a verifiable link: package → commit → workflow → actor
+            # Publish with provenance using OIDC
+            # npm automatically uses GitHub's OIDC token (no NPM_TOKEN!)
             npm publish --access public --provenance
 
             echo "✅ Published @letsrunit/$pkg"
             cd ../..
 
-            # Small delay to avoid rate limiting
             sleep 2
           done
 
           echo ""
-          echo "🎉 All packages published successfully!"
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          echo "🎉 All packages published successfully with OIDC!"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
@@ -105,9 +103,10 @@ jobs:
             npm install @letsrunit/executor@${{ github.ref_name }}
             ```
 
-            ### Provenance
-            All packages are published with provenance attestations for supply chain security.
-            You can verify the build provenance on each package's npm page.
+            ### Security
+            - ✅ Published with OIDC (no long-lived tokens)
+            - ✅ Provenance attestations for supply chain security
+            - ✅ Verifiable link to commit and workflow
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -117,19 +116,13 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Published version: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Packages Published" >> $GITHUB_STEP_SUMMARY
-          echo "- @letsrunit/utils" >> $GITHUB_STEP_SUMMARY
-          echo "- @letsrunit/gherkin" >> $GITHUB_STEP_SUMMARY
-          echo "- @letsrunit/journal" >> $GITHUB_STEP_SUMMARY
-          echo "- @letsrunit/playwright" >> $GITHUB_STEP_SUMMARY
-          echo "- @letsrunit/mailbox" >> $GITHUB_STEP_SUMMARY
-          echo "- @letsrunit/gherker" >> $GITHUB_STEP_SUMMARY
-          echo "- @letsrunit/bdd" >> $GITHUB_STEP_SUMMARY
-          echo "- @letsrunit/ai" >> $GITHUB_STEP_SUMMARY
-          echo "- @letsrunit/controller" >> $GITHUB_STEP_SUMMARY
-          echo "- @letsrunit/executor" >> $GITHUB_STEP_SUMMARY
+          echo "### Security" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Published with OIDC (no NPM_TOKEN required)" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Provenance attestations generated" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Provenance" >> $GITHUB_STEP_SUMMARY
-          echo "✅ All packages published with provenance attestations" >> $GITHUB_STEP_SUMMARY
+          echo "### Packages Published" >> $GITHUB_STEP_SUMMARY
+          for pkg in utils gherkin journal playwright mailbox gherker bdd ai controller executor; do
+            echo "- @letsrunit/$pkg" >> $GITHUB_STEP_SUMMARY
+          done
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "View at: https://www.npmjs.com/org/letsrunit" >> $GITHUB_STEP_SUMMARY
