@@ -1,14 +1,44 @@
 {
   "name": "@letsrunit/bdd",
-  "private": true,
+  "version": "0.1.0",
+  "description": "BDD step definitions for browser automation with letsrunit",
+  "keywords": ["testing", "bdd", "gherkin", "playwright", "letsrunit"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/letsrunit/letsrunit.git",
+    "directory": "packages/bdd"
+  },
+  "bugs": "https://github.com/letsrunit/letsrunit/issues",
+  "homepage": "https://github.com/letsrunit/letsrunit#readme",
+  "private": false,
+  "type": "module",
+  "main": "./src/index.ts",
+  "publishConfig": {
+    "access": "public",
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
   "scripts": {
+    "build": "../../node_modules/.bin/tsup",
     "test": "vitest run",
     "test:cov": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
     "gen:stub": "tsx scripts/generate-stub.ts"
   },
   "packageManager": "yarn@4.10.3",
-  "main": "src/index.ts",
   "dependencies": {
     "@cucumber/cucumber-expressions": "^18.1.0",
     "@letsrunit/gherkin": "workspace:*",

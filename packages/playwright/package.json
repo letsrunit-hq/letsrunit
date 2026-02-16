@@ -1,13 +1,43 @@
 {
   "name": "@letsrunit/playwright",
-  "private": true,
+  "version": "0.1.0",
+  "description": "Playwright extensions and utilities for letsrunit",
+  "keywords": ["testing", "playwright", "automation", "letsrunit"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/letsrunit/letsrunit.git",
+    "directory": "packages/playwright"
+  },
+  "bugs": "https://github.com/letsrunit/letsrunit/issues",
+  "homepage": "https://github.com/letsrunit/letsrunit#readme",
+  "private": false,
+  "type": "module",
+  "main": "./src/index.ts",
+  "publishConfig": {
+    "access": "public",
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
   "scripts": {
+    "build": "../../node_modules/.bin/tsup",
     "test": "vitest run",
     "test:cov": "vitest run --coverage",
     "typecheck": "tsc --noEmit"
   },
   "packageManager": "yarn@4.10.3",
-  "main": "src/index.ts",
   "dependencies": {
     "@letsrunit/utils": "workspace:*",
     "@playwright/test": "^1.57.0",

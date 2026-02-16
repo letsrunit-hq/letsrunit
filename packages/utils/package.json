@@ -1,19 +1,52 @@
 {
   "name": "@letsrunit/utils",
-  "private": true,
+  "version": "0.1.0",
+  "description": "Utility functions for letsrunit",
+  "keywords": [
+    "testing",
+    "utilities",
+    "letsrunit"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/letsrunit/letsrunit.git",
+    "directory": "packages/utils"
+  },
+  "bugs": "https://github.com/letsrunit/letsrunit/issues",
+  "homepage": "https://github.com/letsrunit/letsrunit#readme",
+  "type": "module",
+  "main": "./src/index.ts",
+  "publishConfig": {
+    "access": "public",
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
   "scripts": {
+    "build": "../../node_modules/.bin/tsup",
     "test": "vitest run",
     "test:cov": "vitest run --coverage",
     "typecheck": "tsc --noEmit"
   },
   "packageManager": "yarn@4.10.3",
-  "main": "src/index.ts",
-  "devDependencies": {
-    "vitest": "^4.0.17"
-  },
   "dependencies": {
     "fast-json-stable-stringify": "^2.1.0",
     "lru-cache": "^11.2.4",
     "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "vitest": "^4.0.17"
   }
 }

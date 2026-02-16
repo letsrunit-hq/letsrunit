@@ -1,15 +1,41 @@
 {
   "name": "@letsrunit/ai",
-  "private": true,
+  "version": "0.1.0",
+  "description": "AI integration for test generation with letsrunit",
+  "keywords": ["testing", "ai", "llm", "letsrunit"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/letsrunit/letsrunit.git",
+    "directory": "packages/ai"
+  },
+  "bugs": "https://github.com/letsrunit/letsrunit/issues",
+  "homepage": "https://github.com/letsrunit/letsrunit#readme",
+  "private": false,
   "type": "module",
+  "main": "./src/index.ts",
+  "publishConfig": {
+    "access": "public",
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
   "scripts": {
+    "build": "../../node_modules/.bin/tsup",
     "test": "vitest run",
     "test:cov": "vitest run --coverage",
     "typecheck": "tsc --noEmit"
-  },
-  "main": "./src/index.ts",
-  "exports": {
-    ".": "./src/index.ts"
   },
   "packageManager": "yarn@4.10.3",
   "dependencies": {
