@@ -2,7 +2,13 @@
   "name": "@letsrunit/controller",
   "version": "0.1.0",
   "description": "Browser automation controller for letsrunit",
-  "keywords": ["testing", "automation", "controller", "playwright", "letsrunit"],
+  "keywords": [
+    "testing",
+    "automation",
+    "controller",
+    "playwright",
+    "letsrunit"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -13,18 +19,9 @@
   "homepage": "https://github.com/letsrunit/letsrunit#readme",
   "private": false,
   "type": "module",
-  "main": "./src/index.ts",
+  "main": "./dist/index.js",
   "publishConfig": {
-    "access": "public",
-    "main": "./dist/index.js",
-    "module": "./dist/index.js",
-    "types": "./dist/index.d.ts",
-    "exports": {
-      ".": {
-        "types": "./dist/index.d.ts",
-        "import": "./dist/index.js"
-      }
-    }
+    "access": "public"
   },
   "files": [
     "dist",
@@ -54,5 +51,13 @@
     "@types/node": "^25.0.9",
     "typescript": "^5.9.3",
     "vitest": "^4.0.17"
+  },
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
   }
 }

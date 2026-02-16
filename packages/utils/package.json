@@ -17,18 +17,17 @@
   "homepage": "https://github.com/letsrunit/letsrunit#readme",
   "private": false,
   "type": "module",
-  "main": "./src/index.ts",
-  "publishConfig": {
-    "access": "public",
-    "main": "./dist/index.js",
-    "module": "./dist/index.js",
-    "types": "./dist/index.d.ts",
-    "exports": {
-      ".": {
-        "types": "./dist/index.d.ts",
-        "import": "./dist/index.js"
-      }
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     }
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "files": [
     "dist",
