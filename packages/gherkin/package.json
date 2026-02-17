@@ -1,6 +1,6 @@
 {
   "name": "@letsrunit/gherkin",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Gherkin types and utilities for letsrunit",
   "keywords": [
     "testing",
@@ -16,7 +16,6 @@
   },
   "bugs": "https://github.com/letsrunit/letsrunit/issues",
   "homepage": "https://github.com/letsrunit/letsrunit#readme",
-  "private": false,
   "type": "module",
   "main": "./dist/index.js",
   "publishConfig": {
@@ -50,8 +49,8 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-      ,"default": "./dist/index.js"
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     }
   }
 }
