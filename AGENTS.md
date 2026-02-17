@@ -125,11 +125,3 @@ Merging to `main` triggers **semantic-release**, which:
 
 A single PR may contain multiple commits — the highest-impact one determines the version bump.
 
----
-
-## Safe for Agents
-
-✅ modify code/tests in `apps/*` and `packages/*`
-✅ adjust Playwright logic
-🚫 alter `infra/` or IAM without instruction
-🚫 push directly to `main`
