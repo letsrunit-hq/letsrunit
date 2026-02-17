@@ -52,10 +52,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Enable Corepack
+        run: corepack enable
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: yarn install --immutable
 
       - name: Download dist artifacts
         uses: actions/download-artifact@v4
@@ -64,8 +69,7 @@ jobs:
           path: packages
 
       - name: Publish @letsrunit/${{ matrix.package }}
-        run: npm publish --access public --provenance
-        working-directory: packages/${{ matrix.package }}
+        run: yarn workspace @letsrunit/${{ matrix.package }} npm publish --access public --provenance
 
   release:
     needs: publish
