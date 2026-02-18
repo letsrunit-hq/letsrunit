@@ -19,7 +19,7 @@ describe('steps/form (relative dates)', () => {
     const { setFieldValue } = await import('@letsrunit/playwright');
     const page = {} as any;
 
-    await runStep(setStep, 'I set "#dob" to date of tomorrow', { page } as any);
+    await runStep(setStep, 'I set `#dob` to date of tomorrow', { page } as any);
     expect(setFieldValue).toHaveBeenCalledWith(testLocator, expect.any(Date), { timeout: 500 });
 
     const callDate = (setFieldValue as any).mock.calls[0][1];
@@ -31,7 +31,7 @@ describe('steps/form (relative dates)', () => {
     const { setFieldValue } = await import('@letsrunit/playwright');
     const page = {} as any;
 
-    await runStep(setStep, 'I set "#dob" to date today', { page } as any);
+    await runStep(setStep, 'I set `#dob` to date today', { page } as any);
     expect(setFieldValue).toHaveBeenLastCalledWith(testLocator, expect.any(Date), { timeout: 500 });
 
     const callDate = (setFieldValue as any).mock.calls.at(-1)[1];
@@ -43,7 +43,7 @@ describe('steps/form (relative dates)', () => {
     const { setFieldValue } = await import('@letsrunit/playwright');
     const page = {} as any;
 
-    await runStep(setStep, 'I set "#dob" to date 2 days ago', { page } as any);
+    await runStep(setStep, 'I set `#dob` to date 2 days ago', { page } as any);
     expect(setFieldValue).toHaveBeenLastCalledWith(testLocator, expect.any(Date), { timeout: 500 });
 
     const callDate = (setFieldValue as any).mock.calls.at(-1)[1];
