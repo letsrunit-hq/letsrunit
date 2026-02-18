@@ -97,8 +97,31 @@ When testing components in `web`, mock hooks and functions where possible.
 
 ---
 
-## Safe for Agents
+## Branching & Releases
 
-✅ modify code/tests in `apps/*` and `packages/*`
-✅ adjust Playwright logic
-🚫 alter `infra/` or IAM without instruction
+**Never push directly to `main`.** All changes go through a feature branch and pull request.
+
+```bash
+git checkout -b feat/my-feature   # or fix/, chore/, docs/, etc.
+# ... make changes ...
+git push -u origin feat/my-feature
+gh pr create --base main
+```
+
+Merging to `main` triggers **semantic-release**, which:
+1. Determines the next version from commit messages
+2. Updates all `packages/*/package.json` versions
+3. Publishes all packages to npm
+4. Creates a GitHub release with a generated changelog
+
+**Commits must follow [Conventional Commits](https://www.conventionalcommits.org/)** — the release type is derived from them:
+
+| Prefix | Effect |
+|---|---|
+| `fix:` | patch release (0.0.x) |
+| `feat:` | minor release (0.x.0) |
+| `feat!:` or `BREAKING CHANGE:` | major release (x.0.0) |
+| `chore:`, `docs:`, `ci:`, `test:` | no release |
+
+A single PR may contain multiple commits — the highest-impact one determines the version bump.
+
