@@ -2010,7 +2010,9 @@ __metadata:
     "@modelcontextprotocol/sdk": "npm:^1.26.0"
     "@playwright/test": "npm:^1.57.0"
     "@types/node": "npm:^25.0.9"
+    "@vitest/coverage-v8": "npm:4.0.17"
     typescript: "npm:^5.9.3"
+    vitest: "npm:^4.0.17"
     zod: "npm:^4.3.5"
   bin:
     letsrunit-mcp: ./dist/index.js

@@ -1,16 +1,16 @@
-import type { JournalEntry, Sink } from '@letsrunit/journal';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import type { JournalEntry, Sink } from '../types.js';
 
-export interface McpLogEntry {
+export interface MemoryEntry {
   timestamp: number;
   type: JournalEntry['type'];
   message: string;
   artifacts: string[]; // file paths on disk
 }
 
-export class McpSink implements Sink {
-  private _entries: McpLogEntry[] = [];
+export class MemorySink implements Sink {
+  private _entries: MemoryEntry[] = [];
 
   constructor(private readonly artifactDir: string) {}
 
@@ -28,7 +28,7 @@ export class McpSink implements Sink {
     }
   }
 
-  getEntries(): McpLogEntry[] {
+  getEntries(): MemoryEntry[] {
     return this._entries;
   }
 

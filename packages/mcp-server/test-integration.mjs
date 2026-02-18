@@ -60,13 +60,12 @@ async function run() {
     })
   );
   log(`letsrunit_run — navigate to ${TARGET}`, {
-    success: navResult.success,
-    url: navResult.url,
-    error: navResult.error,
-    logs: navResult.logs?.length + ' entries',
-    artifacts: navResult.artifacts?.length + ' files',
+    status: navResult.status,
+    steps: navResult.steps?.length + ' steps',
+    reason: navResult.reason,
+    journal: navResult.journal?.length + ' entries',
   });
-  if (!navResult.success) throw new Error('Navigation failed: ' + navResult.error);
+  if (navResult.status !== 'passed') throw new Error('Navigation failed: ' + navResult.reason);
 
   // snapshot
   const snapResult = parseResult(

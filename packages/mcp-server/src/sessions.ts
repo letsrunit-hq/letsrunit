@@ -1,15 +1,14 @@
 import { Controller, type ControllerOptions } from '@letsrunit/controller';
-import { Journal } from '@letsrunit/journal';
+import { Journal, MemorySink } from '@letsrunit/journal';
 import { join } from 'node:path';
-import { McpSink } from './sink.js';
 
 const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
 
 export interface Session {
   id: string;
   controller: Controller;
-  sink: McpSink;
-  journal: Journal<McpSink>;
+  sink: MemorySink;
+  journal: Journal<MemorySink>;
   artifactDir: string;
   createdAt: number;
   lastActivity: number;
@@ -22,7 +21,7 @@ function sessionId(): string {
   return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 }
 
-class SessionManager {
+export class SessionManager {
   private readonly sessions = new Map<string, Session>();
   private readonly timers = new Map<string, ReturnType<typeof setTimeout>>();
 
@@ -30,7 +29,7 @@ class SessionManager {
     const id = sessionId();
     const artifactDir = join(BASE_ARTIFACT_DIR, id);
 
-    const sink = new McpSink(artifactDir);
+    const sink = new MemorySink(artifactDir);
     const journal = new Journal(sink);
 
     const controller = await Controller.launch({ ...options, journal });
@@ -52,8 +51,14 @@ class SessionManager {
     return session;
   }
 
-  get(id: string): Session | undefined {
-    return this.sessions.get(id);
+  get(id: string): Session {
+    const session = this.sessions.get(id);
+    if (!session) throw new Error(`Session not found: ${id}`);
+    return session;
+  }
+
+  has(id: string): boolean {
+    return this.sessions.has(id);
   }
 
   touch(id: string): void {
@@ -87,5 +92,3 @@ class SessionManager {
     this.timers.set(id, timer);
   }
 }
-
-export const sessions = new SessionManager();
