@@ -110,6 +110,8 @@ gh pr create --base main
 
 _Do not create a new branch when fixing failing tests in the current branch._
 
+When creating a PR, use the repository's PR template (`.github/PULL_REQUEST_TEMPLATE.md`).
+
 Merging to `main` triggers **semantic-release**, which:
 1. Determines the next version from commit messages
 2. Updates all `packages/*/package.json` versions
@@ -126,4 +128,6 @@ Merging to `main` triggers **semantic-release**, which:
 | `chore:`, `docs:`, `ci:`, `test:` | no release |
 
 A single PR may contain multiple commits — the highest-impact one determines the version bump.
+
+Reference related issues in commit messages. Use `closes #123` (or `fixes #123`) in the commit body when the commit resolves an issue — GitHub will close it automatically on merge.
 
