@@ -1,5 +1,8 @@
 ## Packages
 
+The project is a monorepo managed with Yarn v4 workspaces, designed for scalability and shared logic across different
+execution environments.
+
 Shared logic is divided into specialised, scoped packages (`@letsrunit/*`):
 
 - [`@letsrunit/ai`](./packages/ai): Interactions with LLMs, including prompt engineering and result parsing.
@@ -65,4 +68,13 @@ Framework-specific compatibility suites verify the automation engine against rea
 
 ## Publishing
 
-Merging to `main` triggers **semantic-release**, which bumps versions, publishes all packages to npm, and creates a GitHub release. Commit messages must follow [Conventional Commits](https://www.conventionalcommits.org/) — `fix:` for patches, `feat:` for minor releases, `feat!:` or `BREAKING CHANGE:` for major releases.
+Merging to `main` triggers **semantic-release**, which bumps versions, publishes all packages to npm, and creates a GitHub release. Commit messages must follow [Conventional Commits](https://www.conventionalcommits.org/)
+
+
+| Prefix                            | Effect                |
+|-----------------------------------|-----------------------|
+| `fix:`                            | patch release (0.0.x) |
+| `feat:`                           | minor release (0.x.0) |
+| `feat!:` or `BREAKING CHANGE:`    | major release (x.0.0) |
+| `chore:`, `docs:`, `ci:`, `test:` | no release            |
+

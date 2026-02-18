@@ -110,12 +110,12 @@ Merging to `main` triggers **semantic-release**, which:
 
 **Commits must follow [Conventional Commits](https://www.conventionalcommits.org/)** — the release type is derived from them:
 
-| Prefix | Effect |
-|---|---|
-| `fix:` | patch release (0.0.x) |
-| `feat:` | minor release (0.x.0) |
-| `feat!:` or `BREAKING CHANGE:` | major release (x.0.0) |
-| `chore:`, `docs:`, `ci:`, `test:` | no release |
+| Prefix                            | Effect                |
+|-----------------------------------|-----------------------|
+| `fix:`                            | patch release (0.0.x) |
+| `feat:`                           | minor release (0.x.0) |
+| `feat!:` or `BREAKING CHANGE:`    | major release (x.0.0) |
+| `chore:`, `docs:`, `ci:`, `test:` | no release            |
 
 A single PR may contain multiple commits — the highest-impact one determines the version bump.
 
