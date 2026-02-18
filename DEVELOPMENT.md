@@ -19,7 +19,7 @@ Shared logic is divided into specialised, scoped packages (`@letsrunit/*`):
 
 ### Prerequisites
 
-- Node.js ≥ 18.18
+- Node.js ≥ 20
 - Yarn v4
 
 ### Setup
