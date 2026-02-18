@@ -40,6 +40,7 @@
     "@letsrunit/controller": "workspace:*",
     "@letsrunit/journal": "workspace:*",
     "@letsrunit/playwright": "workspace:*",
+    "@letsrunit/utils": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.26.0",
     "@playwright/test": "^1.57.0",
     "zod": "^4.3.5"

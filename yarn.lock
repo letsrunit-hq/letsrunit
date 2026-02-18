@@ -2006,6 +2006,7 @@ __metadata:
     "@letsrunit/controller": "workspace:*"
     "@letsrunit/journal": "workspace:*"
     "@letsrunit/playwright": "workspace:*"
+    "@letsrunit/utils": "workspace:*"
     "@modelcontextprotocol/sdk": "npm:^1.26.0"
     "@playwright/test": "npm:^1.57.0"
     "@types/node": "npm:^25.0.9"

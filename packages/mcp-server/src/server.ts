@@ -1,4 +1,5 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { hashKey } from '@letsrunit/utils';
 import { z } from 'zod';
 import { sessions } from './sessions.js';
 
@@ -194,7 +195,7 @@ export function registerTools(server: McpServer): void {
         const { mkdir, writeFile } = await import('node:fs/promises');
         const { join } = await import('node:path');
         await mkdir(session.artifactDir, { recursive: true });
-        const filename = `screenshot-${Date.now()}.png`;
+        const filename = await hashKey('screenshot-{hash}.png', buffer);
         const path = join(session.artifactDir, filename);
         await writeFile(path, buffer);
 
