@@ -108,6 +108,8 @@ git push -u origin feat/my-feature
 gh pr create --base main
 ```
 
+_Do not create a new branch when fixing failing tests in the current branch._
+
 Merging to `main` triggers **semantic-release**, which:
 1. Determines the next version from commit messages
 2. Updates all `packages/*/package.json` versions
