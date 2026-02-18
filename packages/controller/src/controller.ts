@@ -50,6 +50,10 @@ export class Controller {
     return this.world.lang ?? null;
   }
 
+  get page(): Page {
+    return this.world.page;
+  }
+
   static async registerFieldSelector() {
     if (this.fieldSelectorIsRegistered) return;
     try {
