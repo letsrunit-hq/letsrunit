@@ -11,11 +11,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/letsrunit/letsrunit.git",
+    "url": "https://github.com/letsrunit-hq/letsrunit.git",
     "directory": "packages/mailbox"
   },
-  "bugs": "https://github.com/letsrunit/letsrunit/issues",
-  "homepage": "https://github.com/letsrunit/letsrunit#readme",
+  "bugs": "https://github.com/letsrunit-hq/letsrunit/issues",
+  "homepage": "https://github.com/letsrunit-hq/letsrunit#readme",
   "type": "module",
   "main": "./src/index.ts",
   "publishConfig": {
