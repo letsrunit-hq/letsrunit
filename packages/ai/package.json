@@ -1,6 +1,6 @@
 {
   "name": "@letsrunit/ai",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "AI integration for test generation with letsrunit",
   "keywords": [
     "testing",
