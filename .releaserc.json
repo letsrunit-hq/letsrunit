@@ -6,7 +6,7 @@
     "@semantic-release/changelog",
     ["@semantic-release/exec", {
       "prepareCmd": "yarn workspaces foreach -A --no-private version ${nextRelease.version}",
-      "publishCmd": "yarn build:packages && yarn workspaces foreach -A --no-private exec yarn npm publish --access public --provenance"
+      "publishCmd": "yarn build:packages && yarn workspaces foreach -A --no-private exec sh -c 'yarn pack --out /tmp/letsrunit-publish.tgz && npm publish /tmp/letsrunit-publish.tgz --access public --provenance'"
     }],
     ["@semantic-release/git", {
       "assets": ["CHANGELOG.md", "packages/*/package.json"],
