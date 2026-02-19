@@ -1,3 +1,10 @@
+## [0.2.3](https://github.com/letsrunit-hq/letsrunit/compare/v0.2.2...v0.2.3) (2026-02-19)
+
+
+### Bug Fixes
+
+* **release:** revert to yarn npm publish; rename workflow to publish.yml ([44aa057](https://github.com/letsrunit-hq/letsrunit/commit/44aa057638b362ccda88f20c2fcb626d2c0b5584))
+
 ## [0.2.2](https://github.com/letsrunit-hq/letsrunit/compare/v0.2.1...v0.2.2) (2026-02-19)
 
 

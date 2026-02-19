@@ -1,6 +1,6 @@
 {
   "name": "@letsrunit/mailbox",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Test email mailbox integration for letsrunit",
   "keywords": [
     "testing",
