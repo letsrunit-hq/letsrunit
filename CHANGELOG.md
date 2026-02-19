@@ -1,3 +1,10 @@
+## [0.2.4](https://github.com/letsrunit-hq/letsrunit/compare/v0.2.3...v0.2.4) (2026-02-19)
+
+
+### Bug Fixes
+
+* correct repository URL from letsrunit/letsrunit to letsrunit-hq/letsrunit ([c9dbb61](https://github.com/letsrunit-hq/letsrunit/commit/c9dbb6165af9f9ffd2c86fa74c13d72f3a88dcc9))
+
 ## [0.2.3](https://github.com/letsrunit-hq/letsrunit/compare/v0.2.2...v0.2.3) (2026-02-19)
 
 
