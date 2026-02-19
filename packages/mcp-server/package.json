@@ -1,0 +1,62 @@
+{
+  "name": "@letsrunit/mcp-server",
+  "version": "0.1.0",
+  "description": "MCP server for letsrunit — AI-agent browser test generation and execution",
+  "keywords": [
+    "testing",
+    "automation",
+    "mcp",
+    "playwright",
+    "letsrunit"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/letsrunit/letsrunit.git",
+    "directory": "packages/mcp-server"
+  },
+  "bugs": "https://github.com/letsrunit/letsrunit/issues",
+  "homepage": "https://github.com/letsrunit/letsrunit#readme",
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": {
+    "letsrunit-mcp": "./dist/index.js"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "../../node_modules/.bin/tsup",
+    "test": "vitest run",
+    "test:cov": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "packageManager": "yarn@4.10.3",
+  "dependencies": {
+    "@letsrunit/controller": "workspace:*",
+    "@letsrunit/journal": "workspace:*",
+    "@letsrunit/playwright": "workspace:*",
+    "@letsrunit/utils": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "@playwright/test": "^1.57.0",
+    "zod": "^4.3.5"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.9",
+    "@vitest/coverage-v8": "4.0.17",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.17"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  }
+}

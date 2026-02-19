@@ -1,5 +1,12 @@
 import { hashKey } from '@letsrunit/utils';
-import type { Page, PageScreenshotOptions } from '@playwright/test';
+import type { LocatorScreenshotOptions, Page, PageScreenshotOptions } from '@playwright/test';
+
+export async function screenshotElement(page: Page, selector: string, options?: LocatorScreenshotOptions): Promise<File> {
+  const buffer = await page.locator(selector).first().screenshot(options);
+  const filename = await hashKey('screenshot-{hash}.png', buffer);
+
+  return new File([new Uint8Array(buffer)], filename, { type: 'image/png' });
+}
 
 export async function screenshot(page: Page, options?: PageScreenshotOptions): Promise<File> {
   const buffer = options?.mask?.length ? await screenshotWithMask(page, options) : await page.screenshot(options);

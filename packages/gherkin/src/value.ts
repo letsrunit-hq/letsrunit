@@ -1,7 +1,7 @@
 import { parseDateString, type Scalar } from '@letsrunit/utils';
 
 export const scalarRegexp =
-  /"((?:[^"\\]+|\\.)*)"|(-?\d+(?:\.\d+)?)|date (?:of )?((?:today|tomorrow|yesterday|\d+ \w+ (?:ago|from now))(?: (?:at )?\d{2}:\d{2}?(?::\d{2})?)?|"\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}(?::\d{2})?(?:.\d{3})?Z?)?")/;
+  /"((?:[^"\\]+|\\.)*)"|(-?\d+(?:\.\d+)?)|date (?:of )?((?:today|tomorrow|yesterday|\d+ \w+ (?:ago|from now))(?: (?:at )?\d\d?:\d\d?(?::\d\d?)?)?|"\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}(?::\d{2})?(?:.\d{3})?Z?)?")/;
 export const arrayRegexp = new RegExp(String.raw`\[(.*?)\]`);
 
 function transformScalar(str?: string, num?: string, date?: string): Scalar {
