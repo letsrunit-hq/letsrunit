@@ -1,0 +1,15 @@
+# [0.2.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.1.1...v0.2.0) (2026-02-19)
+
+
+### Bug Fixes
+
+* **@letsrunit/cli:** read version dynamically from package.json ([040f4d0](https://github.com/letsrunit-hq/letsrunit/commit/040f4d0a10af801fea7f954777f18700c51d5e8c))
+* **gherkin:** relax time regex to allow single-digit hours and minutes ([628683c](https://github.com/letsrunit-hq/letsrunit/commit/628683cabb4236fbe5d29e1c7eb3309ade749661))
+* **mcp-server:** use hash-based filename for letsrunit_screenshot ([6866e32](https://github.com/letsrunit-hq/letsrunit/commit/6866e32ccf37f7717aba94da3b3b0e5d4a548c1f))
+
+
+### Features
+
+* add @letsrunit/mcp-server package with MCP tools and skill.md ([50590d9](https://github.com/letsrunit-hq/letsrunit/commit/50590d998d5a207f55c2d20296b920609e092c7d))
+* add MCP server with tools, tests, and agentskills skill ([1026f32](https://github.com/letsrunit-hq/letsrunit/commit/1026f32a9518928eb9cbe25646823fbf2eb127c0))
+* **controller:** expose page getter for MCP server access ([7d61776](https://github.com/letsrunit-hq/letsrunit/commit/7d61776e76d0912def7f060b5f492938f19b6d86))
