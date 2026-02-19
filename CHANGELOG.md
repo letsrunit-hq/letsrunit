@@ -1,3 +1,10 @@
+## [0.2.2](https://github.com/letsrunit-hq/letsrunit/compare/v0.2.1...v0.2.2) (2026-02-19)
+
+
+### Bug Fixes
+
+* **release:** use yarn pack + npm publish for OIDC publishing ([fae9f1e](https://github.com/letsrunit-hq/letsrunit/commit/fae9f1e893e1dcbbab44c5866a412c5bcbe2ef8f))
+
 ## [0.2.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.2.0...v0.2.1) (2026-02-19)
 
 
