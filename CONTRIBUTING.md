@@ -24,7 +24,7 @@ Before opening a PR, review your diff. Every changed line should be directly nec
    # or feat/, docs/, chore/
    ```
 
-3. **Make your changes.** Follow the conventions in [AGENTS.md](./AGENTS.md).
+3. **Make your changes.** See [DEVELOPMENT.md](./DEVELOPMENT.md) for setup and project structure.
 
 4. **Run tests locally** before pushing.
    ```bash

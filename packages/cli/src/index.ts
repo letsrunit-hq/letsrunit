@@ -4,8 +4,14 @@ import { CliSink, Journal } from '@letsrunit/journal';
 import { getMailbox } from '@letsrunit/mailbox';
 import { asFilename, randomUUID } from '@letsrunit/utils';
 import { Command } from 'commander';
+import { readFileSync } from 'node:fs';
 import fs from 'node:fs/promises';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { runExplore } from './run-explore';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const { version } = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf-8')) as { version: string };
 
 const program = new Command();
 
@@ -37,7 +43,7 @@ async function readStdin(): Promise<string> {
   });
 }
 
-program.name('letsrunit').description('Vibe testing done right').version('0.1.0');
+program.name('letsrunit').description('Vibe testing done right').version(version);
 
 program
   .command('explore')
