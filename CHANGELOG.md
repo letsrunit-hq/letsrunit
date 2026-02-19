@@ -1,3 +1,10 @@
+## [0.2.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.2.0...v0.2.1) (2026-02-19)
+
+
+### Bug Fixes
+
+* **release:** mark root workspace as private to prevent publish attempt ([84ef8e6](https://github.com/letsrunit-hq/letsrunit/commit/84ef8e65cef31e4297da1bd0dd6765dc4f7b184e))
+
 # [0.2.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.1.1...v0.2.0) (2026-02-19)
 
 
