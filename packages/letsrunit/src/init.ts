@@ -1,72 +1,101 @@
 import { confirm, intro, log, note, outro, spinner } from '@clack/prompts';
-import { detectEnvironment } from './detect.js';
-import { installCli } from './setup/cli.js';
+import { detectEnvironment, type Environment } from './detect.js';
+import { installCli, isCliInstalled } from './setup/cli.js';
 import { installCucumber, setupCucumber } from './setup/cucumber.js';
 import { installGithubAction } from './setup/github-actions.js';
+import { hasPlaywrightBrowsers, installPlaywrightBrowsers } from './setup/playwright.js';
 
 const BDD_IMPORT = '@letsrunit/bdd/define';
+
+async function stepInstallCli(env: Environment): Promise<void> {
+  if (isCliInstalled(env)) {
+    log.success('@letsrunit/cli already installed');
+    return;
+  }
+  const s = spinner();
+  s.start('Installing @letsrunit/cli…');
+  installCli(env);
+  s.stop('@letsrunit/cli installed');
+}
+
+async function stepEnsureCucumber(env: Environment): Promise<boolean> {
+  if (env.hasCucumber) return true;
+
+  if (!env.isInteractive) {
+    log.warn('@cucumber/cucumber not found. Install it to use letsrunit with Cucumber:');
+    note('npm install --save-dev @cucumber/cucumber\nThen run: npx letsrunit init', 'Setup Cucumber');
+    return false;
+  }
+
+  const install = await confirm({ message: '@cucumber/cucumber not found. Install it now?' });
+  if (install !== true) return false;
+
+  const s = spinner();
+  s.start('Installing @cucumber/cucumber…');
+  installCucumber(env);
+  s.stop('@cucumber/cucumber installed');
+  return true;
+}
+
+function stepSetupCucumber(env: Environment): void {
+  const result = setupCucumber(env);
+
+  if (result.bddInstalled) log.success('@letsrunit/bdd installed');
+
+  if (result.configResult === 'created') {
+    log.success('features/support/world.js created');
+  } else if (result.configResult === 'needs-manual-update') {
+    log.warn('features/support/world.js exists but does not import @letsrunit/bdd.');
+    note(`Add "import '${BDD_IMPORT}';" to features/support/world.js`, 'Action required');
+  }
+
+  if (result.featuresCreated) log.success('features/ directory created with example.feature');
+}
+
+async function stepCheckPlaywrightBrowsers(env: Environment): Promise<void> {
+  if (hasPlaywrightBrowsers(env)) return;
+
+  if (!env.isInteractive) {
+    log.warn('Playwright Chromium browser not found.');
+    note('npx playwright install chromium', 'Run to install browsers');
+    return;
+  }
+
+  const install = await confirm({ message: 'Playwright Chromium browser not found. Install it now?' });
+  if (install !== true) return;
+
+  const s = spinner();
+  s.start('Installing Playwright Chromium…');
+  installPlaywrightBrowsers(env);
+  s.stop('Playwright Chromium installed');
+}
+
+async function stepAddGithubAction(env: Environment): Promise<void> {
+  if (!env.isInteractive) return;
+
+  const addAction = await confirm({ message: 'Add a GitHub Action to run features on push?' });
+  if (addAction !== true) return;
+
+  const result = installGithubAction(env);
+  if (result === 'created') {
+    log.success('.github/workflows/letsrunit.yml created');
+  } else {
+    log.info('.github/workflows/letsrunit.yml already exists, skipped');
+  }
+}
 
 export async function init(): Promise<void> {
   intro('letsrunit init');
 
   const env = detectEnvironment();
 
-  const s = spinner();
-  s.start('Installing @letsrunit/cli…');
-  const cliResult = installCli(env.packageManager, env.cwd);
-  if (cliResult.skipped) {
-    s.stop('@letsrunit/cli already installed');
-  } else {
-    s.stop('@letsrunit/cli installed');
-  }
+  await stepInstallCli(env);
 
-  let hasCucumber = env.hasCucumber;
-
-  if (!hasCucumber) {
-    if (env.isInteractive) {
-      const install = await confirm({ message: '@cucumber/cucumber not found. Install it now?' });
-      if (install === true) {
-        const s2 = spinner();
-        s2.start('Installing @cucumber/cucumber…');
-        installCucumber(env.packageManager, env.cwd);
-        s2.stop('@cucumber/cucumber installed');
-        hasCucumber = true;
-      }
-    } else {
-      log.warn('@cucumber/cucumber not found. Install it to use letsrunit with Cucumber:');
-      note('npm install --save-dev @cucumber/cucumber\nThen run: npx letsrunit init', 'Setup Cucumber');
-    }
-  }
-
+  const hasCucumber = await stepEnsureCucumber(env);
   if (hasCucumber) {
-    const result = setupCucumber(env.packageManager, env.cwd);
-
-    if (result.bddInstalled) {
-      log.success('@letsrunit/bdd installed');
-    }
-
-    if (result.configResult === 'created') {
-      log.success('features/support/world.js created');
-    } else if (result.configResult === 'needs-manual-update') {
-      log.warn('features/support/world.js exists but does not import @letsrunit/bdd.');
-      note(`Add "import '${BDD_IMPORT}';" to features/support/world.js`, 'Action required');
-    }
-
-    if (result.featuresCreated) {
-      log.success('features/ directory created with example.feature');
-    }
-
-    if (env.isInteractive) {
-      const addAction = await confirm({ message: 'Add a GitHub Action to run features on push?' });
-      if (addAction === true) {
-        const actionResult = installGithubAction(env.packageManager, env.cwd);
-        if (actionResult === 'created') {
-          log.success('.github/workflows/letsrunit.yml created');
-        } else {
-          log.info('.github/workflows/letsrunit.yml already exists, skipped');
-        }
-      }
-    }
+    stepSetupCucumber(env);
+    await stepCheckPlaywrightBrowsers(env);
+    await stepAddGithubAction(env);
   }
 
   outro('All done! Run npx letsrunit --help to get started.');

@@ -1,7 +1,6 @@
-import { execSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { PackageManager } from '../detect.js';
+import { type Environment, execPm } from '../detect.js';
 
 const BDD_IMPORT = '@letsrunit/bdd/define';
 
@@ -24,21 +23,25 @@ const EXAMPLE_FEATURE = `Feature: Example
     Then The page contains text "Welcome"
 `;
 
-export function installCucumber(pm: PackageManager, cwd: string): void {
-  const cmd =
-    pm === 'yarn'
-      ? 'yarn add --dev @cucumber/cucumber'
-      : pm === 'pnpm'
-        ? 'pnpm add -D @cucumber/cucumber'
-        : pm === 'bun'
-          ? 'bun add -d @cucumber/cucumber'
-          : 'npm install --save-dev @cucumber/cucumber';
+export type CucumberConfigResult = 'created' | 'skipped' | 'needs-manual-update';
 
-  execSync(cmd, { stdio: 'inherit', cwd });
+export interface CucumberSetupResult {
+  bddInstalled: boolean;
+  configResult: CucumberConfigResult;
+  featuresCreated: boolean;
 }
 
-function installBdd(pm: PackageManager, cwd: string): boolean {
-  const pkgPath = join(cwd, 'package.json');
+export function installCucumber(env: Pick<Environment, 'packageManager' | 'cwd'>): void {
+  execPm(env, {
+    npm: 'install --save-dev @cucumber/cucumber',
+    yarn: 'add --dev @cucumber/cucumber',
+    pnpm: 'add -D @cucumber/cucumber',
+    bun: 'add -d @cucumber/cucumber',
+  });
+}
+
+function installBdd(env: Pick<Environment, 'packageManager' | 'cwd'>): boolean {
+  const pkgPath = join(env.cwd, 'package.json');
   if (!existsSync(pkgPath)) return false;
 
   const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8')) as {
@@ -51,22 +54,17 @@ function installBdd(pm: PackageManager, cwd: string): boolean {
 
   if (alreadyInstalled) return false;
 
-  const cmd =
-    pm === 'yarn'
-      ? 'yarn add --dev @letsrunit/bdd'
-      : pm === 'pnpm'
-        ? 'pnpm add -D @letsrunit/bdd'
-        : pm === 'bun'
-          ? 'bun add -d @letsrunit/bdd'
-          : 'npm install --save-dev @letsrunit/bdd';
+  execPm(env, {
+    npm: 'install --save-dev @letsrunit/bdd',
+    yarn: 'add --dev @letsrunit/bdd',
+    pnpm: 'add -D @letsrunit/bdd',
+    bun: 'add -d @letsrunit/bdd',
+  });
 
-  execSync(cmd, { stdio: 'inherit', cwd });
   return true;
 }
 
-type CucumberConfigResult = 'created' | 'skipped' | 'needs-manual-update';
-
-function setupCucumberConfig(cwd: string): CucumberConfigResult {
+function setupCucumberConfig({ cwd }: Pick<Environment, 'cwd'>): CucumberConfigResult {
   const supportDir = join(cwd, 'features', 'support');
   const supportPath = join(supportDir, 'world.js');
 
@@ -76,21 +74,18 @@ function setupCucumberConfig(cwd: string): CucumberConfigResult {
     return 'needs-manual-update';
   }
 
-  // Create a minimal cucumber.js if it doesn't exist
   const configPath = join(cwd, 'cucumber.js');
   if (!existsSync(configPath)) {
     writeFileSync(configPath, CUCUMBER_CONFIG, 'utf-8');
   }
 
-  // Create the support file that imports the step definitions
   mkdirSync(supportDir, { recursive: true });
   writeFileSync(supportPath, SUPPORT_FILE, 'utf-8');
   return 'created';
 }
 
-function setupFeaturesDir(cwd: string): boolean {
+function setupFeaturesDir({ cwd }: Pick<Environment, 'cwd'>): boolean {
   if (existsSync(join(cwd, 'features'))) {
-    // features/ exists but check if there are any feature files
     try {
       const hasFeatureFiles = readdirSync(join(cwd, 'features')).some((f) => f.endsWith('.feature'));
       if (hasFeatureFiles) return false;
@@ -111,15 +106,9 @@ function setupFeaturesDir(cwd: string): boolean {
   return true;
 }
 
-export interface CucumberSetupResult {
-  bddInstalled: boolean;
-  configResult: CucumberConfigResult;
-  featuresCreated: boolean;
-}
-
-export function setupCucumber(pm: PackageManager, cwd: string): CucumberSetupResult {
-  const bddInstalled = installBdd(pm, cwd);
-  const configResult = setupCucumberConfig(cwd);
-  const featuresCreated = setupFeaturesDir(cwd);
+export function setupCucumber(env: Pick<Environment, 'packageManager' | 'cwd'>): CucumberSetupResult {
+  const bddInstalled = installBdd(env);
+  const configResult = setupCucumberConfig(env);
+  const featuresCreated = setupFeaturesDir(env);
   return { bddInstalled, configResult, featuresCreated };
 }
