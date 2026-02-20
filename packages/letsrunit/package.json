@@ -4,12 +4,12 @@
   "description": "Onboarding tool for letsrunit — run npx letsrunit init to get started",
   "license": "MIT",
   "type": "module",
-  "bin": "./dist/index.js",
+  "bin": "./dist/bin.js",
   "main": "./src/index.ts",
   "publishConfig": {
     "main": "./dist/index.js",
     "bin": {
-      "letsrunit": "./dist/index.js"
+      "letsrunit": "./dist/bin.js"
     }
   },
   "files": [
