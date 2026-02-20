@@ -5,15 +5,16 @@ import type { PackageManager } from '../detect.js';
 
 const BDD_IMPORT = '@letsrunit/bdd/define';
 
-const CUCUMBER_CONFIG = `export default {
-  import: ['${BDD_IMPORT}'],
-};
+const CUCUMBER_CONFIG = `export default {};
+`;
+
+const SUPPORT_FILE = `import '${BDD_IMPORT}';
 `;
 
 const EXAMPLE_FEATURE = `Feature: Example
   Scenario: Visit example.com
-    Given I open "https://example.com"
-    Then I should see "Example Domain"
+    Given I'm on page "https://example.com"
+    Then The page contains text "Example Domain"
 `;
 
 export function installCucumber(pm: PackageManager, cwd: string): void {
@@ -59,21 +60,37 @@ function installBdd(pm: PackageManager, cwd: string): boolean {
 type CucumberConfigResult = 'created' | 'skipped' | 'needs-manual-update';
 
 function setupCucumberConfig(cwd: string): CucumberConfigResult {
-  const configPath = join(cwd, 'cucumber.js');
+  const supportDir = join(cwd, 'features', 'support');
+  const supportPath = join(supportDir, 'world.js');
 
-  if (!existsSync(configPath)) {
-    writeFileSync(configPath, CUCUMBER_CONFIG, 'utf-8');
-    return 'created';
+  if (existsSync(supportPath)) {
+    const content = readFileSync(supportPath, 'utf-8');
+    if (content.includes(BDD_IMPORT)) return 'skipped';
+    return 'needs-manual-update';
   }
 
-  const content = readFileSync(configPath, 'utf-8');
-  if (content.includes(BDD_IMPORT)) return 'skipped';
+  // Create a minimal cucumber.js if it doesn't exist
+  const configPath = join(cwd, 'cucumber.js');
+  if (!existsSync(configPath)) {
+    writeFileSync(configPath, CUCUMBER_CONFIG, 'utf-8');
+  }
 
-  return 'needs-manual-update';
+  // Create the support file that imports the step definitions
+  mkdirSync(supportDir, { recursive: true });
+  writeFileSync(supportPath, SUPPORT_FILE, 'utf-8');
+  return 'created';
 }
 
 function setupFeaturesDir(cwd: string): boolean {
-  if (existsSync(join(cwd, 'features'))) return false;
+  if (existsSync(join(cwd, 'features'))) {
+    // features/ exists but check if there are any feature files
+    try {
+      const hasFeatureFiles = readdirSync(join(cwd, 'features')).some((f) => f.endsWith('.feature'));
+      if (hasFeatureFiles) return false;
+    } catch {
+      return false;
+    }
+  }
 
   try {
     const hasFeatureAtRoot = readdirSync(cwd).some((f) => f.endsWith('.feature'));

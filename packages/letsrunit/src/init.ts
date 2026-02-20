@@ -46,10 +46,10 @@ export async function init(): Promise<void> {
     }
 
     if (result.configResult === 'created') {
-      log.success('cucumber.js created');
+      log.success('features/support/world.js created');
     } else if (result.configResult === 'needs-manual-update') {
-      log.warn('cucumber.js exists but does not import @letsrunit/bdd.');
-      note(`Add '${BDD_IMPORT}' to your imports array in cucumber.js`, 'Action required');
+      log.warn('features/support/world.js exists but does not import @letsrunit/bdd.');
+      note(`Add "import '${BDD_IMPORT}';" to features/support/world.js`, 'Action required');
     }
 
     if (result.featuresCreated) {
