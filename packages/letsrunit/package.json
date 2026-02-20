@@ -1,0 +1,34 @@
+{
+  "name": "letsrunit",
+  "version": "0.1.0",
+  "description": "Onboarding tool for letsrunit — run npx letsrunit init to get started",
+  "license": "MIT",
+  "type": "module",
+  "bin": "./dist/bin.js",
+  "main": "./src/index.ts",
+  "publishConfig": {
+    "main": "./dist/index.js",
+    "bin": {
+      "letsrunit": "./dist/bin.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "../../node_modules/.bin/tsup",
+    "test": "echo \"No tests yet\""
+  },
+  "packageManager": "yarn@4.10.3",
+  "dependencies": {
+    "@clack/prompts": "^0.10.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.9",
+    "typescript": "^5.9.3"
+  }
+}

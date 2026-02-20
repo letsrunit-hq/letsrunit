@@ -14,6 +14,7 @@
 
 ```
 packages/
+  letsrunit/    init tool — npx letsrunit init
   ai/           LLM interactions
   bdd/          BDD step definitions
   controller/   browser session & step execution

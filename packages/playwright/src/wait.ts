@@ -136,7 +136,7 @@ export async function waitAfterInteraction(
     return;
   }
 
-  if (kind === 'button' && (await target.isDisabled())) {
+  if (kind === 'button' && (await target.isDisabled({ timeout: 1_000 }).catch(() => false))) {
     // Buttons often disable during in-flight work, or disappear on success.
     await Promise.race([
       waitUntilEnabled(page, target, settleTimeout).catch(() => {}),
@@ -153,16 +153,17 @@ export async function waitAfterInteraction(
 /* ---------- helpers ---------- */
 
 async function elementKind(target: Locator): Promise<'link' | 'button' | 'other'> {
-  const role = await target.getAttribute('role').catch(() => null);
+  const PROBE = 1_000;
+  const role = await target.getAttribute('role', { timeout: PROBE }).catch(() => null);
   if (role === 'link') return 'link';
   if (role === 'button') return 'button';
 
-  const tag = await target.evaluate((el) => el.tagName.toLowerCase()).catch(() => '');
+  const tag = await target.evaluate((el) => el.tagName.toLowerCase(), null, { timeout: PROBE }).catch(() => '');
   if (tag === 'a') return 'link';
 
   if (tag === 'button') return 'button';
   if (tag === 'input') {
-    const type = await target.getAttribute('type').catch(() => null);
+    const type = await target.getAttribute('type', { timeout: PROBE }).catch(() => null);
     if (type === 'button' || type === 'submit' || type === 'reset') return 'button';
   }
 

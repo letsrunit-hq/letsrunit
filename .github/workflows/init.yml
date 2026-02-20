@@ -1,0 +1,124 @@
+name: Init Integration Test
+
+on:
+  push:
+    branches: [installation]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+
+      - name: Build monorepo
+        run: |
+          yarn install --immutable
+          yarn build
+
+      - name: Pack local packages
+        run: |
+          yarn workspace letsrunit pack --out /tmp/letsrunit.tgz
+          yarn workspace @letsrunit/cli pack --out /tmp/cli.tgz
+          yarn workspace @letsrunit/bdd pack --out /tmp/bdd.tgz
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tarballs
+          path: |
+            /tmp/letsrunit.tgz
+            /tmp/cli.tgz
+            /tmp/bdd.tgz
+
+  init:
+    name: Init (${{ matrix.pm }})
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        pm: [npm, yarn, pnpm, bun]
+
+    steps:
+      - name: Enable Corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: pnpm/action-setup@v4
+        if: matrix.pm == 'pnpm'
+
+      - uses: oven-sh/setup-bun@v2
+        if: matrix.pm == 'bun'
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: tarballs
+          path: /tmp
+
+      - name: Create test project
+        run: |
+          mkdir -p /tmp/test-${{ matrix.pm }}
+          node -e "
+            const fs = require('fs');
+            const pm = '${{ matrix.pm }}';
+            const pkg = {
+              name: 'test-project',
+              version: '1.0.0',
+              private: true,
+              dependencies: {
+                'letsrunit': 'file:/tmp/letsrunit.tgz',
+                '@letsrunit/cli': 'file:/tmp/cli.tgz',
+                '@letsrunit/bdd': 'file:/tmp/bdd.tgz',
+                '@cucumber/cucumber': '*'
+              }
+            };
+            if (pm === 'yarn') {
+              pkg.packageManager = 'yarn@4.10.3';
+              pkg.resolutions = { 'letsrunit': 'file:/tmp/letsrunit.tgz' };
+            }
+            fs.writeFileSync('/tmp/test-' + pm + '/package.json', JSON.stringify(pkg, null, 2));
+          "
+
+      - name: Install dependencies
+        working-directory: /tmp/test-${{ matrix.pm }}
+        run: |
+          case "${{ matrix.pm }}" in
+            npm)  npm install ;;
+            yarn) yarn install ;;
+            pnpm) pnpm install ;;
+            bun)  bun install ;;
+          esac
+
+      - name: Install Playwright system deps
+        working-directory: /tmp/test-${{ matrix.pm }}
+        run: npx playwright install-deps chromium
+
+      - name: Run init
+        working-directory: /tmp/test-${{ matrix.pm }}
+        run: node_modules/.bin/letsrunit init --yes
+
+      - name: Start web server
+        run: |
+          node -e "require('http').createServer((_, res) => res.end('<html><body><h1>Welcome</h1></body></html>')).listen(3000)" &
+          sleep 1
+
+      - name: Run Cucumber
+        working-directory: /tmp/test-${{ matrix.pm }}
+        run: npx cucumber-js
+
+      - name: CLI smoke test
+        working-directory: /tmp/test-${{ matrix.pm }}
+        run: node_modules/.bin/letsrunit --help
