@@ -16,6 +16,19 @@ const EXAMPLE_FEATURE = `Feature: Example
     Then I should see "Example Domain"
 `;
 
+export function installCucumber(pm: PackageManager, cwd: string): void {
+  const cmd =
+    pm === 'yarn'
+      ? 'yarn add --dev @cucumber/cucumber'
+      : pm === 'pnpm'
+        ? 'pnpm add -D @cucumber/cucumber'
+        : pm === 'bun'
+          ? 'bun add -d @cucumber/cucumber'
+          : 'npm install --save-dev @cucumber/cucumber';
+
+  execSync(cmd, { stdio: 'inherit', cwd });
+}
+
 function installBdd(pm: PackageManager, cwd: string): boolean {
   const pkgPath = join(cwd, 'package.json');
   if (!existsSync(pkgPath)) return false;

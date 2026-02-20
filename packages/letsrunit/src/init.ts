@@ -1,7 +1,7 @@
-import { intro, log, note, outro, spinner } from '@clack/prompts';
+import { confirm, intro, log, note, outro, spinner } from '@clack/prompts';
 import { detectEnvironment } from './detect.js';
 import { installCli } from './setup/cli.js';
-import { setupCucumber } from './setup/cucumber.js';
+import { installCucumber, setupCucumber } from './setup/cucumber.js';
 
 const BDD_IMPORT = '@letsrunit/bdd/define';
 
@@ -19,7 +19,25 @@ export async function init(): Promise<void> {
     s.stop('@letsrunit/cli installed');
   }
 
-  if (env.hasCucumber) {
+  let hasCucumber = env.hasCucumber;
+
+  if (!hasCucumber) {
+    if (env.isInteractive) {
+      const install = await confirm({ message: '@cucumber/cucumber not found. Install it now?' });
+      if (install === true) {
+        const s2 = spinner();
+        s2.start('Installing @cucumber/cucumber…');
+        installCucumber(env.packageManager, env.cwd);
+        s2.stop('@cucumber/cucumber installed');
+        hasCucumber = true;
+      }
+    } else {
+      log.warn('@cucumber/cucumber not found. Install it to use letsrunit with Cucumber:');
+      note('npm install --save-dev @cucumber/cucumber\nThen run: npx letsrunit init', 'Setup Cucumber');
+    }
+  }
+
+  if (hasCucumber) {
     const result = setupCucumber(env.packageManager, env.cwd);
 
     if (result.bddInstalled) {
@@ -36,9 +54,6 @@ export async function init(): Promise<void> {
     if (result.featuresCreated) {
       log.success('features/ directory created with example.feature');
     }
-  } else {
-    log.warn('@cucumber/cucumber not found. Install it to use letsrunit with Cucumber:');
-    note('npm install --save-dev @cucumber/cucumber\nThen run: npx letsrunit init', 'Setup Cucumber');
   }
 
   outro('All done! Run npx letsrunit --help to get started.');
