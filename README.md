@@ -46,12 +46,12 @@ The CLI is installed locally by `letsrunit init`. Run it via `npx letsrunit` or 
 
 ## MCP Server
 
-The MCP server exposes letsrunit tools to AI agents (Claude Code, Claude Desktop, etc.), allowing them to launch
-browsers, run Gherkin steps, take screenshots, and inspect pages directly.
+The MCP server lets AI coding agents (Claude Code, Cursor, Codex, etc.) launch browsers, run Gherkin steps,
+take screenshots, and inspect pages directly inside your editor.
 
 ### Install
 
-Add to your MCP config (e.g. `.mcp.json` in the project root, or `~/.claude/claude_desktop_config.json` for Claude Desktop):
+Add to your agent's MCP config:
 
 ```json
 {
@@ -64,7 +64,7 @@ Add to your MCP config (e.g. `.mcp.json` in the project root, or `~/.claude/clau
 }
 ```
 
-Or with Claude Code CLI:
+For Claude Code you can also use the CLI:
 
 ```bash
 claude mcp add letsrunit -- npx -y @letsrunit/mcp-server
@@ -84,16 +84,18 @@ claude mcp add letsrunit -- npx -y @letsrunit/mcp-server
 
 ---
 
-## Claude Code Skill
+## Agent Skill
 
-Install the letsrunit skill to give Claude Code built-in knowledge of the Gherkin step library, locator syntax,
-and test-writing workflow:
+The letsrunit skill gives your agent built-in knowledge of the Gherkin step library, locator syntax,
+and test-writing workflow. Requires the MCP server to be configured first.
+
+For Claude Code:
 
 ```bash
 claude skills install github:letsrunit-hq/letsrunit/skills/letsrunit
 ```
 
-The skill requires the MCP server to be configured first.
+For other agents, copy [`skills/letsrunit/SKILL.md`](skills/letsrunit/SKILL.md) into your agent's context or rules file.
 
 ---
 
