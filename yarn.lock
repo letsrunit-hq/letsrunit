@@ -1742,6 +1742,7 @@ __metadata:
     "@letsrunit/mailbox": "workspace:*"
     "@letsrunit/utils": "workspace:*"
     commander: "npm:^14.0.2"
+    letsrunit: "workspace:*"
     tsx: "npm:^4.21.0"
   bin:
     letsrunit: ./dist/index.js
@@ -8940,7 +8941,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"letsrunit@workspace:packages/letsrunit":
+"letsrunit@workspace:*, letsrunit@workspace:packages/letsrunit":
   version: 0.0.0-use.local
   resolution: "letsrunit@workspace:packages/letsrunit"
   dependencies:
@@ -8948,7 +8949,7 @@ __metadata:
     "@types/node": "npm:^25.0.9"
     typescript: "npm:^5.9.3"
   bin:
-    letsrunit: ./dist/index.js
+    letsrunit: ./dist/bin.js
   languageName: unknown
   linkType: soft
 
