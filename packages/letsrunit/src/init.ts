@@ -2,6 +2,7 @@ import { confirm, intro, log, note, outro, spinner } from '@clack/prompts';
 import { detectEnvironment } from './detect.js';
 import { installCli } from './setup/cli.js';
 import { installCucumber, setupCucumber } from './setup/cucumber.js';
+import { installGithubAction } from './setup/github-actions.js';
 
 const BDD_IMPORT = '@letsrunit/bdd/define';
 
@@ -53,6 +54,18 @@ export async function init(): Promise<void> {
 
     if (result.featuresCreated) {
       log.success('features/ directory created with example.feature');
+    }
+
+    if (env.isInteractive) {
+      const addAction = await confirm({ message: 'Add a GitHub Action to run features on push?' });
+      if (addAction === true) {
+        const actionResult = installGithubAction(env.packageManager, env.cwd);
+        if (actionResult === 'created') {
+          log.success('.github/workflows/letsrunit.yml created');
+        } else {
+          log.info('.github/workflows/letsrunit.yml already exists, skipped');
+        }
+      }
     }
   }
 
