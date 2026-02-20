@@ -5,16 +5,21 @@ import type { PackageManager } from '../detect.js';
 
 const BDD_IMPORT = '@letsrunit/bdd/define';
 
-const CUCUMBER_CONFIG = `export default {};
+const CUCUMBER_CONFIG = `export default {
+  timeout: 30_000,
+  worldParameters: {
+    baseURL: 'http://localhost:3000',
+  },
+};
 `;
 
 const SUPPORT_FILE = `import '${BDD_IMPORT}';
 `;
 
 const EXAMPLE_FEATURE = `Feature: Example
-  Scenario: Visit example.com
-    Given I'm on page "https://example.com"
-    Then The page contains text "Example Domain"
+  Scenario: Homepage loads
+    Given I'm on the homepage
+    Then The page contains text "Welcome"
 `;
 
 export function installCucumber(pm: PackageManager, cwd: string): void {
