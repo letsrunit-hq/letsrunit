@@ -6,14 +6,16 @@ import type { PackageManager } from '../detect.js';
 const BDD_IMPORT = '@letsrunit/bdd/define';
 
 const CUCUMBER_CONFIG = `export default {
-  timeout: 30_000,
   worldParameters: {
     baseURL: 'http://localhost:3000',
   },
 };
 `;
 
-const SUPPORT_FILE = `import '${BDD_IMPORT}';
+const SUPPORT_FILE = `import { setDefaultTimeout } from '@cucumber/cucumber';
+import '${BDD_IMPORT}';
+
+setDefaultTimeout(30_000);
 `;
 
 const EXAMPLE_FEATURE = `Feature: Example
