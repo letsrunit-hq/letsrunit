@@ -79,10 +79,16 @@ jobs:
           node -e "
             const fs = require('fs');
             const pm = '${{ matrix.pm }}';
+            const localOverrides = {
+              'letsrunit':      'file:./letsrunit.tgz',
+              '@letsrunit/cli': 'file:./cli.tgz',
+              '@letsrunit/bdd': 'file:./bdd.tgz',
+            };
             const pkg = {
               name: 'test-project',
               version: '1.0.0',
               private: true,
+              type: 'module',
               dependencies: {
                 'letsrunit':          'file:./letsrunit.tgz',
                 '@letsrunit/cli':     'file:./cli.tgz',
@@ -92,9 +98,13 @@ jobs:
             };
             if (pm === 'yarn') {
               pkg.packageManager = 'yarn@1.22.22';
+              pkg.resolutions = localOverrides;
             }
-            if (pm === 'bun') {
-              pkg.overrides = { 'letsrunit': 'file:./letsrunit.tgz' };
+            if (pm === 'pnpm') {
+              pkg.pnpm = { overrides: localOverrides };
+            }
+            if (pm === 'npm' || pm === 'bun') {
+              pkg.overrides = localOverrides;
             }
             fs.writeFileSync('/tmp/test-' + pm + '/package.json', JSON.stringify(pkg, null, 2));
           "
@@ -119,7 +129,7 @@ jobs:
 
       - name: Start web server
         run: |
-          node -e "require('http').createServer((_, res) => res.end('<html><body><h1>Welcome</h1></body></html>')).listen(3000)" &
+          node -e "require('http').createServer((_, res) => { res.setHeader('Content-Type', 'text/html'); res.end('<html><body><h1>Welcome</h1></body></html>'); }).listen(3000)" &
           sleep 1
 
       - name: Run Cucumber
