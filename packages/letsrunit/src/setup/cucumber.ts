@@ -20,7 +20,7 @@ setDefaultTimeout(30_000);
 const EXAMPLE_FEATURE = `Feature: Example
   Scenario: Homepage loads
     Given I'm on the homepage
-    Then The page contains text "Welcome"
+    Then The page contains heading "Welcome"
 `;
 
 export type CucumberConfigResult = 'created' | 'skipped' | 'needs-manual-update';
