@@ -26,7 +26,7 @@ export function detectEnvironment(): Environment {
   let packageManager: PackageManager = 'npm';
   if (existsSync(join(cwd, 'yarn.lock'))) packageManager = 'yarn';
   else if (existsSync(join(cwd, 'pnpm-lock.yaml'))) packageManager = 'pnpm';
-  else if (existsSync(join(cwd, 'bun.lockb'))) packageManager = 'bun';
+  else if (existsSync(join(cwd, 'bun.lockb')) || existsSync(join(cwd, 'bun.lock'))) packageManager = 'bun';
 
   const nodeVersion = parseInt(process.version.slice(1), 10);
   const hasCucumber = existsSync(join(cwd, 'node_modules', '@cucumber', 'cucumber', 'package.json'));

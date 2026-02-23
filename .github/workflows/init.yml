@@ -59,6 +59,8 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         if: matrix.pm == 'pnpm'
+        with:
+          version: latest
 
       - uses: oven-sh/setup-bun@v2
         if: matrix.pm == 'bun'
@@ -71,6 +73,9 @@ jobs:
       - name: Create test project
         run: |
           mkdir -p /tmp/test-${{ matrix.pm }}
+          cp /tmp/letsrunit.tgz /tmp/test-${{ matrix.pm }}/letsrunit.tgz
+          cp /tmp/cli.tgz       /tmp/test-${{ matrix.pm }}/cli.tgz
+          cp /tmp/bdd.tgz       /tmp/test-${{ matrix.pm }}/bdd.tgz
           node -e "
             const fs = require('fs');
             const pm = '${{ matrix.pm }}';
@@ -79,15 +84,17 @@ jobs:
               version: '1.0.0',
               private: true,
               dependencies: {
-                'letsrunit': 'file:/tmp/letsrunit.tgz',
-                '@letsrunit/cli': 'file:/tmp/cli.tgz',
-                '@letsrunit/bdd': 'file:/tmp/bdd.tgz',
+                'letsrunit':          'file:./letsrunit.tgz',
+                '@letsrunit/cli':     'file:./cli.tgz',
+                '@letsrunit/bdd':     'file:./bdd.tgz',
                 '@cucumber/cucumber': '*'
               }
             };
             if (pm === 'yarn') {
-              pkg.packageManager = 'yarn@4.10.3';
-              pkg.resolutions = { 'letsrunit': 'file:/tmp/letsrunit.tgz' };
+              pkg.packageManager = 'yarn@1.22.22';
+            }
+            if (pm === 'bun') {
+              pkg.overrides = { 'letsrunit': 'file:./letsrunit.tgz' };
             }
             fs.writeFileSync('/tmp/test-' + pm + '/package.json', JSON.stringify(pkg, null, 2));
           "
@@ -108,7 +115,7 @@ jobs:
 
       - name: Run init
         working-directory: /tmp/test-${{ matrix.pm }}
-        run: node_modules/.bin/letsrunit init --yes
+        run: node node_modules/letsrunit/dist/bin.js init --yes
 
       - name: Start web server
         run: |
