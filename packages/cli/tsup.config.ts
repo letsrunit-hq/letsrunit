@@ -10,6 +10,6 @@ export default defineConfig({
   treeshake: true,
   outDir: 'dist',
   banner: {
-    js: '#!/usr/bin/env node',
+    js: "#!/usr/bin/env node\nimport { createRequire } from 'module'; const require = createRequire(import.meta.url);",
   },
 });
