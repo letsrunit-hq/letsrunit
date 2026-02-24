@@ -31,6 +31,7 @@ jobs:
           yarn workspace letsrunit pack --out /tmp/letsrunit.tgz
           yarn workspace @letsrunit/cli pack --out /tmp/cli.tgz
           yarn workspace @letsrunit/bdd pack --out /tmp/bdd.tgz
+          yarn workspace @letsrunit/executor pack --out /tmp/executor.tgz
 
       - uses: actions/upload-artifact@v4
         with:
@@ -39,6 +40,7 @@ jobs:
             /tmp/letsrunit.tgz
             /tmp/cli.tgz
             /tmp/bdd.tgz
+            /tmp/executor.tgz
 
   init:
     name: Init (${{ matrix.pm }})
@@ -76,13 +78,15 @@ jobs:
           cp /tmp/letsrunit.tgz /tmp/test-${{ matrix.pm }}/letsrunit.tgz
           cp /tmp/cli.tgz       /tmp/test-${{ matrix.pm }}/cli.tgz
           cp /tmp/bdd.tgz       /tmp/test-${{ matrix.pm }}/bdd.tgz
+          cp /tmp/executor.tgz  /tmp/test-${{ matrix.pm }}/executor.tgz
           node -e "
             const fs = require('fs');
             const pm = '${{ matrix.pm }}';
             const localOverrides = {
-              'letsrunit':      'file:./letsrunit.tgz',
-              '@letsrunit/cli': 'file:./cli.tgz',
-              '@letsrunit/bdd': 'file:./bdd.tgz',
+              'letsrunit':           'file:./letsrunit.tgz',
+              '@letsrunit/cli':      'file:./cli.tgz',
+              '@letsrunit/bdd':      'file:./bdd.tgz',
+              '@letsrunit/executor': 'file:./executor.tgz',
             };
             const pkg = {
               name: 'test-project',
