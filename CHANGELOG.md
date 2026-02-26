@@ -1,3 +1,10 @@
+## [0.3.4](https://github.com/letsrunit-hq/letsrunit/compare/v0.3.3...v0.3.4) (2026-02-26)
+
+
+### Bug Fixes
+
+* **plugin:** add Claude Code plugin manifest and MCP server config ([892c622](https://github.com/letsrunit-hq/letsrunit/commit/892c622ca3795c5a32524d4d25c8cec9c1b6a374))
+
 ## [0.3.3](https://github.com/letsrunit-hq/letsrunit/compare/v0.3.2...v0.3.3) (2026-02-26)
 
 
