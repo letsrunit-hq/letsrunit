@@ -1,3 +1,31 @@
+# [0.3.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.2.6...v0.3.0) (2026-02-26)
+
+
+### Bug Fixes
+
+* **@letsrunit/bdd:** add Before/After hooks and fix cucumber setup ([74a3dac](https://github.com/letsrunit-hq/letsrunit/commit/74a3dacc347c565aa03b19b5b06f0f8906863831))
+* **@letsrunit/playwright:** add short timeouts in elementKind to prevent hangs ([044e8b4](https://github.com/letsrunit-hq/letsrunit/commit/044e8b41b8f168e21abf53b078b734035c733704))
+* **build:** add platform node and CJS compat to Node-only packages ([49f50b1](https://github.com/letsrunit-hq/letsrunit/commit/49f50b1747112fa28f58fe3dc14718d75ec977a1))
+* **ci:** add playwright dep, robust web server check, heading locator ([c5855ad](https://github.com/letsrunit-hq/letsrunit/commit/c5855ad895cd192ba93b250a6bbaec3214eec238))
+* **ci:** add type:module, overrides for all PMs, Content-Type header ([bb17335](https://github.com/letsrunit-hq/letsrunit/commit/bb1733582ede57dda890f284e8d68a50cdaa0fbc))
+* **ci:** fix all four init matrix job failures ([dfa28c2](https://github.com/letsrunit-hq/letsrunit/commit/dfa28c2f03c5a1a5e77e802c2b7d2f0d8473fdb2))
+* **ci:** fix pnpm playwright exec and web server port conflict ([30510f1](https://github.com/letsrunit-hq/letsrunit/commit/30510f1774ee71c6f69a853a53f7d0de53a2c660))
+* **ci:** pack and override @letsrunit/executor with local build ([06bc3d9](https://github.com/letsrunit-hq/letsrunit/commit/06bc3d962d72ee83de3275c60efe234aca51d92d))
+* **cli:** add createRequire banner to tsup build ([99db91d](https://github.com/letsrunit-hq/letsrunit/commit/99db91dc9289fbe21d4a5698610ca41ee97246b6))
+* **letsrunit:** fix generated cucumber.js config and example feature ([8ea02df](https://github.com/letsrunit-hq/letsrunit/commit/8ea02dff93d12fe149140855aa851a3aad4b3010))
+* **letsrunit:** use @letsrunit/bdd/define in cucumber.js template ([0e370fb](https://github.com/letsrunit-hq/letsrunit/commit/0e370fbd3466f082674d43b508e21b0df283defa))
+* **letsrunit:** use setDefaultTimeout in support file instead of config timeout ([427a1b6](https://github.com/letsrunit-hq/letsrunit/commit/427a1b6e283f4e5da44895d0cedf4fe83c89a50f))
+
+
+### Features
+
+* **@letsrunit/bdd:** expose ./define as a named package export ([9aca951](https://github.com/letsrunit-hq/letsrunit/commit/9aca9510eab262aea81cac9f98aef2ebcc821db0))
+* **letsrunit/cli:** expose init as library and wire into cli ([ef0da07](https://github.com/letsrunit-hq/letsrunit/commit/ef0da073d5bebcf5839d3cc960320eeb36ae3ce6))
+* **letsrunit:** add init package scaffold ([8b306bb](https://github.com/letsrunit-hq/letsrunit/commit/8b306bbbf091a60dbbf17fe60500204b77071196))
+* **letsrunit:** prompt to add GitHub Actions workflow for Cucumber features ([5ea8c34](https://github.com/letsrunit-hq/letsrunit/commit/5ea8c3427dc2822484f68407034b631b6c80527c))
+* **letsrunit:** prompt to install @cucumber/cucumber if not found ([99111ba](https://github.com/letsrunit-hq/letsrunit/commit/99111baa25d3bddfb1b75babae1f52a0a37095a0))
+* **letsrunit:** refactor init flow and add Playwright browser check ([b9d7baa](https://github.com/letsrunit-hq/letsrunit/commit/b9d7baad20594ef6091849eeb5dbf99b1c88e547))
+
 ## [0.2.6](https://github.com/letsrunit-hq/letsrunit/compare/v0.2.5...v0.2.6) (2026-02-19)
 
 
