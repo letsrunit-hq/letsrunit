@@ -51,7 +51,13 @@ take screenshots, and inspect pages directly inside your editor.
 
 ### Install
 
-Add to your agent's MCP config:
+**Claude Code** — install the plugin to get both the MCP server and skill in one step:
+
+```
+/plugin install github:letsrunit-hq/letsrunit
+```
+
+**Other agents** — add to your MCP config manually:
 
 ```json
 {
@@ -62,12 +68,6 @@ Add to your agent's MCP config:
     }
   }
 }
-```
-
-For Claude Code you can also use the CLI:
-
-```bash
-claude mcp add letsrunit -- npx -y @letsrunit/mcp-server
 ```
 
 ### Tools
@@ -89,13 +89,8 @@ claude mcp add letsrunit -- npx -y @letsrunit/mcp-server
 The letsrunit skill gives your agent built-in knowledge of the Gherkin step library, locator syntax,
 and test-writing workflow. Requires the MCP server to be configured first.
 
-For Claude Code:
-
-```bash
-claude skills install github:letsrunit-hq/letsrunit/skills/letsrunit
-```
-
-For other agents, copy [`skills/letsrunit/SKILL.md`](skills/letsrunit/SKILL.md) into your agent's context or rules file.
+The skill is included automatically when using the Claude Code plugin above. For other agents, copy
+[`skills/letsrunit/SKILL.md`](skills/letsrunit/SKILL.md) into your agent's context or rules file.
 
 ---
 
