@@ -3,6 +3,13 @@
   "version": "0.3.2",
   "description": "Onboarding tool for letsrunit — run npx letsrunit init to get started",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/letsrunit-hq/letsrunit.git",
+    "directory": "packages/letsrunit"
+  },
+  "bugs": "https://github.com/letsrunit-hq/letsrunit/issues",
+  "homepage": "https://github.com/letsrunit-hq/letsrunit#readme",
   "type": "module",
   "bin": "./dist/bin.js",
   "main": "./src/index.ts",
