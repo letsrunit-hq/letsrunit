@@ -1,3 +1,10 @@
+## [0.3.6](https://github.com/letsrunit-hq/letsrunit/compare/v0.3.5...v0.3.6) (2026-02-26)
+
+
+### Bug Fixes
+
+* **release:** publish all packages to consistent version ([7dde227](https://github.com/letsrunit-hq/letsrunit/commit/7dde227e40e73a52e9f67ee32de037483675b104))
+
 ## [0.3.5](https://github.com/letsrunit-hq/letsrunit/compare/v0.3.4...v0.3.5) (2026-02-26)
 
 
