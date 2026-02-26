@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "letsrunit": {
+      "command": "npx",
+      "args": ["-y", "@letsrunit/mcp-server@latest"]
+    }
+  }
+}

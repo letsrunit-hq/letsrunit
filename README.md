@@ -51,10 +51,11 @@ take screenshots, and inspect pages directly inside your editor.
 
 ### Install
 
-**Claude Code** — install the plugin to get both the MCP server and skill in one step:
+**Claude Code** — add the marketplace once, then install the plugin to get both the MCP server and skill:
 
 ```
-/plugin install github:letsrunit-hq/letsrunit
+/plugin marketplace add letsrunit-hq/letsrunit
+/plugin install letsrunit@letsrunit
 ```
 
 **Other agents** — add to your MCP config manually:
