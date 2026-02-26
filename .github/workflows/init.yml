@@ -1,0 +1,146 @@
+name: Init Integration Test
+
+on:
+  push:
+    branches: [installation]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+
+      - name: Build monorepo
+        run: |
+          yarn install --immutable
+          yarn build
+
+      - name: Pack local packages
+        run: |
+          yarn workspace letsrunit pack --out /tmp/letsrunit.tgz
+          yarn workspace @letsrunit/cli pack --out /tmp/cli.tgz
+          yarn workspace @letsrunit/bdd pack --out /tmp/bdd.tgz
+          yarn workspace @letsrunit/executor pack --out /tmp/executor.tgz
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tarballs
+          path: |
+            /tmp/letsrunit.tgz
+            /tmp/cli.tgz
+            /tmp/bdd.tgz
+            /tmp/executor.tgz
+
+  init:
+    name: Init (${{ matrix.pm }})
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        pm: [npm, yarn, pnpm, bun]
+
+    steps:
+      - name: Enable Corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: pnpm/action-setup@v4
+        if: matrix.pm == 'pnpm'
+        with:
+          version: latest
+
+      - uses: oven-sh/setup-bun@v2
+        if: matrix.pm == 'bun'
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: tarballs
+          path: /tmp
+
+      - name: Create test project
+        run: |
+          mkdir -p /tmp/test-${{ matrix.pm }}
+          cp /tmp/letsrunit.tgz /tmp/test-${{ matrix.pm }}/letsrunit.tgz
+          cp /tmp/cli.tgz       /tmp/test-${{ matrix.pm }}/cli.tgz
+          cp /tmp/bdd.tgz       /tmp/test-${{ matrix.pm }}/bdd.tgz
+          cp /tmp/executor.tgz  /tmp/test-${{ matrix.pm }}/executor.tgz
+          node -e "
+            const fs = require('fs');
+            const pm = '${{ matrix.pm }}';
+            const localOverrides = {
+              'letsrunit':           'file:./letsrunit.tgz',
+              '@letsrunit/cli':      'file:./cli.tgz',
+              '@letsrunit/bdd':      'file:./bdd.tgz',
+              '@letsrunit/executor': 'file:./executor.tgz',
+            };
+            const pkg = {
+              name: 'test-project',
+              version: '1.0.0',
+              private: true,
+              type: 'module',
+              dependencies: {
+                'letsrunit':          'file:./letsrunit.tgz',
+                '@letsrunit/cli':     'file:./cli.tgz',
+                '@letsrunit/bdd':     'file:./bdd.tgz',
+                '@cucumber/cucumber': '*',
+                'playwright':         '*'
+              }
+            };
+            if (pm === 'yarn') {
+              pkg.packageManager = 'yarn@1.22.22';
+              pkg.resolutions = localOverrides;
+            }
+            if (pm === 'pnpm') {
+              pkg.pnpm = { overrides: localOverrides };
+            }
+            if (pm === 'npm' || pm === 'bun') {
+              pkg.overrides = localOverrides;
+            }
+            fs.writeFileSync('/tmp/test-' + pm + '/package.json', JSON.stringify(pkg, null, 2));
+          "
+
+      - name: Install dependencies
+        working-directory: /tmp/test-${{ matrix.pm }}
+        run: |
+          case "${{ matrix.pm }}" in
+            npm)  npm install ;;
+            yarn) yarn install ;;
+            pnpm) pnpm install ;;
+            bun)  bun install ;;
+          esac
+
+      - name: Install Playwright system deps
+        working-directory: /tmp/test-${{ matrix.pm }}
+        run: node_modules/.bin/playwright install-deps chromium
+
+      - name: Run init
+        working-directory: /tmp/test-${{ matrix.pm }}
+        run: node node_modules/letsrunit/dist/bin.js init --yes
+
+      - name: Start web server
+        run: |
+          node -e "require('http').createServer((_, res) => { res.setHeader('Content-Type', 'text/html'); res.end('<html><body><h1>Welcome</h1></body></html>'); }).listen(3000)" &
+          curl --retry 5 --retry-delay 1 --retry-connrefused -sf http://127.0.0.1:3000/
+
+      - name: Run Cucumber
+        working-directory: /tmp/test-${{ matrix.pm }}
+        run: npx cucumber-js
+
+      - name: CLI smoke test
+        working-directory: /tmp/test-${{ matrix.pm }}
+        run: node_modules/.bin/letsrunit --help

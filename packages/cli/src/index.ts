@@ -4,6 +4,7 @@ import { CliSink, Journal } from '@letsrunit/journal';
 import { getMailbox } from '@letsrunit/mailbox';
 import { asFilename, randomUUID } from '@letsrunit/utils';
 import { Command } from 'commander';
+import { init } from 'letsrunit';
 import { readFileSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import { dirname, join } from 'node:path';
@@ -44,6 +45,14 @@ async function readStdin(): Promise<string> {
 }
 
 program.name('letsrunit').description('Vibe testing done right').version(version);
+
+program
+  .command('init')
+  .description('Set up letsrunit in the current project')
+  .option('-y, --yes', 'Skip confirmation prompts')
+  .action(async (opts: { yes?: boolean }) => {
+    await init({ yes: opts.yes });
+  });
 
 program
   .command('explore')

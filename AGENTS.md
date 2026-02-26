@@ -8,12 +8,11 @@
 - Ask when genuinely uncertain about requirements or when a decision has significant irreversible consequences.
 - Disagree when it believes the human is wrong — but only after double-checking. Before contradicting the human, verify the position and substantiate it with concrete evidence: code snippets, links to official documentation, or reproducible examples. Do not push back on the basis of vague intuition.
 
----
-
 ## Layout
 
 ```
 packages/
+  letsrunit/    init tool — npx letsrunit init
   ai/           LLM interactions
   bdd/          BDD step definitions
   controller/   browser session & step execution
@@ -30,16 +29,12 @@ compat/
   react/        React compatibility tests
 ```
 
----
-
 ## Conventions
 
 * Yarn v4 workspaces, TypeScript strict, ESM modules.
 * Package names are scoped: `@letsrunit/controller`, etc.
 * Format with Prettier defaults.
 * Never define function within functions, except for small arrow functions.
-
----
 
 ## Build & Test
 
@@ -64,8 +59,6 @@ Testing is done with **vitest**.
 All source files should be tested. We're aiming for 100% code coverage. If particular code explicitly can't be tested,
 use `/* v8 ignore next [lines] */` or `/* v8 ignore start */`.
 
----
-
 ## Workflow
 
 After completing each task:
@@ -85,7 +78,18 @@ Before opening a PR, run the full test suite and confirm everything passes:
 yarn workspaces foreach -pt run test
 ```
 
----
+### Parallel Subtasks
+
+For parallel subtasks that may touch overlapping files, use the `EnterWorktree` tool:
+
+1. Call `EnterWorktree` with a descriptive name — this creates a `git worktree` branched from HEAD at `.claude/worktrees/<name>` and switches the session into it.
+2. Do all work within that worktree session.
+3. Symlink `node_modules` from the main repo if not present: `ln -s /home/arnold/Projects/letsrunit-app/node_modules ./node_modules`
+4. Run the full test suite: `yarn workspaces foreach --all -pt run test --run`
+5. Fix any failing tests, then commit. GPG signing works. Use `git commit` normally.
+6. Report back when done — the main agent will push and open a pull request. Use HTTPS for push (SSH port 22 is blocked by the sandbox): `git push "https://oauth2:$(gh auth token)@github.com/ORG/REPO.git" BRANCH`
+
+On session exit, Claude will prompt to keep or remove the worktree.
 
 ## Branching & Releases
 

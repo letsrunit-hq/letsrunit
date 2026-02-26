@@ -501,6 +501,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@clack/core@npm:0.4.2":
+  version: 0.4.2
+  resolution: "@clack/core@npm:0.4.2"
+  dependencies:
+    picocolors: "npm:^1.0.0"
+    sisteransi: "npm:^1.0.5"
+  checksum: 10c0/e4d09deb1dcbb489c4fcd9671f97863d8e1e578122da26eba5480daeb8d1959bce30dc4e03e8de5291f88e5b6e4dc22119c4d1ee0138dc8033f29708263519e7
+  languageName: node
+  linkType: hard
+
+"@clack/prompts@npm:^0.10.0":
+  version: 0.10.1
+  resolution: "@clack/prompts@npm:0.10.1"
+  dependencies:
+    "@clack/core": "npm:0.4.2"
+    picocolors: "npm:^1.0.0"
+    sisteransi: "npm:^1.0.5"
+  checksum: 10c0/9993564aebec8ded9b1bd5d72cd6a356c919434e99cfc8a66c65d4511011a0f96e307efd96c9fe240b83df124a8103caa211ae634ba4ccdde69e29546b64b409
+  languageName: node
+  linkType: hard
+
 "@colors/colors@npm:1.5.0":
   version: 1.5.0
   resolution: "@colors/colors@npm:1.5.0"
@@ -1721,6 +1742,7 @@ __metadata:
     "@letsrunit/mailbox": "workspace:*"
     "@letsrunit/utils": "workspace:*"
     commander: "npm:^14.0.2"
+    letsrunit: "workspace:*"
     tsx: "npm:^4.21.0"
   bin:
     letsrunit: ./dist/index.js
@@ -8919,6 +8941,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"letsrunit@workspace:*, letsrunit@workspace:packages/letsrunit":
+  version: 0.0.0-use.local
+  resolution: "letsrunit@workspace:packages/letsrunit"
+  dependencies:
+    "@clack/prompts": "npm:^0.10.0"
+    "@types/node": "npm:^25.0.9"
+    typescript: "npm:^5.9.3"
+  bin:
+    letsrunit: ./dist/bin.js
+  languageName: unknown
+  linkType: soft
+
 "levn@npm:^0.4.1":
   version: 0.4.1
   resolution: "levn@npm:0.4.1"
@@ -10745,7 +10779,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"picocolors@npm:^1.1.1":
+"picocolors@npm:^1.0.0, picocolors@npm:^1.1.1":
   version: 1.1.1
   resolution: "picocolors@npm:1.1.1"
   checksum: 10c0/e2e3e8170ab9d7c7421969adaa7e1b31434f789afb9b3f115f6b96d91945041ac3ceb02e9ec6fe6510ff036bcc0bf91e69a1772edc0b707e12b19c0f2d6bcf58
@@ -11972,6 +12006,13 @@ __metadata:
   version: 1.1.2
   resolution: "simple-wcswidth@npm:1.1.2"
   checksum: 10c0/0db23ffef39d81a018a2354d64db1d08a44123c54263e48173992c61d808aaa8b58e5651d424e8c275589671f35e9094ac6fa2bbf2c98771b1bae9e007e611dd
+  languageName: node
+  linkType: hard
+
+"sisteransi@npm:^1.0.5":
+  version: 1.0.5
+  resolution: "sisteransi@npm:1.0.5"
+  checksum: 10c0/230ac975cca485b7f6fe2b96a711aa62a6a26ead3e6fb8ba17c5a00d61b8bed0d7adc21f5626b70d7c33c62ff4e63933017a6462942c719d1980bb0b1207ad46
   languageName: node
   linkType: hard
 

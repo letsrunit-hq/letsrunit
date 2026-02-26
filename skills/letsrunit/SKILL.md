@@ -18,17 +18,26 @@ compatibility: Requires the letsrunit MCP server to be configured. See https://g
 
 ## Writing Tests
 
-Tests are written in Gherkin. Every test must start with a `Given I'm on page` step to navigate.
+Tests are written in Gherkin. Every test must start with a `Given I'm on page` or `Given I'm on the homepage` step to navigate.
+
+Relative paths (e.g. `"/login"`) require a `baseURL` set in `cucumber.js`:
+
+```js
+export default {
+  timeout: 30_000,
+  worldParameters: { baseURL: 'http://localhost:3000' },
+};
+```
 
 ```gherkin
 Feature: Login
 
 Scenario: User logs in with valid credentials
   Given I'm on page "/login"
-  When I set "email" to "user@example.com"
-  And I set "password" to "secret"
-  And I click "Sign in"
-  Then The page contains "Dashboard"
+  When I set field "email" to "user@example.com"
+  And I set field "password" to "secret"
+  And I click button "Sign in"
+  Then The page contains text "Dashboard"
   And I should be on page "/dashboard"
 ```
 

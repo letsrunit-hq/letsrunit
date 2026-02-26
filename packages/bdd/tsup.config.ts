@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: ['src/index.ts'],
+  entry: ['src/index.ts', 'src/define.ts'],
   format: ['esm'],
   platform: 'node',
   dts: true,
@@ -9,7 +9,4 @@ export default defineConfig({
   clean: true,
   treeshake: true,
   outDir: 'dist',
-  banner: {
-    js: '#!/usr/bin/env node',
-  },
 });

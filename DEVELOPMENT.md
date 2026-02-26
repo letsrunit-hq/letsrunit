@@ -5,6 +5,7 @@ execution environments.
 
 Shared logic is divided into specialised, scoped packages (`@letsrunit/*`):
 
+- [`letsrunit`](./packages/letsrunit): Onboarding tool — run `npx letsrunit init` to set up a project.
 - [`@letsrunit/ai`](./packages/ai): Interactions with LLMs, including prompt engineering and result parsing.
 - [`@letsrunit/bdd`](./packages/bdd): Reusable BDD step definitions for browser automation.
 - [`@letsrunit/cli`](./packages/cli): Command-line interface for running tests locally.
