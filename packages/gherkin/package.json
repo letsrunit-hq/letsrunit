@@ -1,6 +1,6 @@
 {
   "name": "@letsrunit/gherkin",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Gherkin types and utilities for letsrunit",
   "keywords": [
     "testing",

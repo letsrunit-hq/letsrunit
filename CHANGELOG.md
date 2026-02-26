@@ -1,3 +1,10 @@
+## [0.3.3](https://github.com/letsrunit-hq/letsrunit/compare/v0.3.2...v0.3.3) (2026-02-26)
+
+
+### Bug Fixes
+
+* **letsrunit:** add repository field required for npm provenance verification ([d1e5270](https://github.com/letsrunit-hq/letsrunit/commit/d1e5270ddef23a54f2091d782da5167369cade8e))
+
 ## [0.3.2](https://github.com/letsrunit-hq/letsrunit/compare/v0.3.1...v0.3.2) (2026-02-26)
 
 
