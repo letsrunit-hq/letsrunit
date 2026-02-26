@@ -1,3 +1,10 @@
+## [0.3.5](https://github.com/letsrunit-hq/letsrunit/compare/v0.3.4...v0.3.5) (2026-02-26)
+
+
+### Bug Fixes
+
+* **plugin:** restructure as proper Claude Code marketplace plugin ([8882296](https://github.com/letsrunit-hq/letsrunit/commit/888229631c13ee252205a0b73fd8c2a149c7f499))
+
 ## [0.3.4](https://github.com/letsrunit-hq/letsrunit/compare/v0.3.3...v0.3.4) (2026-02-26)
 
 
