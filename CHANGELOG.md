@@ -1,3 +1,10 @@
+## [0.3.2](https://github.com/letsrunit-hq/letsrunit/compare/v0.3.1...v0.3.2) (2026-02-26)
+
+
+### Bug Fixes
+
+* **release:** revert unsupported --no-bail flag from workspaces foreach ([228dd74](https://github.com/letsrunit-hq/letsrunit/commit/228dd7472292937517f74291d9e4c8be20b6f390))
+
 ## [0.3.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.3.0...v0.3.1) (2026-02-26)
 
 
