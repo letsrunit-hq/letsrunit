@@ -1,3 +1,10 @@
+## [0.3.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.3.0...v0.3.1) (2026-02-26)
+
+
+### Bug Fixes
+
+* **release:** add --no-bail to workspaces publish so one failure does not abort the rest ([892c126](https://github.com/letsrunit-hq/letsrunit/commit/892c1268f0aa0c7ae63048db316f0b7c6d43040a))
+
 # [0.3.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.2.6...v0.3.0) (2026-02-26)
 
 
