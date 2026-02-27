@@ -1,8 +1,8 @@
 {
   "mcpServers": {
     "letsrunit": {
-      "command": "node",
-      "args": ["packages/mcp-server/dist/index.js"]
+      "command": "node_modules/.bin/tsx",
+      "args": ["packages/mcp-server/src/index.ts"]
     }
   }
 }
