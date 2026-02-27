@@ -26,8 +26,8 @@ describe('compileLocator', () => {
     expect(compileLocator('image "Hero"')).to.eq('[alt="Hero"i]');
   });
 
-  it('text: text "Hello" → text="Hello"i', () => {
-    expect(compileLocator('text "Hello"')).to.eq('text="Hello"i');
+  it('text: text "Hello" → text=/Hello/i', () => {
+    expect(compileLocator('text "Hello"')).to.eq('text=/Hello/i');
   });
 
   // ----- Date locators -----
@@ -56,17 +56,17 @@ describe('compileLocator', () => {
   });
 
   // ----- Predicates with `with` / `without` -----
-  it('link without text "Ad" → role=link >> has-not="text="Ad"i"', () => {
-    expect(compileLocator('link without text "Ad"')).to.eq('role=link >> has-not="text=\"Ad\"i"');
+  it('link without text "Ad" → role=link >> has-not="text=/Ad/i"', () => {
+    expect(compileLocator('link without text "Ad"')).to.eq('role=link >> has-not="text=/Ad/i"');
   });
-  it('the link without the text "Ad" → role=link >> has-not="text="Ad"i"', () => {
+  it('the link without the text "Ad" → role=link >> has-not="text=/Ad/i"', () => {
     expect(compileLocator('the link without the text "Ad"')).to.eq(
-      'role=link >> has-not="text=\"Ad\"i"',
+      'role=link >> has-not="text=/Ad/i"',
     );
   });
 
-  it('section with text "Hello" → section >> has="text="Hello"i"', () => {
-    expect(compileLocator('section with text "Hello"')).to.eq('section >> has="text=\"Hello\"i"');
+  it('section with text "Hello" → section >> has="text=/Hello/i"', () => {
+    expect(compileLocator('section with text "Hello"')).to.eq('section >> has="text=/Hello/i"');
   });
 
   // ----- Ancestry with `within` (outer >> inner) -----
@@ -90,7 +90,7 @@ describe('compileLocator', () => {
 
   it('section with text "Hello" within `css=.foo >> nth(2)`', () => {
     expect(compileLocator('section with text "Hello" within `css=.foo >> nth(2)`')).to.eq(
-      'css=.foo >> nth(2) >> section >> has="text=\"Hello\"i"',
+      'css=.foo >> nth(2) >> section >> has="text=/Hello/i"',
     );
   });
 });

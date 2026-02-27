@@ -80,6 +80,12 @@ function getByFieldSelector(text: string | RegExp, props = ''): string {
 }
 
 function getByTextSelector(text: string | RegExp, props = ''): string {
+  if (typeof text === 'string') {
+    // Produce a regex selector for case-insensitive substring matching.
+    // Regex special chars (and the delimiter /) must be escaped.
+    const escaped = text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\//g, '\\/');
+    return 'text=/' + escaped + '/i' + (props ? ` ${props}` : '');
+  }
   return 'text=' + escapeForTextSelector(text) + (props ? ` ${props}` : '');
 }
 

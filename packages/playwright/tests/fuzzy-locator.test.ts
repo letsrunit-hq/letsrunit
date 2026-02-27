@@ -43,4 +43,24 @@ describe('fuzzyLocator', () => {
     const result = await fuzzyLocator(mockPage, 'role=button[name="Foo"]');
     expect(result).toBe(fallbackLocator);
   });
+
+  test('tryFieldAlternative does not crash on field names with special characters', async () => {
+    const emptyLocator = {
+      first: () => emptyLocator,
+      count: async () => 0,
+    } as unknown as Locator;
+
+    const mockPage = {
+      locator: vi.fn().mockReturnValue(emptyLocator),
+    } as unknown as Page;
+
+    // Should not throw even though "What needs to be done?" is not a valid CSS ID
+    const result = await fuzzyLocator(mockPage, 'field="What needs to be done?"i');
+    expect(result).toBe(emptyLocator);
+    // The CSS ID fallback must NOT have been attempted with the raw invalid selector
+    const cssIdAttempts = (mockPage.locator as ReturnType<typeof vi.fn>).mock.calls
+      .map((args: string[]) => args[0])
+      .filter((sel: string) => sel.startsWith('#'));
+    expect(cssIdAttempts).toHaveLength(0);
+  });
 });

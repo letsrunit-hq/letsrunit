@@ -67,11 +67,13 @@ async function tryRoleNameProximity(page: Page, selector: string): Promise<Locat
 }
 
 // Try alternatives if field is not found
-// field="foo" → #foo > input
+// field="foo" → #foo > input  (only when name is a valid CSS identifier)
 async function tryFieldAlternative(page: Page, selector: string): Promise<Locator | null> {
   const matchField = selector.match(/^field="([^"]+)"i?$/i);
   if (!matchField) return null;
   const [, field] = matchField;
+  // Skip if the name contains characters invalid in a CSS ID selector
+  if (!/^[a-zA-Z0-9_-]+$/.test(field)) return null;
   return firstMatch(page, `#${field} > input`);
 }
 
