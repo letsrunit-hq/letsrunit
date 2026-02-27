@@ -1,4 +1,4 @@
-import { locator as resolveLocator, screenshot, screenshotElement } from '@letsrunit/playwright';
+import { screenshot, screenshotElement } from '@letsrunit/playwright';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -21,7 +21,7 @@ export function registerScreenshot(server: McpServer, sessions: SessionManager):
         mask: z
           .array(z.string())
           .optional()
-          .describe('Locators whose matching elements are highlighted (dark overlay, element spotlighted). Supports letsrunit locator syntax, e.g. "link \\"Completed\\"" or CSS selectors.'),
+          .describe('CSS selectors whose matching elements are highlighted (dark overlay, element spotlighted).'),
         fullPage: z.boolean().optional().describe('Capture the full scrollable page (default: false)'),
       },
     },
@@ -37,7 +37,7 @@ export function registerScreenshot(server: McpServer, sessions: SessionManager):
         if (input.selector) {
           file = await screenshotElement(page, input.selector);
         } else {
-          const masks = input.mask ? await Promise.all(input.mask.map((sel) => resolveLocator(page, sel))) : [];
+          const masks = input.mask?.map((sel) => page.locator(sel)) ?? [];
           file = await screenshot(page, {
             fullPage: input.fullPage ?? false,
             ...(masks.length ? { mask: masks } : {}),
