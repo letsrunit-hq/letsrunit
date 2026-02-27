@@ -1,4 +1,4 @@
-import { locator as resolveLocator, waitAfterInteraction } from '@letsrunit/playwright';
+import { fuzzyLocator as resolveLocator, waitAfterInteraction } from '@letsrunit/playwright';
 import { describe, expect, it, vi } from 'vitest';
 import { click as clickStep, clickHold, scroll } from '../../src/steps/mouse';
 import { runStep } from '../helpers';

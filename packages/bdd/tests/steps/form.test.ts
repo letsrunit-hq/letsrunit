@@ -1,4 +1,4 @@
-import { locator as resolveLocator } from '@letsrunit/playwright';
+import { fuzzyLocator as resolveLocator } from '@letsrunit/playwright';
 import { describe, expect, it, vi } from 'vitest';
 import { check as checkStep, clear as clearStep, focus as focusStep, set as setStep } from '../../src/steps/form';
 import { type as typeStep } from '../../src/steps/keyboard';

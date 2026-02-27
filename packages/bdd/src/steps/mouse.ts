@@ -1,5 +1,5 @@
 import type { KeyCombo } from '@letsrunit/gherkin';
-import { locator, waitAfterInteraction } from '@letsrunit/playwright';
+import { fuzzyLocator, waitAfterInteraction } from '@letsrunit/playwright';
 import type { Locator } from '@playwright/test';
 import { When } from './wrappers';
 
@@ -24,7 +24,7 @@ export const click = When(
   async function (action: MouseAction, selector: string) {
     const prevUrl = this.page.url();
 
-    const el = await locator(this.page, selector);
+    const el = await fuzzyLocator(this.page, selector);
     await press(el, action);
 
     await waitAfterInteraction(this.page, el, { prevUrl });
@@ -36,7 +36,7 @@ export const clickHold = When(
   async function (action: MouseAction, selector: string, combo: KeyCombo) {
     const prevUrl = this.page.url();
 
-    const el = await locator(this.page, selector);
+    const el = await fuzzyLocator(this.page, selector);
     const keys = [...combo.modifiers, combo.key];
 
     for (const m of keys) await this.page.keyboard.down(m);
@@ -48,6 +48,6 @@ export const clickHold = When(
 );
 
 export const scroll = When('I scroll {locator} into view', async function (selector: string) {
-  const el = await locator(this.page, selector);
+  const el = await fuzzyLocator(this.page, selector);
   await el.scrollIntoViewIfNeeded({ timeout: TIMEOUT });
 });

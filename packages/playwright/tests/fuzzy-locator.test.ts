@@ -1,10 +1,10 @@
 import { Locator, Page } from '@playwright/test';
 import { describe, expect, test, vi } from 'vitest';
-import { locator } from '../src/locator';
+import { fuzzyLocator } from '../src';
 
-describe('locator', () => {
+describe('fuzzyLocator', () => {
   test('is defined', () => {
-    expect(locator).toBeDefined();
+    expect(fuzzyLocator).toBeDefined();
   });
 
   test('returns primary locator if found', async () => {
@@ -17,7 +17,7 @@ describe('locator', () => {
       locator: vi.fn().mockReturnValue(mockLocator),
     } as unknown as Page;
 
-    const result = await locator(mockPage, 'my-selector');
+    const result = await fuzzyLocator(mockPage, 'my-selector');
     expect(result).toBe(mockLocator);
     expect(mockPage.locator).toHaveBeenCalledWith('my-selector');
   });
@@ -40,7 +40,7 @@ describe('locator', () => {
         .mockReturnValue(fallbackLocator), // any fallback
     } as unknown as Page;
 
-    const result = await locator(mockPage, 'role=button[name="Foo"]');
+    const result = await fuzzyLocator(mockPage, 'role=button[name="Foo"]');
     expect(result).toBe(fallbackLocator);
   });
 });

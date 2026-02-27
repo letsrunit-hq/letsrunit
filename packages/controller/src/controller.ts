@@ -8,7 +8,7 @@ import {
   createDateEngine,
   createFieldEngine,
   formatHtml,
-  locator,
+  fuzzyLocator,
   screenshot,
   scrollToCenter,
   snapshot,
@@ -200,13 +200,13 @@ export class Controller {
       .filter((arg) => arg.getParameterType().name === 'locator')
       .map((arg) => arg.getValue<string>(null))
       .filter((arg) => arg !== null)
-      .map((arg) => locator(page, arg));
+      .map((arg) => fuzzyLocator(page, arg));
 
     return Promise.all(promises);
   }
 
   private async areAllVisible(locators: Locator[]): Promise<boolean> {
-    if (locator.length === 0) return true;
+    if (fuzzyLocator.length === 0) return true;
 
     const visible = await Promise.all(locators.map((l) => l.isVisible()));
     return visible.every(Boolean);

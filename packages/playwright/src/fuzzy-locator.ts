@@ -5,16 +5,18 @@ type LocatorOptions = Parameters<Page['locator']>[1];
 /**
  * Locates an element using Playwright selectors, with fallbacks.
  */
-export async function locator(page: Page, selector: string): Promise<Locator> {
+export async function fuzzyLocator(page: Page, selector: string): Promise<Locator> {
   const primary = page.locator(selector).first();
   if (await primary.count()) return primary;
 
-  return await tryRelaxNameToHasText(page, selector)
-    || await tryTagInsteadOfRole(page, selector)
-    || await tryRoleNameProximity(page, selector)
-    || await tryFieldAlternative(page, selector)
-    || await tryAsField(page, selector)
-    || primary; // Nothing found, return the original locator (so caller can still wait/assert)
+  return (
+    (await tryRelaxNameToHasText(page, selector)) ||
+    (await tryTagInsteadOfRole(page, selector)) ||
+    (await tryRoleNameProximity(page, selector)) ||
+    (await tryFieldAlternative(page, selector)) ||
+    (await tryAsField(page, selector)) ||
+    primary
+  ); // Nothing found, return the original locator (so caller can still wait/assert)
 }
 
 async function firstMatch(page: Page, sel: string | string[], opts: LocatorOptions = {}): Promise<Locator | null> {

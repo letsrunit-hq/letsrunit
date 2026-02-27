@@ -1,4 +1,4 @@
-import { locator as resolveLocator } from '@letsrunit/playwright';
+import { fuzzyLocator as resolveLocator } from '@letsrunit/playwright';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { contain, see } from '../../src/steps/assert';
 import { expectOrNot } from '../../src/utils/test-helpers';

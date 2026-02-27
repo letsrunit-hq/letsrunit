@@ -1,4 +1,4 @@
-import { locator as resolveLocator } from '@letsrunit/playwright';
+import { fuzzyLocator as resolveLocator } from '@letsrunit/playwright';
 import { describe, expect, it, vi } from 'vitest';
 import { copy as copyStep, paste as pasteStep } from '../../src/steps/clipboard';
 import { runStep } from '../helpers';

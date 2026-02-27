@@ -1,4 +1,4 @@
-import { locator } from '@letsrunit/playwright';
+import { fuzzyLocator } from '@letsrunit/playwright';
 import type { Locator } from '@playwright/test';
 import { When } from './wrappers';
 
@@ -25,14 +25,14 @@ async function copyText(el: Locator): Promise<string | null> {
 }
 
 export const copy = When('I copy {locator} to the clipboard', async function (selector: string) {
-  const el = await locator(this.page, selector);
+  const el = await fuzzyLocator(this.page, selector);
   let value = (await copyInput(el)) ?? (await copyLink(el)) ?? (await copyText(el));
 
   this.clipboard = { value };
 });
 
 export const paste = When('I paste from the clipboard into {locator}', async function (selector: string) {
-  const el = await locator(this.page, selector);
+  const el = await fuzzyLocator(this.page, selector);
   const value = this.clipboard?.value || '';
 
   await el.fill(String(value), { timeout: TIMEOUT });
