@@ -1,3 +1,12 @@
+## [0.3.8](https://github.com/letsrunit-hq/letsrunit/compare/v0.3.7...v0.3.8) (2026-02-27)
+
+
+### Bug Fixes
+
+* **mcp-server:** add baseURL parameter to letsrunit_session_start ([a002ad0](https://github.com/letsrunit-hq/letsrunit/commit/a002ad0a813dc7f3da6e09d39f9e40b2486c9712))
+* **mcp-server:** default headless to false so browser is visible by default ([e2f3417](https://github.com/letsrunit-hq/letsrunit/commit/e2f3417ed1f994dfca73449b9dc64c9166e5e364))
+* **mcp-server:** resolve letsrunit locators in screenshot mask ([9400d29](https://github.com/letsrunit-hq/letsrunit/commit/9400d2935567eb3850263d0319be6d983dc4a680))
+
 ## [0.3.7](https://github.com/letsrunit-hq/letsrunit/compare/v0.3.6...v0.3.7) (2026-02-27)
 
 
