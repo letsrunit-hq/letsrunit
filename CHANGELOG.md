@@ -1,3 +1,10 @@
+## [0.3.7](https://github.com/letsrunit-hq/letsrunit/compare/v0.3.6...v0.3.7) (2026-02-27)
+
+
+### Bug Fixes
+
+* **playwright:** export scrubHtml from package index ([78f9ac7](https://github.com/letsrunit-hq/letsrunit/commit/78f9ac787f95c2392103289fa444f095b67bcf4b))
+
 ## [0.3.6](https://github.com/letsrunit-hq/letsrunit/compare/v0.3.5...v0.3.6) (2026-02-26)
 
 
