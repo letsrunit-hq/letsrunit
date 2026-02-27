@@ -53,3 +53,18 @@ next-env.d.ts
 # Build outputs
 dist/
 *.tsbuildinfo
+
+# Sandbox mount artifacts
+/.bash_profile
+/.bashrc
+/.gitconfig
+/.gitmodules
+/.profile
+/.ripgreprc
+/.zprofile
+/.zshrc
+/HEAD
+/config
+/hooks
+/objects
+/refs
