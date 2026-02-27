@@ -8,10 +8,11 @@ export function registerSessionStart(server: McpServer, sessions: SessionManager
     'letsrunit_session_start',
     {
       description:
-        'Launch a new browser session. Does not navigate anywhere — use letsrunit_run with a Given step to navigate.',
+        'Launch a new browser session. Does not navigate anywhere — use letsrunit_run with a Given step to navigate. Set baseURL to enable relative paths like "Given I\'m on the homepage".',
       inputSchema: {
+        baseURL: z.string().optional().describe('Base URL for the session, e.g. "http://localhost:3000". Enables relative paths in Given steps like "Given I\'m on the homepage" or "Given I\'m on page \\"/login\\""'),
         language: z.string().optional().describe("Browser language code, e.g. 'en', 'fr'"),
-        headless: z.boolean().optional().describe('Run browser in headless mode (default: true)'),
+        headless: z.boolean().optional().describe('Run browser in headless mode (default: false)'),
         viewportWidth: z.number().int().optional().describe('Viewport width in pixels (default: 1280)'),
         viewportHeight: z.number().int().optional().describe('Viewport height in pixels (default: 720)'),
       },
@@ -24,7 +25,8 @@ export function registerSessionStart(server: McpServer, sessions: SessionManager
             : undefined;
 
         const session = await sessions.create({
-          headless: input.headless ?? true,
+          baseURL: input.baseURL,
+          headless: input.headless ?? false,
           locale: input.language,
           viewport,
         });
