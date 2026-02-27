@@ -22,7 +22,7 @@ vi.mock('@letsrunit/playwright', () => ({
   createDateEngine: {},
   createFieldEngine: {},
   formatHtml: vi.fn().mockResolvedValue('<html></html>'),
-  locator: vi.fn(),
+  fuzzyLocator: vi.fn(),
   screenshot: vi.fn().mockResolvedValue({ name: 'screenshot.png' }),
   scrollToCenter: vi.fn(),
   snapshot: vi.fn().mockResolvedValue({}),

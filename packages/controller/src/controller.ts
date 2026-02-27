@@ -37,7 +37,7 @@ export interface RunOptions {
 }
 
 export class Controller {
-  static fieldSelectorIsRegistered: boolean = false;
+  static selectorsAreRegistered: boolean = false;
 
   private constructor(
     private browser: Browser,
@@ -55,10 +55,11 @@ export class Controller {
   }
 
   static async registerFieldSelector() {
-    if (this.fieldSelectorIsRegistered) return;
+    if (this.selectorsAreRegistered) return;
     try {
       await selectors.register('field', createFieldEngine);
       await selectors.register('date', createDateEngine);
+      this.selectorsAreRegistered = true;
     } catch {}
   }
 
@@ -206,7 +207,7 @@ export class Controller {
   }
 
   private async areAllVisible(locators: Locator[]): Promise<boolean> {
-    if (fuzzyLocator.length === 0) return true;
+    if (locators.length === 0) return true;
 
     const visible = await Promise.all(locators.map((l) => l.isVisible()));
     return visible.every(Boolean);
