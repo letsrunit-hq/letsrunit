@@ -4,7 +4,7 @@ import { click as clickStep, clickHold, scroll } from '../../src/steps/mouse';
 import { runStep } from '../helpers';
 
 vi.mock('@letsrunit/playwright', () => ({
-  locator: vi.fn(async (_page: any, _selector: string) => testLocator),
+  fuzzyLocator: vi.fn(async (_page: any, _selector: string) => testLocator),
   waitAfterInteraction: vi.fn(async () => {}),
 }));
 

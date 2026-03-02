@@ -7,7 +7,7 @@ vi.mock('@letsrunit/playwright', async (importOriginal) => {
   const actual = await importOriginal<any>();
   return {
     ...actual,
-    locator: vi.fn(async (_page: any, _selector: string) => testLocator),
+    fuzzyLocator: vi.fn(async (_page: any, _selector: string) => testLocator),
     setFieldValue: vi.fn(),
   };
 });

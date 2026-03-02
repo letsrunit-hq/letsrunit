@@ -4,7 +4,7 @@ import { copy as copyStep, paste as pasteStep } from '../../src/steps/clipboard'
 import { runStep } from '../helpers';
 
 vi.mock('@letsrunit/playwright', () => ({
-  locator: vi.fn(async (_page: any, _selector: string) => testLocator),
+  fuzzyLocator: vi.fn(async (_page: any, _selector: string) => testLocator),
 }));
 
 type Locator = {

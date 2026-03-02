@@ -5,7 +5,7 @@ import { expectOrNot } from '../../src/utils/test-helpers';
 import { runStep } from '../helpers';
 
 vi.mock('@letsrunit/playwright', () => ({
-  locator: vi.fn(async (_page: any, selector: string) => {
+  fuzzyLocator: vi.fn(async (_page: any, selector: string) => {
     if (selector === '#list' || selector === '.cards') return parentLocatorMock;
     return elementLocatorMock;
   }),
@@ -56,7 +56,7 @@ describe('steps/assert (definitions)', () => {
 
     await runStep(contain, '`#list` contains text "foo"', { page } as any);
     expect(resolveLocator).toHaveBeenLastCalledWith(page, '#list');
-    expect(parentLocatorMock.locator).toHaveBeenLastCalledWith('text="foo"i');
+    expect(parentLocatorMock.locator).toHaveBeenLastCalledWith('text=/foo/i');
     expect(toBeAttached).toHaveBeenLastCalledWith({ timeout: 5000 });
     expect(expectOrNot).toHaveBeenLastCalledWith(childLocatorMock, true);
 
