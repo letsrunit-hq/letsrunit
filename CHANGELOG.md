@@ -1,3 +1,10 @@
+## [0.3.10](https://github.com/letsrunit-hq/letsrunit/compare/v0.3.9...v0.3.10) (2026-03-02)
+
+
+### Bug Fixes
+
+* make workspace packages resolve to dist so cucumber-js runs without a TS loader ([17ecbc9](https://github.com/letsrunit-hq/letsrunit/commit/17ecbc970f4e209c401df58ecc8301831f556229))
+
 ## [0.3.9](https://github.com/letsrunit-hq/letsrunit/compare/v0.3.8...v0.3.9) (2026-03-02)
 
 

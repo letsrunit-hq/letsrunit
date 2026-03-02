@@ -1,6 +1,6 @@
 {
   "name": "@letsrunit/executor",
-  "version": "0.3.9",
+  "version": "0.3.10",
   "description": "High-level test execution orchestrator for letsrunit",
   "keywords": [
     "testing",
