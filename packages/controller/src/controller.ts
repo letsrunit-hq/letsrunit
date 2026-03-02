@@ -8,7 +8,7 @@ import {
   createDateEngine,
   createFieldEngine,
   formatHtml,
-  locator,
+  fuzzyLocator,
   screenshot,
   scrollToCenter,
   snapshot,
@@ -37,7 +37,7 @@ export interface RunOptions {
 }
 
 export class Controller {
-  static fieldSelectorIsRegistered: boolean = false;
+  static selectorsAreRegistered: boolean = false;
 
   private constructor(
     private browser: Browser,
@@ -55,10 +55,11 @@ export class Controller {
   }
 
   static async registerFieldSelector() {
-    if (this.fieldSelectorIsRegistered) return;
+    if (this.selectorsAreRegistered) return;
     try {
       await selectors.register('field', createFieldEngine);
       await selectors.register('date', createDateEngine);
+      this.selectorsAreRegistered = true;
     } catch {}
   }
 
@@ -200,13 +201,13 @@ export class Controller {
       .filter((arg) => arg.getParameterType().name === 'locator')
       .map((arg) => arg.getValue<string>(null))
       .filter((arg) => arg !== null)
-      .map((arg) => locator(page, arg));
+      .map((arg) => fuzzyLocator(page, arg));
 
     return Promise.all(promises);
   }
 
   private async areAllVisible(locators: Locator[]): Promise<boolean> {
-    if (locator.length === 0) return true;
+    if (locators.length === 0) return true;
 
     const visible = await Promise.all(locators.map((l) => l.isVisible()));
     return visible.every(Boolean);

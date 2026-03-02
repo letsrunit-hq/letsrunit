@@ -126,6 +126,22 @@ describe('createFieldEngine query/queryAll', () => {
     expect(first?.id).to.eq('b');
   });
 
+  it('finds inputs by adjacent sibling <label> (no for/id — Backbone TodoMVC pattern)', () => {
+    document.body.innerHTML = `
+      <ul>
+        <li><div><input id="a" type="checkbox" /><label>Buy groceries</label></div></li>
+        <li><div><input id="b" type="checkbox" /><label>Walk the dog</label></div></li>
+      </ul>
+    `;
+
+    const all = engine.queryAll(document, 'buy groceries');
+    expect(all).to.have.length(1);
+    expect((all[0] as HTMLElement).id).to.eq('a');
+
+    const b = engine.query(document, 'walk the dog');
+    expect(b?.id).to.eq('b');
+  });
+
   it('finds the bol.com search field', () => {
     document.body.innerHTML = `
       <div class="relative grow flex items-center bg-neutral-background-input rounded-[1.5rem] pr-2 lg:max-w-[40rem] lg:my-2 lg:mx-auto

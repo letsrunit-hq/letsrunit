@@ -1,4 +1,4 @@
-import { locator, setFieldValue } from '@letsrunit/playwright';
+import { fuzzyLocator, setFieldValue } from '@letsrunit/playwright';
 import { type Scalar, sleep } from '@letsrunit/utils';
 import { When } from './wrappers';
 
@@ -6,7 +6,7 @@ const TIMEOUT = 500;
 const DELAY = 500;
 
 export const set = When('I set {locator} to {value}', async function (selector: string, value: Scalar | Scalar[]) {
-  const el = await locator(this.page, selector);
+  const el = await fuzzyLocator(this.page, selector);
   await setFieldValue(el, value, { timeout: TIMEOUT });
   await sleep(DELAY);
 });
@@ -14,15 +14,14 @@ export const set = When('I set {locator} to {value}', async function (selector: 
 export const setRange = When(
   'I set {locator} to range of {value} to {value}',
   async function (selector: string, from: Scalar, to: Scalar) {
-    const el = await locator(this.page, selector);
+    const el = await fuzzyLocator(this.page, selector);
     await setFieldValue(el, { from, to }, { timeout: TIMEOUT });
     await sleep(DELAY);
   },
 );
 
-
 export const clear = When('I clear {locator}', async function (selector) {
-  const el = await locator(this.page, selector);
+  const el = await fuzzyLocator(this.page, selector);
   await setFieldValue(el, null, { timeout: TIMEOUT });
   await sleep(DELAY);
 });
@@ -30,7 +29,7 @@ export const clear = When('I clear {locator}', async function (selector) {
 export const check = When(
   'I {check|uncheck} {locator}',
   async function (check: boolean, selector: string) {
-    const el = await locator(this.page, selector);
+    const el = await fuzzyLocator(this.page, selector);
     await setFieldValue(el, check, { timeout: TIMEOUT });
     await sleep(DELAY);
   },
@@ -38,7 +37,7 @@ export const check = When(
 );
 
 export const focus = When('I {focus|blur} {locator}', async function (focus: boolean, selector: string) {
-  const el = await locator(this.page, selector);
+  const el = await fuzzyLocator(this.page, selector);
 
   if (focus) {
     await el.focus({ timeout: TIMEOUT });

@@ -29,18 +29,34 @@ jobs:
       - name: Pack local packages
         run: |
           yarn workspace letsrunit pack --out /tmp/letsrunit.tgz
-          yarn workspace @letsrunit/cli pack --out /tmp/cli.tgz
+          yarn workspace @letsrunit/ai pack --out /tmp/ai.tgz
           yarn workspace @letsrunit/bdd pack --out /tmp/bdd.tgz
+          yarn workspace @letsrunit/cli pack --out /tmp/cli.tgz
+          yarn workspace @letsrunit/controller pack --out /tmp/controller.tgz
           yarn workspace @letsrunit/executor pack --out /tmp/executor.tgz
+          yarn workspace @letsrunit/gherker pack --out /tmp/gherker.tgz
+          yarn workspace @letsrunit/gherkin pack --out /tmp/gherkin.tgz
+          yarn workspace @letsrunit/journal pack --out /tmp/journal.tgz
+          yarn workspace @letsrunit/mailbox pack --out /tmp/mailbox.tgz
+          yarn workspace @letsrunit/playwright pack --out /tmp/playwright.tgz
+          yarn workspace @letsrunit/utils pack --out /tmp/utils.tgz
 
       - uses: actions/upload-artifact@v4
         with:
           name: tarballs
           path: |
             /tmp/letsrunit.tgz
-            /tmp/cli.tgz
+            /tmp/ai.tgz
             /tmp/bdd.tgz
+            /tmp/cli.tgz
+            /tmp/controller.tgz
             /tmp/executor.tgz
+            /tmp/gherker.tgz
+            /tmp/gherkin.tgz
+            /tmp/journal.tgz
+            /tmp/mailbox.tgz
+            /tmp/playwright.tgz
+            /tmp/utils.tgz
 
   init:
     name: Init (${{ matrix.pm }})
@@ -75,18 +91,34 @@ jobs:
       - name: Create test project
         run: |
           mkdir -p /tmp/test-${{ matrix.pm }}
-          cp /tmp/letsrunit.tgz /tmp/test-${{ matrix.pm }}/letsrunit.tgz
-          cp /tmp/cli.tgz       /tmp/test-${{ matrix.pm }}/cli.tgz
-          cp /tmp/bdd.tgz       /tmp/test-${{ matrix.pm }}/bdd.tgz
-          cp /tmp/executor.tgz  /tmp/test-${{ matrix.pm }}/executor.tgz
+          cp /tmp/letsrunit.tgz   /tmp/test-${{ matrix.pm }}/letsrunit.tgz
+          cp /tmp/ai.tgz          /tmp/test-${{ matrix.pm }}/ai.tgz
+          cp /tmp/bdd.tgz         /tmp/test-${{ matrix.pm }}/bdd.tgz
+          cp /tmp/cli.tgz         /tmp/test-${{ matrix.pm }}/cli.tgz
+          cp /tmp/controller.tgz  /tmp/test-${{ matrix.pm }}/controller.tgz
+          cp /tmp/executor.tgz    /tmp/test-${{ matrix.pm }}/executor.tgz
+          cp /tmp/gherker.tgz     /tmp/test-${{ matrix.pm }}/gherker.tgz
+          cp /tmp/gherkin.tgz     /tmp/test-${{ matrix.pm }}/gherkin.tgz
+          cp /tmp/journal.tgz     /tmp/test-${{ matrix.pm }}/journal.tgz
+          cp /tmp/mailbox.tgz     /tmp/test-${{ matrix.pm }}/mailbox.tgz
+          cp /tmp/playwright.tgz  /tmp/test-${{ matrix.pm }}/playwright.tgz
+          cp /tmp/utils.tgz       /tmp/test-${{ matrix.pm }}/utils.tgz
           node -e "
             const fs = require('fs');
             const pm = '${{ matrix.pm }}';
             const localOverrides = {
-              'letsrunit':           'file:./letsrunit.tgz',
-              '@letsrunit/cli':      'file:./cli.tgz',
-              '@letsrunit/bdd':      'file:./bdd.tgz',
-              '@letsrunit/executor': 'file:./executor.tgz',
+              'letsrunit':              'file:./letsrunit.tgz',
+              '@letsrunit/ai':          'file:./ai.tgz',
+              '@letsrunit/bdd':         'file:./bdd.tgz',
+              '@letsrunit/cli':         'file:./cli.tgz',
+              '@letsrunit/controller':  'file:./controller.tgz',
+              '@letsrunit/executor':    'file:./executor.tgz',
+              '@letsrunit/gherker':     'file:./gherker.tgz',
+              '@letsrunit/gherkin':     'file:./gherkin.tgz',
+              '@letsrunit/journal':     'file:./journal.tgz',
+              '@letsrunit/mailbox':     'file:./mailbox.tgz',
+              '@letsrunit/playwright':  'file:./playwright.tgz',
+              '@letsrunit/utils':       'file:./utils.tgz',
             };
             const pkg = {
               name: 'test-project',

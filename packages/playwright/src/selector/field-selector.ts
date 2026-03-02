@@ -109,6 +109,14 @@ export const createFieldEngine = () => ({
       const ph = (el as HTMLInputElement).placeholder ?? el.getAttribute('placeholder');
       if (ph) texts.push(ph);
 
+      // 7) Adjacent sibling <label> (handles <input/><label>Text</label> pattern without for/id)
+      for (let sib = el.nextElementSibling; sib; sib = sib.nextElementSibling) {
+        if (sib.tagName === 'LABEL') { texts.push(sib.textContent ?? ''); break; }
+      }
+      for (let sib = el.previousElementSibling; sib; sib = sib.previousElementSibling) {
+        if (sib.tagName === 'LABEL') { texts.push(sib.textContent ?? ''); break; }
+      }
+
       return texts;
     }
 
