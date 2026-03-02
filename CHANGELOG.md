@@ -1,3 +1,17 @@
+## [0.3.9](https://github.com/letsrunit-hq/letsrunit/compare/v0.3.8...v0.3.9) (2026-03-02)
+
+
+### Bug Fixes
+
+* **controller:** rename flag to selectorsAreRegistered, fix areAllVisible and test mock ([c2c544f](https://github.com/letsrunit-hq/letsrunit/commit/c2c544f3dd5636cb3e2e26ba6039b8d531dacb55))
+* **locators:** add adjacent sibling <label> support to field selector engine ([ce126f6](https://github.com/letsrunit-hq/letsrunit/commit/ce126f62d3b3ff5bcec65112f8d8555711061da0))
+* **locators:** use regex substring matching for text= selector and guard invalid CSS IDs ([b37e421](https://github.com/letsrunit-hq/letsrunit/commit/b37e421fec0f0036e4ffe2c6c23486d7f28f9b16)), closes [#What](https://github.com/letsrunit-hq/letsrunit/issues/What)
+
+
+### Reverts
+
+* **mcp-server:** use page.locator() directly for screenshot mask ([27f9add](https://github.com/letsrunit-hq/letsrunit/commit/27f9add041139c4b0b9e8c0b235d391f48d46e3c))
+
 ## [0.3.8](https://github.com/letsrunit-hq/letsrunit/compare/v0.3.7...v0.3.8) (2026-02-27)
 
 
