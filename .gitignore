@@ -54,7 +54,8 @@ next-env.d.ts
 dist/
 *.tsbuildinfo
 
-# User feature files
+# Cucumber (used for ad-hoc testing)
+cucumber.js
 features/
 
 # Sandbox mount artifacts
