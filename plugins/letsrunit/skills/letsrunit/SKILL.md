@@ -1,1 +1,0 @@
-../../../../skills/letsrunit/SKILL.md
