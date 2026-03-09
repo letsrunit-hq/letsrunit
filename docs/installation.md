@@ -74,7 +74,7 @@ npx playwright install chromium
 {% step %}
 ## Add a GitHub Action (optional)
 
-The final step offers to scaffold a `.github/workflows/letsrunit.yml` that runs your features on every push and pull request. See [CI/CD](../ci-cd.md) for the full workflow.
+The final step offers to scaffold a `.github/workflows/letsrunit.yml` that runs your features on every push and pull request. See [CI/CD](ci-cd/github-actions.md) for the full workflow.
 {% endstep %}
 {% endstepper %}
 

@@ -26,7 +26,35 @@ const config: Config = {
   ],
 
   // Registers GitBook theme components and CSS
-  plugins: ['docusaurus-plugin-gitbook'],
+  plugins: [
+    'docusaurus-plugin-gitbook',
+    [
+      'docusaurus-plugin-llms',
+      {
+        docsDir: '../docs',
+        title: 'letsrunit',
+        description: 'Browser testing in plain language, built for teams that ship with AI.',
+        generateLLMsTxt: true,
+        generateLLMsFullTxt: true,
+        excludeImports: true,
+        removeDuplicateHeadings: true,
+        ignoreFiles: ['SUMMARY.md'],
+        pathTransformation: {
+          ignorePaths: ['docs', '..'],
+          addPaths: ['letsrunit'],
+        },
+        includeOrder: [
+          'README.md',
+          'installation.md',
+          'generating-tests.md',
+          'running-tests.md',
+          'writing-tests/*',
+          'ai-agents/*',
+          'ci-cd/*',
+        ],
+      },
+    ],
+  ],
 
   presets: [
     [

@@ -5,7 +5,8 @@
   "workspaces": [
     "compat/*",
     "packages/*",
-    "packages/@types/*"
+    "packages/@types/*",
+    "docusaurus"
   ],
   "scripts": {
     "cli": "yarn workspace @letsrunit/cli dev",
