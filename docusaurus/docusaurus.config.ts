@@ -77,6 +77,9 @@ const config: Config = {
   ],
 
   themeConfig: {
+    prism: {
+      additionalLanguages: ['gherkin'],
+    },
     navbar: {
       title: 'letsrunit',
       items: [
