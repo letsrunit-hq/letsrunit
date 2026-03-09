@@ -91,6 +91,14 @@ For parallel subtasks that may touch overlapping files, use the `EnterWorktree` 
 
 On session exit, Claude will prompt to keep or remove the worktree.
 
+## Documentation
+
+Documentation lives in `docs/` and uses **GitBook syntax**.
+
+Write for developers who are new to the tool. Be concise and task-oriented: lead with what the user needs to do, not with background theory. Use active voice. Prefer examples over explanations.
+
+**Keep docs in sync with code.** When changing behaviour that is documented in `docs/` — e.g. the CLI, step library, init wizard, configuration — update the relevant doc pages in the same commit.
+
 ## Branching & Releases
 
 **Never push directly to `main`.** All changes go through a feature branch and pull request.

@@ -27,9 +27,10 @@ letsrunit tests read as behaviour descriptions:
 Scenario: User resets their password
   Given I'm on page "/login"
   When I click link "Forgot password"
-  And I set field "Email" to a registered email address
+  And I set field "Email" to "admin@example.com"
   And I click button "Send reset link"
   Then the page contains text "Check your inbox"
+  And I received an email sent to "admin@example.com" with subject "Reset your your password"
 ```
 
 Anyone on the team can read that and understand what it's testing. letsrunit handles all the underlying browser automation: it resolves `field "Email"` to the right input, clicks the right button, and waits for the right page state. You describe the interaction; the tool handles the mechanics.
@@ -44,7 +45,7 @@ The `explore` command generates scenarios from a live URL. Point it at a page an
 
 ## With AI agents
 
-When an AI coding agent implements a feature or fixes a bug, it has no way to verify whether the UI actually works. It can reason about code but it can't see the browser. letsrunit gives it one.
+When an AI coding agent, like Claude or Codex, implements a feature or fixes a bug, it has no way to verify whether the UI actually works. It can reason about code but it can't see the browser. letsrunit gives it one.
 
 Through an MCP server, the agent can launch a real Chromium browser, navigate to any page, run Gherkin steps, take screenshots, and read the DOM. When a step fails, it inspects the page to understand why, adjusts its approach, and tries again. The session produces a `.feature` file that gets committed and runs in CI from that point on.
 
@@ -52,13 +53,11 @@ This changes how agents finish tasks. Fixing a bug isn't done until the fix has 
 
 See [AI Agent Integration](ai-agents/README.md) for setup instructions.
 
-## Why not just write Playwright tests
+## Why not just Playwright tests?
 
 Playwright is a capable tool, but writing and maintaining Playwright tests is engineering work. You write TypeScript, manage selectors, handle async timing, and debug stack traces. The tests live in a separate mental model from the product.
 
 With letsrunit, the test describes what a user does and what should happen. That's a description that can come from a product spec, a bug report, or an AI agent. It doesn't require knowing the DOM structure of the page. It doesn't require understanding Playwright's API. And when it breaks, the failure message tells you what changed, not where in the code the assertion fired.
-
-The other difference is generation. You can point letsrunit at a live page and get a set of tested, passing scenarios back. Writing equivalent Playwright tests by hand would take significantly longer and produce something less readable.
 
 Playwright runs the browser under the hood. letsrunit uses Playwright internally. The difference is the layer you work at.
 
