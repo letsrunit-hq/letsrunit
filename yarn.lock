@@ -11434,7 +11434,7 @@ __metadata:
 
 "docusaurus-plugin-gitbook@file:../../docusaurus-plugin-gitbook::locator=letsrunit-docs%40workspace%3Adocusaurus":
   version: 0.1.1
-  resolution: "docusaurus-plugin-gitbook@file:../../docusaurus-plugin-gitbook#../../docusaurus-plugin-gitbook::hash=ab9f73&locator=letsrunit-docs%40workspace%3Adocusaurus"
+  resolution: "docusaurus-plugin-gitbook@file:../../docusaurus-plugin-gitbook#../../docusaurus-plugin-gitbook::hash=f0225a&locator=letsrunit-docs%40workspace%3Adocusaurus"
   dependencies:
     "@types/mdast": "npm:^4.0.4"
     mdast-util-mdx-jsx: "npm:^3.2.0"
@@ -11447,7 +11447,7 @@ __metadata:
   peerDependenciesMeta:
     docusaurus-theme-openapi-docs:
       optional: true
-  checksum: 10c0/3b790f6cd780a36208986c934096335ba4ffbef7dba95ab1b81980006d4b33603343c9dc22e50bf40b46b84c09a6ff557cf10dcdc0f1bbae22f30c7560d9b477
+  checksum: 10c0/1a102c0978573b5f938e2ef04fcd5408ea849f9e6794e461ef139fc0fe16032c7d5ec190e2636839323daae2e7db4088e210b675008965235084ef1e0fbac069
   languageName: node
   linkType: hard
 
