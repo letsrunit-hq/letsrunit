@@ -54,6 +54,12 @@ next-env.d.ts
 dist/
 *.tsbuildinfo
 
+# Docs site
+docusaurus/build/
+docusaurus/node_modules/
+docusaurus/.docusaurus/
+docs/.docusaurus/
+
 # Cucumber (used for ad-hoc testing)
 cucumber.js
 features/

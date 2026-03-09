@@ -54,7 +54,7 @@ take screenshots, and inspect pages directly inside your editor.
 **Claude Code** — add the marketplace once, then install the plugin to get both the MCP server and skill:
 
 ```
-/plugin marketplace add letsrunit-hq/letsrunit
+/plugin marketplace add letsrunit-hq/agent
 /plugin install letsrunit@letsrunit
 ```
 
