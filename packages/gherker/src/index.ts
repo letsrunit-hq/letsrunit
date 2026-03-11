@@ -1,2 +1,3 @@
 export * from './runner';
-export type { Result, StepHandler, ParsedStep } from "./types";
+export { DefaultStepRegistry } from './step-registry';
+export type { IStepRegistry, MatchResult, StepEntry, Result, StepHandler, ParsedStep } from './types';

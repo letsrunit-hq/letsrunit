@@ -1,15 +1,16 @@
 import { After, Before, BeforeAll, defineParameterType, Given, Then, When } from '@cucumber/cucumber';
 import { browse, createDateEngine, createFieldEngine } from '@letsrunit/playwright';
 import { chromium, selectors } from '@playwright/test';
-import { typeDefinitions } from './parameters';
-import { stepsDefinitions } from './steps';
 import { sanitizeStepDefinition } from '@letsrunit/gherkin';
+import { typeDefinitions } from './parameters';
+import { registry } from './registry';
+import './steps'; // ensure built-in steps are registered before Cucumber receives them
 
 for (const type of typeDefinitions) {
   defineParameterType(type);
 }
 
-for (const step of stepsDefinitions) {
+for (const step of registry.definitions) {
   const def = step.type === 'Given' ? Given : step.type === 'When' ? When : Then;
   def(sanitizeStepDefinition(step.expression), step.fn);
 }

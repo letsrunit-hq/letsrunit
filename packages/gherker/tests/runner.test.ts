@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { Runner } from '../src';
+import { DefaultStepRegistry, Runner } from '../src';
 import { World } from '../src/types';
 
 describe('Runner', () => {
@@ -326,5 +326,85 @@ Feature: Undefined
 
     // noinspection ES6RedundantAwait
     await expect(runner.run(feature, {})).rejects.toThrow('No scenarios found');
+  });
+
+  it('useRegistry: delegates defineStep and defs to the provided registry', () => {
+    const external = new DefaultStepRegistry();
+    const runner = new Runner();
+    runner.useRegistry(external);
+
+    const fn = () => {};
+    runner.defineStep('Given', 'a shared step', fn);
+
+    expect(runner.defs).toHaveLength(1);
+    expect(runner.defs[0].source).toBe('a shared step');
+    expect(external.defs).toHaveLength(1);
+  });
+
+  it('useRegistry: steps registered before useRegistry are not in the new registry', () => {
+    const runner = new Runner();
+    runner.defineStep('Given', 'old step', () => {});
+
+    const fresh = new DefaultStepRegistry();
+    runner.useRegistry(fresh);
+
+    expect(runner.defs).toHaveLength(0);
+  });
+
+  it('useRegistry: runner can run steps from the injected registry', async () => {
+    const external = new DefaultStepRegistry<{ value: number } & World>();
+    external.defineStep('Given', 'value is {int}', function (n: number) {
+      this.value = n;
+    });
+
+    const runner = new Runner<{ value: number } & World>();
+    runner.useRegistry(external);
+
+    const feature = `
+Feature: External registry
+  Scenario: Uses injected registry
+    Given value is 42
+`;
+    const result = await runner.run(feature, { value: 0 });
+    expect(result.status).toBe('passed');
+    expect(result.world.value).toBe(42);
+  });
+
+  describe('DefaultStepRegistry', () => {
+    it('compiles and stores step definitions', () => {
+      const reg = new DefaultStepRegistry();
+      reg.defineStep('When', 'I have {int} items', () => {});
+
+      expect(reg.defs).toHaveLength(1);
+      expect(reg.defs[0].type).toBe('When');
+      expect(reg.defs[0].source).toBe('I have {int} items');
+    });
+
+    it('match returns def, values and args for matching text', () => {
+      const fn = () => {};
+      const reg = new DefaultStepRegistry();
+      reg.defineStep('Then', 'total is {int}', fn);
+
+      const result = reg.match('total is 7');
+      expect(result).not.toBeNull();
+      expect(result!.def.fn).toBe(fn);
+      expect(result!.values).toEqual([7]);
+    });
+
+    it('match returns null for non-matching text', () => {
+      const reg = new DefaultStepRegistry();
+      reg.defineStep('Then', 'total is {int}', () => {});
+
+      expect(reg.match('something else')).toBeNull();
+    });
+
+    it('defineParameterType registers a custom type usable in expressions', () => {
+      const reg = new DefaultStepRegistry();
+      reg.defineParameterType({ name: 'color', placeholder: 'color', regexp: /red|blue/, transformer: (s) => s });
+      reg.defineStep('Given', 'color is {color}', () => {});
+
+      const result = reg.match('color is red');
+      expect(result?.values).toEqual(['red']);
+    });
   });
 });

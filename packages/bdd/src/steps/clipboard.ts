@@ -1,6 +1,6 @@
 import { fuzzyLocator } from '@letsrunit/playwright';
 import type { Locator } from '@playwright/test';
-import { When } from './wrappers';
+import { When } from '../registry';
 
 const TIMEOUT = 500;
 
