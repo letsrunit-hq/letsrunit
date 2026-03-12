@@ -1,4 +1,4 @@
-import { Given } from './wrappers';
+import { Given } from '../registry';
 
 const viewports = {
   mobile: { width: 375, height: 812 },
