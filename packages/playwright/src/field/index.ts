@@ -7,6 +7,7 @@ import { setDateTextInput } from './date-text-input';
 import { setNativeCheckbox } from './native-checkbox';
 import { setNativeDate } from './native-date';
 import { setNativeInput } from './native-input';
+import { selectAria } from './aria-select';
 import { selectNative } from './native-select';
 import { setOtpValue } from './otp';
 import { setRadioGroup } from './radio-group';
@@ -29,6 +30,7 @@ export async function setFieldValue(el: Locator, value: Value, options?: SetOpti
   const setValue = chain(
     // native
     selectNative,
+    selectAria,
     setNativeCheckbox,
     setRadioGroup,
     setNativeDate,
