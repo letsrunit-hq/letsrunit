@@ -60,9 +60,6 @@ docusaurus/node_modules/
 docusaurus/.docusaurus/
 docs/.docusaurus/
 
-# Cucumber (used for ad-hoc testing)
-cucumber.js
-features/
 
 # Sandbox mount artifacts
 /.bash_profile
