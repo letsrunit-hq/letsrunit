@@ -8,8 +8,9 @@ type MonthYear = { month: number; year: number };
 
 async function getDialog(root: Locator, options?: SetOptions) {
   const role = await root.getAttribute('role', options).catch(() => null);
+  const hasPopup = await root.getAttribute('aria-haspopup', options).catch(() => null);
 
-  if (role !== 'combobox') return null;
+  if (role !== 'combobox' && !hasPopup) return null;
 
   const ariaControls = await root.getAttribute('aria-controls', options).catch(() => null);
   if (!ariaControls) return null;

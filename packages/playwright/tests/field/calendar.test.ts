@@ -312,6 +312,63 @@ describe('setCalendarDate', () => {
     expect(dayCell.click).toHaveBeenCalledTimes(2);
   });
 
+  it('handles aria-haspopup trigger (Radix Popover / button pattern)', async () => {
+    const dayCell = createMockLocator({ isVisible: vi.fn().mockResolvedValue(true) });
+    const tableCells = createMockLocator({
+      count: vi.fn().mockResolvedValue(0),
+      allTextContents: vi.fn().mockResolvedValue(Array.from({ length: 31 }, (_, i) => String(i + 1))),
+      allInnerTexts: vi.fn().mockResolvedValue(Array.from({ length: 31 }, (_, i) => String(i + 1))),
+    });
+    const table = createMockLocator({
+      count: vi.fn().mockResolvedValue(0),
+      isVisible: vi.fn().mockResolvedValue(true),
+      evaluate: vi.fn().mockResolvedValue('TABLE'),
+    });
+    table.all.mockResolvedValue([table]);
+    table.locator.mockImplementation((selector) => {
+      assert.ok(typeof selector === 'string');
+      if (selector === 'td, [role="gridcell"]') return tableCells;
+      if (selector.includes('aria-label')) return dayCell;
+      return table;
+    });
+
+    const calendarDialog = createMockLocator({
+      innerText: vi.fn().mockResolvedValue('July 2024'),
+    });
+    calendarDialog.locator.mockImplementation((selector) => {
+      assert.ok(typeof selector === 'string');
+      if (selector === 'table, [role="grid"]') return table;
+      return calendarDialog;
+    });
+
+    const el = createMockLocator({
+      getAttribute: vi.fn().mockImplementation((attr: string) => {
+        if (attr === 'aria-haspopup') return Promise.resolve('dialog');
+        if (attr === 'aria-controls') return Promise.resolve('calendar-id');
+        return Promise.resolve(null);
+      }),
+      count: vi.fn().mockResolvedValue(0),
+    });
+    el.locator.mockImplementation((selector) => {
+      if (selector === 'table, [role="grid"]') return table;
+      return el;
+    });
+    el.page().locator = vi.fn().mockImplementation((selector: string) => {
+      if (selector === '#calendar-id') return calendarDialog;
+      return createMockLocator();
+    });
+    el.click.mockImplementation(async () => {
+      table.count.mockResolvedValue(1);
+      tableCells.count.mockResolvedValue(31);
+      calendarDialog.count.mockResolvedValue(1);
+    });
+
+    const result = await setCalendarDate({ el, tag: 'button' } as any, new Date('2024-07-15'));
+    expect(result).toBe(true);
+    expect(el.click).toHaveBeenCalled();      // opened the popover
+    expect(dayCell.click).toHaveBeenCalled(); // selected the day
+  });
+
   it('handles MUI DateCalendar (div[role="grid"])', async () => {
     const dayCell = createMockLocator({ isVisible: vi.fn().mockResolvedValue(true) });
     const cells = createMockLocator({
