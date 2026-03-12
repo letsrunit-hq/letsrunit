@@ -18,11 +18,22 @@ export async function setSliderValue({ el, tag }: Loc, value: Value, options?: S
   const { centerX, centerY } = await prepareMouse(slider, options);
   const page = slider.page();
 
+  let unresponsive = false;
   try {
     const ratio = await calculateRatio(slider, initialValue, value, centerX, centerY, orientation, options);
     await seekValue(slider, initialValue, value, centerX, centerY, orientation, ratio, options);
+  } catch (e) {
+    if (e instanceof Error && e.message === 'Slider appears to be disabled or unresponsive') {
+      unresponsive = true;
+    } else {
+      throw e;
+    }
   } finally {
     await page.mouse.up();
+  }
+
+  if (unresponsive) {
+    return setSliderByKeyboard(slider, initialValue, value, options);
   }
 
   return true;
@@ -129,4 +140,26 @@ async function moveMouse(page: any, centerX: number, centerY: number, orientatio
   } else {
     await page.mouse.move(centerX + distance, centerY);
   }
+}
+
+async function setSliderByKeyboard(
+  slider: Locator,
+  initialValue: number,
+  targetValue: number,
+  options?: SetOptions,
+): Promise<boolean> {
+  const stepStr = await slider.getAttribute('aria-valuestep', options).catch(() => null);
+  const step = stepStr ? parseFloat(stepStr) : 1;
+  const presses = Math.round(Math.abs(targetValue - initialValue) / step);
+  const key = targetValue > initialValue ? 'ArrowRight' : 'ArrowLeft';
+
+  await slider.focus(options);
+  const page = slider.page();
+  for (let i = 0; i < presses; i++) {
+    await page.keyboard.press(key);
+  }
+
+  const nowStr = await slider.getAttribute('aria-valuenow', options).catch(() => null);
+  const reached = nowStr !== null && Math.abs(parseFloat(nowStr) - targetValue) < 0.001;
+  return reached;
 }

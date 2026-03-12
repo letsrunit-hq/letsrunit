@@ -7,10 +7,12 @@ import { setDateTextInput } from './date-text-input';
 import { setNativeCheckbox } from './native-checkbox';
 import { setNativeDate } from './native-date';
 import { setNativeInput } from './native-input';
+import { selectAria } from './aria-select';
 import { selectNative } from './native-select';
 import { setOtpValue } from './otp';
 import { setRadioGroup } from './radio-group';
 import { setSliderValue } from './slider';
+import { setToggle } from './toggle';
 import type { Loc, SetOptions, Value } from './types';
 
 function toString(value: Value): string {
@@ -28,11 +30,13 @@ export async function setFieldValue(el: Locator, value: Value, options?: SetOpti
   const setValue = chain(
     // native
     selectNative,
+    selectAria,
     setNativeCheckbox,
     setRadioGroup,
     setNativeDate,
     setNativeInput,
     // aria / components
+    setToggle,
     setDateTextInput,
     setDateGroup,
     setCalendarDate,
