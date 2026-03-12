@@ -1,3 +1,5 @@
+![](https://cdn.jsdelivr.net/gh/letsrunit-hq/letsrunit@main/docs/.gitbook/assets/logo-light.svg)
+
 # CLI
 
 The `letsrunit` CLI allows you to explore websites, generate Gherkin features using AI, and run tests locally.

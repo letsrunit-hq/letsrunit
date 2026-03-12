@@ -1,3 +1,5 @@
+![](https://cdn.jsdelivr.net/gh/letsrunit-hq/letsrunit@main/docs/.gitbook/assets/logo-light.svg)
+
 # AI Package (`@letsrunit/ai`)
 
 ## Installation

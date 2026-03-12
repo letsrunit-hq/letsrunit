@@ -1,4 +1,6 @@
-# Gherkin Package (`@letsrunit/gherkin`)
+![](https://cdn.jsdelivr.net/gh/letsrunit-hq/letsrunit@main/docs/.gitbook/assets/logo-light.svg)
+
+# Gherkin extension
 
 ## Installation
 

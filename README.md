@@ -1,3 +1,5 @@
+![](https://cdn.jsdelivr.net/gh/letsrunit-hq/letsrunit@main/docs/.gitbook/assets/logo-light.svg)
+
 # Let's Run It
 
 Let's Run It is an AI-powered automation platform designed for "Vibe Testing" and intelligent browser automation. It
