@@ -14,4 +14,5 @@ export const typeDefinitions = [
   booleanParameter('focus', 'blur'),
 
   enumParameter(['click', 'double-click', 'right-click', 'hover'], /((?:double-|right-)?click|hover)/),
+  enumParameter(['mobile', 'tablet', 'desktop']),
 ];

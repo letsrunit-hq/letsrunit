@@ -27,4 +27,4 @@ ideLines.push('');
 
 const file = ideLines.join('\n');
 
-writeFileSync(__dirname + '/../src/_stub.ts', file, 'utf8');
+writeFileSync('src/_stub.ts', file, 'utf8');
