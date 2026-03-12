@@ -1,3 +1,10 @@
+## [0.5.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.5.0...v0.5.1) (2026-03-12)
+
+
+### Bug Fixes
+
+* **letsrunit:** Add require support files for cucumber on install. ([b8fc1cb](https://github.com/letsrunit-hq/letsrunit/commit/b8fc1cbbc8d43bb06200bb54254c604c20d0a93a))
+
 # [0.5.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.4.2...v0.5.0) (2026-03-12)
 
 
