@@ -1,3 +1,18 @@
+# [0.5.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.4.2...v0.5.0) (2026-03-12)
+
+
+### Bug Fixes
+
+* **calendar:** accept aria-haspopup triggers (Radix Popover / button pattern) ([6bcb6b0](https://github.com/letsrunit-hq/letsrunit/commit/6bcb6b0cad7f80d2549de8c2aa34334543b7bed2))
+
+
+### Features
+
+* **aria-select:** add selectAria for role=combobox/listbox/option pattern ([0f08e75](https://github.com/letsrunit-hq/letsrunit/commit/0f08e751580fcfab545e1a8fb4327e041b4c4d13))
+* **radio-group:** add ARIA radio support (role="radio") to setRadioGroup ([a8a96f3](https://github.com/letsrunit-hq/letsrunit/commit/a8a96f37d5029af7530644f1f665820095d92122))
+* **slider:** add keyboard fallback when drag is unresponsive ([8371a58](https://github.com/letsrunit-hq/letsrunit/commit/8371a583dc593509285bcb17a4bfb84fde0bc632))
+* **toggle:** add setToggle for ARIA toggle components (role=checkbox/switch) ([a3d448f](https://github.com/letsrunit-hq/letsrunit/commit/a3d448f706a0985b943a2ef47270cdde4d0726b4))
+
 ## [0.4.2](https://github.com/letsrunit-hq/letsrunit/compare/v0.4.1...v0.4.2) (2026-03-12)
 
 
