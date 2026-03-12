@@ -10,6 +10,9 @@ describe('setSliderValue', () => {
         down: vi.fn().mockResolvedValue(undefined),
         up: vi.fn().mockResolvedValue(undefined),
       },
+      keyboard: {
+        press: vi.fn().mockResolvedValue(undefined),
+      },
     } as unknown as Page;
 
     const sliderMock = {
@@ -17,6 +20,7 @@ describe('setSliderValue', () => {
       isVisible: vi.fn().mockResolvedValue(true),
       boundingBox: vi.fn().mockResolvedValue(box),
       scrollIntoViewIfNeeded: vi.fn().mockResolvedValue(undefined),
+      focus: vi.fn().mockResolvedValue(undefined),
       page: vi.fn().mockReturnValue(pageMock),
       getByRole: vi.fn(),
       count: vi.fn().mockResolvedValue(1),
@@ -207,7 +211,84 @@ describe('setSliderValue', () => {
     await expect(setSliderValue({ el: sliderMock, tag: 'div', type: null }, 50)).rejects.toThrow('Slider has no bounding box');
   });
 
-  it('throws error if slider is unresponsive (diff is 0)', async () => {
+  it('falls back to keyboard when drag is unresponsive, pressing ArrowRight to increase', async () => {
+    const attrs = {
+      role: 'slider',
+      'aria-valuemin': '0',
+      'aria-valuemax': '100',
+      'aria-valuenow': '50',
+    };
+    const { sliderMock, pageMock } = createMockSlider(attrs);
+    let pressCount = 0;
+    sliderMock.getAttribute.mockImplementation((name: string) => {
+      if (name === 'role') return Promise.resolve('slider');
+      if (name === 'aria-valuemin') return Promise.resolve('0');
+      if (name === 'aria-valuemax') return Promise.resolve('100');
+      if (name === 'aria-valuenow') {
+        // After keyboard presses, simulate value reaching 70
+        return Promise.resolve(pressCount >= 20 ? '70' : '50');
+      }
+      return Promise.resolve(null);
+    });
+    (pageMock.keyboard.press as Mock).mockImplementation(async () => { pressCount++; });
+
+    const result = await setSliderValue({ el: sliderMock, tag: 'div', type: null }, 70);
+    expect(result).toBe(true);
+    expect(sliderMock.focus).toHaveBeenCalled();
+    expect(pageMock.keyboard.press).toHaveBeenCalledWith('ArrowRight');
+    expect(pageMock.keyboard.press).toHaveBeenCalledTimes(20);
+  });
+
+  it('falls back to keyboard pressing ArrowLeft to decrease', async () => {
+    const attrs = {
+      role: 'slider',
+      'aria-valuemin': '0',
+      'aria-valuemax': '100',
+      'aria-valuenow': '50',
+    };
+    const { sliderMock, pageMock } = createMockSlider(attrs);
+    let pressCount = 0;
+    sliderMock.getAttribute.mockImplementation((name: string) => {
+      if (name === 'role') return Promise.resolve('slider');
+      if (name === 'aria-valuemin') return Promise.resolve('0');
+      if (name === 'aria-valuemax') return Promise.resolve('100');
+      if (name === 'aria-valuenow') return Promise.resolve(pressCount >= 20 ? '30' : '50');
+      return Promise.resolve(null);
+    });
+    (pageMock.keyboard.press as Mock).mockImplementation(async () => { pressCount++; });
+
+    const result = await setSliderValue({ el: sliderMock, tag: 'div', type: null }, 30);
+    expect(result).toBe(true);
+    expect(pageMock.keyboard.press).toHaveBeenCalledWith('ArrowLeft');
+    expect(pageMock.keyboard.press).toHaveBeenCalledTimes(20);
+  });
+
+  it('keyboard fallback respects aria-valuestep', async () => {
+    const attrs = {
+      role: 'slider',
+      'aria-valuemin': '0',
+      'aria-valuemax': '100',
+      'aria-valuenow': '50',
+      'aria-valuestep': '5',
+    };
+    const { sliderMock, pageMock } = createMockSlider(attrs);
+    let pressCount = 0;
+    sliderMock.getAttribute.mockImplementation((name: string) => {
+      if (name === 'role') return Promise.resolve('slider');
+      if (name === 'aria-valuemin') return Promise.resolve('0');
+      if (name === 'aria-valuemax') return Promise.resolve('100');
+      if (name === 'aria-valuenow') return Promise.resolve(pressCount >= 4 ? '70' : '50');
+      if (name === 'aria-valuestep') return Promise.resolve('5');
+      return Promise.resolve(null);
+    });
+    (pageMock.keyboard.press as Mock).mockImplementation(async () => { pressCount++; });
+
+    const result = await setSliderValue({ el: sliderMock, tag: 'div', type: null }, 70);
+    expect(result).toBe(true);
+    expect(pageMock.keyboard.press).toHaveBeenCalledTimes(4); // (70-50)/5 = 4
+  });
+
+  it('keyboard fallback returns false if slider does not respond to keys', async () => {
     const attrs = {
       role: 'slider',
       'aria-valuemin': '0',
@@ -215,16 +296,16 @@ describe('setSliderValue', () => {
       'aria-valuenow': '50',
     };
     const { sliderMock } = createMockSlider(attrs);
-    sliderMock.getAttribute.mockResolvedValue('50'); // Always returns 50
     sliderMock.getAttribute.mockImplementation((name: string) => {
       if (name === 'role') return Promise.resolve('slider');
       if (name === 'aria-valuemin') return Promise.resolve('0');
       if (name === 'aria-valuemax') return Promise.resolve('100');
-      if (name === 'aria-valuenow') return Promise.resolve('50');
+      if (name === 'aria-valuenow') return Promise.resolve('50'); // never changes
       return Promise.resolve(null);
     });
 
-    await expect(setSliderValue({ el: sliderMock, tag: 'div', type: null }, 70)).rejects.toThrow('Slider appears to be disabled or unresponsive');
+    const result = await setSliderValue({ el: sliderMock, tag: 'div', type: null }, 70);
+    expect(result).toBe(false);
   });
 
   it('moves in the direction of the value', async () => {
