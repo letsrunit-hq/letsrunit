@@ -1,3 +1,10 @@
+## [0.4.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.4.0...v0.4.1) (2026-03-12)
+
+
+### Bug Fixes
+
+* workspace packages export src, add tsx loader for cucumber ([5bce2bd](https://github.com/letsrunit-hq/letsrunit/commit/5bce2bdababd72b4d2139cc3cb0040b7d5044530)), closes [#32](https://github.com/letsrunit-hq/letsrunit/issues/32)
+
 # [0.4.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.3.10...v0.4.0) (2026-03-12)
 
 
