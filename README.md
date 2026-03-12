@@ -1,6 +1,4 @@
-![](https://cdn.jsdelivr.net/gh/letsrunit-hq/letsrunit@main/docs/.gitbook/assets/logo-light.svg)
-
-# Let's Run It
+![letsrunit](https://cdn.jsdelivr.net/gh/letsrunit-hq/letsrunit@main/docs/.gitbook/assets/logo-light.svg)
 
 Let's Run It is an AI-powered automation platform designed for "Vibe Testing" and intelligent browser automation. It
 leverages Large Language Models (LLMs) and Playwright to explore websites, generate Gherkin-based features, and execute
