@@ -1,6 +1,9 @@
+import { createRequire } from 'module';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { SessionManager } from './sessions';
+
+const { version } = createRequire(import.meta.url)('../package.json') as { version: string };
 import {
   registerDebug,
   registerListSessions,
@@ -15,7 +18,7 @@ const sessions = new SessionManager();
 
 const server = new McpServer({
   name: 'letsrunit',
-  version: '0.1.0',
+  version,
   websiteUrl: 'https://letsrunit.ai',
 });
 
