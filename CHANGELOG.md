@@ -1,3 +1,10 @@
+# [0.4.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.3.10...v0.4.0) (2026-03-12)
+
+
+### Features
+
+* custom step definitions via shared registry ([9df6f22](https://github.com/letsrunit-hq/letsrunit/commit/9df6f2273a76bd4930cffd62059da4dfce5b7b28))
+
 ## [0.3.10](https://github.com/letsrunit-hq/letsrunit/compare/v0.3.9...v0.3.10) (2026-03-02)
 
 
