@@ -3,7 +3,7 @@ import { eventually, pathRegexp, splitUrl } from '@letsrunit/utils';
 import { expect } from '@playwright/test';
 import { World } from '../types';
 import { getLang } from '../utils/get-lang';
-import { Given, Then, When } from './wrappers';
+import { Given, Then, When } from '../registry';
 
 async function openPage(world: World, path: string): Promise<void> {
   const { page } = world;

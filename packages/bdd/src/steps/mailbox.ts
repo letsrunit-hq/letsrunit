@@ -1,6 +1,6 @@
 import { receiveMail, toEml } from '@letsrunit/mailbox';
 import { asFilename, textToHtml } from '@letsrunit/utils';
-import { Given, Then } from './wrappers';
+import { Given, Then } from '../registry';
 
 const MAX_RECEIVE_WAIT = 120_000; // 2 minutes
 

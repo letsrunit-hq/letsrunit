@@ -1,6 +1,6 @@
 import { fuzzyLocator, setFieldValue } from '@letsrunit/playwright';
 import { type Scalar, sleep } from '@letsrunit/utils';
-import { When } from './wrappers';
+import { When } from '../registry';
 
 const TIMEOUT = 500;
 const DELAY = 500;

@@ -1,6 +1,6 @@
 import { fuzzyLocator } from '@letsrunit/playwright';
 import { expectOrNot } from '../utils/test-helpers';
-import { Then } from './wrappers';
+import { Then } from '../registry';
 
 const WAIT_TIMEOUT = 5000;
 

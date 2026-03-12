@@ -1,44 +1,31 @@
-import {
-  Argument,
-  CucumberExpression,
-  ParameterType,
-  ParameterTypeRegistry,
-  RegularExpression,
-} from '@cucumber/cucumber-expressions';
+import type { Argument } from '@cucumber/cucumber-expressions';
 import { generateMessages } from '@cucumber/gherkin';
 import { IdGenerator, Pickle, PickleStep, SourceMediaType } from '@cucumber/messages';
-import { ParameterTypeDefinition, sanitizeStepDefinition } from '@letsrunit/gherkin';
-import { ParsedStep, Result, StepDefinition, StepHandler, StepType, World } from './types';
+import type { ParameterTypeDefinition } from '@letsrunit/gherkin';
+import { DefaultStepRegistry } from './step-registry';
+import type { IStepRegistry, ParsedStep, Result, StepEntry, StepHandler, StepType, World } from './types';
 
 export type StepResult = { status: 'success' | 'failure'; reason?: Error };
-export type StepDescription = { id: string, text: string; args: readonly Argument[] };
+export type StepDescription = { id: string; text: string; args: readonly Argument[] };
 type StepWrapper = (step: StepDescription, run: () => Promise<StepResult>) => Promise<StepResult>;
 
 export class Runner<TWorld extends World> {
-  private _registry = new ParameterTypeRegistry(); // Private instead of readonly, because `reset()`
+  private _stepRegistry: IStepRegistry<TWorld> = new DefaultStepRegistry();
 
-  get registry(): ParameterTypeRegistry {
-    return this._registry;
+  get defs(): ReadonlyArray<StepEntry<TWorld>> {
+    return this._stepRegistry.defs;
   }
 
-  private _defs: StepDefinition<TWorld>[] = [];
-
-  get defs(): StepDefinition<TWorld>[] {
-    return this._defs;
+  useRegistry(registry: IStepRegistry<TWorld>): void {
+    this._stepRegistry = registry;
   }
 
-  defineStep(type: StepType, expression: string | RegExp, fn: StepHandler<TWorld>, comment?: string) {
-    const expr =
-      typeof expression === 'string'
-        ? new CucumberExpression(sanitizeStepDefinition(expression), this.registry)
-        : new RegularExpression(expression, this.registry);
-    this.defs.push({ type, expr, fn, source: String(expression), comment });
+  defineStep(type: StepType, expression: string | RegExp, fn: StepHandler<TWorld>, comment?: string): void {
+    this._stepRegistry.defineStep(type, expression, fn, comment);
   }
 
-  defineParameterType(type: ParameterTypeDefinition<unknown>) {
-    const paramType = new ParameterType(type.name, type.regexp, null, type.transformer, type.useForSnippets);
-
-    this._registry.defineParameterType(paramType);
+  defineParameterType(type: ParameterTypeDefinition<unknown>): void {
+    this._stepRegistry.defineParameterType(type);
   }
 
   parse(feature: string): ParsedStep[] {
@@ -50,11 +37,11 @@ export class Runner<TWorld extends World> {
     const pickle = pickles[0];
 
     return pickle.steps.map((step) => {
-      const match = this.match(step.text);
+      const match = this._stepRegistry.match(step.text);
 
       return {
         text: step.text,
-        def: match?.def ? `${match?.def.type} ${match?.def.source}` : undefined,
+        def: match?.def ? `${match.def.type} ${match.def.source}` : undefined,
         values: match?.values,
       };
     });
@@ -110,25 +97,14 @@ export class Runner<TWorld extends World> {
     return { world, status: !error ? 'passed' : 'failed', steps, reason: error };
   }
 
-  reset() {
-    this._registry = new ParameterTypeRegistry();
-    this._defs = [];
-  }
-
-  private match(text: string) {
-    for (const def of this.defs) {
-      const args = def.expr.match(text);
-      if (args) return { def, values: args.map((a) => a.getValue(null)) };
-    }
-    return null;
+  reset(): void {
+    this._stepRegistry = new DefaultStepRegistry();
   }
 
   private describeStep(step: PickleStep): StepDescription {
-    const def = this.defs.find(({ expr }) => !!expr.match(step.text));
-
-    const text = def ? `${def.type} ${step.text}` : step.text;
-    const args = def?.expr.match(step.text) || [];
-
+    const match = this._stepRegistry.match(step.text);
+    const text = match ? `${match.def.type} ${step.text}` : step.text;
+    const args = match?.args ?? [];
     return { id: step.id, text, args };
   }
 
@@ -147,7 +123,7 @@ export class Runner<TWorld extends World> {
   private async runStep(world: TWorld, step: PickleStep): Promise<StepResult> {
     try {
       const text = step.text;
-      const match = this.match(text);
+      const match = this._stepRegistry.match(text);
 
       if (!match) throw new Error(`Undefined step: ${text}`);
 

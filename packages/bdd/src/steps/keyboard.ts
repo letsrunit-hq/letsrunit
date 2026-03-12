@@ -1,6 +1,6 @@
 import type { KeyCombo } from '@letsrunit/gherkin';
 import { sleep } from '@letsrunit/utils';
-import { When } from './wrappers';
+import { When } from '../registry';
 
 const DELAY = 500;
 

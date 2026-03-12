@@ -1,7 +1,7 @@
 import type { KeyCombo } from '@letsrunit/gherkin';
 import { fuzzyLocator, waitAfterInteraction } from '@letsrunit/playwright';
 import type { Locator } from '@playwright/test';
-import { When } from './wrappers';
+import { When } from '../registry';
 
 const TIMEOUT = 2500;
 
