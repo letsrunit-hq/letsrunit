@@ -13,4 +13,6 @@
 
 ## Breaking changes
 
-<!-- Does this change any public APIs, contracts, or behaviour? If yes, describe what breaks and how to migrate. Remove this section if not applicable. -->
+<!-- Remove this section if there are no breaking changes. -->
+<!-- Does this change any public APIs, contracts, or behaviour? Describe what breaks and how to migrate.  -->
+
