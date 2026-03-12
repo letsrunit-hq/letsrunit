@@ -5,7 +5,6 @@ import { type Environment, execPm } from '../detect.js';
 const BDD_IMPORT = '@letsrunit/bdd/define';
 
 const CUCUMBER_CONFIG = `export default {
-  import: ['features/support/*.js'],
   worldParameters: {
     baseURL: 'http://localhost:3000',
   },
