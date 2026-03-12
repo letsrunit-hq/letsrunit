@@ -11,6 +11,7 @@ import { selectNative } from './native-select';
 import { setOtpValue } from './otp';
 import { setRadioGroup } from './radio-group';
 import { setSliderValue } from './slider';
+import { setToggle } from './toggle';
 import type { Loc, SetOptions, Value } from './types';
 
 function toString(value: Value): string {
@@ -33,6 +34,7 @@ export async function setFieldValue(el: Locator, value: Value, options?: SetOpti
     setNativeDate,
     setNativeInput,
     // aria / components
+    setToggle,
     setDateTextInput,
     setDateGroup,
     setCalendarDate,
