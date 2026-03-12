@@ -16,7 +16,8 @@
     "test": "yarn workspaces foreach -ptA run test",
     "test:apps": "yarn workspaces foreach --include 'apps/*' -ptA run test",
     "test:compat": "yarn workspaces foreach --include 'compat/*' -ptA run test",
-    "test:packages": "yarn workspaces foreach --include 'packages/*' -ptA run test"
+    "test:packages": "yarn workspaces foreach --include 'packages/*' -ptA run test",
+    "test:cucumber": "NODE_OPTIONS='--import tsx' yarn cucumber-js"
   },
   "devDependencies": {
     "@cucumber/cucumber": "^12.7.0",
