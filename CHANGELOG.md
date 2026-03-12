@@ -1,3 +1,15 @@
+# [0.6.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.5.1...v0.6.0) (2026-03-12)
+
+
+### Bug Fixes
+
+* **bdd:** Fix viewport step in bdd package ([4d4ccd2](https://github.com/letsrunit-hq/letsrunit/commit/4d4ccd2347d5cedce2e8c9be4b2732aac46ecc60))
+
+
+### Features
+
+* Added step definition to set screensize (viewport) ([c716ec9](https://github.com/letsrunit-hq/letsrunit/commit/c716ec966598b764812eaa77983eaee2f59c9f0e))
+
 ## [0.5.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.5.0...v0.5.1) (2026-03-12)
 
 
