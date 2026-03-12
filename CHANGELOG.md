@@ -1,3 +1,10 @@
+## [0.4.2](https://github.com/letsrunit-hq/letsrunit/compare/v0.4.1...v0.4.2) (2026-03-12)
+
+
+### Bug Fixes
+
+* read MCP server version from package.json ([f49633b](https://github.com/letsrunit-hq/letsrunit/commit/f49633b841ee31c6eb0bf18471854c48b9a2e246))
+
 ## [0.4.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.4.0...v0.4.1) (2026-03-12)
 
 
