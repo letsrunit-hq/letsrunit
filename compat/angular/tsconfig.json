@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "paths": {
+      "playwright-core": ["../../node_modules/@playwright/test/node_modules/playwright-core"],
+      "playwright-core/*": ["../../node_modules/@playwright/test/node_modules/playwright-core/*"]
+    }
+  },
+  "angularCompilerOptions": {
+    "strictTemplates": true
+  },
+  "include": ["src/**/*", "tests/**/*", "playwright/**/*"]
+}
