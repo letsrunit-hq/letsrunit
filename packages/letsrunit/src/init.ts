@@ -5,7 +5,7 @@ import { installCucumber, setupCucumber } from './setup/cucumber.js';
 import { installGithubAction } from './setup/github-actions.js';
 import { hasPlaywrightBrowsers, installPlaywrightBrowsers } from './setup/playwright.js';
 
-const BDD_IMPORT = '@letsrunit/bdd/define';
+const BDD_IMPORT = '@letsrunit/cucumber';
 
 export interface InitOptions {
   yes?: boolean;
@@ -47,12 +47,12 @@ async function stepEnsureCucumber(env: Environment, { yes }: InitOptions): Promi
 function stepSetupCucumber(env: Environment): void {
   const result = setupCucumber(env);
 
-  if (result.bddInstalled) log.success('@letsrunit/bdd installed');
+  if (result.bddInstalled) log.success('@letsrunit/cucumber installed');
 
   if (result.configResult === 'created') {
     log.success('features/support/world.js created');
   } else if (result.configResult === 'needs-manual-update') {
-    log.warn('features/support/world.js exists but does not import @letsrunit/bdd.');
+    log.warn('features/support/world.js exists but does not import @letsrunit/cucumber.');
     note(`Add "import '${BDD_IMPORT}';" to features/support/world.js`, 'Action required');
   }
 

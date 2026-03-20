@@ -1,11 +1,11 @@
 {
-  "name": "@letsrunit/bdd",
-  "version": "0.6.0",
-  "description": "BDD step definitions for browser automation with letsrunit",
+  "name": "@letsrunit/cucumber",
+  "version": "0.1.0",
+  "description": "Cucumber CLI integration for letsrunit BDD step definitions",
   "keywords": [
     "testing",
     "bdd",
-    "gherkin",
+    "cucumber",
     "playwright",
     "letsrunit"
   ],
@@ -13,7 +13,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/letsrunit-hq/letsrunit.git",
-    "directory": "packages/bdd"
+    "directory": "packages/cucumber"
   },
   "bugs": "https://github.com/letsrunit-hq/letsrunit/issues",
   "homepage": "https://github.com/letsrunit-hq/letsrunit#readme",
@@ -39,29 +39,20 @@
   ],
   "scripts": {
     "build": "../../node_modules/.bin/tsup",
-    "test": "vitest run",
-    "test:cov": "vitest run --coverage",
-    "typecheck": "tsc --noEmit",
-    "gen:stub": "npx tsx scripts/generate-stub.ts"
+    "test": "echo 'no tests'"
   },
   "packageManager": "yarn@4.10.3",
   "dependencies": {
-    "@cucumber/cucumber-expressions": "^18.1.0",
+    "@letsrunit/bdd": "workspace:*",
     "@letsrunit/gherkin": "workspace:*",
-    "@letsrunit/mailbox": "workspace:*",
     "@letsrunit/playwright": "workspace:*",
-    "@letsrunit/utils": "workspace:*",
-    "@playwright/test": "^1.57.0",
-    "iso-639-1": "^3.1.5",
-    "metascraper": "^5.49.15",
-    "metascraper-lang": "^5.49.15"
+    "@playwright/test": "^1.57.0"
   },
   "peerDependencies": {
     "@cucumber/cucumber": "^12.0.0"
   },
   "devDependencies": {
-    "@cucumber/cucumber": "^12.7.0",
-    "vitest": "^4.0.17"
+    "@cucumber/cucumber": "^12.7.0"
   },
   "module": "./src/index.ts",
   "types": "./src/index.ts",

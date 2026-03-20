@@ -2,9 +2,7 @@ import { After, Before, BeforeAll, defineParameterType, Given, Then, When } from
 import { browse, createDateEngine, createFieldEngine } from '@letsrunit/playwright';
 import { chromium, selectors } from '@playwright/test';
 import { sanitizeStepDefinition } from '@letsrunit/gherkin';
-import { typeDefinitions } from './parameters';
-import { registry } from './registry';
-import './steps'; // ensure built-in steps are registered before Cucumber receives them
+import { typeDefinitions, registry } from '@letsrunit/bdd'; // importing bdd registers built-in steps as a side effect
 
 for (const type of typeDefinitions) {
   defineParameterType(type);

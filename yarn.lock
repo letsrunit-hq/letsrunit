@@ -4709,6 +4709,20 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@letsrunit/cucumber@workspace:packages/cucumber":
+  version: 0.0.0-use.local
+  resolution: "@letsrunit/cucumber@workspace:packages/cucumber"
+  dependencies:
+    "@cucumber/cucumber": "npm:^12.7.0"
+    "@letsrunit/bdd": "workspace:*"
+    "@letsrunit/gherkin": "workspace:*"
+    "@letsrunit/playwright": "workspace:*"
+    "@playwright/test": "npm:^1.57.0"
+  peerDependencies:
+    "@cucumber/cucumber": ^12.0.0
+  languageName: unknown
+  linkType: soft
+
 "@letsrunit/executor@workspace:*, @letsrunit/executor@workspace:packages/executor":
   version: 0.0.0-use.local
   resolution: "@letsrunit/executor@workspace:packages/executor"

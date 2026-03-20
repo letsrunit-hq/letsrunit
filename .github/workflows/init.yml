@@ -31,6 +31,7 @@ jobs:
           yarn workspace letsrunit pack --out /tmp/letsrunit.tgz
           yarn workspace @letsrunit/ai pack --out /tmp/ai.tgz
           yarn workspace @letsrunit/bdd pack --out /tmp/bdd.tgz
+          yarn workspace @letsrunit/cucumber pack --out /tmp/cucumber.tgz
           yarn workspace @letsrunit/cli pack --out /tmp/cli.tgz
           yarn workspace @letsrunit/controller pack --out /tmp/controller.tgz
           yarn workspace @letsrunit/executor pack --out /tmp/executor.tgz
@@ -48,6 +49,7 @@ jobs:
             /tmp/letsrunit.tgz
             /tmp/ai.tgz
             /tmp/bdd.tgz
+            /tmp/cucumber.tgz
             /tmp/cli.tgz
             /tmp/controller.tgz
             /tmp/executor.tgz
@@ -94,6 +96,7 @@ jobs:
           cp /tmp/letsrunit.tgz   /tmp/test-${{ matrix.pm }}/letsrunit.tgz
           cp /tmp/ai.tgz          /tmp/test-${{ matrix.pm }}/ai.tgz
           cp /tmp/bdd.tgz         /tmp/test-${{ matrix.pm }}/bdd.tgz
+          cp /tmp/cucumber.tgz    /tmp/test-${{ matrix.pm }}/cucumber.tgz
           cp /tmp/cli.tgz         /tmp/test-${{ matrix.pm }}/cli.tgz
           cp /tmp/controller.tgz  /tmp/test-${{ matrix.pm }}/controller.tgz
           cp /tmp/executor.tgz    /tmp/test-${{ matrix.pm }}/executor.tgz
@@ -110,6 +113,7 @@ jobs:
               'letsrunit':              'file:./letsrunit.tgz',
               '@letsrunit/ai':          'file:./ai.tgz',
               '@letsrunit/bdd':         'file:./bdd.tgz',
+              '@letsrunit/cucumber':    'file:./cucumber.tgz',
               '@letsrunit/cli':         'file:./cli.tgz',
               '@letsrunit/controller':  'file:./controller.tgz',
               '@letsrunit/executor':    'file:./executor.tgz',
@@ -126,11 +130,11 @@ jobs:
               private: true,
               type: 'module',
               dependencies: {
-                'letsrunit':          'file:./letsrunit.tgz',
-                '@letsrunit/cli':     'file:./cli.tgz',
-                '@letsrunit/bdd':     'file:./bdd.tgz',
-                '@cucumber/cucumber': '*',
-                'playwright':         '*'
+                'letsrunit':               'file:./letsrunit.tgz',
+                '@letsrunit/cli':          'file:./cli.tgz',
+                '@letsrunit/cucumber':     'file:./cucumber.tgz',
+                '@cucumber/cucumber':      '*',
+                'playwright':              '*'
               }
             };
             if (pm === 'yarn') {
