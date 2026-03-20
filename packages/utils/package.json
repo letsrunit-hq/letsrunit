@@ -55,8 +55,5 @@
     "fast-json-stable-stringify": "^2.1.0",
     "lru-cache": "^11.2.4",
     "uuid": "^13.0.0"
-  },
-  "devDependencies": {
-    "vitest": "^4.0.17"
   }
 }

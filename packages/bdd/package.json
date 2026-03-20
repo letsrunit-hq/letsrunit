@@ -60,8 +60,7 @@
     "@cucumber/cucumber": "^12.0.0"
   },
   "devDependencies": {
-    "@cucumber/cucumber": "^12.7.0",
-    "vitest": "^4.0.17"
+    "@cucumber/cucumber": "^12.7.0"
   },
   "module": "./src/index.ts",
   "types": "./src/index.ts",
