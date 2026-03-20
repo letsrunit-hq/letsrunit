@@ -16,4 +16,4 @@ export const viewport = Given(
       await this.page.setViewportSize(size);
     }
   },
-);
+);  
