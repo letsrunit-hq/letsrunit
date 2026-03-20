@@ -4612,7 +4612,6 @@ __metadata:
     "@letsrunit/utils": "workspace:*"
     "@types/mustache": "npm:^4.2.6"
     "@types/node": "npm:^25.0.9"
-    "@vitest/coverage-v8": "npm:4.0.17"
     ai: "npm:^5.0.121"
     cache-manager: "npm:^7.2.8"
     iso-639-1: "npm:^3.1.5"
@@ -4770,7 +4769,6 @@ __metadata:
     "@letsrunit/utils": "workspace:*"
     "@supabase/supabase-js": "npm:^2.91.0"
     "@types/node": "npm:^25.0.9"
-    "@vitest/coverage-v8": "npm:4.0.17"
     ansi-escapes: "npm:^7.2.0"
     typescript: "npm:^5.9.3"
     yaml: "npm:^2.8.2"
@@ -4798,7 +4796,6 @@ __metadata:
     "@modelcontextprotocol/sdk": "npm:^1.26.0"
     "@playwright/test": "npm:^1.57.0"
     "@types/node": "npm:^25.0.9"
-    "@vitest/coverage-v8": "npm:4.0.17"
     typescript: "npm:^5.9.3"
     zod: "npm:^4.3.5"
   bin:
@@ -9568,13 +9565,13 @@ __metadata:
   linkType: hard
 
 "ast-v8-to-istanbul@npm:^0.3.10":
-  version: 0.3.10
-  resolution: "ast-v8-to-istanbul@npm:0.3.10"
+  version: 0.3.12
+  resolution: "ast-v8-to-istanbul@npm:0.3.12"
   dependencies:
     "@jridgewell/trace-mapping": "npm:^0.3.31"
     estree-walker: "npm:^3.0.3"
-    js-tokens: "npm:^9.0.1"
-  checksum: 10c0/8a7a07c04f8f130b8a5abb76cdb31cce06a8eb4b7d4abbe207bc721132127ae332e857b96aa415ac43ec2c6c9312508210c598f61a7de2d0e3db5615e6b03183
+    js-tokens: "npm:^10.0.0"
+  checksum: 10c0/bad6ba222b1073c165c8d65dbf366193d4a90536dabe37f93a3df162269b1c9473975756e4c048f708c235efccc26f8e5321c547b7e9563b64b21b2e0f27cbc9
   languageName: node
   linkType: hard
 
@@ -15089,17 +15086,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"js-tokens@npm:^10.0.0":
+  version: 10.0.0
+  resolution: "js-tokens@npm:10.0.0"
+  checksum: 10c0/a93498747812ba3e0c8626f95f75ab29319f2a13613a0de9e610700405760931624433a0de59eb7c27ff8836e526768fb20783861b86ef89be96676f2c996b64
+  languageName: node
+  linkType: hard
+
 "js-tokens@npm:^3.0.0 || ^4.0.0, js-tokens@npm:^4.0.0":
   version: 4.0.0
   resolution: "js-tokens@npm:4.0.0"
   checksum: 10c0/e248708d377aa058eacf2037b07ded847790e6de892bbad3dac0abba2e759cb9f121b00099a65195616badcb6eca8d14d975cb3e89eb1cfda644756402c8aeed
-  languageName: node
-  linkType: hard
-
-"js-tokens@npm:^9.0.1":
-  version: 9.0.1
-  resolution: "js-tokens@npm:9.0.1"
-  checksum: 10c0/68dcab8f233dde211a6b5fd98079783cbcd04b53617c1250e3553ee16ab3e6134f5e65478e41d82f6d351a052a63d71024553933808570f04dbf828d7921e80e
   languageName: node
   linkType: hard
 
@@ -15447,6 +15444,7 @@ __metadata:
     "@semantic-release/exec": "npm:^7.1.0"
     "@semantic-release/git": "npm:^10.0.1"
     "@semantic-release/github": "npm:^12.0.6"
+    "@vitest/coverage-v8": "npm:4.0.17"
     eslint: "npm:^9.39.2"
     eslint-config-prettier: "npm:^10.1.8"
     prettier: "npm:^3.8.0"
@@ -15886,13 +15884,13 @@ __metadata:
   linkType: hard
 
 "magicast@npm:^0.5.1":
-  version: 0.5.1
-  resolution: "magicast@npm:0.5.1"
+  version: 0.5.2
+  resolution: "magicast@npm:0.5.2"
   dependencies:
-    "@babel/parser": "npm:^7.28.5"
-    "@babel/types": "npm:^7.28.5"
+    "@babel/parser": "npm:^7.29.0"
+    "@babel/types": "npm:^7.29.0"
     source-map-js: "npm:^1.2.1"
-  checksum: 10c0/a00bbf3688b9b3e83c10b3bfe3f106cc2ccbf20c4f2dc1c9020a10556dfe0a6a6605a445ee8e86a6e2b484ec519a657b5e405532684f72678c62e4c0d32f962c
+  checksum: 10c0/924af677643c5a0a7d6cdb3247c0eb96fa7611b2ba6a5e720d35d81c503d3d9f5948eb5227f80f90f82ea3e7d38cffd10bb988f3fc09020db428e14f26e960d7
   languageName: node
   linkType: hard
 
