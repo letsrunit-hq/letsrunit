@@ -1,0 +1,60 @@
+{
+  "name": "@letsrunit/store",
+  "version": "0.1.0",
+  "description": "SQLite-backed artifact store for letsrunit",
+  "keywords": [
+    "testing",
+    "store",
+    "sqlite",
+    "letsrunit"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/letsrunit-hq/letsrunit.git",
+    "directory": "packages/store"
+  },
+  "bugs": "https://github.com/letsrunit-hq/letsrunit/issues",
+  "homepage": "https://github.com/letsrunit-hq/letsrunit#readme",
+  "type": "module",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js",
+        "default": "./dist/index.js"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "../../node_modules/.bin/tsup",
+    "typecheck": "tsc --noEmit"
+  },
+  "packageManager": "yarn@4.10.3",
+  "dependencies": {
+    "better-sqlite3": "^12.8.0",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13"
+  }
+}

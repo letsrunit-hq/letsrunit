@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: ['src/index.ts', 'src/artifacts.ts'],
+  entry: ['src/index.ts'],
   format: ['esm'],
   platform: 'node',
   dts: true,
@@ -9,6 +9,4 @@ export default defineConfig({
   clean: true,
   treeshake: true,
   outDir: 'dist',
-  noExternal: ['@letsrunit/store'],
-  external: ['better-sqlite3'],
 });
