@@ -1,3 +1,13 @@
+# [0.7.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.6.0...v0.7.0) (2026-03-20)
+
+
+### Features
+
+* **cucumber:** add artifact store formatter (@letsrunit/cucumber/artifacts) ([6515950](https://github.com/letsrunit-hq/letsrunit/commit/65159509d5cf0340e94f71c1db119d97a3d92dd1))
+* **cucumber:** attach screenshot and scrubbed HTML after each step ([8c05212](https://github.com/letsrunit-hq/letsrunit/commit/8c052122105613fe7493fb90b85e4a35f7daffea))
+* extract @letsrunit/cucumber package from @letsrunit/bdd ([65d59b8](https://github.com/letsrunit-hq/letsrunit/commit/65d59b8ac56d7d578a069004a930e8246e86df41))
+* **store:** add @letsrunit/store SQLite package and wire into artifacts formatter ([52745ba](https://github.com/letsrunit-hq/letsrunit/commit/52745babc37de68a08f67799b3d0d41a17429809))
+
 # [0.6.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.5.1...v0.6.0) (2026-03-12)
 
 
