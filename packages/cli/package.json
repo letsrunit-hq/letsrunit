@@ -38,8 +38,7 @@
   },
   "scripts": {
     "build": "../../node_modules/.bin/tsup",
-    "dev": "tsx src/index.ts",
-    "test": "echo \"No tests yet\""
+    "dev": "tsx src/index.ts"
   },
   "packageManager": "yarn@4.10.3",
   "dependencies": {
