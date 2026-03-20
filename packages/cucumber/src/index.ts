@@ -1,10 +1,8 @@
-import { After, Before, BeforeAll, defineParameterType, Given, Then, When } from '@cucumber/cucumber';
-import { browse, createDateEngine, createFieldEngine } from '@letsrunit/playwright';
+import { After, AfterStep, Before, BeforeAll, defineParameterType, Given, Then, When } from '@cucumber/cucumber';
+import { browse, createDateEngine, createFieldEngine, scrubHtml } from '@letsrunit/playwright';
 import { chromium, selectors } from '@playwright/test';
 import { sanitizeStepDefinition } from '@letsrunit/gherkin';
-import { typeDefinitions } from './parameters';
-import { registry } from './registry';
-import './steps'; // ensure built-in steps are registered before Cucumber receives them
+import { typeDefinitions, registry } from '@letsrunit/bdd'; // importing bdd registers built-in steps as a side effect
 
 for (const type of typeDefinitions) {
   defineParameterType(type);
@@ -35,4 +33,17 @@ Before(async function () {
 
 After(async function () {
   await this._browser?.close();
+});
+
+AfterStep(async function () {
+  const page = this.page;
+  if (!page || page.url() === 'about:blank') return;
+  try {
+    const [screenshotBuffer, html] = await Promise.all([
+      page.screenshot(),
+      scrubHtml(page),
+    ]);
+    await this.attach(screenshotBuffer, 'image/png');
+    await this.attach(html, 'text/html');
+  } catch {}
 });

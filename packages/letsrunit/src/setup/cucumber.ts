@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { join } from 'node:path';
 import { type Environment, execPm } from '../detect.js';
 
-const BDD_IMPORT = '@letsrunit/bdd/define';
+const BDD_IMPORT = '@letsrunit/cucumber';
 
 const CUCUMBER_CONFIG = `export default {
   require: ['features/support/**/*.js'],
@@ -50,15 +50,15 @@ function installBdd(env: Pick<Environment, 'packageManager' | 'cwd'>): boolean {
   };
 
   const alreadyInstalled =
-    '@letsrunit/bdd' in (pkg.devDependencies ?? {}) || '@letsrunit/bdd' in (pkg.dependencies ?? {});
+    '@letsrunit/cucumber' in (pkg.devDependencies ?? {}) || '@letsrunit/cucumber' in (pkg.dependencies ?? {});
 
   if (alreadyInstalled) return false;
 
   execPm(env, {
-    npm: 'install --save-dev @letsrunit/bdd',
-    yarn: 'add --dev @letsrunit/bdd',
-    pnpm: 'add -D @letsrunit/bdd',
-    bun: 'add -d @letsrunit/bdd',
+    npm: 'install --save-dev @letsrunit/cucumber',
+    yarn: 'add --dev @letsrunit/cucumber',
+    pnpm: 'add -D @letsrunit/cucumber',
+    bun: 'add -d @letsrunit/cucumber',
   });
 
   return true;
