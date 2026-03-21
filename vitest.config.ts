@@ -6,6 +6,12 @@ export default defineConfig({
       'packages/*/vitest.config.ts',
     ],
     coverage: {
+      watermarks: {
+        statements: [80, 95],
+        branches: [80, 95],
+        functions: [80, 95],
+        lines: [80, 95],
+      },
       exclude: [
         '**/tests/**',
         'packages/playwright/src/translations/**',
