@@ -46,6 +46,13 @@ describe('registerSessionStart', () => {
     );
   });
 
+  it('defaults viewport width to 1280 when only height is given', async () => {
+    await call({ viewportHeight: 900 });
+    expect(sessions.create).toHaveBeenCalledWith(
+      expect.objectContaining({ viewport: { width: 1280, height: 900 } }),
+    );
+  });
+
   it('omits viewport when neither width nor height is provided', async () => {
     await call({});
     expect(sessions.create).toHaveBeenCalledWith(

@@ -28,6 +28,8 @@ describe('mailhog.receive', () => {
               { ContentType: 'text/plain', Body: 'Hello text' },
               { ContentType: 'text/html', Body: '<p>Hello</p>' },
               { ContentType: 'application/pdf', FileName: 'file.pdf', Body: '...' },
+              { contentType: 'application/json', body: '{}' },
+              { contentType: '', filename: 'fallback.bin' },
             ],
           },
         },
@@ -51,7 +53,11 @@ describe('mailhog.receive', () => {
     expect(e.cc).toContain('cc@example.com');
     expect(e.html).toBe('<p>Hello</p>');
     expect(e.text).toBe('Hello text');
-    expect(e.attachments).toEqual([{ filename: 'file.pdf', contentType: 'application/pdf' }]);
+    expect(e.attachments).toEqual([
+      { filename: 'file.pdf', contentType: 'application/pdf' },
+      { filename: 'attachment', contentType: 'application/json' },
+      { filename: 'fallback.bin', contentType: 'application/octet-stream' },
+    ]);
   });
 
   it('filters by after', async () => {
@@ -102,6 +108,41 @@ describe('mailhog.receive', () => {
     vi.stubGlobal('fetch', fetchMock as any);
 
     const res = await receiveMail('user@example.com', { wait: false });
+    expect(res).toEqual([]);
+  });
+
+  it('filters by subject when provided', async () => {
+    const body = {
+      items: [
+        { Created: '2025-01-01T00:00:10Z', Content: { Headers: { Subject: ['Welcome one'] } } },
+        { Created: '2025-01-01T00:00:11Z', Content: { Headers: { Subject: ['Other'] } } },
+      ],
+    };
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue(body) });
+    vi.stubGlobal('fetch', fetchMock as any);
+
+    const res = await receiveMail('user@example.com', { subject: 'Welcome' });
+    expect(res.map((e) => e.subject)).toEqual(['Welcome one']);
+  });
+
+  it('does not throw when request fails after signal is already aborted and wait=false', async () => {
+    const signal: AbortSignal = {
+      aborted: false,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      onabort: null,
+      reason: undefined,
+      dispatchEvent: vi.fn(),
+      throwIfAborted: vi.fn(),
+    } as any;
+
+    const fetchMock = vi.fn().mockImplementation(() => {
+      Object.defineProperty(signal, 'aborted', { value: true, configurable: true });
+      throw new Error('network');
+    });
+    vi.stubGlobal('fetch', fetchMock as any);
+
+    const res = await receiveMail('user@example.com', { wait: false, signal });
     expect(res).toEqual([]);
   });
 });
