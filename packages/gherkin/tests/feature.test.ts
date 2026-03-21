@@ -81,6 +81,47 @@ And I log in
     ]);
   });
 
+  it('keeps a provided Scenario header when wrapping bare scenario input', () => {
+    const parsed = parseFeature(`
+Scenario: login
+Given I open the page
+When I sign in
+Then I see dashboard
+    `.trim());
+
+    expect(parsed.name).toBe('');
+    expect(parsed.steps).toEqual([
+      'Given I open the page',
+      'When I sign in',
+      'Then I see dashboard',
+    ]);
+  });
+
+  it('returns undefined comments when no comments exist', () => {
+    const parsed = parseFeature(`
+Feature: No comments
+
+  Scenario: run
+    Given I do something
+    `.trim());
+
+    expect(parsed.comments).toBeUndefined();
+  });
+
+  it('ignores keyword-only steps with no text content', () => {
+    const parsed = parseFeature(`
+Feature: Empty text
+
+  Scenario: run
+    Given
+    Then done
+    `.trim());
+
+    expect(parsed.steps).toEqual([
+      'Then done',
+    ]);
+  });
+
   it('returns empty steps when only scenario outlines are present', () => {
     const parsed = parseFeature(`
 Feature: Outlines only

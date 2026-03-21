@@ -45,59 +45,41 @@ type Expr = {
   ancestors: Selector[];  // outermost → innermost containers from chained `within`
 };
 
-// ---------- Escapers: same semantics as your snippet ----------
-function escapeRegexForSelector(re: RegExp): string {
-  /* v8 ignore start -- locator DSL grammar currently only emits string selector values */
-  // keep unicode flags as-is; otherwise escape quotes and >> combinators
-  // @ts-ignore - .unicodeSets may exist on some runtimes
-  if (re.unicode || (re as any).unicodeSets) return String(re);
-  return String(re)
-    .replace(/(^|[^\\])(\\\\)*(["'`])/g, '$1$2\\$3')
-    .replace(/>>/g, '\\>\\>');
-  /* v8 ignore stop */
-}
-
-function escapeForTextSelector(text: string | RegExp, exact = false): string {
-  /* v8 ignore next -- locator DSL grammar currently only emits string selector values */
-  if (typeof text !== 'string') return escapeRegexForSelector(text);
+// ---------- Escapers ----------
+function escapeForTextSelector(text: string, exact = false): string {
   return `${JSON.stringify(text)}${exact ? 's' : 'i'}`;
 }
 
-function escapeForAttributeSelector(value: string | RegExp, exact = false): string {
-  /* v8 ignore next -- locator DSL grammar currently only emits string selector values */
-  if (typeof value !== 'string') return escapeRegexForSelector(value);
+function escapeForAttributeSelector(value: string, exact = false): string {
   return `"${value.trim().replace(/\\/g, '\\\\').replace(/["]/g, '\\"')}"${exact ? 's' : 'i'}`;
 }
 
 // ---------- Builders for internal engines ----------
-function getByAttributeTextSelector(attrName: string, text: string | RegExp, props = ''): string {
+function getByAttributeTextSelector(attrName: string, text: string, props = ''): string {
   return `[${attrName}=${escapeForAttributeSelector(text)}]` + (props ? ` ${props}` : '');
 }
 
-function getByAltTextSelector(text: string | RegExp, props = ''): string {
+function getByAltTextSelector(text: string, props = ''): string {
   return getByAttributeTextSelector('alt', text, props);
 }
 
-function getByFieldSelector(text: string | RegExp, props = ''): string {
+function getByFieldSelector(text: string, props = ''): string {
   const q = escapeForTextSelector(text);
   return `field=${q}${props ? ` ${props}` : ''}`;
 }
 
-function getByTextSelector(text: string | RegExp, props = ''): string {
-  if (typeof text === 'string') {
-    // Produce a regex selector for case-insensitive substring matching.
-    // Regex special chars (and the delimiter /) must be escaped.
-    const escaped = text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\//g, '\\/');
-    return 'text=/' + escaped + '/i' + (props ? ` ${props}` : '');
-  }
-  return 'text=' + escapeForTextSelector(text) + (props ? ` ${props}` : '');
+function getByTextSelector(text: string, props = ''): string {
+  // Produce a regex selector for case-insensitive substring matching.
+  // Regex special chars (and the delimiter /) must be escaped.
+  const escaped = text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\//g, '\\/');
+  return 'text=/' + escaped + '/i' + (props ? ` ${props}` : '');
 }
 
-function getByDateSelector(text: string, props = ''): string {
-  return 'date=' + text.trim() + (props ? ` ${props}` : '');
+function getByDateSelector(text: string): string {
+  return 'date=' + text.trim();
 }
 
-function getByRoleSelector(role: string, name: string | RegExp = '', props = ''): string {
+function getByRoleSelector(role: string, name: string = '', props = ''): string {
   return `role=${role}` + (name ? ` [name=${escapeForAttributeSelector(name)}]` : '') + (props ? ` ${props}` : '');
 }
 

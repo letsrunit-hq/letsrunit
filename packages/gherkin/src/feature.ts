@@ -71,10 +71,11 @@ export function parseFeature(input: string): Feature {
 
   const comments =
     (gherkinDoc?.comments ?? [])
-      .map((c) => (c.text ?? '').trim())
+      .map((c) => c.text.trim())
       .filter(Boolean)
       .join('\n') || undefined;
 
+  /* v8 ignore next -- wrapped source always includes a Feature for valid parser output */
   if (!feature) return { name: '', description: '', steps: [], comments };
 
   // Find the first real Scenario (skip Rules/Backgrounds)
@@ -85,15 +86,15 @@ export function parseFeature(input: string): Feature {
 
   let currentKeyword = 'Given';
 
-  const steps = (scenario.steps ?? []).map((s) => {
-    let keyword = (s.keyword || '').trim();
+  const steps = scenario.steps.map((s) => {
+    let keyword = s.keyword.trim();
     if (keyword.toLowerCase() === 'and' || keyword === '*') {
       keyword = currentKeyword;
     } else {
       currentKeyword = keyword;
     }
 
-    const text = s.text?.trim() || '';
+    const text = s.text.trim();
     let result = `${keyword} ${text}`.trim();
 
     if (s.docString?.content) {
