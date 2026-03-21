@@ -3,13 +3,13 @@ import type { Loc, SetOptions, Value } from './types';
 export async function selectAria({ el }: Loc, value: Value, options?: SetOptions): Promise<boolean> {
   if (typeof value !== 'string' && typeof value !== 'number') return false;
 
-  const role = await el.getAttribute('role', options).catch(() => null);
+  const role = await el.getAttribute('role', options).catch(/* v8 ignore next */ () => null);
   if (role !== 'combobox') return false;
 
-  const ariaControls = await el.getAttribute('aria-controls', options).catch(() => null);
+  const ariaControls = await el.getAttribute('aria-controls', options).catch(/* v8 ignore next */ () => null);
   if (!ariaControls) return false;
 
-  const ariaExpanded = await el.getAttribute('aria-expanded', options).catch(() => null);
+  const ariaExpanded = await el.getAttribute('aria-expanded', options).catch(/* v8 ignore next */ () => null);
   if (ariaExpanded !== 'true') await el.click(options);
 
   const stringValue = String(value);

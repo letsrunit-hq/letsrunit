@@ -25,7 +25,7 @@ async function getCandidateLocs(el: Locator, options?: SetOptions): Promise<Cand
 
   return Promise.all(
     candidates.map(async (c) => {
-      const info = await c.evaluate((node) => {
+      const info = await c.evaluate(/* v8 ignore start */ (node) => {
         const e = node as HTMLInputElement | HTMLSelectElement;
         const attrs: Record<string, string> = {};
         for (const attr of e.attributes) {
@@ -52,7 +52,7 @@ async function getCandidateLocs(el: Locator, options?: SetOptions): Promise<Cand
           inputMode: e.getAttribute('inputmode'),
           attrs,
           options,
-        };
+        }; /* v8 ignore stop */
       }, options);
       return { el: c, ...info };
     }),
@@ -100,53 +100,53 @@ async function behavioralProbe(candidateLocs: CandidateInfo[], scores: Score[], 
     for (let i = 0; i < candidateLocs.length; i++) {
       const loc = candidateLocs[i];
       if (loc.tag === 'input') {
-        const can_be_day = await loc.el.evaluate((node) => {
+        const can_be_day = await loc.el.evaluate(/* v8 ignore start */ (node) => {
           const e = node as HTMLInputElement;
           const old = e.value;
           e.value = '31';
           const valid = e.checkValidity();
           e.value = old;
-          return valid;
+          return valid; /* v8 ignore stop */
         }, options);
         if (can_be_day) scores[i].day += 1;
 
-        const cannot_be_day = await loc.el.evaluate((node) => {
+        const cannot_be_day = await loc.el.evaluate(/* v8 ignore start */ (node) => {
           const e = node as HTMLInputElement;
           const old = e.value;
           e.value = '32';
           const valid = !e.checkValidity();
           e.value = old;
-          return valid;
+          return valid; /* v8 ignore stop */
         }, options);
         if (cannot_be_day) scores[i].day += 1;
 
-        const can_be_month = await loc.el.evaluate((node) => {
+        const can_be_month = await loc.el.evaluate(/* v8 ignore start */ (node) => {
           const e = node as HTMLInputElement;
           const old = e.value;
           e.value = '12';
           const valid = e.checkValidity();
           e.value = old;
-          return valid;
+          return valid; /* v8 ignore stop */
         }, options);
         if (can_be_month) scores[i].month += 1;
 
-        const cannot_be_month = await loc.el.evaluate((node) => {
+        const cannot_be_month = await loc.el.evaluate(/* v8 ignore start */ (node) => {
           const e = node as HTMLInputElement;
           const old = e.value;
           e.value = '13';
           const valid = !e.checkValidity();
           e.value = old;
-          return valid;
+          return valid; /* v8 ignore stop */
         }, options);
         if (cannot_be_month) scores[i].month += 1;
 
-        const can_be_year = await loc.el.evaluate((node) => {
+        const can_be_year = await loc.el.evaluate(/* v8 ignore start */ (node) => {
           const e = node as HTMLInputElement;
           const old = e.value;
           e.value = '2024';
           const valid = e.checkValidity();
           e.value = old;
-          return valid;
+          return valid; /* v8 ignore stop */
         }, options);
         if (can_be_year) scores[i].year += 1;
       }

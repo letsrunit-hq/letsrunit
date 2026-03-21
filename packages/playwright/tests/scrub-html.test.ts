@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { realScrubHtml } from '../src/scrub-html';
+import { describe, expect, it, vi } from 'vitest';
+import { realScrubHtml, scrubHtml } from '../src/scrub-html';
 
 describe('scrubHtml', () => {
   it('removes the head element by default', async () => {
@@ -231,5 +231,22 @@ describe('scrubHtml', () => {
 
     // aggressive keeps href, src, alt, name and specific data/aria test ids; drops rel/target/referrerpolicy/onclick
     expect(output).toBe('<a href="/x" name="t" data-qa="keep">L</a>');
+  });
+});
+
+describe('scrubHtml (Page overload)', () => {
+  it('calls page.content() and page.url() when passed a Page-like object', async () => {
+    const html = '<html><body><p>Hello</p></body></html>';
+    const page = {
+      content: vi.fn().mockResolvedValue(html),
+      url: vi.fn().mockReturnValue('https://example.com'),
+      screenshot: vi.fn(),
+    };
+
+    const result = await scrubHtml(page as any);
+
+    expect(page.content).toHaveBeenCalledTimes(1);
+    expect(page.url).toHaveBeenCalledTimes(1);
+    expect(result).toContain('Hello');
   });
 });

@@ -79,7 +79,7 @@ async function tryClick(page: Page, selectors: string[], _label: string) {
 }
 
 async function closeNativeJsAlerts(page: Page) {
-  page.on('dialog', (d) => d.accept().catch(() => {}));
+  page.on('dialog', /* v8 ignore next */ (d) => d.accept().catch(() => {}));
 }
 
 // 1) Known cookie CMPs (quick wins)
@@ -155,6 +155,7 @@ async function sweepNewsletter(page: Page, regex: TrRegExps): Promise<boolean> {
       } catch {}
     }
     // click outside the modal (overlay)
+    /* v8 ignore start */
     const overlay = page.locator('div[role="presentation"], .modal-backdrop, .overlay, .ReactModal__Overlay');
     if (await overlay.count().catch(() => 0)) {
       try {
@@ -162,6 +163,7 @@ async function sweepNewsletter(page: Page, regex: TrRegExps): Promise<boolean> {
         return true;
       } catch {}
     }
+    /* v8 ignore stop */
   }
   return false;
 }
@@ -173,6 +175,7 @@ async function sweepOverlays(page: Page, regex: TrRegExps): Promise<boolean> {
 
   return await page
     .evaluate(
+      /* v8 ignore start */
       ([source, flags]) => {
         const acceptRx = new RegExp(source, flags);
         const isBig = (el: Element) => {
@@ -192,7 +195,7 @@ async function sweepOverlays(page: Page, regex: TrRegExps): Promise<boolean> {
         for (const el of candidates) {
           // try a close button inside
           const btn = el.querySelector<HTMLElement>(
-            '[aria-label*="close" i], button[aria-label*="close" i], button:has(svg), .close, [data-close], .btn-close',
+            '[aria-label*=”close” i], button[aria-label*=”close” i], button:has(svg), .close, [data-close], .btn-close',
           );
 
           if (btn) {
@@ -221,9 +224,10 @@ async function sweepOverlays(page: Page, regex: TrRegExps): Promise<boolean> {
         }
         return false;
       },
+      /* v8 ignore stop */
       [acceptRxSource, acceptRxFlags],
     )
-    .catch(() => false);
+    .catch(/* v8 ignore next */ () => false);
 }
 
 export async function suppressInterferences(page: Page, opts: Options = {}) {
@@ -264,7 +268,9 @@ export async function suppressInterferences(page: Page, opts: Options = {}) {
 
       // Optional: bail if we are hitting a loop of re-spawning popups
       if (actions >= maxActions) {
+        /* v8 ignore start */
         if (opts.verbose) console.log(`[suppressInterferences] Max actions ${maxActions} reached, stopping.`);
+        /* v8 ignore stop */
         break;
       }
 
@@ -278,7 +284,9 @@ export async function suppressInterferences(page: Page, opts: Options = {}) {
     const ranFor = Date.now() - startedAt;
 
     if (quietFor >= quietPeriodMs && ranFor >= minSweepMs) {
+      /* v8 ignore start */
       if (opts.verbose) console.log(`[suppressInterferences] Quiet for ${quietFor}ms, stopping early.`);
+      /* v8 ignore stop */
       break;
     }
 

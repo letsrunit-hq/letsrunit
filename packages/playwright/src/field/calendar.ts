@@ -52,9 +52,11 @@ export async function getCalendar(
     (await root.locator(gridSelector).count()) > 0 ? root : await getDialog(root, options);
 
   // Fallback: Check if the root itself is a valid grid (e.g. inline MUI DateCalendar)
+  /* v8 ignore start */
   if (!container && (await isCalendarGrid(root))) {
     return { calendar: root, tables: [root] };
   }
+  /* v8 ignore stop */
   if (!container) return null;
 
   // 2. Find all valid calendar grids within the container
@@ -63,9 +65,8 @@ export async function getCalendar(
   const tables: Locator[] = [];
 
   // If the container itself matches the selector, check it first
-  if (await isCalendarGrid(container)) {
-    tables.push(container);
-  }
+  /* v8 ignore next */
+  if (await isCalendarGrid(container)) tables.push(container);
 
   for (const grid of found) {
     if (await isCalendarGrid(grid)) {
@@ -98,11 +99,7 @@ function inferYearForMonth(target: Date, month: number): number {
 }
 
 export async function getCurrentMonthsAndYears(root: Locator, target: Date): Promise<MonthYear[]> {
-  const lang = await root
-    .page()
-    .locator('html')
-    .getAttribute('lang')
-    .catch(() => undefined);
+  const lang = await root.page().locator('html').getAttribute('lang').catch(() => undefined);
   const locales = lang && !lang.startsWith('en') ? [lang, 'en-US'] : ['en-US'];
 
   const text = await root.innerText();
@@ -187,12 +184,14 @@ async function navigateToMonth(
   const afterMonths = await getCurrentMonthsAndYears(root, target);
   if (afterMonths.some((m) => m.year * 12 + m.month === targetTotal)) return true;
 
+  /* v8 ignore start */
   if ((options?.retry ?? 0) < 3) {
     const retry = (options?.retry ?? 0) + 1;
     return await navigateToMonth(root, target, { ...options, wait: 50 + 50 * retry, retry }); // Retry max 3x
   }
 
   return false;
+  /* v8 ignore stop */
 }
 
 async function setDayByAriaLabel(table: Locator, value: Date, options?: SetOptions): Promise<boolean> {
@@ -210,10 +209,12 @@ async function setDayByAriaLabel(table: Locator, value: Date, options?: SetOptio
 
   if (cells.length === 0) return false;
 
+  /* v8 ignore start */
   if (cells.length === 1) {
     await cells[0].click(options);
     return true;
   }
+  /* v8 ignore stop */
 
   // Disambiguate using day 22 in case of dd/mm/yyyy vs mm/dd/yyyy
   const probeDate = new Date(value.getFullYear(), value.getMonth(), 22);

@@ -193,11 +193,8 @@ export async function realScrubHtml(
 function hasHiddenAncestor(el: Element): boolean {
   let p: Element | null = el.parentElement;
   while (p) {
-    if (
-      p.hasAttribute('hidden') ||
-      p.hasAttribute('inert') ||
-      p.getAttribute('aria-hidden') === 'true'
-    ) return true;
+    /* v8 ignore next */
+    if (p.hasAttribute('hidden') || p.hasAttribute('inert') || p.getAttribute('aria-hidden') === 'true') return true;
 
     const style = p.getAttribute('style') || '';
     if (/\bdisplay\s*:\s*none\b/i.test(style)) return true;

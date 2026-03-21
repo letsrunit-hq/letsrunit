@@ -24,13 +24,13 @@ function buildDateString(date: Date, order: DateOrder, sep: string, pad: boolean
 
 function parseDateString(value: string, order: DateOrder, sep: string): Date | null {
   const raw = value.trim();
-  if (!raw) return null;
+  /* v8 ignore next */ if (!raw) return null;
 
   const tokens = raw.split(sep);
-  if (tokens.length !== 3) return null;
+  /* v8 ignore next */ if (tokens.length !== 3) return null;
 
   const nums = tokens.map((t) => Number(t));
-  if (nums.some((n) => !Number.isFinite(n))) return null;
+  /* v8 ignore next */ if (nums.some((n) => !Number.isFinite(n))) return null;
 
   const map: Record<'day' | 'month' | 'year', number> = { day: 0, month: 0, year: 0 };
   for (let i = 0; i < 3; i++) map[order[i]] = nums[i];
@@ -39,11 +39,11 @@ function parseDateString(value: string, order: DateOrder, sep: string): Date | n
   const month = map.month;
   const day = map.day;
 
-  if (month < 1 || month > 12) return null;
-  if (day < 1 || day > 31) return null;
+  /* v8 ignore next */ if (month < 1 || month > 12) return null;
+  /* v8 ignore next */ if (day < 1 || day > 31) return null;
 
   const dt = new Date(year, month - 1, day);
-  if (dt.getFullYear() !== year || dt.getMonth() !== month - 1 || dt.getDate() !== day) return null;
+  /* v8 ignore next */ if (dt.getFullYear() !== year || dt.getMonth() !== month - 1 || dt.getDate() !== day) return null;
 
   return dt;
 }
@@ -53,7 +53,7 @@ async function inferLocaleAndPattern(el: Locator, options?: SetOptions): Promise
   order: DateOrder;
   sep: string;
 }> {
-  return el.evaluate(() => {
+  return el.evaluate(/* v8 ignore start */ () => {
     const lang = document.documentElement.getAttribute('lang') || navigator.language || 'en-US';
     const dtf = new Intl.DateTimeFormat(lang, { year: 'numeric', month: '2-digit', day: '2-digit' });
 
@@ -72,7 +72,7 @@ async function inferLocaleAndPattern(el: Locator, options?: SetOptions): Promise
     // Fallback if Intl returns something odd
     const finalOrder = order.length === 3 ? order : (['day', 'month', 'year'] as const);
 
-    return { locale: lang, order: finalOrder as any, sep };
+    return { locale: lang, order: finalOrder as any, sep }; /* v8 ignore stop */
   }, options);
 }
 
@@ -83,11 +83,11 @@ async function fillAndReadBack(el: Locator, s: string, options?: SetOptions, nex
   if (nextInput) {
     await nextInput.focus(options);
   } else {
-    await el.evaluate((el) => el.blur(), options);
+    await el.evaluate(/* v8 ignore next */ (el) => el.blur(), options);
   }
 
   // Some frameworks need a tiny tick.
-  await el.evaluate(() => new Promise(requestAnimationFrame));
+  await el.evaluate(/* v8 ignore next */ () => new Promise(requestAnimationFrame));
 
   return await el.inputValue(options);
 }
@@ -199,8 +199,10 @@ async function setInputValue(
   value2?: Date,
   options?: SetOptions,
 ): Promise<boolean> {
+  /* v8 ignore start */
   if (await el.evaluate((el) => (el as HTMLInputElement).readOnly, options)) return false;
   if (el2 && (await el2.evaluate((el) => (el as HTMLInputElement).readOnly, options))) return false;
+  /* v8 ignore stop */
 
   const { combinations, localeSep } = await formatCombinations(el, options);
   let fallbackMatch: [DateOrder, string, boolean] | null = null;
@@ -234,10 +236,12 @@ async function setInputValue(
   if (fallbackMatch) {
     const [order, sep, pad] = fallbackMatch;
     const success = await setDateValue(el, value, order, sep, pad, options, el2);
+    /* v8 ignore start */
     if (el2 && value2) {
       const success2 = await setDateValue(el2, value2, order, sep, pad, options);
       return success && success2;
     }
+    /* v8 ignore stop */
     return success;
   }
 

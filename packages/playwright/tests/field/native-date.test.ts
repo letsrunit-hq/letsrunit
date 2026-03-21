@@ -51,6 +51,38 @@ describe('setNativeDate', () => {
     expect(await setNativeDate({ el: mock, tag: 'input', type: 'text' }, date)).toBe(false);
   });
 
+  it('sets date on a visible nested date input when tag is not a native date input', async () => {
+    const date = new Date(2024, 0, 15);
+    const fillFn = vi.fn().mockResolvedValue(undefined);
+    const inputsMock = {
+      count: vi.fn().mockResolvedValue(1),
+      evaluate: vi.fn().mockResolvedValue(true), // isVisible = true
+      getAttribute: vi.fn().mockResolvedValue('date'),
+      fill: fillFn,
+    };
+    const mock = {
+      locator: vi.fn().mockReturnValue(inputsMock),
+    } as unknown as Locator & { locator: ReturnType<typeof vi.fn> };
+
+    const result = await setNativeDate({ el: mock, tag: 'div', type: null }, date);
+    expect(result).toBe(true);
+    expect(fillFn).toHaveBeenCalledWith('2024-01-15', undefined);
+  });
+
+  it('returns false when nested date input is not visible', async () => {
+    const date = new Date(2024, 0, 15);
+    const inputsMock = {
+      count: vi.fn().mockResolvedValue(1),
+      evaluate: vi.fn().mockResolvedValue(false), // isVisible = false
+    };
+    const mock = {
+      locator: vi.fn().mockReturnValue(inputsMock),
+    } as unknown as Locator & { locator: ReturnType<typeof vi.fn> };
+
+    const result = await setNativeDate({ el: mock, tag: 'div', type: null }, date);
+    expect(result).toBe(false);
+  });
+
   it('sets date range for container with two date inputs', async () => {
     const { mock, inputsMock } = createMockLocator();
     const from = new Date(2024, 0, 1);

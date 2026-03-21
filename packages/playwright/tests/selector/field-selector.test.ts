@@ -142,6 +142,29 @@ describe('createFieldEngine query/queryAll', () => {
     expect(b?.id).to.eq('b');
   });
 
+  it('matches using a regex pattern in the selector', () => {
+    document.body.innerHTML = `
+      <label>Email Address <input id="email" /></label>
+      <label>Phone Number <input id="phone" /></label>
+    `;
+
+    const result = engine.queryAll(document, '/email.*/i');
+    expect(result).to.have.length(1);
+    expect((result[0] as HTMLElement).id).to.eq('email');
+  });
+
+  it('uses parent div id for label[for] lookup when element lacks an id', () => {
+    document.body.innerHTML = `
+      <label for="wrapper">Username</label>
+      <div id="wrapper">
+        <input type="text" />
+      </div>
+    `;
+
+    const result = engine.queryAll(document, 'username');
+    expect(result).to.have.length(1);
+  });
+
   it('finds the bol.com search field', () => {
     document.body.innerHTML = `
       <div class="relative grow flex items-center bg-neutral-background-input rounded-[1.5rem] pr-2 lg:max-w-[40rem] lg:my-2 lg:mx-auto

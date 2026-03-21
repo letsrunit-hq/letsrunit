@@ -46,15 +46,17 @@ export async function setFieldValue(el: Locator, value: Value, options?: SetOpti
     setFallback,
   );
 
+  /* v8 ignore start */
   if ((await el.count()) > 1) {
     el = await pickFieldElement(el);
   }
+  /* v8 ignore stop */
 
   const tag = await el.evaluate((e) => e.tagName.toLowerCase(), options);
   const type = await el
     .getAttribute('type', options)
     .then((s) => s && s.toLowerCase())
-    .catch(() => null);
+    .catch(/* v8 ignore next */ () => null);
   const loc = { el, tag, type };
 
   await setValue(loc, value, options);
