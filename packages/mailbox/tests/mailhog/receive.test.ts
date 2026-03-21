@@ -96,4 +96,12 @@ describe('mailhog.receive', () => {
     expect(res).toHaveLength(2);
     expect(res.map((e) => e.subject)).toEqual(['S1', 'S2']);
   });
+
+  it('returns empty array when wait=false and no emails found', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue({ items: [] }) });
+    vi.stubGlobal('fetch', fetchMock as any);
+
+    const res = await receiveMail('user@example.com', { wait: false });
+    expect(res).toEqual([]);
+  });
 });

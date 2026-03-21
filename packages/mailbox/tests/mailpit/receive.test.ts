@@ -55,7 +55,11 @@ describe('mailpit.receive', () => {
         },
       ],
     };
-    const detailBody = { HTML: '<p>Hello</p>', Text: 'Hello text' };
+    const detailBody = {
+      HTML: '<p>Hello</p>',
+      Text: 'Hello text',
+      Attachments: [{ FileName: 'file.pdf', ContentType: 'application/pdf' }],
+    };
 
     const fetchMock = vi.fn().mockImplementation((input: any) => {
       const u = String(input);
@@ -71,6 +75,37 @@ describe('mailpit.receive', () => {
     expect(res).toHaveLength(1);
     expect(res[0].text).toBe('Hello text');
     expect(res[0].html).toBe('<p>Hello</p>');
+    expect(res[0].attachments).toEqual([{ filename: 'file.pdf', contentType: 'application/pdf' }]);
+  });
+
+  it('ignores full message entries when detail json parsing fails', async () => {
+    const email = 'user@mailpit.local';
+    const searchBody = {
+      messages: [
+        {
+          ID: 'abc123',
+          Created: '2025-01-01T00:00:10Z',
+          Subject: 'Hello',
+          From: { Address: 'no-reply@mailpit.local' },
+          To: [{ Address: 'user@mailpit.local' }],
+        },
+      ],
+    };
+
+    const fetchMock = vi.fn().mockImplementation((input: any) => {
+      const u = String(input);
+      if (u.includes('/api/v1/search')) {
+        return Promise.resolve({ ok: true, json: vi.fn().mockResolvedValue(searchBody) });
+      }
+      if (u.includes('/api/v1/message/abc123')) {
+        return Promise.resolve({ ok: true, json: vi.fn().mockRejectedValue(new Error('bad json')) });
+      }
+      return Promise.resolve({ ok: false, text: vi.fn().mockResolvedValue('not found') });
+    });
+    vi.stubGlobal('fetch', fetchMock as any);
+
+    const res = await receiveMail(email, { full: true, wait: false });
+    expect(res).toEqual([]);
   });
 
   it('uses server-side after filter and applies limit', async () => {
@@ -116,5 +151,14 @@ describe('mailpit.receive', () => {
     // Ensure subject filter is present and quotes are escaped then URL-encoded
     const expectedTerm = encodeURIComponent('subject:"He said \\"Hello\\""');
     expect(url).toContain(expectedTerm);
+  });
+
+  it('returns empty array when wait=false and no messages found', async () => {
+    const email = 'user@mailpit.local';
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue({ messages: [] }) });
+    vi.stubGlobal('fetch', fetchMock as any);
+
+    const res = await receiveMail(email, { wait: false });
+    expect(res).toEqual([]);
   });
 });
