@@ -5,6 +5,8 @@ export default defineConfig({
     include: ['tests/**/*.test.ts'],
     coverage: {
       exclude: [
+        '**/tests/**',
+        'src/translations/**',
         // Pure barrel re-exports — no executable statements
         'src/index.ts',
         'src/selector/index.ts',
@@ -15,4 +17,3 @@ export default defineConfig({
     },
   },
 });
-
