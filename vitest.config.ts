@@ -43,6 +43,7 @@ export default defineConfig({
         // Type-only files — only interface/type declarations, zero runtime code
         'packages/playwright/src/types.ts',
         'packages/playwright/src/field/types.ts',
+        'packages/utils/src/types.ts',
       ],
     },
   },
