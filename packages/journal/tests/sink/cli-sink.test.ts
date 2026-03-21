@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CliSink } from '../../src';
 import type { JournalEntry } from '../../src';
+import { cursorLeft, eraseDown } from 'ansi-escapes';
 
 function makeEntry(partial: Partial<JournalEntry> = {}): JournalEntry {
   return {
@@ -156,6 +157,52 @@ describe('CliSink', () => {
       await sink.publish(makeEntry({ artifacts: [] }));
 
       expect(writeFileMock).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('entry replacement and section handling', () => {
+    it('replaces prepare entry when success with same message is published', async () => {
+      const writes: string[] = [];
+      const stream = {
+        columns: 10,
+        write: (s: string) => {
+          writes.push(s);
+          return true;
+        },
+      } as any;
+      const sink = new CliSink({ stream, verbosity: 1 });
+
+      await sink.publish(makeEntry({ type: 'prepare', message: 'Long running operation' }));
+      writes.length = 0;
+      await sink.publish(makeEntry({ type: 'success', message: 'Long running operation' }));
+
+      expect(writes.some((w) => w === cursorLeft)).toBe(true);
+      expect(writes.some((w) => w === eraseDown)).toBe(true);
+      expect(writes.some((w) => w.includes('Long running operation'))).toBe(true);
+    });
+
+    it('endSection prevents replacing previously written entries', async () => {
+      let out = '';
+      const stream = { write: (s: string) => { out += s; } } as any;
+      const sink = new CliSink({ stream, verbosity: 1 });
+
+      await sink.publish(makeEntry({ type: 'prepare', message: 'same' }));
+      sink.endSection();
+      await sink.publish(makeEntry({ type: 'success', message: 'same' }));
+
+      expect(out).not.toContain(cursorLeft);
+      expect(out).toContain('same');
+    });
+
+    it('title entries clear section and print as bold', async () => {
+      let out = '';
+      const stream = { write: (s: string) => { out += s; } } as any;
+      const sink = new CliSink({ stream, verbosity: 1 });
+
+      await sink.publish(makeEntry({ type: 'title', message: 'Section Title' }));
+
+      expect(out).toContain('\u001b[1m');
+      expect(out).toContain('Section Title');
     });
   });
 });
