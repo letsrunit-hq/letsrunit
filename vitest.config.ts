@@ -18,6 +18,8 @@ export default defineConfig({
         // Barrel re-exports — no executable statements of their own
         'packages/ai/src/index.ts',
         'packages/bdd/src/index.ts',
+        'packages/bdd/src/types.ts',
+        'packages/bdd/src/steps/index.ts',
         'packages/controller/src/index.ts',
         'packages/controller/src/runner/index.ts',
         'packages/executor/src/index.ts',
