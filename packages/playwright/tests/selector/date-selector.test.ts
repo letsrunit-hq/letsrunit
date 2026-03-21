@@ -407,4 +407,33 @@ describe('createDateEngine query/queryAll', () => {
       expect(found?.id).to.eq('target');
     });
   });
+
+  describe('strict mismatch rules', () => {
+    it('does not match partial date when query explicitly includes a year', () => {
+      document.body.innerHTML = `
+        <div>Jan 5</div>
+        <div>Jan 6</div>
+      `;
+      const found = engine.query(document, 'Jan 5, 2026');
+      expect(found).toBeNull();
+    });
+
+    it('does not match when query time differs from element time', () => {
+      document.body.innerHTML = `<div>Jan 5, 2026, 14:00</div>`;
+      const found = engine.query(document, 'today at 15:00');
+      expect(found).toBeNull();
+    });
+
+    it('does not match when query seconds differ from element seconds', () => {
+      document.body.innerHTML = `<div>Jan 5, 2026, 15:00:44</div>`;
+      const found = engine.query(document, 'today at 15:00:45');
+      expect(found).toBeNull();
+    });
+
+    it('does not match when query has time but element has no time', () => {
+      document.body.innerHTML = `<div>Jan 5, 2026</div>`;
+      const found = engine.query(document, 'today at 15:00');
+      expect(found).toBeNull();
+    });
+  });
 });
