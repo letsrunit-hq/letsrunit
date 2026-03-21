@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isBinary, isEntity, isRecord } from '../src';
+import { isBinary, isDateArray, isDateRange, isEntity, isRecord } from '../src';
 
 describe('isBinary', () => {
   it('returns true for Uint8Array instances', () => {
@@ -43,5 +43,17 @@ describe('isEntity', () => {
     expect(isEntity({ name: 'missing-id' })).toBe(false);
     expect(isEntity(null)).toBe(false);
     expect(isEntity('id')).toBe(false);
+  });
+});
+
+describe('deprecated date guards', () => {
+  it('isDateRange delegates to isRange(date)', () => {
+    expect(isDateRange({ from: new Date('2026-01-01'), to: new Date('2026-01-02') })).toBe(true);
+    expect(isDateRange({ from: new Date('2026-01-01'), to: '2026-01-02' })).toBe(false);
+  });
+
+  it('isDateArray delegates to isArray(date)', () => {
+    expect(isDateArray([new Date('2026-01-01'), new Date('2026-01-02')])).toBe(true);
+    expect(isDateArray([new Date('2026-01-01'), '2026-01-02'])).toBe(false);
   });
 });

@@ -108,7 +108,22 @@ describe('waitForAnimationsToFinish', () => {
   it('calls page.waitForFunction with element handle, then locator.evaluate', async () => {
     const elementHandle = {};
     const waitForFunction = vi.fn().mockResolvedValue(undefined);
-    const evaluate = vi.fn().mockResolvedValue(undefined);
+    const evaluate = vi.fn().mockImplementation(async (fn: () => Promise<void>) => {
+      const originalRaf = globalThis.requestAnimationFrame;
+      (globalThis as any).requestAnimationFrame = (cb: FrameRequestCallback) => {
+        cb(0);
+        return 0;
+      };
+      try {
+        await fn();
+      } finally {
+        if (originalRaf) {
+          globalThis.requestAnimationFrame = originalRaf;
+        } else {
+          delete (globalThis as any).requestAnimationFrame;
+        }
+      }
+    });
     const page = { waitForFunction } as unknown as Page;
     const root = {
       elementHandle: vi.fn().mockResolvedValue(elementHandle),
@@ -399,6 +414,42 @@ describe('waitAfterInteraction', () => {
 
     // isDisabled was checked because kind='button'
     expect(target.isDisabled).toHaveBeenCalled();
+    expect(waitForFunction).not.toHaveBeenCalled();
+  });
+
+  it('falls back to "other" when elementKind throws synchronously', async () => {
+    const waitForFunction = vi.fn().mockResolvedValue(undefined);
+    const page = {
+      url: vi.fn().mockReturnValue('http://example.com'),
+      waitForFunction,
+    } as unknown as Page;
+    const target = {
+      getAttribute: vi.fn(() => {
+        throw new Error('sync failure');
+      }),
+    } as unknown as Locator;
+
+    await waitAfterInteraction(page, target);
+
+    expect(waitForFunction).not.toHaveBeenCalled();
+  });
+
+  it('does not enter disabled-button branch when isDisabled check rejects', async () => {
+    const waitForFunction = vi.fn().mockResolvedValue(undefined);
+    const page = {
+      url: vi.fn().mockReturnValue('http://example.com'),
+      waitForFunction,
+    } as unknown as Page;
+    const target = {
+      getAttribute: vi.fn().mockResolvedValue('button'),
+      isDisabled: vi.fn().mockRejectedValue(new Error('probe timeout')),
+      waitFor: vi.fn().mockResolvedValue(undefined),
+      elementHandle: vi.fn().mockResolvedValue({}),
+    } as unknown as Locator;
+
+    await waitAfterInteraction(page, target);
+
+    expect(target.isDisabled).toHaveBeenCalledWith({ timeout: 1_000 });
     expect(waitForFunction).not.toHaveBeenCalled();
   });
 });

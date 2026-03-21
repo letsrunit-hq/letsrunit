@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Controller } from '../src/controller';
 import { runner } from '../src/runner';
+import { screenshot } from '@letsrunit/playwright';
 
 vi.mock('../src/runner', () => ({
   runner: {
@@ -98,6 +99,12 @@ describe('Controller', () => {
       // @ts-ignore
       const controller = new Controller({}, { lang: { code: 'en', name: 'English' } }, {}, new Set());
       expect(controller.lang).toEqual({ code: 'en', name: 'English' });
+    });
+
+    it('should return page from world', async () => {
+      const controller = await Controller.launch();
+      expect(controller.page).toBe((controller as any).world.page);
+      await controller.close();
     });
   });
 
@@ -280,6 +287,60 @@ describe('Controller', () => {
       const controller = await Controller.launch();
       await controller.run('Feature: test\n  Scenario: test\n    Given a step');
       // Should not throw
+      await controller.close();
+    });
+  });
+
+  describe('private helpers', () => {
+    it('filters mask locators to only visible ones before taking screenshot', async () => {
+      const controller = await Controller.launch();
+      const visibleLoc = { isVisible: vi.fn().mockResolvedValue(true) };
+      const hiddenLoc = { isVisible: vi.fn().mockResolvedValue(false) };
+
+      await (controller as any).makeScreenshot({ mask: [visibleLoc, hiddenLoc] });
+
+      expect(screenshot).toHaveBeenCalledWith(expect.anything(), {
+        mask: [visibleLoc],
+      });
+      await controller.close();
+    });
+
+    it('checks visibility for all locators', async () => {
+      const controller = await Controller.launch();
+
+      const allVisible = await (controller as any).areAllVisible([
+        { isVisible: vi.fn().mockResolvedValue(true) },
+        { isVisible: vi.fn().mockResolvedValue(true) },
+      ]);
+      const notAllVisible = await (controller as any).areAllVisible([
+        { isVisible: vi.fn().mockResolvedValue(true) },
+        { isVisible: vi.fn().mockResolvedValue(false) },
+      ]);
+
+      expect(allVisible).toBe(true);
+      expect(notAllVisible).toBe(false);
+      await controller.close();
+    });
+
+    it('logs feature description when present', async () => {
+      const batch = {
+        title: vi.fn(),
+        info: vi.fn(),
+        prepare: vi.fn(),
+        flush: vi.fn().mockResolvedValue(undefined),
+      };
+      const journal = {
+        batch: vi.fn().mockReturnValue(batch),
+        info: vi.fn().mockResolvedValue(undefined),
+        start: vi.fn().mockResolvedValue(undefined),
+        warn: vi.fn().mockResolvedValue(undefined),
+      };
+
+      const controller = await Controller.launch({ journal: journal as any });
+      await (controller as any).logFeature('Feature: Checkout\n  Adds line items\n\n  Scenario: Save cart\n    Given a step');
+
+      expect(batch.info).toHaveBeenCalledWith(expect.stringContaining('Adds line items'));
+      expect(batch.flush).toHaveBeenCalledOnce();
       await controller.close();
     });
   });
