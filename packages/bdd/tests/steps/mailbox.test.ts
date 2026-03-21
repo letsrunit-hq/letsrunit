@@ -68,6 +68,18 @@ describe('steps/mailbox (definitions)', () => {
     expect(setContent).toHaveBeenCalledWith('<p>plain</p>', { waitUntil: 'domcontentloaded' });
   });
 
+  it("Given I'm viewing an email: throws when no email is found", async () => {
+    const { receiveMail } = await import('@letsrunit/mailbox');
+    (receiveMail as any).mockResolvedValueOnce([]);
+
+    const page = { goto: vi.fn(), setContent: vi.fn() } as any;
+    const world: any = { page, startTime: new Date('2024-02-02T00:00:00Z') };
+
+    await expect(
+      runStep(view, 'I\'m viewing an email sent to "x@y.test" with subject "Ping"', world),
+    ).rejects.toThrow('Did not receive an email with subject "Ping"');
+  });
+
   it('Then mailbox received an email: waits with timeout and attaches correct payload for eml', async () => {
     const { receiveMail } = await import('@letsrunit/mailbox');
     const { asFilename } = await import('@letsrunit/utils');
@@ -116,5 +128,18 @@ describe('steps/mailbox (definitions)', () => {
       mediaType: 'message/rfc822',
       fileName: 'fn-Plain.eml',
     });
+  });
+
+  it('Then mailbox received an email: throws when none is received', async () => {
+    const { receiveMail } = await import('@letsrunit/mailbox');
+    (receiveMail as any).mockResolvedValueOnce([]);
+
+    const attach = vi.fn();
+    const world: any = { attach, startTime: new Date('2024-04-04T00:00:00Z') };
+
+    await expect(
+      runStep(receive, 'I received an email sent to "user@test" with subject "Plain"', world),
+    ).rejects.toThrow('Did not receive an email with subject "Plain"');
+    expect(attach).not.toHaveBeenCalled();
   });
 });

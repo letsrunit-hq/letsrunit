@@ -35,7 +35,9 @@ describe('steps/clipboard (definitions)', () => {
   it('copies link href (http)', async () => {
     const page = {} as any;
     (testLocator as any).inputValue = undefined;
-    (testLocator as any).evaluate = vi.fn().mockResolvedValue('a');
+    (testLocator as any).evaluate = vi
+      .fn()
+      .mockImplementation(async <R>(fn: (n: Element) => R) => fn({ tagName: 'A' } as any));
     (testLocator as any).getAttribute = vi.fn().mockResolvedValue('https://example.com');
     (testLocator as any).textContent = vi.fn().mockResolvedValue('Example');
 
@@ -49,7 +51,9 @@ describe('steps/clipboard (definitions)', () => {
   it('copies email address only when href is mailto:', async () => {
     const page = {} as any;
     (testLocator as any).inputValue = undefined;
-    (testLocator as any).evaluate = vi.fn().mockResolvedValue('a');
+    (testLocator as any).evaluate = vi
+      .fn()
+      .mockImplementation(async <R>(fn: (n: Element) => R) => fn({ tagName: 'A' } as any));
     (testLocator as any).getAttribute = vi.fn().mockResolvedValue('mailto:hello@site.com');
     (testLocator as any).textContent = vi.fn().mockResolvedValue('Email');
 
@@ -62,7 +66,9 @@ describe('steps/clipboard (definitions)', () => {
   it('falls back to text content when not a form control or link', async () => {
     const page = {} as any;
     (testLocator as any).inputValue = undefined;
-    (testLocator as any).evaluate = vi.fn().mockResolvedValue('span');
+    (testLocator as any).evaluate = vi
+      .fn()
+      .mockImplementation(async <R>(fn: (n: Element) => R) => fn({ tagName: 'SPAN' } as any));
     (testLocator as any).getAttribute = vi.fn().mockResolvedValue(null);
     (testLocator as any).textContent = vi.fn().mockResolvedValue('Hello world');
 
@@ -70,6 +76,21 @@ describe('steps/clipboard (definitions)', () => {
     await runStep(copyStep, 'I copy `#message` to the clipboard', world);
 
     expect(world.clipboard?.value).toBe('Hello world');
+  });
+
+  it('stores null when text content is empty', async () => {
+    const page = {} as any;
+    (testLocator as any).inputValue = undefined;
+    (testLocator as any).evaluate = vi
+      .fn()
+      .mockImplementation(async <R>(fn: (n: Element) => R) => fn({ tagName: 'SPAN' } as any));
+    (testLocator as any).getAttribute = vi.fn().mockResolvedValue(null);
+    (testLocator as any).textContent = vi.fn().mockResolvedValue(null);
+
+    const world: any = { page };
+    await runStep(copyStep, 'I copy `#message` to the clipboard', world);
+
+    expect(world.clipboard?.value).toBeNull();
   });
 
   it('pastes clipboard value into a locator', async () => {
@@ -82,5 +103,16 @@ describe('steps/clipboard (definitions)', () => {
 
     expect((resolveLocator as any).mock.calls.at(-1)[1]).toBe('#target');
     expect(fill).toHaveBeenCalledWith('PASTED', { timeout: 500 });
+  });
+
+  it('pastes empty string when clipboard is missing', async () => {
+    const page = {} as any;
+    const fill = vi.fn();
+    (testLocator as any).fill = fill;
+
+    const world: any = { page };
+    await runStep(pasteStep, 'I paste from the clipboard into `#target`', world);
+
+    expect(fill).toHaveBeenCalledWith('', { timeout: 500 });
   });
 });

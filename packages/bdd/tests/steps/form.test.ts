@@ -1,6 +1,6 @@
 import { fuzzyLocator as resolveLocator } from '@letsrunit/playwright';
 import { describe, expect, it, vi } from 'vitest';
-import { check as checkStep, clear as clearStep, focus as focusStep, set as setStep } from '../../src/steps/form';
+import { check as checkStep, clear as clearStep, focus as focusStep, set as setStep, setRange as setRangeStep } from '../../src/steps/form';
 import { type as typeStep } from '../../src/steps/keyboard';
 import { runStep } from '../helpers';
 
@@ -67,6 +67,14 @@ describe('steps/form (definitions)', () => {
 
     await runStep(setStep, 'I set `#browser` to "Chrome"', { page } as any);
     expect(setFieldValue).toHaveBeenCalledWith(testLocator, 'Chrome', { timeout: 500 });
+  });
+
+  it('sets a range value', async () => {
+    const { setFieldValue } = await import('@letsrunit/playwright');
+    const page = {} as any;
+
+    await runStep(setRangeStep, 'I set `#price` to range of 10 to 20', { page } as any);
+    expect(setFieldValue).toHaveBeenCalledWith(testLocator, { from: 10, to: 20 }, { timeout: 500 });
   });
 
   it('checks and unchecks', async () => {
