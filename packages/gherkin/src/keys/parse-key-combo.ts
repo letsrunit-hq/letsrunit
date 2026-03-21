@@ -82,10 +82,7 @@ export function parseKeyCombo(text: string): KeyCombo {
       // Non-last, non-modifier token encountered (e.g., "Ctrl + ArrowUp + Enter" is fine,
       // but if a non-modifier appears before the last, we still allow it only if the last is present).
       // We treat everything before the last as modifiers-only; if tok isn't a modifier, error out:
-      if (!isModifier(tok)) {
-        throw new Error(`Only modifiers may precede the final key: "${text}"`);
-      }
-      modifiers.push(tok);
+      throw new Error(`Only modifiers may precede the final key: "${text}"`);
     }
   }
 

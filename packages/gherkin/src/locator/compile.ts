@@ -47,20 +47,24 @@ type Expr = {
 
 // ---------- Escapers: same semantics as your snippet ----------
 function escapeRegexForSelector(re: RegExp): string {
+  /* v8 ignore start -- locator DSL grammar currently only emits string selector values */
   // keep unicode flags as-is; otherwise escape quotes and >> combinators
   // @ts-ignore - .unicodeSets may exist on some runtimes
   if (re.unicode || (re as any).unicodeSets) return String(re);
   return String(re)
     .replace(/(^|[^\\])(\\\\)*(["'`])/g, '$1$2\\$3')
     .replace(/>>/g, '\\>\\>');
+  /* v8 ignore stop */
 }
 
 function escapeForTextSelector(text: string | RegExp, exact = false): string {
+  /* v8 ignore next -- locator DSL grammar currently only emits string selector values */
   if (typeof text !== 'string') return escapeRegexForSelector(text);
   return `${JSON.stringify(text)}${exact ? 's' : 'i'}`;
 }
 
 function escapeForAttributeSelector(value: string | RegExp, exact = false): string {
+  /* v8 ignore next -- locator DSL grammar currently only emits string selector values */
   if (typeof value !== 'string') return escapeRegexForSelector(value);
   return `"${value.trim().replace(/\\/g, '\\\\').replace(/["]/g, '\\"')}"${exact ? 's' : 'i'}`;
 }

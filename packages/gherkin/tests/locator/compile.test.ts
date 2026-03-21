@@ -30,6 +30,18 @@ describe('compileLocator', () => {
     expect(compileLocator('text "Hello"')).to.eq('text=/Hello/i');
   });
 
+  it('throws when field has no label string', () => {
+    expect(() => compileLocator('field')).toThrow('`field` requires a label string');
+  });
+
+  it('throws when image has no alt string', () => {
+    expect(() => compileLocator('image')).toThrow('`image` requires an alt string');
+  });
+
+  it('throws when text has no value string', () => {
+    expect(() => compileLocator('text')).toThrow('`text` requires a string');
+  });
+
   // ----- Date locators -----
   it('date of today → date=today', () => {
     expect(compileLocator('date of today')).to.eq('date=today');
