@@ -12,8 +12,6 @@ export default defineConfig({
       exclude: [
         '**/tests/**',
         '**/index.ts',
-        'src/types/**/*.ts',
-        'src/types.ts',
         'src/sink/no-sink.ts',
       ],
     },

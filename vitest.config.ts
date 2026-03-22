@@ -14,11 +14,12 @@ export default defineConfig({
       },
       exclude: [
         '**/tests/**',
+        '**/types.ts',
+        '**/types/*.ts',
         'packages/playwright/src/translations/**',
         // Barrel re-exports — no executable statements of their own
         'packages/ai/src/index.ts',
         'packages/bdd/src/index.ts',
-        'packages/bdd/src/types.ts',
         'packages/bdd/src/steps/index.ts',
         'packages/controller/src/index.ts',
         'packages/controller/src/runner/index.ts',
@@ -31,7 +32,6 @@ export default defineConfig({
         'packages/gherkin/src/locator/parser.js',
         'packages/journal/src/index.ts',
         'packages/journal/src/sink/index.ts',
-        'packages/journal/src/types.ts',
         'packages/journal/src/sink/no-sink.ts',
         'packages/letsrunit/src/index.ts',
         'packages/mailbox/src/index.ts',
@@ -40,10 +40,6 @@ export default defineConfig({
         'packages/playwright/src/selector/index.ts',
         'packages/store/src/index.ts',
         'packages/utils/src/index.ts',
-        // Type-only files — only interface/type declarations, zero runtime code
-        'packages/playwright/src/types.ts',
-        'packages/playwright/src/field/types.ts',
-        'packages/utils/src/types.ts',
       ],
     },
   },
