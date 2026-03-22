@@ -115,4 +115,22 @@ describe('testmail.receive', () => {
     const [_queryStr, variables] = calls[0];
     expect(variables).toMatchObject({ limit: 2 });
   });
+
+  it('uses client fetch wrapper with provided signal', async () => {
+    const email = 'ns.tag@inbox.testmail.app';
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal('fetch', fetchMock as any);
+
+    const { GraphQLClient }: any = await import('graphql-request');
+    const ClientCtor = GraphQLClient as any;
+    vi.spyOn<any, any>(ClientCtor.prototype, 'request').mockImplementation(function () {
+      return this.options.fetch('https://example.test/graphql', { method: 'POST' }).then(() => ({ inbox: { emails: [] } }));
+    });
+
+    const signal = AbortSignal.timeout(2000);
+    const res = await receiveMail(email, { signal });
+    expect(res).toEqual([]);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0][1]).toMatchObject({ method: 'POST', signal });
+  });
 });

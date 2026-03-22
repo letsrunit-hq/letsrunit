@@ -38,8 +38,6 @@
   ],
   "scripts": {
     "build": "../../node_modules/.bin/tsup",
-    "test": "vitest run",
-    "test:cov": "vitest run --coverage",
     "typecheck": "tsc--noEmit"
   },
   "packageManager": "yarn@4.10.3",
@@ -47,9 +45,6 @@
     "@letsrunit/utils": "workspace:*",
     "graphql": "^16.12.0",
     "graphql-request": "^7.4.0"
-  },
-  "devDependencies": {
-    "vitest": "^4.0.17"
   },
   "module": "./src/index.ts",
   "types": "./src/index.ts",

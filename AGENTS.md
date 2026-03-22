@@ -31,19 +31,27 @@ compat/
 ```bash
 yarn install
 
-# Test single workspace
-yarn workspace <name> test
-
-# Build and test all
+# Build all packages
 yarn workspaces foreach -pt run build
-yarn workspaces foreach -pt run test
+
+# Run all tests
+yarn test
+
+# Run tests for a single package
+yarn test --project @letsrunit/<name>
+
+# Run a single test file
+yarn test --project @letsrunit/<name> tests/foo.test.ts
+
+# Watch mode (re-runs affected tests on file change)
+yarn test:watch
 ```
 
 ### Testing using Vitest
 
-Testing is done with **vitest**.
+Testing is done with **vitest**, configured as a workspace at the root (`vitest.config.ts`). There are no per-package test scripts — all test commands run from the repo root.
 
-* Tests are located in the `tests` directory.
+* Tests are located in the `tests` directory of each package.
 * When asked to write test files, only write the tests and ensure they run; do not attempt to make failing tests succeed.
 
 All source files should be tested. We're aiming for 100% code coverage. If particular code explicitly can't be tested,
@@ -53,19 +61,19 @@ use `/* v8 ignore next [lines] */` or `/* v8 ignore start */`.
 
 After completing each task:
 
-1. Run the narrowest set of tests that covers the change — a single file, a single workspace, or all workspaces — and confirm they pass:
+1. Run the narrowest set of tests that covers the change — a single file, a single package, or all packages — and confirm they pass:
    ```bash
    # Single file
-   yarn workspace <name> vitest run tests/foo.test.ts
-   # Single workspace
-   yarn workspace <name> test
+   yarn test --project @letsrunit/<name> tests/foo.test.ts
+   # Single package
+   yarn test --project @letsrunit/<name>
    ```
 2. Commit the changes with a descriptive Conventional Commit message.
 
 Before opening a PR, run the full test suite and confirm everything passes:
 
 ```bash
-yarn workspaces foreach -pt run test
+yarn test
 ```
 
 ### Parallel Subtasks
@@ -75,7 +83,7 @@ For parallel subtasks that may touch overlapping files, use the `EnterWorktree` 
 1. Call `EnterWorktree` with a descriptive name — this creates a `git worktree` branched from HEAD at `.claude/worktrees/<name>` and switches the session into it.
 2. Do all work within that worktree session.
 3. Symlink `node_modules` from the main repo if not present: `ln -s /home/arnold/Projects/letsrunit-app/node_modules ./node_modules`
-4. Run the full test suite: `yarn workspaces foreach --all -pt run test --run`
+4. Run the full test suite: `yarn test`
 5. Fix any failing tests, then commit. GPG signing works. Use `git commit` normally.
 6. Report back when done — the main agent will push and open a pull request. Use HTTPS for push (SSH port 22 is blocked by the sandbox): `git push "https://oauth2:$(gh auth token)@github.com/ORG/REPO.git" BRANCH`
 

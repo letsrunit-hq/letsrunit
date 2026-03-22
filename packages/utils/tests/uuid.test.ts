@@ -1,6 +1,6 @@
 import { NIL, v5 as uuidv5 } from 'uuid';
 import { describe, expect, it } from 'vitest';
-import { fixedUUID, isUUID, uuidToTag } from '../src';
+import { fixedUUID, isUUID, randomUUID, uuidToTag } from '../src';
 
 const sampleUUID = '123e4567-e89b-12d3-a456-426614174000';
 
@@ -37,6 +37,13 @@ describe('fixedUUID', () => {
     expect(firstGroup).not.toBe(secondGroup);
     expect(isUUID(firstGroup)).toBe(true);
     expect(isUUID(secondGroup)).toBe(true);
+  });
+});
+
+describe('randomUUID', () => {
+  it('returns a valid UUID', () => {
+    const id = randomUUID();
+    expect(isUUID(id)).toBe(true);
   });
 });
 

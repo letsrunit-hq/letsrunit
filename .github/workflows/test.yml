@@ -7,12 +7,12 @@ on:
 
 jobs:
   packages:
-    name: Test ${{ matrix.workspace }}
+    name: Test ${{ matrix.project }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        workspace:
+        project:
           - "@letsrunit/playwright"
           - "@letsrunit/bdd"
           - "@letsrunit/executor"
@@ -23,6 +23,7 @@ jobs:
           - "@letsrunit/journal"
           - "@letsrunit/utils"
           - "@letsrunit/ai"
+          - "@letsrunit/mcp-server"
     steps:
       - uses: actions/checkout@v4
       - name: Enable Corepack
@@ -39,7 +40,7 @@ jobs:
         run: yarn build:packages
 
       - name: Run Tests
-        run: yarn workspace ${{ matrix.workspace }} test
+        run: yarn test --project ${{ matrix.project }}
 
   compat:
     name: Test ${{ matrix.workspace }}

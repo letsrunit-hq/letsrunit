@@ -30,6 +30,18 @@ describe('compileLocator', () => {
     expect(compileLocator('text "Hello"')).to.eq('text=/Hello/i');
   });
 
+  it('throws when field has no label string', () => {
+    expect(() => compileLocator('field')).toThrow('`field` requires a label string');
+  });
+
+  it('throws when image has no alt string', () => {
+    expect(() => compileLocator('image')).toThrow('`image` requires an alt string');
+  });
+
+  it('throws when text has no value string', () => {
+    expect(() => compileLocator('text')).toThrow('`text` requires a string');
+  });
+
   // ----- Date locators -----
   it('date of today → date=today', () => {
     expect(compileLocator('date of today')).to.eq('date=today');
@@ -69,6 +81,12 @@ describe('compileLocator', () => {
     expect(compileLocator('section with text "Hello"')).to.eq('section >> has="text=/Hello/i"');
   });
 
+  it('supports chained with/without predicates', () => {
+    expect(compileLocator('button "Buy" with text "Now" without image "Ad"')).to.eq(
+      'role=button [name="Buy"i] >> has="text=/Now/i" >> has-not="[alt="Ad"i]"',
+    );
+  });
+
   // ----- Ancestry with `within` (outer >> inner) -----
   it('section within `#main` → #main >> section', () => {
     expect(compileLocator('section within `#main`')).to.eq('#main >> section');
@@ -92,5 +110,33 @@ describe('compileLocator', () => {
     expect(compileLocator('section with text "Hello" within `css=.foo >> nth(2)`')).to.eq(
       'css=.foo >> nth(2) >> section >> has="text=/Hello/i"',
     );
+  });
+
+  it('supports multiple within clauses in parser order', () => {
+    expect(compileLocator('button "Save" within `section` within `#root`')).to.eq(
+      'section >> #root >> role=button [name="Save"i]',
+    );
+  });
+
+  it('is case-insensitive for grammar keywords', () => {
+    expect(compileLocator('THE button "Submit" WITHOUT text "Ad" WITHIN `#main`')).to.eq(
+      '#main >> role=button [name="Submit"i] >> has-not="text=/Ad/i"',
+    );
+  });
+
+  it('escapes regex metacharacters in text selectors', () => {
+    expect(compileLocator('text "a+b/c?"')).to.eq('text=/a\\+b\\/c\\?/i');
+  });
+
+  it('throws for unterminated quoted strings', () => {
+    expect(() => compileLocator('button "Submit')).toThrow();
+  });
+
+  it('throws for malformed raw selectors', () => {
+    expect(() => compileLocator('section within `#main')).toThrow();
+  });
+
+  it('rejects keyword-like fragments that are not valid keywords', () => {
+    expect(() => compileLocator('section withinx `#main`')).toThrow();
   });
 });

@@ -369,6 +369,89 @@ describe('setCalendarDate', () => {
     expect(dayCell.click).toHaveBeenCalled(); // selected the day
   });
 
+  it('throws when navigateToMonth fails because navigation buttons are not found', async () => {
+    const tableCells = createMockLocator({
+      count: vi.fn().mockResolvedValue(31),
+      allTextContents: vi.fn().mockResolvedValue(Array.from({ length: 31 }, (_, i) => String(i + 1))),
+      allInnerTexts: vi.fn().mockResolvedValue(Array.from({ length: 31 }, (_, i) => String(i + 1))),
+    });
+    const table = createMockLocator({ count: vi.fn().mockResolvedValue(1) });
+    table.all.mockResolvedValue([table]);
+    table.locator.mockImplementation((sel) => {
+      assert.ok(typeof sel === 'string');
+      if (sel === 'td, [role="gridcell"]') return tableCells;
+      return table;
+    });
+    const noBtn = createMockLocator({ count: vi.fn().mockResolvedValue(0) });
+    const el = createMockLocator({ innerText: vi.fn().mockResolvedValue('January 2024') });
+    el.locator.mockImplementation((sel) => {
+      if (sel === 'table, [role="grid"]') return table;
+      return noBtn;
+    });
+
+    // December is not visible and buttons are not found
+    await expect(setCalendarDate({ el } as any, new Date('2024-12-15'))).rejects.toThrow('Failed to navigate');
+  });
+
+  it('sets day via cell text when aria-label matching fails', async () => {
+    // dayCell.isVisible = false → setDayByAriaLabel fails, setDayByByCellText succeeds
+    const dayCellNotVisible = createMockLocator({ isVisible: vi.fn().mockResolvedValue(false) });
+
+    const tableCells = createMockLocator({
+      count: vi.fn().mockResolvedValue(31),
+      allTextContents: vi.fn().mockResolvedValue(Array.from({ length: 31 }, (_, i) => String(i + 1))),
+      allInnerTexts: vi.fn().mockResolvedValue(Array.from({ length: 31 }, (_, i) => String(i + 1))),
+    });
+
+    const table = createMockLocator({
+      count: vi.fn().mockResolvedValue(1),
+      isVisible: vi.fn().mockResolvedValue(true),
+    });
+    table.all.mockResolvedValue([table]);
+    table.locator.mockImplementation((sel) => {
+      assert.ok(typeof sel === 'string');
+      if (sel === 'td, [role="gridcell"]') return tableCells;
+      if (sel.includes('aria-label')) return dayCellNotVisible;
+      return table;
+    });
+
+    const el = createMockLocator({ innerText: vi.fn().mockResolvedValue('January 2024') });
+    el.locator.mockImplementation((sel) => {
+      if (sel === 'table, [role="grid"]') return table;
+      return el;
+    });
+
+    const result = await setCalendarDate({ el } as any, new Date('2024-01-15'));
+    expect(result).toBe(true);
+    expect(tableCells.nth).toHaveBeenCalled(); // setDayByByCellText succeeded
+  });
+
+  it('throws when day cannot be set (both aria and cell text fail)', async () => {
+    const dayCellNotVisible = createMockLocator({ isVisible: vi.fn().mockResolvedValue(false) });
+    const tableCells = createMockLocator({
+      count: vi.fn().mockResolvedValue(31),
+      allTextContents: vi.fn().mockResolvedValue(Array.from({ length: 31 }, (_, i) => String(i + 1))),
+      allInnerTexts: vi.fn().mockResolvedValue(Array.from({ length: 31 }, () => 'X')), // no match for day 15
+    });
+
+    const table = createMockLocator({ count: vi.fn().mockResolvedValue(1) });
+    table.all.mockResolvedValue([table]);
+    table.locator.mockImplementation((sel) => {
+      assert.ok(typeof sel === 'string');
+      if (sel === 'td, [role="gridcell"]') return tableCells;
+      if (sel.includes('aria-label')) return dayCellNotVisible;
+      return table;
+    });
+
+    const el = createMockLocator({ innerText: vi.fn().mockResolvedValue('January 2024') });
+    el.locator.mockImplementation((sel) => {
+      if (sel === 'table, [role="grid"]') return table;
+      return el;
+    });
+
+    await expect(setCalendarDate({ el } as any, new Date('2024-01-15'))).rejects.toThrow('Failed to set date');
+  });
+
   it('handles MUI DateCalendar (div[role="grid"])', async () => {
     const dayCell = createMockLocator({ isVisible: vi.fn().mockResolvedValue(true) });
     const cells = createMockLocator({
@@ -500,6 +583,20 @@ describe('getCurrentMonthsAndYears', () => {
     });
     const result = await getCurrentMonthsAndYears(el, date);
     expect(result).toEqual([]);
+  });
+
+  it('handles getAttribute("lang") throwing (catch path)', async () => {
+    const el = createMockLocator({
+      innerText: vi.fn().mockResolvedValue('January 2024'),
+      page: vi.fn().mockReturnValue({
+        locator: vi.fn().mockReturnValue({
+          getAttribute: vi.fn().mockRejectedValue(new Error('timeout')),
+        }),
+      }),
+    });
+    const result = await getCurrentMonthsAndYears(el, date);
+    // lang = undefined → falls back to ['en-US'] → January recognized
+    expect(result).toEqual([{ month: 0, year: 2024 }]);
   });
 
   it('handles other locales (e.g. French)', async () => {

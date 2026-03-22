@@ -176,6 +176,59 @@ describe('setDateTextInput', () => {
     expect(result).toBe(false);
   });
 
+  it('returns false when tag is textarea', async () => {
+    const el = createMockLocator();
+    const result = await setDateTextInput({ el, tag: 'textarea', type: null }, new Date(2024, 0, 15));
+    expect(result).toBe(false);
+  });
+
+  it('returns false when tag is select', async () => {
+    const el = createMockLocator();
+    const result = await setDateTextInput({ el, tag: 'select', type: null }, new Date(2024, 0, 15));
+    expect(result).toBe(false);
+  });
+
+  it('returns false when tag is input and type is not text (e.g. date)', async () => {
+    const el = createMockLocator();
+    const result = await setDateTextInput({ el, tag: 'input', type: 'date' }, new Date(2024, 0, 15));
+    expect(result).toBe(false);
+  });
+
+  it('returns false when tag is not input, range given, but input count is not 2 (falls through to single-input which also fails)', async () => {
+    const el = createMockLocator();
+    el.locator = vi.fn().mockReturnValue({
+      count: vi.fn().mockResolvedValue(0),
+    }) as any;
+
+    const range = { from: new Date(2024, 0, 15), to: new Date(2024, 0, 20) };
+    const result = await setDateTextInput({ el, tag: 'div', type: null }, range);
+    expect(result).toBe(false);
+  });
+
+  it('handles ambiguous range in single text input (tryProbe range branch)', async () => {
+    const el = createMockLocator();
+    const range = { from: new Date(2024, 0, 3), to: new Date(2024, 0, 5) }; // Both ≤ 12 → ambiguous
+
+    el.evaluate.mockImplementation(async (fn) => {
+      if (fn.toString().includes('Intl.DateTimeFormat')) {
+        return { locale: 'en-US', order: ['month', 'day', 'year'], sep: '/' };
+      }
+      return false; // readOnly
+    });
+
+    // 1. setDateValue → range fills as 'MM/DD/YYYY - MM/DD/YYYY'
+    el.inputValue.mockResolvedValueOnce('01/03/2024 - 01/05/2024');
+    // 2. tryProbe → probe range fills → probe succeeds
+    el.inputValue.mockResolvedValueOnce('01/22/2024 - 01/23/2024');
+    // 3. setDateValue (final after successful probe)
+    el.inputValue.mockResolvedValueOnce('01/03/2024 - 01/05/2024');
+
+    const result = await setDateTextInput({ el, tag: 'input', type: 'text' }, range);
+    expect(result).toBe(true);
+    // Probe value 01/22/2024 - 01/23/2024 should have been filled
+    expect(el.fill).toHaveBeenCalledWith('01/22/2024 - 01/23/2024', undefined);
+  });
+
   it('sets a range of dates correctly', async () => {
     const el = createMockLocator();
     const range = {
@@ -197,6 +250,40 @@ describe('setDateTextInput', () => {
 
     expect(result).toBe(true);
     expect(el.fill).toHaveBeenCalledWith('01/15/2024 - 01/20/2024', undefined);
+  });
+
+  it('returns false when tag is not input and count of text inputs is not 1', async () => {
+    const el = createMockLocator();
+    el.locator = vi.fn().mockReturnValue({
+      count: vi.fn().mockResolvedValue(0),
+    }) as any;
+
+    const date = new Date(2024, 0, 15);
+    const result = await setDateTextInput({ el, tag: 'div', type: null }, date);
+    expect(result).toBe(false);
+  });
+
+  it('sets date via single text input within a non-input container', async () => {
+    const el = createMockLocator();
+    const input = createMockLocator();
+
+    el.locator = vi.fn().mockReturnValue({
+      count: vi.fn().mockResolvedValue(1),
+      nth: vi.fn().mockReturnValue(input),
+    }) as any;
+
+    input.evaluate.mockImplementation(async (fn: any) => {
+      if (fn.toString().includes('Intl.DateTimeFormat')) {
+        return { locale: 'en-US', order: ['month', 'day', 'year'], sep: '/' };
+      }
+      return false; // readOnly
+    });
+    input.inputValue.mockResolvedValue('01/15/2024');
+
+    const date = new Date(2024, 0, 15);
+    const result = await setDateTextInput({ el, tag: 'div', type: null }, date);
+    expect(result).toBe(true);
+    expect(input.fill).toHaveBeenCalledWith('01/15/2024', undefined);
   });
 
   it('returns false if range has non-Date objects', async () => {

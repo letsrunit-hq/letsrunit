@@ -34,10 +34,9 @@ describe('registerSnapshot', () => {
 
   it('passes element outerHTML to scrubHtml when selector is provided', async () => {
     const outerHtml = '<div id="app">content</div>';
-    vi.mocked(session.controller.page.locator('').first().evaluate as any).mockResolvedValue(outerHtml);
     session.controller.page.locator = vi.fn().mockReturnValue({
       first: vi.fn().mockReturnValue({
-        evaluate: vi.fn().mockResolvedValue(outerHtml),
+        evaluate: vi.fn().mockImplementation(async (fn: (el: Element) => string) => fn({ outerHTML: outerHtml } as any)),
       }),
     });
 

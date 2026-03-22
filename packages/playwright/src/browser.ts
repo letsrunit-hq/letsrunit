@@ -11,7 +11,8 @@ export async function browse(browser: Browser, options: BrowserContextOptions = 
   });
 
   // Safety net against bundler-injected helpers inside page.evaluate
-  await context.addInitScript(() => {
+  // v8 ignore next — callback runs in browser context, not Node
+  await context.addInitScript(/* v8 ignore next */ () => {
     // define __name as a no-op if present
     (window as any).__name = (window as any).__name || ((fn: any) => fn);
   });

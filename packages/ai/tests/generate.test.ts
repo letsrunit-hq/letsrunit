@@ -84,4 +84,11 @@ describe('generate', () => {
 
     expect(result).toBe('done');
   });
+
+  it('throws when both schema and tools are provided', async () => {
+    const schema = z.object({ a: z.string() });
+    await expect(generate('system', 'prompt', { schema, tools: {} as any })).rejects.toThrow(
+      "It's not possible to pass both a schema and tools",
+    );
+  });
 });

@@ -407,4 +407,77 @@ describe('createDateEngine query/queryAll', () => {
       expect(found?.id).to.eq('target');
     });
   });
+
+  describe('strict mismatch rules', () => {
+    it('does not match partial date when query explicitly includes a year', () => {
+      document.body.innerHTML = `
+        <div>Jan 5</div>
+        <div>Jan 6</div>
+      `;
+      const found = engine.query(document, 'Jan 5, 2026');
+      expect(found).toBeNull();
+    });
+
+    it('does not match when query time differs from element time', () => {
+      document.body.innerHTML = `<div>Jan 5, 2026, 14:00</div>`;
+      const found = engine.query(document, 'today at 15:00');
+      expect(found).toBeNull();
+    });
+
+    it('does not match when query seconds differ from element seconds', () => {
+      document.body.innerHTML = `<div>Jan 5, 2026, 15:00:44</div>`;
+      const found = engine.query(document, 'today at 15:00:45');
+      expect(found).toBeNull();
+    });
+
+    it('does not match when query has time but element has no time', () => {
+      document.body.innerHTML = `<div>Jan 5, 2026</div>`;
+      const found = engine.query(document, 'today at 15:00');
+      expect(found).toBeNull();
+    });
+  });
+
+  describe('internal parse/match edge paths', () => {
+    it('returns [] for invalid date selectors', () => {
+      document.body.innerHTML = `<div>Jan 5, 2026</div>`;
+      expect(engine.queryAll(document, 'not-a-date-selector')).toEqual([]);
+    });
+
+    it('parses "yesterday at HH:mm" and "12:xx am" correctly', () => {
+      const yesterdayAt = engine._parseSelector('yesterday at 09:10');
+      expect(yesterdayAt).not.toBeNull();
+      expect(yesterdayAt?.getDate()).toBe(4);
+      expect(yesterdayAt?.getHours()).toBe(9);
+
+      const midnight = engine._parseSelector('today at 12:30 am');
+      expect(midnight).not.toBeNull();
+      expect(midnight?.getHours()).toBe(0);
+      expect(midnight?.getMinutes()).toBe(30);
+    });
+
+    it('returns null when _parseSelector cannot parse the body', () => {
+      expect(engine._parseSelector('today maybe later')).toBeNull();
+    });
+
+    it('rejects month-name matches when year in text does not match target year', () => {
+      const el = document.createElement('div');
+      el.textContent = 'Jan 5, 2027';
+      const out = engine._matchesDate(el, new Date('2026-01-05T12:00:00Z'), 'en-US', 'today');
+      expect(out).toEqual({ matched: false, type: 'partial' });
+    });
+
+    it('rejects numeric matches when text omits the target year', () => {
+      const el = document.createElement('div');
+      el.textContent = '01/05';
+      const out = engine._matchesDate(el, new Date('2026-01-05T12:00:00Z'), 'en-US', 'today');
+      expect(out).toEqual({ matched: true, type: 'partial' });
+    });
+
+    it('matches ISO date via fallback when locale formatting does not match text', () => {
+      const el = document.createElement('div');
+      el.textContent = '2026-01-05';
+      const out = engine._matchesDate(el, new Date('2026-01-05T12:00:00Z'), 'xx-XX', 'today');
+      expect(out).toEqual({ matched: true, type: 'full' });
+    });
+  });
 });

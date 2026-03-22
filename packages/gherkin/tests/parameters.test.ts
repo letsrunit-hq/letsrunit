@@ -1,5 +1,5 @@
 import { CucumberExpression, ParameterType, ParameterTypeRegistry } from '@cucumber/cucumber-expressions';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import {
   booleanParameter,
   enumParameter,
@@ -168,6 +168,16 @@ describe('locatorParameter', () => {
     expect(arg.getParameterType().name).to.eq('locator');
     expect(arg.getValue(null)).to.eq('role=button [name="Submit"i]');
   });
+
+  it('returns the raw locator when compile fails', () => {
+    const param = locatorParameter();
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    expect(param.transformer?.('button "Submit')).to.eq('button "Submit');
+    expect(errorSpy).toHaveBeenCalledOnce();
+
+    errorSpy.mockRestore();
+  });
 });
 
 describe('keysParameter', () => {
@@ -198,5 +208,12 @@ describe('keysParameter', () => {
     const [arg] = expr.match("press 'Shift + ArrowUp'")!;
     const v = arg.getValue(null);
     expect(v).to.deep.eq({ modifiers: ['Shift'], key: 'ArrowUp' });
+  });
+});
+
+describe('valueTransformer guard', () => {
+  it('throws on unexpected empty value input', () => {
+    const param = valueParameter();
+    expect(() => param.transformer?.(undefined, undefined, undefined)).toThrow('Unexpected value');
   });
 });

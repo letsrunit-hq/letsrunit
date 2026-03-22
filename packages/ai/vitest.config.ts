@@ -10,10 +10,9 @@ export default defineConfig({
         'src/**/*.ts'
       ],
       exclude: [
+        '**/tests/**',
         '**/index.ts',
-        'src/types/**/*.ts',
       ],
     },
   }
 });
-

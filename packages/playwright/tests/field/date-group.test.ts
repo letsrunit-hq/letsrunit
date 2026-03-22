@@ -165,6 +165,66 @@ describe('setDateGroup', () => {
     expect(monthEl.selectOption).toHaveBeenCalledWith({ index: 2 }, undefined);
   });
 
+  it('scores fields using max attribute signals', async () => {
+    const { mock, locatorMock } = createMockLocator();
+    const dayEl = { evaluate: vi.fn(), fill: vi.fn() };
+    const monthEl = { evaluate: vi.fn(), fill: vi.fn() };
+    const yearEl = { evaluate: vi.fn(), fill: vi.fn() };
+
+    // Use max attributes to signal day/month/year fields
+    dayEl.evaluate.mockResolvedValue({
+      tag: 'input', name: null, id: null, ariaLabel: null, placeholder: null,
+      min: null, max: '31', inputMode: null, attrs: {}, options: [],
+    });
+    monthEl.evaluate.mockResolvedValue({
+      tag: 'input', name: null, id: null, ariaLabel: null, placeholder: null,
+      min: null, max: '12', inputMode: null, attrs: {}, options: [],
+    });
+    yearEl.evaluate.mockResolvedValue({
+      tag: 'input', name: null, id: null, ariaLabel: null, placeholder: null,
+      min: null, max: '2099', inputMode: null, attrs: {}, options: [],
+    });
+
+    locatorMock.all.mockResolvedValue([dayEl, monthEl, yearEl]);
+
+    const date = new Date(2024, 0, 15);
+    const result = await setDateGroup({ el: mock, tag: 'div', type: null }, date);
+
+    expect(result).toBe(true);
+    expect(dayEl.fill).toHaveBeenCalledWith('15', undefined);
+    expect(monthEl.fill).toHaveBeenCalledWith('1', undefined);
+    expect(yearEl.fill).toHaveBeenCalledWith('2024', undefined);
+  });
+
+  it('scores month select with all-numeric options', async () => {
+    const { mock, locatorMock } = createMockLocator();
+    const dayEl = { evaluate: vi.fn(), fill: vi.fn() };
+    const monthEl = { evaluate: vi.fn(), selectOption: vi.fn() };
+    const yearEl = { evaluate: vi.fn(), fill: vi.fn() };
+
+    dayEl.evaluate.mockResolvedValue({
+      tag: 'input', name: 'day', id: null, ariaLabel: null, placeholder: null,
+      min: null, max: null, inputMode: null, attrs: {}, options: [],
+    });
+    monthEl.evaluate.mockResolvedValue({
+      tag: 'select', name: null, id: null, ariaLabel: null, placeholder: null,
+      min: null, max: null, inputMode: null, attrs: {},
+      options: Array.from({ length: 12 }, (_, i) => ({ value: String(i + 1), text: String(i + 1) })),
+    });
+    yearEl.evaluate.mockResolvedValue({
+      tag: 'input', name: 'year', id: null, ariaLabel: null, placeholder: null,
+      min: null, max: null, inputMode: null, attrs: {}, options: [],
+    });
+
+    locatorMock.all.mockResolvedValue([dayEl, monthEl, yearEl]);
+
+    const date = new Date(2024, 2, 10); // March 10
+    const result = await setDateGroup({ el: mock, tag: 'div', type: null }, date);
+
+    expect(result).toBe(true);
+    expect(monthEl.selectOption).toHaveBeenCalledWith('3', undefined);
+  });
+
   it('throws error if fields cannot be detected', async () => {
     const { mock, locatorMock } = createMockLocator();
     const el1 = { evaluate: vi.fn(), fill: vi.fn() };

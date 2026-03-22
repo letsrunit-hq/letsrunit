@@ -150,4 +150,53 @@ describe('SupabaseSink', () => {
     // Insert should have empty artifacts
     expect(insertMock).toBeCalledWith(expect.objectContaining({ artifacts: [] }));
   });
+
+  it('logs insert errors', async () => {
+    insertMock.mockResolvedValueOnce({ error: { message: 'insert failed' } });
+    const sink = new SupabaseSink({ supabase: client, run: { id: runId, projectId }, console: consoleMock as any });
+
+    await sink.publish(makeEntry({ message: 'bad insert' }));
+
+    expect(consoleMock.error).toHaveBeenCalledWith('SupabaseSink insert failed:', { message: 'insert failed' });
+  });
+
+  it('warns when ensureBucket create fails', async () => {
+    client.storage.createBucket = vi.fn().mockRejectedValue(new Error('bucket fail'));
+    const sink = new SupabaseSink({
+      supabase: client,
+      run: { id: runId, projectId },
+      bucket: 'artifacts',
+      console: consoleMock as any,
+    });
+
+    const artifact: any = {
+      name: 'a.txt',
+      size: 1,
+      bytes: vi.fn().mockResolvedValue(new Uint8Array([1])),
+      type: 'text/plain',
+    };
+    await sink.publish(makeEntry({ artifacts: [artifact] }));
+
+    expect(consoleMock.warn).toHaveBeenCalled();
+  });
+
+  it('treats HEAD fetch failures as not-existing artifact and still uploads', async () => {
+    vi.mocked(fetch).mockRejectedValueOnce(new Error('network fail'));
+    const sink = new SupabaseSink({
+      supabase: client,
+      run: { id: runId, projectId },
+      bucket: 'artifacts',
+      console: consoleMock as any,
+    });
+
+    const artifact: any = {
+      name: 'retry.txt',
+      size: 3,
+      bytes: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3])),
+      type: 'text/plain',
+    };
+
+    await sink.publish(makeEntry({ artifacts: [artifact] }));
+    expect(uploadMock).toHaveBeenCalled();
+  });
 });

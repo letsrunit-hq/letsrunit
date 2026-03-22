@@ -28,7 +28,7 @@ export async function setRadioGroup(
   const ariaRadio = el.locator(`[role="radio"][value="${stringValue}"]`);
   if ((await ariaRadio.count()) >= 1) {
     const item = ariaRadio.first();
-    const ariaChecked = await item.getAttribute('aria-checked', options).catch(() => null);
+    const ariaChecked = await item.getAttribute('aria-checked', options).catch(/* v8 ignore next */ () => null);
     if (ariaChecked !== 'true') await item.click(options);
     return true;
   }
@@ -37,7 +37,7 @@ export async function setRadioGroup(
   const ariaRadioByLabel = el.getByLabel(stringValue, { exact: true }).locator('[role="radio"]');
   if ((await ariaRadioByLabel.count()) >= 1) {
     const item = ariaRadioByLabel.first();
-    const ariaChecked = await item.getAttribute('aria-checked', options).catch(() => null);
+    const ariaChecked = await item.getAttribute('aria-checked', options).catch(/* v8 ignore next */ () => null);
     if (ariaChecked !== 'true') await item.click(options);
     return true;
   }
