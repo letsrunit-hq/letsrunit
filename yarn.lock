@@ -482,6 +482,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ant-design/colors@npm:^7.0.0":
+  version: 7.2.1
+  resolution: "@ant-design/colors@npm:7.2.1"
+  dependencies:
+    "@ant-design/fast-color": "npm:^2.0.6"
+  checksum: 10c0/4748a0bfb1ea98e08e29dcd4f7afd2781ae2119f783e6e9f80e889fd15fc19f7137e2a3d91f26bae2ab1ee76c04d520cc35f2bb0a708cd71e463f4d9deb4192d
+  languageName: node
+  linkType: hard
+
 "@ant-design/colors@npm:^8.0.0, @ant-design/colors@npm:^8.0.1":
   version: 8.0.1
   resolution: "@ant-design/colors@npm:8.0.1"
@@ -541,10 +550,34 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ant-design/fast-color@npm:^2.0.6":
+  version: 2.0.6
+  resolution: "@ant-design/fast-color@npm:2.0.6"
+  dependencies:
+    "@babel/runtime": "npm:^7.24.7"
+  checksum: 10c0/8d30649bd8d4e56d5c48393fcf0ad5c24d1099ec4cbf88f55bd9f4489e61efc30087d301da384c4ed21f2d5597087c8ba27dfbcc7693915310c26d307f5a8276
+  languageName: node
+  linkType: hard
+
 "@ant-design/fast-color@npm:^3.0.0":
   version: 3.0.0
   resolution: "@ant-design/fast-color@npm:3.0.0"
   checksum: 10c0/49e6c8971c2979d72e20422a0d76b4134b2a08a0ec971f4e7aa5901e900b83ef8a69b642bccc2770d114993f4bf5f5a909a642503c6e64c6e67376ff2f58e87a
+  languageName: node
+  linkType: hard
+
+"@ant-design/icons-angular@npm:^20.0.0":
+  version: 20.0.0
+  resolution: "@ant-design/icons-angular@npm:20.0.0"
+  dependencies:
+    "@ant-design/colors": "npm:^7.0.0"
+    tslib: "npm:^2.0.0"
+  peerDependencies:
+    "@angular/common": ^20.0.0
+    "@angular/core": ^20.0.0
+    "@angular/platform-browser": ^20.0.0
+    rxjs: ^6.5.3 || ^7.4.0
+  checksum: 10c0/88de1bb23af2f6f6818855f611d304435afed15dd44c59b1cac25b81ef29e83d48aabbd990ea48cff5d3f12dcb0334f9c123035b7c46de78d543701cbe145311
   languageName: node
   linkType: hard
 
@@ -2005,6 +2038,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime@npm:^7.21.0":
+  version: 7.29.2
+  resolution: "@babel/runtime@npm:7.29.2"
+  checksum: 10c0/30b80a0140d16467792e1bbeb06f655b0dab70407da38dfac7fedae9c859f9ae9d846ef14ad77bd3814c064295fe9b1bc551f1541ea14646ae9f22b71a8bc17a
+  languageName: node
+  linkType: hard
+
 "@babel/template@npm:^7.27.2":
   version: 7.27.2
   resolution: "@babel/template@npm:7.27.2"
@@ -2730,6 +2770,13 @@ __metadata:
   peerDependencies:
     postcss: ^8.4
   checksum: 10c0/be5c31437b726928f64cd4bb3e47f5b90bfd2e2a69a8eaabd8e89cc6c0977e4f0f7ee48de50c8ed8b07e04e3956a02293247e0da3236d521fb2e836f88f65822
+  languageName: node
+  linkType: hard
+
+"@ctrl/tinycolor@npm:^3.6.0":
+  version: 3.6.1
+  resolution: "@ctrl/tinycolor@npm:3.6.1"
+  checksum: 10c0/444d81612cd8c5c802a3d1253df83d5f77d3db87f351861655683a4743990e6b38976bf2e4129591c5a258607b63574b3c7bed702cf6a0eb7912222edf4570e9
   languageName: node
   linkType: hard
 
@@ -4846,6 +4893,7 @@ __metadata:
     "@taiga-ui/cdk": "npm:^4.0.0"
     "@taiga-ui/core": "npm:^4.0.0"
     "@taiga-ui/kit": "npm:^4.0.0"
+    ng-zorro-antd: "npm:^20.4.4"
     primeng: "npm:^20.0.0"
     rxjs: "npm:^7.8.0"
     tslib: "npm:^2.8.0"
@@ -11719,6 +11767,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"date-fns@npm:^2.16.1":
+  version: 2.30.0
+  resolution: "date-fns@npm:2.30.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.21.0"
+  checksum: 10c0/e4b521fbf22bc8c3db332bbfb7b094fd3e7627de0259a9d17c7551e2d2702608a7307a449206065916538e384f37b181565447ce2637ae09828427aed9cb5581
+  languageName: node
+  linkType: hard
+
 "date-fns@npm:^4.1.0":
   version: 4.1.0
   resolution: "date-fns@npm:4.1.0"
@@ -17768,6 +17825,26 @@ __metadata:
     "@angular-devkit/schematics": ">=16.0.0"
     tslib: ^2.7.0
   checksum: 10c0/4534e2213cc1f0a627012cbe2dc42c60a614719cba2b49d7126552cefeb6313ce96435bbede837f975da8b511c2a0b14b049efcb3514d2f388aece8c8c8a8997
+  languageName: node
+  linkType: hard
+
+"ng-zorro-antd@npm:^20.4.4":
+  version: 20.4.4
+  resolution: "ng-zorro-antd@npm:20.4.4"
+  dependencies:
+    "@angular/cdk": "npm:^20.0.0"
+    "@ant-design/icons-angular": "npm:^20.0.0"
+    "@ctrl/tinycolor": "npm:^3.6.0"
+    date-fns: "npm:^2.16.1"
+    tslib: "npm:^2.3.0"
+  peerDependencies:
+    "@angular/animations": ^20.0.0
+    "@angular/common": ^20.0.0
+    "@angular/core": ^20.0.0
+    "@angular/forms": ^20.0.0
+    "@angular/platform-browser": ^20.0.0
+    "@angular/router": ^20.0.0
+  checksum: 10c0/2051686e1ed3dc63adb5a3330b2306dd4deb5b610896a0f0f650d046ec93ea06c7f5a759d98de3fd9f3bb09a6041ed26257a37c61e2201fa0643b6a230c1d004
   languageName: node
   linkType: hard
 
