@@ -13,7 +13,7 @@ test.describe('Composite Field Components', () => {
   test('date group (day/month/year)', async ({ mount, page }) => {
     await mount(DateGroupFixture);
 
-    await setFieldValue(page.getByLabel('date-group'), new Date('2024-07-15'), { timeout: 1000 });
+    await setFieldValue(page.getByLabel('date-group', { exact: true }), new Date('2024-07-15'), { timeout: 1000 });
     await expect(page.getByLabel('date-group-result')).toContainText('15');
     await expect(page.getByLabel('date-group-result')).toContainText('2024');
   });
