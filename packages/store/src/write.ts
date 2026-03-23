@@ -1,4 +1,4 @@
-import type { Database } from 'node-sqlite3-wasm';
+import type { Database } from './db';
 
 export function insertSession(db: Database, id: string, gitCommit: string | null, startedAt: number): void {
   db.run('INSERT OR IGNORE INTO sessions (id, started_at, git_commit) VALUES (?, ?, ?)', [id, startedAt, gitCommit]);

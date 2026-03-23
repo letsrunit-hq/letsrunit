@@ -1,4 +1,4 @@
-import type { Database } from 'node-sqlite3-wasm';
+import type { Database } from './db';
 
 export function findLastRun(
   db: Database,
@@ -39,7 +39,7 @@ export function findArtifacts(
   stepId?: string,
 ): Array<{ filename: string; stepId: string; stepIdx: number }> {
   const conditions: string[] = ['a.run_id = ?'];
-  const params: unknown[] = [runId];
+  const params: (string | number | null)[] = [runId];
 
   if (stepId !== undefined) {
     conditions.push('a.step_id = ?');

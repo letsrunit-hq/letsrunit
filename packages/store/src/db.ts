@@ -1,4 +1,6 @@
-import { Database } from 'node-sqlite3-wasm';
+import nodeWasm from 'node-sqlite3-wasm';
+const { Database } = nodeWasm;
+export type Database = InstanceType<typeof nodeWasm.Database>;
 
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS sessions (
