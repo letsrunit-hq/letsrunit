@@ -11,3 +11,4 @@ export * from './types';
 export * from './utils/date';
 export * from './wait';
 export * from './scrub-html';
+export * from './unified-html-diff';

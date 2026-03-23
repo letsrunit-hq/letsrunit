@@ -1,4 +1,4 @@
-import Database from 'better-sqlite3';
+import { Database } from 'node-sqlite3-wasm';
 
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS sessions (
@@ -39,10 +39,10 @@ CREATE TABLE IF NOT EXISTS artifacts (
 );
 `;
 
-export function openStore(path = '.letsrunit/letsrunit.db'): Database.Database {
+export function openStore(path = '.letsrunit/letsrunit.db'): Database {
   const db = new Database(path);
-  db.pragma('journal_mode = WAL');
-  db.pragma('foreign_keys = ON');
+  db.run('PRAGMA journal_mode = WAL');
+  db.run('PRAGMA foreign_keys = ON');
   db.exec(SCHEMA);
   return db;
 }

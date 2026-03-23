@@ -30,10 +30,10 @@
         "import": "./dist/index.js",
         "default": "./dist/index.js"
       },
-      "./artifacts": {
-        "types": "./dist/artifacts.d.ts",
-        "import": "./dist/artifacts.js",
-        "default": "./dist/artifacts.js"
+      "./store": {
+        "types": "./dist/store.d.ts",
+        "import": "./dist/store.js",
+        "default": "./dist/store.js"
       }
     }
   },
@@ -69,10 +69,10 @@
       "import": "./src/index.ts",
       "default": "./src/index.ts"
     },
-    "./artifacts": {
-      "types": "./src/artifacts.ts",
-      "import": "./src/artifacts.ts",
-      "default": "./src/artifacts.ts"
+    "./store": {
+      "types": "./src/store.ts",
+      "import": "./src/store.ts",
+      "default": "./src/store.ts"
     }
   }
 }

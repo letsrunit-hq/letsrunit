@@ -47,8 +47,10 @@
   "packageManager": "yarn@4.10.3",
   "dependencies": {
     "@letsrunit/controller": "workspace:*",
+    "@letsrunit/gherkin": "workspace:*",
     "@letsrunit/journal": "workspace:*",
     "@letsrunit/playwright": "workspace:*",
+    "@letsrunit/store": "workspace:*",
     "@letsrunit/utils": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.26.0",
     "@playwright/test": "^1.57.0",
