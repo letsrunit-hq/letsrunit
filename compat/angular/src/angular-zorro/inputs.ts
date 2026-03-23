@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { provideAnimations } from '@angular/platform-browser/animations';
 import { NzNoAnimationModule } from 'ng-zorro-antd/core/no-animation';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -71,7 +70,6 @@ export class NzRadioGroupFixture {
 @Component({
   standalone: true,
   imports: [FormsModule, NzSelectModule, NzNoAnimationModule],
-  providers: [provideAnimations()],
   template: `
     <nz-select aria-label="age" [(ngModel)]="selected">
       <nz-option nzValue="10" nzLabel="Ten"></nz-option>
