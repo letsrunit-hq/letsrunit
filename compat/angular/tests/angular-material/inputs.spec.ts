@@ -38,11 +38,11 @@ test.describe('Mat Input', () => {
 test('Mat Slide Toggle', async ({ mount, page }) => {
   await mount(MatSlideToggleFixture);
 
-  await page.getByText('Toggle').click();
+  await setFieldValue(page.getByRole('switch'), true, { timeout: 1000 });
   await expect(page.getByRole('switch')).toHaveAttribute('aria-checked', 'true');
   await expect(page.getByLabel('result')).toContainText('on');
 
-  await page.getByText('Toggle').click();
+  await setFieldValue(page.getByRole('switch'), false, { timeout: 1000 });
   await expect(page.getByRole('switch')).toHaveAttribute('aria-checked', 'false');
   await expect(page.getByLabel('result')).toContainText('off');
 });
@@ -72,11 +72,9 @@ test('Mat Radio Group', async ({ mount, page }) => {
 test('Mat Select', async ({ mount, page }) => {
   await mount(MatSelectFixture);
 
-  await page.getByRole('combobox', { name: /age/i }).click();
-  await page.getByRole('option', { name: 'Thirty' }).click();
+  await setFieldValue(page.getByRole('combobox', { name: /age/i }), '30', { timeout: 1000 });
   await expect(page.getByLabel('result')).toContainText('30');
 
-  await page.getByRole('combobox', { name: /age/i }).click();
-  await page.getByRole('option', { name: 'Ten' }).click();
+  await setFieldValue(page.getByRole('combobox', { name: /age/i }), '10', { timeout: 1000 });
   await expect(page.getByLabel('result')).toContainText('10');
 });
