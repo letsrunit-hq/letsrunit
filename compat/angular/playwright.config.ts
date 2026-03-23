@@ -1,16 +1,53 @@
-import { defineConfig } from '@sand4rt/experimental-ct-angular';
+/**
+ * Copyright (c) Microsoft Corporation.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import angular from '@analogjs/vite-plugin-angular';
+import { defineConfig, devices } from '@sand4rt/experimental-ct-angular';
+import { resolve } from 'path';
 
 export default defineConfig({
-  testDir: './tests',
-
-  timeout: 30_000,
-
+  testDir: 'tests',
+  forbidOnly: !!process.env['CI'],
+  retries: process.env['CI'] ? 2 : 0,
+  reporter: process.env['CI'] ? 'html' : 'line',
   use: {
-    viewport: { width: 1280, height: 800 },
-    ctViteConfig: { resolve: { conditions: ['style'] }, esbuild: { target: 'es2022' } },
+    trace: 'on-first-retry',
+    ctViteConfig: {
+      plugins: [angular({
+        tsconfig: resolve('./tsconfig.spec.json'),
+      }) as any], // TODO: remove any and resolve various installed conflicting Vite versions
+      resolve: {
+        alias: {
+          '@': resolve('./src'),
+        }
+      }
+    }
   },
-
-  expect: {
-    timeout: 1_000,
-  },
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+    },
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
+    },
+  ],
 });
