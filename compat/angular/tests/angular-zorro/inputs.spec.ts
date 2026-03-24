@@ -1,5 +1,6 @@
 import { setFieldValue } from '@letsrunit/playwright';
 import { expect, test } from '@sand4rt/experimental-ct-angular';
+import { registerHtmlDump } from './debug-html';
 import {
   NzCheckboxFixture,
   NzInputFixture,
@@ -8,6 +9,8 @@ import {
   NzSelectFixture,
   NzSwitchFixture,
 } from '../../src/angular-zorro/inputs';
+
+registerHtmlDump(test);
 
 test.describe('Nz Input', () => {
   test('set value', async ({ mount, page }) => {
@@ -39,11 +42,11 @@ test('Nz Switch', async ({ mount, page }) => {
   await mount(NzSwitchFixture);
 
   await setFieldValue(page.getByLabel('switch'), true, { timeout: 1000 });
-  await expect(page.locator('nz-switch button')).toHaveAttribute('aria-checked', 'true');
+  await expect(page.locator('nz-switch button')).toHaveClass(/ant-switch-checked/);
   await expect(page.getByLabel('result')).toContainText('on');
 
   await setFieldValue(page.getByLabel('switch'), false, { timeout: 1000 });
-  await expect(page.locator('nz-switch button')).toHaveAttribute('aria-checked', 'false');
+  await expect(page.locator('nz-switch button')).not.toHaveClass(/ant-switch-checked/);
   await expect(page.getByLabel('result')).toContainText('off');
 });
 
@@ -61,12 +64,12 @@ test('Nz Radio Group', async ({ mount, page }) => {
   await mount(NzRadioGroupFixture);
 
   await setFieldValue(page.locator('nz-radio-group'), 'male', { timeout: 1000 });
-  await expect(page.getByRole('radio', { name: 'Male', exact: true })).toBeChecked();
-  await expect(page.getByRole('radio', { name: 'Female', exact: true })).not.toBeChecked();
+  await expect(page.locator('label').filter({ hasText: /^Male$/ })).toHaveClass(/ant-radio-wrapper-checked/);
+  await expect(page.locator('label').filter({ hasText: /^Female$/ })).not.toHaveClass(/ant-radio-wrapper-checked/);
 
   await setFieldValue(page.locator('nz-radio-group'), 'other', { timeout: 1000 });
-  await expect(page.getByRole('radio', { name: 'Other', exact: true })).toBeChecked();
-  await expect(page.getByRole('radio', { name: 'Male', exact: true })).not.toBeChecked();
+  await expect(page.locator('label').filter({ hasText: /^Other$/ })).toHaveClass(/ant-radio-wrapper-checked/);
+  await expect(page.locator('label').filter({ hasText: /^Male$/ })).not.toHaveClass(/ant-radio-wrapper-checked/);
 });
 
 test('Nz Select', async ({ mount, page }) => {

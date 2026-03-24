@@ -48,6 +48,17 @@ function parseDateString(value: string, order: DateOrder, sep: string): Date | n
   return dt;
 }
 
+function matchesDateLoosely(value: string, date: Date): boolean {
+  const digits = (value.match(/\d+/g) ?? []).map((d) => Number.parseInt(d, 10));
+  if (digits.length < 3) return false;
+
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+
+  return digits.includes(year) && digits.includes(month) && digits.includes(day);
+}
+
 async function inferLocaleAndPattern(el: Locator, options?: SetOptions): Promise<{
   locale: string;
   order: DateOrder;
@@ -122,8 +133,12 @@ async function setDateValue(
     backParts.length !== dates.length ||
     dates.some((date, i) => {
       const part = backParts[i]?.trim();
+      if (!part) return true;
+
       const parsed = parseDateString(part, order, sep);
-      return !parsed || !sameYMD(parsed, date);
+      if (parsed && sameYMD(parsed, date)) return false;
+
+      return !matchesDateLoosely(part, date);
     });
 
   return !failed;
