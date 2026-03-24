@@ -4790,8 +4790,10 @@ __metadata:
   resolution: "@letsrunit/mcp-server@workspace:packages/mcp-server"
   dependencies:
     "@letsrunit/controller": "workspace:*"
+    "@letsrunit/gherkin": "workspace:*"
     "@letsrunit/journal": "workspace:*"
     "@letsrunit/playwright": "workspace:*"
+    "@letsrunit/store": "workspace:*"
     "@letsrunit/utils": "workspace:*"
     "@modelcontextprotocol/sdk": "npm:^1.26.0"
     "@playwright/test": "npm:^1.57.0"
