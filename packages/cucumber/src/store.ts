@@ -33,7 +33,7 @@ type AstStep = {
   keyword: string;
   text: string;
   docString?: { content: string };
-  dataTable?: { rows: Array<{ cells: Array<{ value: string }> }> };
+  dataTable?: { rows: ReadonlyArray<{ cells: ReadonlyArray<{ value: string }> }> };
 };
 
 type PickleEntry = {
