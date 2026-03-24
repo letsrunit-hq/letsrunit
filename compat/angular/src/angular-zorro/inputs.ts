@@ -71,7 +71,7 @@ export class NzRadioGroupFixture {
   standalone: true,
   imports: [FormsModule, NzSelectModule, NzNoAnimationModule],
   template: `
-    <nz-select aria-label="age" [(ngModel)]="selected">
+    <nz-select nzNoAnimation aria-label="age" [(ngModel)]="selected">
       <nz-option nzValue="10" nzLabel="Ten"></nz-option>
       <nz-option nzValue="20" nzLabel="Twenty"></nz-option>
       <nz-option nzValue="30" nzLabel="Thirty"></nz-option>

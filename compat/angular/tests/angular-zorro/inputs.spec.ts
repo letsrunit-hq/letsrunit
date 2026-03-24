@@ -70,11 +70,15 @@ test('Nz Radio Group', async ({ mount, page }) => {
 });
 
 test('Nz Select', async ({ mount, page }) => {
-  await mount(NzSelectFixture);
+  await mount(NzSelectFixture, {
+    hooksConfig: {
+      noopAnimations: true,
+    },
+  });
 
-  await setFieldValue(page.getByRole('combobox', { name: /age/i }), '30', { timeout: 1000 });
+  await setFieldValue(page.locator('nz-select'), '30', { timeout: 1000 });
   await expect(page.getByLabel('result')).toContainText('30');
 
-  await setFieldValue(page.getByRole('combobox', { name: /age/i }), '10', { timeout: 1000 });
+  await setFieldValue(page.locator('nz-select'), '10', { timeout: 1000 });
   await expect(page.getByLabel('result')).toContainText('10');
 });
