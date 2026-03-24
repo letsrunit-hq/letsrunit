@@ -8,7 +8,7 @@ import {
   NzRadioGroupFixture,
   NzSelectFixture,
   NzSwitchFixture,
-} from '../../src/angular-zorro/inputs';
+} from '../../src/ng-zorro-antd/inputs';
 
 registerHtmlDump(test);
 
