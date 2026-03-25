@@ -95,6 +95,20 @@ describe('snapshot', () => {
     expect(page.url as ReturnType<typeof vi.fn>).toHaveBeenCalled();
   });
 
+  it('strips utility classes from html when dropUtilityClasses is true', async () => {
+    const page = makePage({
+      content: vi.fn().mockResolvedValue(
+        '<html><body><div class="flex p-4 card">Hello</div></body></html>',
+      ),
+    });
+
+    const result = await snapshot(page, { dropUtilityClasses: true });
+
+    expect(result.html).not.toMatch(/\bflex\b/);
+    expect(result.html).not.toMatch(/\bp-4\b/);
+    expect(result.html).toContain('card');
+  });
+
   it('executes aria-hidden marking callback and undo with real DOM elements', async () => {
     // Add elements to jsdom so the walk/isHidden code paths are exercised
     const visible = document.createElement('div');

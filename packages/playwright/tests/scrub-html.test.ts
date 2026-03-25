@@ -234,6 +234,52 @@ describe('scrubHtml', () => {
   });
 });
 
+describe('dropUtilityClasses', () => {
+  const page = (body: string) => ({ html: `<body>${body}</body>`, url: 'https://example.com' });
+
+  it('strips Tailwind variant classes (with colon prefix)', async () => {
+    const html = '<div class="hover:text-blue-500 sm:flex dark:bg-gray-900">x</div>';
+    const out = await realScrubHtml(page(html), { dropUtilityClasses: true });
+    expect(out).toBe('<div>x</div>');
+  });
+
+  it('strips Tailwind base utility classes', async () => {
+    const html = '<div class="p-4 mx-auto text-red-500 rounded-lg flex">x</div>';
+    const out = await realScrubHtml(page(html), { dropUtilityClasses: true });
+    expect(out).toBe('<div>x</div>');
+  });
+
+  it('strips Bootstrap utility classes', async () => {
+    const html = '<div class="col-md-6 d-flex mt-3 p-2">x</div>';
+    const out = await realScrubHtml(page(html), { dropUtilityClasses: true });
+    expect(out).toBe('<div>x</div>');
+  });
+
+  it('preserves non-utility semantic classes', async () => {
+    const html = '<div class="product-card nav__link is-active hero">x</div>';
+    const out = await realScrubHtml(page(html), { dropUtilityClasses: true });
+    expect(out).toContain('class="product-card nav__link is-active hero"');
+  });
+
+  it('removes class attribute entirely when all classes are utilities', async () => {
+    const html = '<span class="p-2 m-4 flex hidden">x</span>';
+    const out = await realScrubHtml(page(html), { dropUtilityClasses: true });
+    expect(out).toBe('<span>x</span>');
+  });
+
+  it('keeps remaining classes when mixed with utilities', async () => {
+    const html = '<div class="card p-4 text-sm is-open">x</div>';
+    const out = await realScrubHtml(page(html), { dropUtilityClasses: true });
+    expect(out).toContain('class="card is-open"');
+  });
+
+  it('is disabled by default and leaves class attributes unchanged', async () => {
+    const html = '<div class="flex p-4 my-component">x</div>';
+    const out = await realScrubHtml(page(html));
+    expect(out).toContain('class="flex p-4 my-component"');
+  });
+});
+
 describe('scrubHtml (Page overload)', () => {
   it('calls page.content() and page.url() when passed a Page-like object', async () => {
     const html = '<html><body><p>Hello</p></body></html>';

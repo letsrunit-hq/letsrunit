@@ -31,6 +31,9 @@ export type ScrubHtmlOptions = {
   replaceBrInHeadings?: boolean;
   /** Limit lists to max items: -1 mean no limit. Default: -1 */
   limitLists?: number;
+  /** Strip utility-framework classes (Tailwind, Bootstrap, UnoCSS, Windi) from class
+   *  attributes. Removes the attribute entirely when all classes are stripped. Default: false */
+  dropUtilityClasses?: boolean;
 };
 
 const HTML_MIN_ATTR_THRESHOLD = 250_000;    // ~70k tokens
@@ -48,6 +51,7 @@ function getDefaults(contentLength: number): Required<ScrubHtmlOptions> {
     dropComments: true,
     replaceBrInHeadings: true,
     limitLists: contentLength >= HTML_LIMIT_LISTS_THRESHOLD ? 20 : -1,
+    dropUtilityClasses: false,
   };
 }
 
@@ -183,6 +187,7 @@ export async function realScrubHtml(
   if (o.dropComments) dropHtmlComments(doc);
   if (o.replaceBrInHeadings) replaceBrsInHeadings(doc);
   if (o.limitLists >= 0) limitListsAndRows(doc, o.limitLists);
+  if (o.dropUtilityClasses) stripUtilityClasses(doc);
   if (o.normalizeWhitespace) normalizeWhitespace(doc.body);
 
   return doc.body.innerHTML;
@@ -312,6 +317,41 @@ function replaceBrsInHeadings(doc: Document) {
       (br as Element).replaceWith(space);
     });
   });
+}
+
+// ---- Utility class detection ----
+
+// Any class containing ':' is a Tailwind/Windi/UnoCSS variant prefix (hover:, sm:, dark:focus:, …)
+const UTILITY_VARIANT_RE = /:/;
+
+// Prefix-based utility patterns (Tailwind + Bootstrap)
+const UTILITY_PREFIX_RE = /^-?(?:p[xytblrse]?|m[xytblrse]?|gap|space-[xy]|w|h|min-w|min-h|max-w|max-h|size|basis|inset|top|right|bottom|left|start|end|z|text|bg|border|ring|shadow|outline|fill|stroke|divide|accent|caret|from|via|to|decoration|font|leading|tracking|indent|line-clamp|columns|aspect|object|opacity|rotate|scale|translate|skew|transition|duration|ease|delay|animate|rounded|overflow|overscroll|scroll|snap|touch|cursor|pointer-events|select|resize|flex|grid|col|row|order|auto-cols|auto-rows|items|justify|content|self|place|float|clear|list|whitespace|break|hyphens|mix-blend|bg-blend|backdrop|d|g|fs|fw|lh|align|position)-/i;
+
+// Standalone keywords that are utilities on their own (no suffix)
+const UTILITY_STANDALONE = new Set([
+  'flex', 'grid', 'block', 'hidden', 'inline', 'inline-block', 'inline-flex', 'inline-grid',
+  'contents', 'flow-root', 'list-item', 'table', 'container', 'truncate',
+  'grow', 'shrink', 'static', 'relative', 'absolute', 'fixed', 'sticky',
+  'visible', 'invisible', 'collapse', 'isolate',
+  'underline', 'overline', 'line-through', 'no-underline',
+  'uppercase', 'lowercase', 'capitalize', 'normal-case',
+  'italic', 'not-italic', 'antialiased', 'subpixel-antialiased',
+  'sr-only', 'not-sr-only', 'clearfix', 'row', 'col',
+]);
+
+function isUtilityClass(token: string): boolean {
+  if (UTILITY_VARIANT_RE.test(token)) return true;
+  const base = token.startsWith('-') ? token.slice(1) : token;
+  if (UTILITY_STANDALONE.has(base)) return true;
+  return UTILITY_PREFIX_RE.test(token);
+}
+
+function stripUtilityClasses(doc: Document) {
+  for (const el of doc.body.querySelectorAll<HTMLElement>('[class]')) {
+    const kept = el.className.split(/\s+/).filter((t) => t && !isUtilityClass(t));
+    if (kept.length === 0) el.removeAttribute('class');
+    else el.className = kept.join(' ');
+  }
 }
 
 function limitListsAndRows(doc: Document, limit: number) {
