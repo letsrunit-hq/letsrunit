@@ -1,3 +1,17 @@
+# [0.8.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.7.1...v0.8.0) (2026-03-25)
+
+
+### Bug Fixes
+
+* **cucumber:** align AstStep dataTable with readonly DataTable ([9088b44](https://github.com/letsrunit-hq/letsrunit/commit/9088b445095941d04dd2197b33a63721951fc2b3))
+* **store:** import Database from node-sqlite3-wasm default export ([45285d4](https://github.com/letsrunit-hq/letsrunit/commit/45285d48724d21c2caf40b2dd9328cdcc1b0f6f9))
+
+
+### Features
+
+* **playwright:** add dropUtilityClasses option to snapshot and scrubHtml ([d21f08e](https://github.com/letsrunit-hq/letsrunit/commit/d21f08e645849ced41b17bef68eb332e6ddb4e1d))
+* **store,mcp:** add letsrunit_diff tool with content-based scenario IDs ([e81477d](https://github.com/letsrunit-hq/letsrunit/commit/e81477d090c18d5d33dc0cd8dbdfae7fd47999cf))
+
 ## [0.7.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.7.0...v0.7.1) (2026-03-25)
 
 
