@@ -1,13 +1,13 @@
 import { AttachmentContentEncoding, TestStepResultStatus, type Envelope } from '@cucumber/messages';
 import { execSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync } from 'node:fs';
 import { utimes, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { finaliseRun, insertArtifact, insertRun, insertSession, openStore, upsertFeature, upsertScenario, upsertStep } from '@letsrunit/store';
-import { v4 as uuidv4, v5 as uuidv5 } from 'uuid';
+import { finaliseRun, insertArtifact, insertRun, insertSession, openStore, upsertFeature, upsertScenario, upsertStep, computeFeatureId, computeStepId, computeScenarioId } from '@letsrunit/store';
+import { normalizeStep } from '@letsrunit/gherkin';
+import { v4 as uuidv4 } from 'uuid';
 
 const DEFAULT_DIR = '.letsrunit/artifacts';
-const UUID_NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8'; // UUID namespace for URLs
 
 function mimeToExt(mediaType: string): string {
   const map: Record<string, string> = {
@@ -28,6 +28,13 @@ async function hashBytes(bytes: Uint8Array): Promise<string> {
   const digest = await crypto.subtle.digest('SHA-256', buffer);
   return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('');
 }
+
+type AstStep = {
+  keyword: string;
+  text: string;
+  docString?: { content: string };
+  dataTable?: { rows: ReadonlyArray<{ cells: ReadonlyArray<{ value: string }> }> };
+};
 
 type PickleEntry = {
   featureId: string;
@@ -69,8 +76,8 @@ export default {
 
     // Correlation maps
     const pickleMap = new Map<string, PickleEntry>();
-    // astNodeId (step) → step text from gherkin AST
-    const astStepTextMap = new Map<string, string>();
+    // astNodeId → full AST step (keyword, text, docString, dataTable)
+    const astStepMap = new Map<string, AstStep>();
     const testCaseMap = new Map<string, TestCaseEntry>();
     const runMap = new Map<string, RunEntry>();
     const pendingFailures = new Map<string, FailureInfo>();
@@ -80,18 +87,20 @@ export default {
         const doc = envelope.gherkinDocument;
         const uri = doc.uri ?? '';
 
-        let fileContent = '';
-        try { fileContent = readFileSync(uri, 'utf-8'); } catch {}
-        const featureId = uuidv5(uri + fileContent, UUID_NAMESPACE);
-
+        const featureId = computeFeatureId(uri);
         const featureName = doc.feature?.name ?? '';
         upsertFeature(db, featureId, uri, featureName);
 
-        // Build astNodeId → step text map for all steps in this document
+        // Build astNodeId → step map for all steps in this document
         for (const child of doc.feature?.children ?? []) {
           const steps = child.scenario?.steps ?? child.background?.steps ?? child.rule?.children.flatMap(rc => rc.scenario?.steps ?? rc.background?.steps ?? []) ?? [];
           for (const step of steps) {
-            astStepTextMap.set(step.id, step.keyword + step.text);
+            astStepMap.set(step.id, {
+              keyword: step.keyword.trim(),
+              text: step.text,
+              docString: step.docString ? { content: step.docString.content } : undefined,
+              dataTable: step.dataTable,
+            });
           }
         }
         return;
@@ -99,24 +108,42 @@ export default {
 
       if (envelope.pickle) {
         const pickle = envelope.pickle;
-        // Determine featureId from uri + file content (same computation as gherkinDocument)
-        let fileContent = '';
-        try { fileContent = readFileSync(pickle.uri, 'utf-8'); } catch {}
-        const featureId = uuidv5(pickle.uri + fileContent, UUID_NAMESPACE);
+        const featureId = computeFeatureId(pickle.uri);
 
-        // Derive a deterministic scenario ID from uri + line so it's stable across runs.
-        // pickle.id is a random UUID in cucumber-js 12 and must not be used as the DB key.
-        const line = pickle.location?.line ?? 0;
-        const scenarioId = uuidv5(pickle.uri + ':' + line, UUID_NAMESPACE);
+        // Compute content-based step IDs using normalized step text.
+        // - keyword: from AST (resolving And/But/* to previous canonical keyword)
+        // - text: from pickle (compiled — parameters substituted for outlines)
+        // - docString/dataTable: from pickle argument (compiled values)
+        const steps: { id: string; text: string }[] = [];
+        let currentKeyword = 'Given';
+
+        pickle.steps.forEach((ps) => {
+          const astStep = astStepMap.get(ps.astNodeIds[0] ?? '');
+          let keyword = astStep?.keyword ?? 'Given';
+          const lc = keyword.toLowerCase();
+          if (lc === 'and' || lc === 'but' || keyword === '*') {
+            keyword = currentKeyword;
+          } else {
+            currentKeyword = keyword;
+          }
+
+          const normalized = normalizeStep(
+            keyword,
+            ps.text,
+            ps.argument?.docString ? { content: ps.argument.docString.content } : undefined,
+            ps.argument?.dataTable,
+          );
+          const stepId = computeStepId(normalized);
+          steps.push({ id: stepId, text: normalized });
+        });
+
+        const scenarioId = computeScenarioId(steps.map((s) => s.id));
         upsertScenario(db, scenarioId, featureId, pickle.name);
 
-        const steps: { id: string; text: string }[] = [];
-        pickle.steps.forEach((ps, idx) => {
-          const stepId = uuidv5(scenarioId + ':' + idx, UUID_NAMESPACE);
-          const text = ps.text || astStepTextMap.get(ps.astNodeIds[0] ?? '') || ps.text;
-          upsertStep(db, stepId, scenarioId, idx, text);
-          steps.push({ id: stepId, text });
+        steps.forEach((step, idx) => {
+          upsertStep(db, step.id, scenarioId, idx, step.text);
         });
+
         pickleMap.set(pickle.id, { featureId, scenarioId, steps });
         return;
       }

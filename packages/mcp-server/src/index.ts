@@ -6,6 +6,7 @@ import { SessionManager } from './sessions';
 const { version } = createRequire(import.meta.url)('../package.json') as { version: string };
 import {
   registerDebug,
+  registerDiff,
   registerListSessions,
   registerRun,
   registerScreenshot,
@@ -29,6 +30,7 @@ registerScreenshot(server, sessions);
 registerDebug(server, sessions);
 registerSessionClose(server, sessions);
 registerListSessions(server, sessions);
+registerDiff(server, sessions);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);

@@ -47,11 +47,19 @@ describe('registerRun', () => {
     expect(session.controller.run).toHaveBeenCalledWith(input);
   });
 
-  it('returns status, steps and journal', async () => {
+  it('returns status, steps, journal and scenarioId', async () => {
     const result = parseResult(await call({ sessionId: 'sess-abc', input: 'Given I am on "/"' }));
     expect(result.status).toBe('passed');
     expect(result.steps).toEqual(runResult.steps);
     expect(result.journal).toEqual([]);
+    expect(typeof result.scenarioId).toBe('string');
+    expect(result.scenarioId).toMatch(/^[0-9a-f-]{36}$/);
+  });
+
+  it('returns the same scenarioId for the same input steps regardless of formatting', async () => {
+    const r1 = parseResult(await call({ sessionId: 'sess-abc', input: 'Given I am on "/"' }));
+    const r2 = parseResult(await call({ sessionId: 'sess-abc', input: 'Scenario:\n  Given I am on "/"' }));
+    expect(r1.scenarioId).toBe(r2.scenarioId);
   });
 
   it('returns reason when run fails', async () => {
