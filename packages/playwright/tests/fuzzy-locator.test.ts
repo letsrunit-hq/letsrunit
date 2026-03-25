@@ -2,195 +2,146 @@ import { Locator, Page } from '@playwright/test';
 import { describe, expect, test, vi } from 'vitest';
 import { fuzzyLocator } from '../src';
 
+type LocatorCall = {
+  selector: string;
+  options?: Parameters<Page['locator']>[1];
+};
+
+type MockedLocator = Locator & {
+  __id: string;
+  or: ReturnType<typeof vi.fn>;
+  first: ReturnType<typeof vi.fn>;
+  count: ReturnType<typeof vi.fn>;
+};
+
+function locatorId(selector: string, options?: Parameters<Page['locator']>[1]): string {
+  const hasText = options?.hasText;
+  return hasText ? `${selector} [hasText=${String(hasText)}]` : selector;
+}
+
+function createMockContext() {
+  const orCalls: Array<[string, string]> = [];
+  const firstCalls: string[] = [];
+  const countCalls: string[] = [];
+  const locatorCalls: LocatorCall[] = [];
+
+  const makeLocator = (id: string): MockedLocator => {
+    const loc = {
+      __id: id,
+      or: vi.fn((other: Locator) => {
+        const rhs = other as MockedLocator;
+        orCalls.push([id, rhs.__id]);
+        return makeLocator(`(${id}) OR (${rhs.__id})`);
+      }),
+      first: vi.fn(() => {
+        firstCalls.push(id);
+        return makeLocator(`FIRST(${id})`);
+      }),
+      count: vi.fn(async () => {
+        countCalls.push(id);
+        return 0;
+      }),
+    } as unknown as MockedLocator;
+
+    return loc;
+  };
+
+  const page = {
+    locator: vi.fn((selector: string, options?: Parameters<Page['locator']>[1]) => {
+      locatorCalls.push({ selector, options });
+      return makeLocator(locatorId(selector, options));
+    }),
+  } as unknown as Page;
+
+  return { page, locatorCalls, orCalls, firstCalls, countCalls };
+}
+
 describe('fuzzyLocator', () => {
   test('is defined', () => {
     expect(fuzzyLocator).toBeDefined();
   });
 
-  test('returns primary locator if found', async () => {
-    const mockLocator = {
-      first: () => mockLocator,
-      count: async () => 1,
-    } as unknown as Locator;
+  test('returns primary first locator when selector has no fallback patterns', async () => {
+    const ctx = createMockContext();
 
-    const mockPage = {
-      locator: vi.fn().mockReturnValue(mockLocator),
-    } as unknown as Page;
+    const result = (await fuzzyLocator(ctx.page, 'my-selector')) as MockedLocator;
 
-    const result = await fuzzyLocator(mockPage, 'my-selector');
-    expect(result).toBe(mockLocator);
-    expect(mockPage.locator).toHaveBeenCalledWith('my-selector');
+    expect(result.__id).toBe('FIRST(my-selector)');
+    expect(ctx.locatorCalls).toEqual([{ selector: 'my-selector', options: undefined }]);
+    expect(ctx.orCalls).toEqual([]);
+    expect(ctx.firstCalls).toEqual(['my-selector']);
   });
 
-  test('tries fallbacks if primary not found', async () => {
-    const primaryLocator = {
-      first: () => primaryLocator,
-      count: async () => 0,
-    } as unknown as Locator;
+  test('adds role+name fallbacks lazily in stable order', async () => {
+    const ctx = createMockContext();
 
-    const fallbackLocator = {
-      first: () => fallbackLocator,
-      count: async () => 1,
-    } as unknown as Locator;
+    const result = (await fuzzyLocator(ctx.page, 'role=button[name="Save"]')) as MockedLocator;
 
-    const mockPage = {
-      locator: vi
-        .fn()
-        .mockReturnValueOnce(primaryLocator) // primary
-        .mockReturnValue(fallbackLocator), // any fallback
-    } as unknown as Page;
+    expect(ctx.locatorCalls).toEqual([
+      { selector: 'role=button[name="Save"]', options: undefined },
+      { selector: 'role=button', options: { hasText: 'Save' } },
+      { selector: 'css=button', options: { hasText: 'Save' } },
+      { selector: 'text=Save >> .. >> role=button', options: undefined },
+      { selector: 'field=Save', options: undefined },
+    ]);
 
-    const result = await fuzzyLocator(mockPage, 'role=button[name="Foo"]');
-    expect(result).toBe(fallbackLocator);
+    expect(ctx.orCalls).toEqual([
+      ['role=button[name="Save"]', 'role=button [hasText=Save]'],
+      ['(role=button[name="Save"]) OR (role=button [hasText=Save])', 'css=button [hasText=Save]'],
+      [
+        '((role=button[name="Save"]) OR (role=button [hasText=Save])) OR (css=button [hasText=Save])',
+        'text=Save >> .. >> role=button',
+      ],
+      [
+        '(((role=button[name="Save"]) OR (role=button [hasText=Save])) OR (css=button [hasText=Save])) OR (text=Save >> .. >> role=button)',
+        'field=Save',
+      ],
+    ]);
+
+    expect(ctx.firstCalls).toEqual([
+      '((((role=button[name="Save"]) OR (role=button [hasText=Save])) OR (css=button [hasText=Save])) OR (text=Save >> .. >> role=button)) OR (field=Save)',
+    ]);
+
+    expect(result.__id).toContain('FIRST(');
   });
 
-  test('tryTagInsteadOfRole: tries css=button when role=button[name="..."] primary fails', async () => {
-    function makeLocatorWithCount(count: number) {
-      const loc: Record<string, unknown> = {};
-      loc['first'] = () => loc;
-      loc['count'] = vi.fn().mockResolvedValue(count);
-      return loc as unknown as Locator;
-    }
+  test('maps role=link fallback to css=a', async () => {
+    const ctx = createMockContext();
 
-    const primaryLocator = makeLocatorWithCount(0);
-    const relaxNameLocator = makeLocatorWithCount(0); // tryRelaxNameToHasText
-    const tagLocator = makeLocatorWithCount(1);        // tryTagInsteadOfRole
+    await fuzzyLocator(ctx.page, 'role=link[name="Home"]');
 
-    const mockPage = {
-      locator: vi
-        .fn()
-        .mockReturnValueOnce(primaryLocator)  // primary (role=button[name="Save"])
-        .mockReturnValueOnce(relaxNameLocator) // tryRelaxNameToHasText (role=button + hasText)
-        .mockReturnValue(tagLocator),          // tryTagInsteadOfRole (css=button + hasText)
-    } as unknown as Page;
-
-    const result = await fuzzyLocator(mockPage, 'role=button[name="Save"]');
-    expect(result).toBe(tagLocator);
+    const cssAttempt = ctx.locatorCalls.find((call) => call.selector === 'css=a');
+    expect(cssAttempt).toEqual({ selector: 'css=a', options: { hasText: 'Home' } });
   });
 
-  test('tryTagInsteadOfRole: maps role=link to css=a', async () => {
-    function makeLocatorWithCount(count: number) {
-      const loc: Record<string, unknown> = {};
-      loc['first'] = () => loc;
-      loc['count'] = vi.fn().mockResolvedValue(count);
-      return loc as unknown as Locator;
-    }
+  test('skips field fallback for non-field roles', async () => {
+    const ctx = createMockContext();
 
-    const emptyLocator = makeLocatorWithCount(0);
-    const linkLocator = makeLocatorWithCount(1);
+    await fuzzyLocator(ctx.page, 'role=heading[name="Title"]');
 
-    const mockPage = {
-      locator: vi
-        .fn()
-        .mockReturnValueOnce(emptyLocator)  // primary
-        .mockReturnValueOnce(emptyLocator)  // tryRelaxNameToHasText
-        .mockReturnValue(linkLocator),       // tryTagInsteadOfRole → css=a
-    } as unknown as Page;
-
-    const result = await fuzzyLocator(mockPage, 'role=link[name="Home"]');
-    expect(result).toBe(linkLocator);
-
-    // Verify the css=a selector was attempted
-    const calls = (mockPage.locator as ReturnType<typeof vi.fn>).mock.calls;
-    const cssAttempt = calls.find((args: string[]) => args[0] === 'css=a');
-    expect(cssAttempt).toBeTruthy();
-  });
-
-  test('tryAsField: tries field=Email for role=textbox[name="Email"]', async () => {
-    function makeLocatorWithCount(count: number) {
-      const loc: Record<string, unknown> = {};
-      loc['first'] = () => loc;
-      loc['count'] = vi.fn().mockResolvedValue(count);
-      return loc as unknown as Locator;
-    }
-
-    const emptyLocator = makeLocatorWithCount(0);
-    const fieldLocator = makeLocatorWithCount(1);
-
-    // Call order for role=textbox[name="Email"]:
-    // 1. primary
-    // 2. tryRelaxNameToHasText (role=textbox + hasText)
-    // 3. tryRoleNameProximity (text=Email >> .. >> role=textbox)
-    // 4. tryAsField (field=Email)
-    const mockPage = {
-      locator: vi
-        .fn()
-        .mockReturnValueOnce(emptyLocator)  // primary
-        .mockReturnValueOnce(emptyLocator)  // tryRelaxNameToHasText
-        .mockReturnValueOnce(emptyLocator)  // tryRoleNameProximity
-        .mockReturnValue(fieldLocator),      // tryAsField → field=Email
-    } as unknown as Page;
-
-    const result = await fuzzyLocator(mockPage, 'role=textbox[name="Email"]');
-    expect(result).toBe(fieldLocator);
-
-    const calls = (mockPage.locator as ReturnType<typeof vi.fn>).mock.calls;
-    const fieldAttempt = calls.find((args: string[]) => args[0] === 'field=Email');
-    expect(fieldAttempt).toBeTruthy();
-  });
-
-  test('tryAsField: skips non-field roles (role=heading)', async () => {
-    const emptyLocator = {
-      first: () => emptyLocator,
-      count: async () => 0,
-    } as unknown as Locator;
-
-    const mockPage = {
-      locator: vi.fn().mockReturnValue(emptyLocator),
-    } as unknown as Page;
-
-    const result = await fuzzyLocator(mockPage, 'role=heading[name="Title"]');
-    expect(result).toBe(emptyLocator);
-
-    // No field= selector should have been tried
-    const calls = (mockPage.locator as ReturnType<typeof vi.fn>).mock.calls;
-    const fieldAttempt = calls.find((args: string[]) => (args[0] as string).startsWith('field='));
+    const fieldAttempt = ctx.locatorCalls.find((call) => call.selector.startsWith('field='));
     expect(fieldAttempt).toBeUndefined();
   });
 
-  test('tryFieldAlternative: tries #id > input when field name is a valid CSS identifier', async () => {
-    function makeLocatorWithCount(count: number) {
-      const loc: Record<string, unknown> = {};
-      loc['first'] = () => loc;
-      loc['count'] = vi.fn().mockResolvedValue(count);
-      return loc as unknown as Locator;
-    }
+  test('adds field alternative only for valid CSS id labels', async () => {
+    const valid = createMockContext();
+    await fuzzyLocator(valid.page, 'field="email"');
+    expect(valid.locatorCalls).toEqual([
+      { selector: 'field="email"', options: undefined },
+      { selector: '#email > input', options: undefined },
+    ]);
 
-    const emptyLocator = makeLocatorWithCount(0);
-    const idLocator = makeLocatorWithCount(1);
-
-    const mockPage = {
-      locator: vi
-        .fn()
-        .mockReturnValueOnce(emptyLocator) // primary: field="email"
-        .mockReturnValue(idLocator),        // tryFieldAlternative: #email > input
-    } as unknown as Page;
-
-    const result = await fuzzyLocator(mockPage, 'field="email"');
-    expect(result).toBe(idLocator);
-
-    const calls = (mockPage.locator as ReturnType<typeof vi.fn>).mock.calls;
-    const idAttempt = calls.find((args: string[]) => args[0] === '#email > input');
-    expect(idAttempt).toBeTruthy();
+    const invalid = createMockContext();
+    await fuzzyLocator(invalid.page, 'field="What needs to be done?"i');
+    expect(invalid.locatorCalls).toEqual([{ selector: 'field="What needs to be done?"i', options: undefined }]);
   });
 
-  test('tryFieldAlternative does not crash on field names with special characters', async () => {
-    const emptyLocator = {
-      first: () => emptyLocator,
-      count: async () => 0,
-    } as unknown as Locator;
+  test('does not use eager count checks (race-safe lazy fallback composition)', async () => {
+    const ctx = createMockContext();
 
-    const mockPage = {
-      locator: vi.fn().mockReturnValue(emptyLocator),
-    } as unknown as Page;
+    await fuzzyLocator(ctx.page, 'role=button[name="Antenna"]');
 
-    // Should not throw even though "What needs to be done?" is not a valid CSS ID
-    const result = await fuzzyLocator(mockPage, 'field="What needs to be done?"i');
-    expect(result).toBe(emptyLocator);
-    // The CSS ID fallback must NOT have been attempted with the raw invalid selector
-    const cssIdAttempts = (mockPage.locator as ReturnType<typeof vi.fn>).mock.calls
-      .map((args: string[]) => args[0])
-      .filter((sel: string) => sel.startsWith('#'));
-    expect(cssIdAttempts).toHaveLength(0);
+    expect(ctx.countCalls).toEqual([]);
+    expect(ctx.orCalls.length).toBeGreaterThan(0);
   });
 });
