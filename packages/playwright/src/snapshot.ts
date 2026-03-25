@@ -1,16 +1,30 @@
 import { sleep } from '@letsrunit/utils';
 import type { Page } from '@playwright/test';
 import { screenshot } from './screenshot';
+import { realScrubHtml } from './scrub-html';
 import type { Snapshot } from './types';
 import { waitForDomIdle } from './wait';
 
-export async function snapshot(page: Page): Promise<Snapshot> {
+export type SnapshotOptions = {
+  /** Strip utility-framework classes (Tailwind, Bootstrap, UnoCSS, Windi) from the captured HTML. */
+  dropUtilityClasses?: boolean;
+};
+
+export async function snapshot(page: Page, opts: SnapshotOptions = {}): Promise<Snapshot> {
   await sleep(500);
   await waitForDomIdle(page);
 
   const [url, html, file] = await Promise.all([page.url(), getContentWithMarkedHidden(page), screenshot(page)]);
 
-  return { url, html, screenshot: file };
+  const finalHtml = opts.dropUtilityClasses
+    ? await realScrubHtml({ html, url }, {
+        dropHidden: false, dropHead: false, dropSvg: false, pickMain: false,
+        stripAttributes: 0, normalizeWhitespace: false, dropComments: false,
+        replaceBrInHeadings: false, limitLists: -1, dropUtilityClasses: true,
+      })
+    : html;
+
+  return { url, html: finalHtml, screenshot: file };
 }
 
 async function getContentWithMarkedHidden(page: Page): Promise<string> {
