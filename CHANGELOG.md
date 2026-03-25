@@ -1,3 +1,10 @@
+## [0.7.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.7.0...v0.7.1) (2026-03-25)
+
+
+### Bug Fixes
+
+* **playwright:** make fuzzy locator fallbacks lazy via union ([9b759a4](https://github.com/letsrunit-hq/letsrunit/commit/9b759a474e9bc40f5694c732d9bf2c1c60856c2d))
+
 # [0.7.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.6.0...v0.7.0) (2026-03-20)
 
 
