@@ -56,6 +56,7 @@ args = ["-y", "@letsrunit/mcp-server@latest"]
 |------|-------------|
 | `letsrunit_session_start` | Launch a new browser session. Set `baseURL` to enable relative paths like `Given I'm on the homepage`. |
 | `letsrunit_run` | Execute Gherkin steps or a complete feature. Accepts a single step, multiple steps, a Scenario, or a full Feature. |
+| `letsrunit_list_steps` | List available step definitions for a session. Optionally filter by `Given`, `When`, or `Then`. |
 | `letsrunit_snapshot` | Get the current page HTML, scrubbed for LLM consumption. Scope to a DOM subtree with `selector`. |
 | `letsrunit_screenshot` | Take a screenshot. Optionally crop to a selector or highlight elements before capturing. |
 | `letsrunit_debug` | Evaluate JavaScript on the current page via `page.evaluate()`. Use for debugging, not test logic. |

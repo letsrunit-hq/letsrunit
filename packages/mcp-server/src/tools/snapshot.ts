@@ -4,6 +4,12 @@ import { z } from 'zod';
 import { type SessionManager } from '../sessions';
 import { err, text } from '../utility/response';
 
+const stripAttributesSchema = z.nativeEnum({
+  none: 0,
+  semantic: 1,
+  aggressive: 2,
+});
+
 export function registerSnapshot(server: McpServer, sessions: SessionManager): void {
   server.registerTool(
     'letsrunit_snapshot',
@@ -19,8 +25,7 @@ export function registerSnapshot(server: McpServer, sessions: SessionManager): v
         dropHidden: z.boolean().optional().describe('Remove hidden/inert nodes (default: true)'),
         dropHead: z.boolean().optional().describe('Remove the <head> element (default: true)'),
         pickMain: z.boolean().optional().describe('Keep only the <main> element (default: auto)'),
-        stripAttributes: z
-          .union([z.literal(0), z.literal(1), z.literal(2)])
+        stripAttributes: stripAttributesSchema
           .optional()
           .describe('Attribute allowlist level: 0=none, 1=semantic (default), 2=aggressive'),
       },
