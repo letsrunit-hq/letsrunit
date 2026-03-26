@@ -2,8 +2,6 @@
 
 letsrunit is a browser testing tool that describes what your app should do in plain language rather than code. Tests are written in Gherkin, run by Cucumber.js, and integrate into any CI pipeline as standard files. You can write them by hand, generate them from a live URL, or let your AI coding agent produce them as part of its normal workflow.
 
----
-
 ## Getting Started
 
 Run the init tool inside your project:
@@ -19,8 +17,6 @@ This will:
 
 Safe to re-run — all steps are idempotent.
 
----
-
 ## CLI
 
 The CLI is installed locally by `letsrunit init`. Run it via `npx letsrunit` or `yarn letsrunit`.
@@ -32,8 +28,6 @@ The CLI is installed locally by `letsrunit init`. Run it via `npx letsrunit` or 
 | `letsrunit run <url> <feature>` | Execute a `.feature` file against the given URL |
 
 **Options** (all commands): `-v` / `--verbose`, `-s` / `--silent`, `-o` / `--save <path>`
-
----
 
 ## MCP Server
 
@@ -62,29 +56,16 @@ take screenshots, and inspect pages directly inside your editor.
 }
 ```
 
-### Tools
-
-| Tool | Description |
-|------|-------------|
-| `letsrunit_session_start` | Launch a browser session |
-| `letsrunit_run` | Execute Gherkin steps or a full feature |
-| `letsrunit_snapshot` | Get the current page HTML |
-| `letsrunit_screenshot` | Take a screenshot |
-| `letsrunit_debug` | Evaluate JavaScript on the page |
-| `letsrunit_session_close` | Close the browser session |
-| `letsrunit_list_sessions` | List all active sessions |
-
----
-
-## Agent Skill
+### Agent Skill
 
 The letsrunit skill gives your agent built-in knowledge of the Gherkin step library, locator syntax,
 and test-writing workflow. Requires the MCP server to be configured first.
 
-The skill is included automatically when using the Claude Code plugin above. For other agents, copy
-[`skills/letsrunit/SKILL.md`](skills/letsrunit/SKILL.md) into your agent's context or rules file.
+The skill is included automatically when using the Claude Code plugin above. For other agents run
 
----
+```
+npx skills add letsrunit-hq/agent
+```
 
 ## Development
 
