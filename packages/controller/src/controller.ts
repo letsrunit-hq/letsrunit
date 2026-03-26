@@ -132,7 +132,7 @@ export class Controller {
   }
 
   private async runStep(step: StepDescription, run: () => Promise<StepResult>): Promise<StepResult> {
-    const locators = !step.text.match(/\b(don't see|not contains)\b/i)
+    const locators = !step.text.match(/\b(don't see|does not contain)\b/i)
       ? await this.getLocatorArgs(this.world.page, step.args)
       : [];
 

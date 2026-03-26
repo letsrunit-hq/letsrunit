@@ -1,26 +1,39 @@
 import { Locator, Page } from '@playwright/test';
 
+function debug(...args: unknown[]) {
+  if (process.env.LETSRUNIT_DEBUG_FUZZY_LOCATOR === '1') {
+    // eslint-disable-next-line no-console
+    console.log('[fuzzyLocator]', ...args);
+  }
+}
+
 /**
  * Locates an element using Playwright selectors, with lazy fallbacks.
  */
 export async function fuzzyLocator(page: Page, selector: string): Promise<Locator> {
+  debug('input selector:', selector);
   const primary = page.locator(selector);
-  const candidates = [
-    tryRelaxNameToHasText(page, selector),
-    tryTagInsteadOfRole(page, selector),
-    tryRoleNameProximity(page, selector),
-    tryFieldAlternative(page, selector),
-    tryAsField(page, selector),
+  const candidates: Array<{ name: string; locator: Locator | null }> = [
+    { name: 'relaxNameToHasText', locator: tryRelaxNameToHasText(page, selector) },
+    { name: 'tagInsteadOfRole', locator: tryTagInsteadOfRole(page, selector) },
+    { name: 'roleNameProximity', locator: tryRoleNameProximity(page, selector) },
+    { name: 'fieldAlternative', locator: tryFieldAlternative(page, selector) },
+    { name: 'asField', locator: tryAsField(page, selector) },
   ];
 
   let combined = primary;
+  const enabled: string[] = [];
 
   for (const candidate of candidates) {
-    if (!candidate) continue;
-    combined = combined.or(candidate);
+    if (!candidate.locator) continue;
+    enabled.push(candidate.name);
+    combined = combined.or(candidate.locator);
   }
+  debug('enabled fallbacks:', enabled.length ? enabled.join(', ') : '(none)');
 
-  return combined.first();
+  const result = combined.first();
+  debug('returning locator:', result.toString());
+  return result;
 }
 
 // Preserve the selector but relax [name="..."] to [has-text="..."]

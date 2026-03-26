@@ -8,7 +8,7 @@ const PROMPT = `You analyze a diff of two HTML files. Your task is to detect the
 * Then I see {locator}
 * Then I do not see {locator}
 * Then I see that {locator} contains {locator}
-* Then I see that {locator} not contains {locator}
+* Then I see that {locator} does not contain {locator}
 
 Locator rules:
 ${locatorRules}
@@ -30,7 +30,7 @@ ${locatorRules}
 3. Use:
    * \`I see\` for added elements
    * \`I do not see\` for removed elements
-   * \`contains\` / \`not contains\` for changed child content under a stable parent
+   * \`contains\` / \`does not contain\` for changed child content under a stable parent
 
 4. If no significant visible changes, output:
    \`Then I do not see any changes\`

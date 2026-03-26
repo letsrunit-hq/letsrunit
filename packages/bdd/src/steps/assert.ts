@@ -1,11 +1,11 @@
 import { fuzzyLocator } from '@letsrunit/playwright';
-import { expectOrNot } from '../utils/test-helpers';
 import { Then } from '../registry';
+import { expectOrNot } from '../utils/test-helpers';
 
 const WAIT_TIMEOUT = 5000;
 
 export const see = Then(
-  'The page {contains|not contains} {locator}',
+  'The page {contains|does not contain} {locator}',
   async function (visible: boolean, selector: string) {
     const el = await fuzzyLocator(this.page, selector);
     await expectOrNot(el, visible).toBeVisible({ timeout: WAIT_TIMEOUT });
@@ -13,7 +13,7 @@ export const see = Then(
 );
 
 export const contain = Then(
-  '{locator} {contains|not contains} {locator}',
+  '{locator} {contains|does not contain} {locator}',
   async function (selector: string, contain: boolean, child: string) {
     const el = await fuzzyLocator(this.page, selector);
     const childElement = el.locator(child);
