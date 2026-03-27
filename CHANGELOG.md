@@ -1,3 +1,11 @@
+# [0.9.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.8.0...v0.9.0) (2026-03-27)
+
+
+### Features
+
+* **mcp-server:** add letsrunit_list_steps MCP tool ([08804c4](https://github.com/letsrunit-hq/letsrunit/commit/08804c41feef034f253626e85c110d9fb474349f))
+* replace 'not contains' with 'does not contain' ([044a85c](https://github.com/letsrunit-hq/letsrunit/commit/044a85c7a53253a3dd61d0687eb6f732a536fc05))
+
 # [0.8.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.7.1...v0.8.0) (2026-03-25)
 
 
