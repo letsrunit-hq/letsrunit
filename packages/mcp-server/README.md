@@ -60,6 +60,7 @@ args = ["-y", "@letsrunit/mcp-server@latest"]
 | `letsrunit_snapshot` | Get the current page HTML, scrubbed for LLM consumption. Scope to a DOM subtree with `selector`. |
 | `letsrunit_screenshot` | Take a screenshot. Optionally crop to a selector or highlight elements before capturing. |
 | `letsrunit_debug` | Evaluate JavaScript on the current page via `page.evaluate()`. Use for debugging, not test logic. |
+| `letsrunit_diagnostics` | Return runtime diagnostics (`cwd`, `LETSRUNIT_PROJECT_CWD`, detected cucumber config, resolved support entries). Available only when `LETSRUNIT_MCP_DIAGNOSTICS=enabled`. |
 | `letsrunit_session_close` | Close a browser session and release its resources. |
 | `letsrunit_list_sessions` | List all active browser sessions. |
 

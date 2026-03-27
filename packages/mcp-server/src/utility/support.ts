@@ -1,7 +1,7 @@
 import { loadConfiguration } from '@cucumber/cucumber/api';
 import { existsSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
-import { dirname, isAbsolute, resolve } from 'node:path';
+import { isAbsolute, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 type CucumberConfig = {
@@ -27,6 +27,21 @@ const CUCUMBER_CONFIG_FILES = [
 
 const loadedProjectRoots = new Set<string>();
 const loadedSupportEntries = new Set<string>();
+
+export type SupportDiagnostics = {
+  envProjectCwd: string | null;
+  processCwd: string;
+  inputCwd: string | null;
+  effectiveCwd: string;
+  projectRoot: string;
+  cucumberConfigPath: string | null;
+  supportPatterns: string[];
+  ignorePatterns: string[];
+  ignoredPaths: string[];
+  supportEntries: SupportEntry[];
+  loadedProjectRoots: string[];
+  loadedSupportEntries: string[];
+};
 
 function toStrings(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
@@ -107,10 +122,38 @@ async function loadLetsrunitIgnorePatterns(cwd: string): Promise<string[]> {
   return toStrings(config.letsrunit?.ignore);
 }
 
-export async function loadSupportFiles(cwd?: string): Promise<void> {
-  cwd ??= process.env.LETSRUNIT_PROJECT_CWD ?? process.cwd();
+function resolveEffectiveCwd(cwd?: string): string {
+  return cwd ?? process.env.LETSRUNIT_PROJECT_CWD ?? process.cwd();
+}
 
-  const projectRoot = resolve(cwd);
+export async function collectSupportDiagnostics(cwd?: string): Promise<SupportDiagnostics> {
+  const effectiveCwd = resolveEffectiveCwd(cwd);
+  const projectRoot = resolve(effectiveCwd);
+  const cucumberConfigPath = findCucumberConfig(projectRoot);
+  const { useConfiguration } = await loadConfiguration({}, { cwd: projectRoot });
+  const supportPatterns = [...toStrings(useConfiguration.require), ...toStrings(useConfiguration.import)];
+  const ignorePatterns = await loadLetsrunitIgnorePatterns(projectRoot);
+  const ignoredPaths = await expandPathPatterns(projectRoot, ignorePatterns);
+  const supportEntries = await resolveSupportEntries(projectRoot, supportPatterns);
+
+  return {
+    envProjectCwd: process.env.LETSRUNIT_PROJECT_CWD ?? null,
+    processCwd: process.cwd(),
+    inputCwd: cwd ?? null,
+    effectiveCwd,
+    projectRoot,
+    cucumberConfigPath,
+    supportPatterns,
+    ignorePatterns,
+    ignoredPaths: [...ignoredPaths].sort(),
+    supportEntries,
+    loadedProjectRoots: [...loadedProjectRoots].sort(),
+    loadedSupportEntries: [...loadedSupportEntries].sort(),
+  };
+}
+
+export async function loadSupportFiles(cwd?: string): Promise<void> {
+  const projectRoot = resolve(resolveEffectiveCwd(cwd));
   if (loadedProjectRoots.has(projectRoot)) return;
 
   const { useConfiguration } = await loadConfiguration({}, { cwd: projectRoot });

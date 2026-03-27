@@ -1,10 +1,14 @@
 import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { describe, expect, it } from 'vitest';
-import { loadSupportFiles } from '../../src/utility/support';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { collectSupportDiagnostics, loadSupportFiles } from '../../src/utility/support';
 
 describe('loadSupportFiles', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it('loads import/require support files and respects letsrunit.ignore', async () => {
     const cwd = await mkdtemp(join(tmpdir(), 'letsrunit-mcp-support-'));
     const supportDir = join(cwd, 'features', 'support');
@@ -38,5 +42,24 @@ describe('loadSupportFiles', () => {
 
     expect((globalThis as any).__mcpSupportSteps).toBe(1);
     expect((globalThis as any).__mcpSupportWorld).toBe(0);
+  });
+
+  it('resolves diagnostics cwd from LETSRUNIT_PROJECT_CWD', async () => {
+    const cwd = await mkdtemp(join(tmpdir(), 'letsrunit-mcp-diagnostics-'));
+    await writeFile(
+      join(cwd, 'cucumber.mjs'),
+      `export default {
+  import: ['features/support/*.mjs'],
+  require: [],
+};`,
+      'utf8',
+    );
+    vi.stubEnv('LETSRUNIT_PROJECT_CWD', cwd);
+
+    const diagnostics = await collectSupportDiagnostics();
+    expect(diagnostics.envProjectCwd).toBe(cwd);
+    expect(diagnostics.effectiveCwd).toBe(cwd);
+    expect(diagnostics.projectRoot).toBe(cwd);
+    expect(diagnostics.cucumberConfigPath).toBe(join(cwd, 'cucumber.mjs'));
   });
 });
