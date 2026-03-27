@@ -17,6 +17,16 @@ vi.mock('../../src/utility/support', () => ({
     supportEntries: [{ kind: 'path', value: '/tmp/project/features/support/steps.ts' }],
     loadedProjectRoots: [],
     loadedSupportEntries: [],
+    moduleResolution: {
+      serverBddPath: '/tmp/mcp/node_modules/@letsrunit/bdd/dist/index.js',
+      projectBddPath: '/tmp/project/node_modules/@letsrunit/bdd/dist/index.js',
+      sameModule: false,
+    },
+    registry: {
+      total: 1,
+      byType: { Given: 1, When: 0, Then: 0 },
+      definitions: [{ type: 'Given', source: 'there are example Ownables' }],
+    },
   }),
 }));
 
@@ -44,6 +54,9 @@ describe('registerDiagnostics', () => {
     expect(result.supportEntries).toEqual([
       { kind: 'path', value: '/tmp/project/features/support/steps.ts' },
     ]);
+    expect(result.moduleResolution.sameModule).toBe(false);
+    expect(result.registry.total).toBe(1);
+    expect(result.registry.byType.Given).toBe(1);
     expect(collectSupportDiagnostics).toHaveBeenCalledTimes(1);
   });
 

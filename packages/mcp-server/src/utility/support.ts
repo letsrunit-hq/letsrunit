@@ -1,4 +1,6 @@
+import { createRequire } from 'node:module';
 import { loadConfiguration } from '@cucumber/cucumber/api';
+import { registry } from '@letsrunit/bdd';
 import { existsSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
 import { isAbsolute, resolve } from 'node:path';
@@ -41,6 +43,24 @@ export type SupportDiagnostics = {
   supportEntries: SupportEntry[];
   loadedProjectRoots: string[];
   loadedSupportEntries: string[];
+  moduleResolution: {
+    serverBddPath: string | null;
+    projectBddPath: string | null;
+    sameModule: boolean;
+  };
+  registry: {
+    total: number;
+    byType: {
+      Given: number;
+      When: number;
+      Then: number;
+    };
+    definitions: Array<{
+      type: 'Given' | 'When' | 'Then';
+      source: string;
+      comment?: string;
+    }>;
+  };
 };
 
 function toStrings(value: unknown): string[] {
@@ -126,6 +146,15 @@ function resolveEffectiveCwd(cwd?: string): string {
   return cwd ?? process.env.LETSRUNIT_PROJECT_CWD ?? process.cwd();
 }
 
+function resolveFrom(moduleId: string, fromPath: string): string | null {
+  try {
+    const req = createRequire(fromPath);
+    return req.resolve(moduleId);
+  } catch {
+    return null;
+  }
+}
+
 export async function collectSupportDiagnostics(cwd?: string): Promise<SupportDiagnostics> {
   const effectiveCwd = resolveEffectiveCwd(cwd);
   const projectRoot = resolve(effectiveCwd);
@@ -135,6 +164,13 @@ export async function collectSupportDiagnostics(cwd?: string): Promise<SupportDi
   const ignorePatterns = await loadLetsrunitIgnorePatterns(projectRoot);
   const ignoredPaths = await expandPathPatterns(projectRoot, ignorePatterns);
   const supportEntries = await resolveSupportEntries(projectRoot, supportPatterns);
+  const serverBddPath = resolveFrom('@letsrunit/bdd', import.meta.url);
+  const projectBddPath = resolveFrom('@letsrunit/bdd', resolve(projectRoot, 'package.json'));
+  const registryDefinitions = registry.defs.map((def) => ({
+    type: def.type,
+    source: def.source,
+    comment: def.comment,
+  }));
 
   return {
     envProjectCwd: process.env.LETSRUNIT_PROJECT_CWD ?? null,
@@ -149,6 +185,20 @@ export async function collectSupportDiagnostics(cwd?: string): Promise<SupportDi
     supportEntries,
     loadedProjectRoots: [...loadedProjectRoots].sort(),
     loadedSupportEntries: [...loadedSupportEntries].sort(),
+    moduleResolution: {
+      serverBddPath,
+      projectBddPath,
+      sameModule: !!serverBddPath && !!projectBddPath && serverBddPath === projectBddPath,
+    },
+    registry: {
+      total: registryDefinitions.length,
+      byType: {
+        Given: registryDefinitions.filter((d) => d.type === 'Given').length,
+        When: registryDefinitions.filter((d) => d.type === 'When').length,
+        Then: registryDefinitions.filter((d) => d.type === 'Then').length,
+      },
+      definitions: registryDefinitions,
+    },
   };
 }
 

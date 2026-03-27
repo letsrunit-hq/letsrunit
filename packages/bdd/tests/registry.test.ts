@@ -40,6 +40,15 @@ describe('createRegistry', () => {
     expect(reg.defs[0].fn).toBe(fn);
   });
 
+  it('deduplicates by type and expression', () => {
+    const reg = createRegistry();
+    reg.defineStep('When', 'I click {string}', () => {}, 'first');
+    reg.defineStep('When', 'I click {string}', () => {}, 'second');
+
+    expect(reg.defs).toHaveLength(1);
+    expect(reg.defs[0].source).toBe('I click {string}');
+  });
+
   it('definitions returns raw step definitions with original expression', () => {
     const reg = createRegistry();
     const expr = /click (\w+)/;
@@ -83,6 +92,12 @@ describe('createRegistry', () => {
 });
 
 describe('Given / When / Then module-level helpers', () => {
+  it('shares global registry across duplicate module instances', async () => {
+    const a = await import('../src/registry.ts?probe=a');
+    const b = await import('../src/registry.ts?probe=b');
+    expect(a.registry).toBe(b.registry);
+  });
+
   it('Given registers into the global registry and returns a StepDefinition', () => {
     const before = registry.defs.length;
     const fn = () => {};
