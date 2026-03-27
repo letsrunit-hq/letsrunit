@@ -7,6 +7,7 @@ const { version } = createRequire(import.meta.url)('../package.json') as { versi
 import {
   registerDebug,
   registerDiff,
+  registerListSteps,
   registerListSessions,
   registerRun,
   registerScreenshot,
@@ -29,6 +30,7 @@ registerSnapshot(server, sessions);
 registerScreenshot(server, sessions);
 registerDebug(server, sessions);
 registerSessionClose(server, sessions);
+registerListSteps(server, sessions);
 registerListSessions(server, sessions);
 registerDiff(server, sessions);
 

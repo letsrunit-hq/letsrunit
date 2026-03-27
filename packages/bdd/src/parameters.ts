@@ -8,7 +8,7 @@ export const typeDefinitions = [
   booleanParameter('visible', 'hidden'),
   booleanParameter('enabled', 'disabled', /((?:en|dis)abled)/),
   booleanParameter('checked', 'unchecked', /((?:un)?checked)/),
-  booleanParameter('contains', 'not contains', /((?:not )?contains)/),
+  booleanParameter('contains', 'does not contain'),
 
   booleanParameter('check', 'uncheck', /((?:un)?check)/),
   booleanParameter('focus', 'blur'),

@@ -45,7 +45,7 @@ describe('steps/assert (definitions)', () => {
     expect(toBeVisible).toHaveBeenLastCalledWith({ timeout: 5000 });
     expect(expectOrNot).toHaveBeenLastCalledWith(elementLocatorMock, true);
 
-    await runStep(see, 'The page not contains `.item`', { page } as any);
+    await runStep(see, 'The page does not contain `.item`', { page } as any);
     expect(resolveLocator).toHaveBeenLastCalledWith(page, '.item');
     expect(toBeVisible).toHaveBeenLastCalledWith({ timeout: 5000 });
     expect(expectOrNot).toHaveBeenLastCalledWith(elementLocatorMock, false);
@@ -60,7 +60,7 @@ describe('steps/assert (definitions)', () => {
     expect(toBeAttached).toHaveBeenLastCalledWith({ timeout: 5000 });
     expect(expectOrNot).toHaveBeenLastCalledWith(childLocatorMock, true);
 
-    await runStep(contain, '`.cards` not contains `.card`', { page } as any);
+    await runStep(contain, '`.cards` does not contain `.card`', { page } as any);
     expect(resolveLocator).toHaveBeenLastCalledWith(page, '.cards');
     expect(parentLocatorMock.locator).toHaveBeenLastCalledWith('.card');
     expect(toBeAttached).toHaveBeenLastCalledWith({ timeout: 5000 });

@@ -23,15 +23,15 @@ Given I'm on page "/login"
 
 ## Assert
 
-| Step | Description |
-|------|-------------|
-| `Then the page {contains\|not contains} {selector}` | Assert an element is (or is not) visible |
-| `Then {selector} {contains\|not contains} {selector}` | Assert a child element is (or is not) inside a parent |
-| `Then I should be on page {url}` | Assert the current path (supports `:param` wildcards) |
+| Step                                                      | Description |
+|-----------------------------------------------------------|-------------|
+| `Then the page {contains\|does not contain} {selector}`   | Assert an element is (or is not) visible |
+| `Then {selector} {contains\|does not contain} {selector}` | Assert a child element is (or is not) inside a parent |
+| `Then I should be on page {url}`                          | Assert the current path (supports `:param` wildcards) |
 
 ```gherkin
 Then The page contains text "Welcome"
-Then The page not contains button "Sign in"
+Then The page does not contain button "Sign in"
 Then I should be on page "/dashboard"
 Then I should be on page "/users/:id/profile"
 ```

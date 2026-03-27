@@ -33,6 +33,7 @@ export function makeSession(overrides: Partial<Session> = {}): Session {
     id: 'sess-abc',
     controller: {
       run: vi.fn(),
+      listSteps: vi.fn().mockReturnValue([]),
       page: {
         url: vi.fn().mockReturnValue('http://example.com'),
         evaluate: vi.fn(),
