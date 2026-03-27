@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { loadSupportFiles } from '../../src/utility/support';
 import { registerSessionStart } from '../../src/tools/session-start';
 import { captureHandler, makeSession, makeSessionManager, parseResult } from '../_helpers';
+
+vi.mock('../../src/utility/support', () => ({
+  loadSupportFiles: vi.fn().mockResolvedValue(undefined),
+}));
 
 describe('registerSessionStart', () => {
   const session = makeSession();
@@ -8,6 +13,7 @@ describe('registerSessionStart', () => {
   let call: (input: any) => Promise<any>;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     sessions = makeSessionManager({ create: vi.fn().mockResolvedValue(session) });
     call = captureHandler(registerSessionStart, sessions);
   });
@@ -15,6 +21,11 @@ describe('registerSessionStart', () => {
   it('returns the sessionId', async () => {
     const result = parseResult(await call({}));
     expect(result.sessionId).toBe('sess-abc');
+  });
+
+  it('loads support files from cucumber config before session creation', async () => {
+    await call({});
+    expect(loadSupportFiles).toHaveBeenCalledTimes(1);
   });
 
   it('calls sessions.create with headless defaulting to true', async () => {

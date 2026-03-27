@@ -46,6 +46,7 @@
   },
   "packageManager": "yarn@4.10.3",
   "dependencies": {
+    "@cucumber/cucumber": "^12.7.0",
     "@letsrunit/controller": "workspace:*",
     "@letsrunit/gherkin": "workspace:*",
     "@letsrunit/journal": "workspace:*",

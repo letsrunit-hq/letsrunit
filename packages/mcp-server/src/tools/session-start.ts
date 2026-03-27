@@ -2,6 +2,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { SessionManager } from '../sessions';
 import { err, text } from '../utility/response';
+import { loadSupportFiles } from '../utility/support';
 
 export function registerSessionStart(server: McpServer, sessions: SessionManager): void {
   server.registerTool(
@@ -19,6 +20,8 @@ export function registerSessionStart(server: McpServer, sessions: SessionManager
     },
     async (input) => {
       try {
+        await loadSupportFiles();
+
         const viewport =
           input.viewportWidth || input.viewportHeight
             ? { width: input.viewportWidth ?? 1280, height: input.viewportHeight ?? 720 }
