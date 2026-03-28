@@ -5,9 +5,9 @@ import { remarkGitBook, rehypeGitBook } from 'docusaurus-plugin-gitbook';
 const config: Config = {
   title: 'letsrunit',
   tagline: 'AI-powered browser testing',
-  url: 'https://letsrunit-hq.github.io',
-  baseUrl: '/letsrunit/',
-  organizationName: 'letsrunit-hq',
+  url: 'https://docs.letsrunit.ai',
+  baseUrl: '/',
+  organizationName: 'jasny',
   projectName: 'letsrunit',
   trailingSlash: false,
   onBrokenLinks: 'throw',
