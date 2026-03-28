@@ -1,3 +1,10 @@
+## [0.9.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.9.0...v0.9.1) (2026-03-28)
+
+
+### Bug Fixes
+
+* **ci:** use yarn in docs deploy workflow ([930ceb6](https://github.com/letsrunit-hq/letsrunit/commit/930ceb6d364d378c0c3a8ea167041c7cd07179ac))
+
 # [0.9.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.8.0...v0.9.0) (2026-03-27)
 
 
