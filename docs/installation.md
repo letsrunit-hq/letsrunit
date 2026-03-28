@@ -17,6 +17,8 @@ npx letsrunit init
 
 `init` is interactive: it walks you through each step and asks before making changes. It's safe to re-run at any time.
 
+### What does the installer do?
+
 {% stepper %}
 {% step %}
 ## Install the CLI
@@ -43,7 +45,7 @@ export default {
 **`features/support/world.js`** loads the letsrunit step library:
 ```js
 import { setDefaultTimeout } from '@cucumber/cucumber';
-import '@letsrunit/bdd/define';
+import '@letsrunit/cucumber';
 
 setDefaultTimeout(30_000);
 ```
