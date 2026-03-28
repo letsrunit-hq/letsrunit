@@ -24,16 +24,16 @@ Most browser testing tools require you to write automation code: find an element
 letsrunit tests read as behaviour descriptions:
 
 ```gherkin
-Scenario: User resets their password
-  Given I'm on page "/login"
-  When I click link "Forgot password"
-  And I set field "Email" to "admin@example.com"
-  And I click button "Send reset link"
-  Then the page contains text "Check your inbox"
-  And I received an email sent to "admin@example.com" with subject "Reset your your password"
+Scenario: User schedules a demo
+  Given I'm on page "/book-demo"
+  When I set field "Preferred date" to the date of 3 days from now
+  And I set field "Preferred time" to "10:00"
+  And I set field "Plan" to "Enterprise"
+  And I click button "Continue"
+  Then the page contains text "Confirm your booking"
 ```
 
-Anyone on the team can read that and understand what it's testing. letsrunit handles all the underlying browser automation: it resolves `field "Email"` to the right input, clicks the right button, and waits for the right page state. You describe the interaction; the tool handles the mechanics.
+Anyone on the team can read this and understand what it tests. letsrunit handles the browser automation, it resolves `field` to the right input or component, clicks the correct elements, and waits for the expected page state. Fields can be simple inputs or complex UI components. You describe the interaction, the tool handles the mechanics.
 
 ### Failure explanations
 
@@ -41,7 +41,9 @@ When a scenario fails, letsrunit explains what changed in plain language. Not a 
 
 ### Test generation
 
-The `explore` command generates scenarios from a live URL. Point it at a page and it discovers testable user stories, generates Gherkin scenarios, runs them, and saves the passing ones as `.feature` files ready to commit.
+Tests are generated from either a live site or a plain-language description of what you want to check.
+
+You can point it at a URL and it will explore the page, identify user flows, and turn those into Gherkin scenarios. This is mainly useful to get started quickly. In practice, you will often describe what you want to test yourself, for example by pasting a user story, issue, or short instruction. That input is used to generate test scenarios that reflect the intended behavior.
 
 ## With AI agents
 
@@ -49,7 +51,7 @@ When an AI coding agent, like Claude or Codex, implements a feature or fixes a b
 
 Through an MCP server, the agent can launch a real Chromium browser, navigate to any page, run Gherkin steps, take screenshots, and read the DOM. When a step fails, it inspects the page to understand why, adjusts its approach, and tries again. The session produces a `.feature` file that gets committed and runs in CI from that point on.
 
-This changes how agents finish tasks. Fixing a bug isn't done until the fix has been verified in the browser. Adding a feature isn't done until the flow works end to end. The tests that come out of those sessions aren't an afterthought. They're what the agent produces to prove the work is complete.
+Tools like Chrome DevTools or Playwright MCP can drive a browser too, but they only tell you if something works right now. With letsrunit, the agent produces readable, repeatable tests that not only verify the behaviour now, but keep checking it in the future.
 
 See [AI Agent Integration](ai-agents/README.md) for setup instructions.
 
@@ -57,9 +59,9 @@ See [AI Agent Integration](ai-agents/README.md) for setup instructions.
 
 Playwright is a capable tool, but writing and maintaining Playwright tests is engineering work. You write TypeScript, manage selectors, handle async timing, and debug stack traces. The tests live in a separate mental model from the product.
 
-With letsrunit, the test describes what a user does and what should happen. That's a description that can come from a product spec, a bug report, or an AI agent. It doesn't require knowing the DOM structure of the page. It doesn't require understanding Playwright's API. And when it breaks, the failure message tells you what changed, not where in the code the assertion fired.
+With letsrunit, the test describes what a user does and what should happen. That's a description that can come from a product spec, a bug report, or an AI agent. It doesn't require knowing the DOM structure of the page. And when tests break, the failure message tells you what changed, not where in the code the assertion fired.
 
-Playwright runs the browser under the hood. letsrunit uses Playwright internally. The difference is the layer you work at.
+letsrunit uses Playwright internally. The difference is the layer you work at.
 
 ## Get started
 
