@@ -17,6 +17,7 @@ const sidebars: SidebarsConfig = {
         'writing-tests/gherkin-basics',
         'writing-tests/step-reference',
         'writing-tests/locators',
+        'writing-tests/custom-steps',
       ],
     },
     'running-tests',

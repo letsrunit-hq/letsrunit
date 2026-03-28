@@ -20,6 +20,7 @@
 * [Gherkin Basics](writing-tests/gherkin-basics.md)
 * [Step Reference](writing-tests/step-reference.md)
 * [Locators](writing-tests/locators.md)
+* [Custom Steps](writing-tests/custom-steps.md)
 
 ## Running Tests
 
