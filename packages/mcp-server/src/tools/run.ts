@@ -1,16 +1,9 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { parseFeature } from '@letsrunit/gherkin';
-import { computeStepId, computeScenarioId } from '@letsrunit/store';
+import { scenarioIdFromGherkin } from '@letsrunit/gherkin';
 import type { SessionManager } from '../sessions';
 import { normalizeGherkin } from '../utility/gherkin';
 import { err, text } from '../utility/response';
-
-function scenarioIdFromGherkin(gherkin: string): string {
-  const { steps } = parseFeature(gherkin);
-  const stepIds = steps.map((s) => computeStepId(s));
-  return computeScenarioId(stepIds);
-}
 
 export function registerRun(server: McpServer, sessions: SessionManager): void {
   server.registerTool(
