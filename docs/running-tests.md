@@ -64,3 +64,14 @@ Scenario: User logs in
 ```bash
 letsrunit run <url> <feature>
 ```
+
+## letsrunit explain
+
+`letsrunit explain` analyzes failures from the latest stored run and prints a human-readable explanation of whether the test likely needs an update or the product likely regressed.
+
+If the latest run has no failures, it exits successfully with nothing to explain.
+
+```bash
+letsrunit explain
+letsrunit explain --db .letsrunit/letsrunit.db --artifacts .letsrunit/artifacts
+```
