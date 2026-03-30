@@ -10,6 +10,7 @@
 
 * [AI Agent Integration](ai-agents/README.md)
 * [Test-Driven Development](ai-agents/tdd.md)
+* [MCP Comparison](ai-agents/mcp-comparison.md)
 
 ## Generating Tests
 
@@ -25,10 +26,8 @@
 ## Running Tests
 
 * [Running Tests](running-tests.md)
-
-***
-
 * [Email Testing](email-testing.md)
+
 ## CI/CD
 
 * [GitHub Actions](ci-cd/github-actions.md)

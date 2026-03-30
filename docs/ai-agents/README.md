@@ -16,7 +16,7 @@ The session also produces a `.feature` file that gets committed to the repositor
 
 The integration has two parts.
 
-**The MCP server** runs a real browser and exposes it as tools the agent can call: start a session, run Gherkin steps, take screenshots, read the DOM, evaluate JavaScript. When a step fails, the agent reaches for `letsrunit_snapshot` to inspect the relevant DOM subtree, adjusts its approach, and retries without surfacing the failure to you unless it genuinely can't recover.
+**The MCP server** runs a real browser and exposes it as tools the agent can call: start a session, run Gherkin steps, take screenshots, read the DOM, evaluate JavaScript. When a step fails, the agent uses `letsrunit_snapshot` to inspect the relevant DOM subtree and use `letsrunit_diff` to compare the find changes made since the last successful run.
 
 **The skill** is a context document that gives the agent deep knowledge of letsrunit: the full step library, the locator language, how to handle edge cases, when to use a snapshot vs a screenshot vs raw JavaScript. Without it, the agent can call the tools but won't know how to use them well. With it, it writes correct Gherkin from the start and handles failures on its own.
 
@@ -32,6 +32,25 @@ The letsrunit plugin installs both the MCP server and the skill automatically. R
 ```
 
 That's it. On the next conversation, Claude has everything it needs. Just describe what you want tested.
+{% endtab %}
+
+{% tab title="Codex CLI" %}
+Add the MCP server to `~/.codex/config.toml`:
+
+```toml
+[[mcp_servers]]
+name = "letsrunit"
+command = "npx"
+args = ["-y", "@letsrunit/mcp-server@latest"]
+```
+
+Install the skill into your repo.
+
+```bash
+npx skills add letsrunit-hq/agent
+```
+
+Codex loads it when you ask it to write or run browser tests.
 {% endtab %}
 
 {% tab title="Cursor" %}
@@ -57,27 +76,6 @@ https://github.com/letsrunit-hq/agent
 Cursor loads it automatically when you ask it to write or run browser tests.
 {% endtab %}
 
-{% tab title="Codex CLI" %}
-Add the MCP server to `~/.codex/config.toml`:
-
-```toml
-[[mcp_servers]]
-name = "letsrunit"
-command = "npx"
-args = ["-y", "@letsrunit/mcp-server@latest"]
-```
-
-Install the skill into your repo. Codex discovers skills in `.agents/skills/` automatically:
-
-```bash
-mkdir -p .agents/skills/letsrunit
-curl -o .agents/skills/letsrunit/SKILL.md \
-  https://raw.githubusercontent.com/letsrunit-hq/agent/main/skills/letsrunit/SKILL.md
-```
-
-Codex loads it when you ask it to write or run browser tests.
-{% endtab %}
-
 {% tab title="Other agents" %}
 Add the MCP server in your agent's config format. The standard JSON:
 
@@ -92,10 +90,10 @@ Add the MCP server in your agent's config format. The standard JSON:
 }
 ```
 
-Then load the skill into your agent's system context or custom instructions:
+Then load the skill into your agent's system context:
 
 ```
-https://github.com/letsrunit-hq/agent/blob/main/skills/letsrunit/SKILL.md
+npx skills add letsrunit-hq/agent
 ```
 {% endtab %}
 {% endtabs %}
@@ -124,16 +122,4 @@ Only keep scenarios that cover flows that could plausibly break from an unrelate
 #### Try Test-Driven Development for better results
 For a more structured approach, you can instruct the agent to write scenarios before implementing. See [Test-Driven Development](tdd.md) for instructions to use instead of the ones above.
 {% endhint %}
-
-## letsrunit vs Playwright MCP
-
-Playwright MCP is commonly used to verify that a new feature works before marking a task complete. letsrunit is a better choice for this, for one reason: the output.
-
-A Playwright MCP session ends when the conversation ends. The agent clicked through the flow, things looked correct, and now there is no record of any of it. A letsrunit session ends with a `.feature` file that gets committed, runs in CI, and will catch any future change that breaks the same flow. The verification work is the same. The outcome is fundamentally different.
-
-The abstraction level also matters. Playwright MCP exposes raw browser primitives: `browser_click`, `browser_fill_form`, `browser_navigate`. These are automation tools: you're scripting the browser. letsrunit steps describe behaviour: `I click button "Sign in"`, `The page contains text "Dashboard"`. The resulting `.feature` file communicates what the application is supposed to do, not how the automation was written. It is readable by anyone on the team and reviewable in a pull request.
-
-Locator resolution is also handled. Finding the right element (by label text, role, visible text, or a combination) is something letsrunit's step library does for you. With Playwright MCP, the agent writes selectors and handles edge cases itself. With letsrunit, the agent describes what it wants and the library finds it.
-
-Playwright MCP is the right tool for one-off browser automation: scraping, form filling, tasks where no persistent output is needed. For verifying that a feature works, letsrunit produces a better outcome for the same amount of work.
 

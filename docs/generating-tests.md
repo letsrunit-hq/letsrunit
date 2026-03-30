@@ -4,20 +4,31 @@ description: Generate Gherkin scenarios from a live URL using AI.
 
 # Generating Tests
 
-letsrunit can generate Gherkin scenarios from a live page. Both commands navigate to a URL, use an LLM to understand the page and produce steps, run the scenario to confirm it passes, and write a `.feature` file.
+Generate tests either from an AI agent (through the MCP server) or from the CLI.
 
-`explore` is interactive: it discovers multiple user stories and lets you pick which ones to generate. `generate` takes a description and produces a single scenario directly.
+## AI Agent
 
-Both commands require an LLM API key:
+Use your preferred AI coding agent with the letsrunit MCP server to generate and validate tests directly from chat.
 
-| Variable | Description |
-|----------|-------------|
-| `OPENAI_API_KEY` | OpenAI API key (GPT-4o and later) |
-| `TOGETHER_AI_API_KEY` | Together AI API key |
+Typical flow:
 
-Set one of these in your shell or `.env` file before running either command.
+- Connect letsrunit MCP tools in your agent.
+- Ask the agent to generate or refine a scenario for a target URL or flow.
+- Let the agent run the scenario in a real browser and iterate until it passes.
+- Save the passing scenario as a `.feature` regression test.
 
-## explore
+For setup instructions and supported clients, see [AI Agent Integration](ai-agents/README.md). For a structured red-green workflow, see [Test-Driven Development](ai-agents/tdd.md).
+
+## CLI
+
+The letsrunit cli can generate Gherkin scenarios from a live page. It will navigate to a URL, use an LLM to understand the page and produce steps, run the scenario to confirm it passes, and write a `.feature` file. There are two commands:
+
+- `explore` is interactive: it discovers multiple user stories and lets you pick which ones to generate.
+- `generate` takes a description and produces a single scenario directly.
+
+Both commands require an LLM API key. Set either `OPENAI_API_KEY`, `CLAUDE_API_KEY` or `TOGETHER_AI_API_KEY` in your shell or `.env` file before running either command.
+
+### explore
 
 `explore` navigates a page, discovers testable user stories with AI, and presents an interactive menu. Select a story and letsrunit generates the scenario, runs it, and saves it if it passes.
 
@@ -52,7 +63,7 @@ What do you want to test? Choose one of the following options:
 
 Press a number to select a story. letsrunit generates the scenario, runs it, and if it passes, writes the `.feature` file to the `-o` directory. The remaining stories are shown again. Press `Ctrl+C` to exit.
 
-## generate
+### generate
 
 `generate` takes a plain-English description, navigates the target URL, generates a scenario, runs it to confirm it passes, and writes a `.feature` file.
 
@@ -105,7 +116,7 @@ Log in with email and password, then verify the dashboard loads
 `generate` runs the scenario before writing the file. If a step fails, it iterates until the scenario is green or gives up.
 {% endhint %}
 
-## LangSmith tracing
+### LangSmith tracing
 
 To inspect LLM calls made during `explore` or `generate`, enable LangSmith tracing:
 

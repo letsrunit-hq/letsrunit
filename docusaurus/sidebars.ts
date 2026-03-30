@@ -7,7 +7,7 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'AI Agents',
-      items: ['ai-agents/README', 'ai-agents/tdd'],
+      items: ['ai-agents/README', 'ai-agents/tdd', 'ai-agents/mcp-comparison'],
     },
     'generating-tests',
     {
