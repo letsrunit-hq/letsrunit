@@ -48,19 +48,14 @@ export function computeFeatureId(scenarioIds: string[]): string {
   return hashBytes(TAGS.feature, concatHexIds(scenarioIds));
 }
 
-export function computeRuleId(featurePath: string, ruleName: string, ruleIndex: number): string {
-  return hashBytes(TAGS.rule, encodeStrings([featurePath, ruleName, String(ruleIndex)]));
+export function computeRuleId(scenarioIds: string[]): string {
+  return hashBytes(TAGS.rule, concatHexIds(scenarioIds));
 }
 
-export function computeOutlineId(
-  featurePath: string,
-  outlineName: string,
-  outlineIndex: number,
-  ruleId?: string,
-): string {
-  return hashBytes(TAGS.outline, encodeStrings([featurePath, outlineName, String(outlineIndex), ruleId ?? '']));
+export function computeOutlineId(stepIds: string[]): string {
+  return hashBytes(TAGS.outline, concatHexIds(stepIds));
 }
 
-export function computeExampleRowId(outlineId: string, exampleIndex: number, values: string[]): string {
-  return hashBytes(TAGS.exampleRow, encodeStrings([outlineId, String(exampleIndex), ...values]));
+export function computeExampleRowId(values: string[]): string {
+  return hashBytes(TAGS.exampleRow, encodeStrings(values));
 }

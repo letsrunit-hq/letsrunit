@@ -65,21 +65,28 @@ describe('computeFeatureId', () => {
 });
 
 describe('rule/outline/example IDs', () => {
+  const s1 = computeScenarioId([computeStepId('Given one')]);
+  const s2 = computeScenarioId([computeStepId('Given two')]);
+  const st1 = computeStepId('Given user "<name>" exists');
+  const st2 = computeStepId('When I login as "<name>"');
+
   it('computes deterministic rule IDs', () => {
-    expect(computeRuleId('a.feature', 'Checkout', 0)).toBe(computeRuleId('a.feature', 'Checkout', 0));
+    expect(computeRuleId([s1, s2])).toBe(computeRuleId([s1, s2]));
+  });
+
+  it('computes different rule IDs for different scenario sets', () => {
+    expect(computeRuleId([s1, s2])).not.toBe(computeRuleId([s1]));
   });
 
   it('computes deterministic outline IDs', () => {
-    const rule = computeRuleId('a.feature', 'Checkout', 0);
-    expect(computeOutlineId('a.feature', 'Pay with card', 1, rule)).toBe(
-      computeOutlineId('a.feature', 'Pay with card', 1, rule),
-    );
+    expect(computeOutlineId([st1, st2])).toBe(computeOutlineId([st1, st2]));
   });
 
   it('computes deterministic example row IDs', () => {
-    const outline = computeOutlineId('a.feature', 'Pay with card', 1);
-    expect(computeExampleRowId(outline, 0, ['visa', 'success'])).toBe(
-      computeExampleRowId(outline, 0, ['visa', 'success']),
-    );
+    expect(computeExampleRowId(['visa', 'success'])).toBe(computeExampleRowId(['visa', 'success']));
+  });
+
+  it('computes different example row IDs for different values', () => {
+    expect(computeExampleRowId(['visa', 'success'])).not.toBe(computeExampleRowId(['mastercard', 'success']));
   });
 });

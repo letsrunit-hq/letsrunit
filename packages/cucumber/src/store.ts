@@ -50,11 +50,9 @@ type AstStep = {
 };
 
 type ScenarioAstMeta = {
-  name: string;
-  templateIndex: number;
-  ruleName?: string;
-  ruleIndex?: number;
+  ruleKey?: string;
   isOutline: boolean;
+  outlineStepIds?: string[];
 };
 
 type ExampleRowMeta = {
@@ -75,7 +73,7 @@ type PickleEntry = {
   name: string;
   scenarioId: string;
   steps: { id: string; text: string }[];
-  rule?: string;
+  ruleKey?: string;
   outline?: string;
   exampleRow?: string;
   exampleIndex?: number;
@@ -107,14 +105,37 @@ type FailureInfo = {
 
 interface GherkinScenarioNode {
   id: string;
-  name: string;
   steps?: ReadonlyArray<{
     id: string;
     keyword: string;
+    text: string;
+    docString?: { content: string };
+    dataTable?: { rows: ReadonlyArray<{ cells: ReadonlyArray<{ value: string }> }> };
   }>;
   examples?: ReadonlyArray<{
     tableBody?: ReadonlyArray<{ id: string; cells?: ReadonlyArray<{ value: string }> }>;
   }>;
+}
+
+function normalizeScenarioTemplateStepIds(scenario: GherkinScenarioNode): string[] {
+  let currentKeyword = 'Given';
+  const stepIds: string[] = [];
+
+  for (const step of scenario.steps ?? []) {
+    let keyword = step.keyword.trim();
+    const lc = keyword.toLowerCase();
+
+    if (lc === 'and' || lc === 'but' || keyword === '*') {
+      keyword = currentKeyword;
+    } else {
+      currentKeyword = keyword;
+    }
+
+    const normalized = normalizeStep(keyword, step.text, step.docString, step.dataTable);
+    stepIds.push(computeStepId(normalized));
+  }
+
+  return stepIds;
 }
 
 function getFeatureBucket(featureBuckets: Map<string, FeatureBucket>, uri: string, name: string): FeatureBucket {
@@ -134,14 +155,28 @@ function getFeatureBucket(featureBuckets: Map<string, FeatureBucket>, uri: strin
 function ensureFeaturePersisted(db: ReturnType<typeof openStore>, bucket: FeatureBucket): void {
   if (bucket.persisted) return;
 
+  const ruleScenarios = new Map<string, string[]>();
+  for (const pickle of bucket.pickles) {
+    if (!pickle.ruleKey) continue;
+    const scenarioIds = ruleScenarios.get(pickle.ruleKey) ?? [];
+    scenarioIds.push(pickle.scenarioId);
+    ruleScenarios.set(pickle.ruleKey, scenarioIds);
+  }
+
+  const ruleByKey = new Map<string, string>();
+  for (const [key, scenarioIds] of ruleScenarios) {
+    ruleByKey.set(key, computeRuleId(scenarioIds));
+  }
+
   const featureId = computeFeatureId(bucket.pickles.map((p) => p.scenarioId));
   upsertFeature(db, featureId, bucket.uri, bucket.name);
 
   bucket.pickles.forEach((pickle, scenarioIndex) => {
     pickle.featureId = featureId;
+    const rule = pickle.ruleKey ? ruleByKey.get(pickle.ruleKey) : undefined;
 
     upsertScenario(db, pickle.scenarioId, featureId, scenarioIndex, pickle.name, {
-      rule: pickle.rule,
+      rule,
       outline: pickle.outline,
       exampleRow: pickle.exampleRow,
       exampleIndex: pickle.exampleIndex,
@@ -163,19 +198,18 @@ function normalizeRowValues(row?: { cells?: ReadonlyArray<{ value: string }> }):
 
 function registerScenarioAst(
   scenario: GherkinScenarioNode,
-  templateIndex: number,
   scenarioByAstId: Map<string, ScenarioAstMeta>,
   exampleRowByAstId: Map<string, ExampleRowMeta>,
   astStepMap: Map<string, AstStep>,
-  ruleName?: string,
-  currentRuleIndex?: number,
-): number {
+  ruleKey?: string,
+): void {
+  const isOutline = (scenario.examples?.length ?? 0) > 0;
+  const outlineStepIds = isOutline ? normalizeScenarioTemplateStepIds(scenario) : undefined;
+
   scenarioByAstId.set(scenario.id, {
-    name: scenario.name,
-    templateIndex,
-    ruleName,
-    ruleIndex: currentRuleIndex,
-    isOutline: (scenario.examples?.length ?? 0) > 0,
+    ruleKey,
+    isOutline,
+    outlineStepIds,
   });
 
   for (const step of scenario.steps ?? []) {
@@ -192,7 +226,6 @@ function registerScenarioAst(
     }
   }
 
-  return templateIndex + 1;
 }
 
 export default {
@@ -231,7 +264,6 @@ export default {
         const scenarioByAstId = new Map<string, ScenarioAstMeta>();
         const exampleRowByAstId = new Map<string, ExampleRowMeta>();
 
-        let templateIndex = 0;
         let ruleIndex = 0;
 
         for (const child of feature.children ?? []) {
@@ -242,9 +274,8 @@ export default {
           }
 
           if (child.scenario) {
-            templateIndex = registerScenarioAst(
+            registerScenarioAst(
               child.scenario,
-              templateIndex,
               scenarioByAstId,
               exampleRowByAstId,
               astStepMap,
@@ -262,14 +293,12 @@ export default {
               }
 
               if (ruleChild.scenario) {
-                templateIndex = registerScenarioAst(
+                registerScenarioAst(
                   ruleChild.scenario,
-                  templateIndex,
                   scenarioByAstId,
                   exampleRowByAstId,
                   astStepMap,
-                  child.rule.name,
-                  currentRuleIndex,
+                  `${uri}::${currentRuleIndex}`,
                 );
               }
             }
@@ -322,24 +351,19 @@ export default {
         const scenarioAstId = pickle.astNodeIds.find((id) => featureMeta?.scenarioByAstId.has(id));
         const scenarioMeta = scenarioAstId ? featureMeta?.scenarioByAstId.get(scenarioAstId) : undefined;
 
-        let rule: string | undefined;
-        if (scenarioMeta?.ruleName && scenarioMeta.ruleIndex !== undefined) {
-          rule = computeRuleId(pickle.uri, scenarioMeta.ruleName, scenarioMeta.ruleIndex);
-        }
-
         let outline: string | undefined;
         let exampleRow: string | undefined;
         let exampleIndex: number | undefined;
 
         if (scenarioMeta?.isOutline) {
-          outline = computeOutlineId(pickle.uri, scenarioMeta.name, scenarioMeta.templateIndex, rule);
+          outline = computeOutlineId(scenarioMeta.outlineStepIds ?? []);
 
           const rowAstId = pickle.astNodeIds.find((id) => featureMeta?.exampleRowByAstId.has(id));
           const rowMeta = rowAstId ? featureMeta?.exampleRowByAstId.get(rowAstId) : undefined;
 
           if (rowMeta) {
             exampleIndex = rowMeta.index;
-            exampleRow = computeExampleRowId(outline, rowMeta.index, rowMeta.values);
+            exampleRow = computeExampleRowId(rowMeta.values);
           }
         }
 
@@ -349,7 +373,7 @@ export default {
           name: pickle.name,
           scenarioId,
           steps,
-          rule,
+          ruleKey: scenarioMeta?.ruleKey,
           outline,
           exampleRow,
           exampleIndex,
