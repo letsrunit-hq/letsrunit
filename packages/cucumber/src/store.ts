@@ -3,7 +3,7 @@ import { execSync } from 'node:child_process';
 import { existsSync, mkdirSync } from 'node:fs';
 import { utimes, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { finaliseRun, insertArtifact, insertRun, insertSession, openStore, upsertFeature, upsertScenario, upsertStep, computeFeatureId, computeStepId, computeScenarioId } from '@letsrunit/store';
+import { finaliseTest, insertArtifact, insertRun, insertTest, openStore, upsertFeature, upsertScenario, upsertStep, computeFeatureId, computeStepId, computeScenarioId } from '@letsrunit/store';
 import { normalizeStep } from '@letsrunit/gherkin';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -48,8 +48,8 @@ type TestCaseEntry = {
   stepIdByTestStepId: Map<string, string>; // testStepId → step db id
 };
 
-type RunEntry = {
-  runId: string;
+type TestEntry = {
+  testId: string;
   scenarioId: string;
   stepIdByTestStepId: Map<string, string>;
 };
@@ -68,18 +68,18 @@ export default {
     const dbPath = join(artifactDir, '../letsrunit.db');
     const db = openStore(dbPath);
 
-    // Session setup
-    const sessionId = uuidv4();
+    // Run setup
+    const runId = uuidv4();
     let gitCommit: string | null = null;
     try { gitCommit = execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim(); } catch {}
-    insertSession(db, sessionId, gitCommit, Date.now());
+    insertRun(db, runId, gitCommit, Date.now());
 
     // Correlation maps
     const pickleMap = new Map<string, PickleEntry>();
     // astNodeId → full AST step (keyword, text, docString, dataTable)
     const astStepMap = new Map<string, AstStep>();
     const testCaseMap = new Map<string, TestCaseEntry>();
-    const runMap = new Map<string, RunEntry>();
+    const testMap = new Map<string, TestEntry>();
     const pendingFailures = new Map<string, FailureInfo>();
 
     on('message', (envelope: Envelope) => {
@@ -173,10 +173,10 @@ export default {
         const tcEntry = testCaseMap.get(tcs.testCaseId);
         if (!tcEntry) return;
 
-        const runId = uuidv4();
-        insertRun(db, runId, sessionId, tcEntry.scenarioId, Date.now());
-        runMap.set(tcs.id, {
-          runId,
+        const testId = uuidv4();
+        insertTest(db, testId, runId, tcEntry.scenarioId, Date.now());
+        testMap.set(tcs.id, {
+          testId,
           scenarioId: tcEntry.scenarioId,
           stepIdByTestStepId: tcEntry.stepIdByTestStepId,
         });
@@ -191,8 +191,8 @@ export default {
           || status === TestStepResultStatus.UNDEFINED;
 
         if (isFailing && !pendingFailures.has(tsf.testCaseStartedId)) {
-          const runEntry = runMap.get(tsf.testCaseStartedId);
-          const stepId = runEntry?.stepIdByTestStepId.get(tsf.testStepId);
+          const testEntry = testMap.get(tsf.testCaseStartedId);
+          const stepId = testEntry?.stepIdByTestStepId.get(tsf.testStepId);
           if (stepId) {
             pendingFailures.set(tsf.testCaseStartedId, {
               failedStepId: stepId,
@@ -217,7 +217,7 @@ export default {
           status = 'passed';
         }
 
-        finaliseRun(db, runMap.get(tcf.testCaseStartedId)?.runId ?? '', status, failure?.failedStepId, failure?.error);
+        finaliseTest(db, testMap.get(tcf.testCaseStartedId)?.testId ?? '', status, failure?.failedStepId, failure?.error);
         return;
       }
 
@@ -243,11 +243,11 @@ export default {
           const testCaseStartedId = attachment.testCaseStartedId;
           const testStepId = attachment.testStepId;
           if (testCaseStartedId && testStepId) {
-            const runEntry = runMap.get(testCaseStartedId);
-            if (runEntry) {
-              const stepId = runEntry.stepIdByTestStepId.get(testStepId);
+            const testEntry = testMap.get(testCaseStartedId);
+            if (testEntry) {
+              const stepId = testEntry.stepIdByTestStepId.get(testStepId);
               if (stepId) {
-                insertArtifact(db, uuidv4(), runEntry.runId, stepId, filename);
+                insertArtifact(db, uuidv4(), testEntry.testId, stepId, filename);
               }
             }
           }

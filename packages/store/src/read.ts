@@ -1,30 +1,30 @@
 import type { Database } from './db';
 
-export function findLastRun(
+export function findLastTest(
   db: Database,
   scenarioId: string,
   status?: string,
   allowedCommits?: string[],
 ): { id: string; gitCommit: string | null } | null {
-  const conditions: string[] = ['r.scenario_id = ?'];
+  const conditions: string[] = ['t.scenario_id = ?'];
   const params: (string | number | null)[] = [scenarioId];
 
   if (status !== undefined) {
-    conditions.push('r.status = ?');
+    conditions.push('t.status = ?');
     params.push(status);
   }
 
   if (allowedCommits !== undefined) {
-    conditions.push('s.git_commit IN (SELECT value FROM json_each(?))');
+    conditions.push('r.git_commit IN (SELECT value FROM json_each(?))');
     params.push(JSON.stringify(allowedCommits));
   }
 
   const sql = `
-    SELECT r.id, s.git_commit
-    FROM runs r
-    JOIN sessions s ON r.session_id = s.id
+    SELECT t.id, r.git_commit
+    FROM tests t
+    JOIN runs r ON t.run_id = r.id
     WHERE ${conditions.join(' AND ')}
-    ORDER BY r.started_at DESC
+    ORDER BY t.started_at DESC
     LIMIT 1
   `;
 
@@ -35,11 +35,11 @@ export function findLastRun(
 
 export function findArtifacts(
   db: Database,
-  runId: string,
+  testId: string,
   stepId?: string,
 ): Array<{ filename: string; stepId: string; stepIdx: number }> {
-  const conditions: string[] = ['a.run_id = ?'];
-  const params: (string | number | null)[] = [runId];
+  const conditions: string[] = ['a.test_id = ?'];
+  const params: (string | number | null)[] = [testId];
 
   if (stepId !== undefined) {
     conditions.push('a.step_id = ?');

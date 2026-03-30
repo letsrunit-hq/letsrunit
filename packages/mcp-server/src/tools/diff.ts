@@ -1,6 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { unifiedHtmlDiff } from '@letsrunit/playwright';
-import { openStore, findLastRun, findArtifacts } from '@letsrunit/store';
+import { openStore, findLastTest, findArtifacts } from '@letsrunit/store';
 import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -28,17 +28,17 @@ export function registerDiff(server: McpServer, sessions: SessionManager): void 
     'letsrunit_diff',
     {
       description:
-        'Diff the current live page against the HTML snapshot from the last passing run of a scenario. ' +
+        'Diff the current live page against the HTML snapshot from the last passing test of a scenario. ' +
         'Pass the scenarioId returned by letsrunit_run. ' +
         'Returns a unified HTML diff and paths to baseline screenshots. ' +
-        'By default only considers baseline runs from the current git ancestry (gitTreeOnly: true).',
+        'By default only considers baseline tests from the current git ancestry (gitTreeOnly: true).',
       inputSchema: {
         sessionId: z.string().describe('Session ID returned by letsrunit_session_start'),
         scenarioId: z.string().describe('Scenario UUID returned by letsrunit_run'),
         gitTreeOnly: z
           .boolean()
           .optional()
-          .describe('Restrict baseline to runs from the current git ancestry (default: true)'),
+          .describe('Restrict baseline to tests from the current git ancestry (default: true)'),
       },
     },
     async (input) => {
@@ -55,20 +55,20 @@ export function registerDiff(server: McpServer, sessions: SessionManager): void 
 
         const allowedCommits = (input.gitTreeOnly ?? true) ? resolveAllowedCommits() : undefined;
 
-        const run = findLastRun(db, input.scenarioId, 'passed', allowedCommits ?? undefined);
-        if (!run) {
+        const test = findLastTest(db, input.scenarioId, 'passed', allowedCommits ?? undefined);
+        if (!test) {
           return err(
             allowedCommits
-              ? 'No passing run found for this scenario in the current git ancestry. Try gitTreeOnly: false or run cucumber first.'
-              : 'No passing run found for this scenario.',
+              ? 'No passing test found for this scenario in the current git ancestry. Try gitTreeOnly: false or run cucumber first.'
+              : 'No passing test found for this scenario.',
           );
         }
 
-        const artifacts = findArtifacts(db, run.id);
+        const artifacts = findArtifacts(db, test.id);
 
         const htmlArtifact = [...artifacts].reverse().find((a) => a.filename.endsWith('.html'));
         if (!htmlArtifact) {
-          return err('No HTML snapshot found in the baseline run. Ensure the store formatter is configured.');
+          return err('No HTML snapshot found in the baseline test. Ensure the store formatter is configured.');
         }
 
         const storedHtml = readFileSync(join(artifactDir, htmlArtifact.filename), 'utf-8');
@@ -86,8 +86,8 @@ export function registerDiff(server: McpServer, sessions: SessionManager): void 
           JSON.stringify({
             diff,
             baseline: {
-              runId: run.id,
-              commit: run.gitCommit,
+              testId: test.id,
+              commit: test.gitCommit,
               screenshots,
             },
           }),

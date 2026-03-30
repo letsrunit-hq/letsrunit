@@ -10,7 +10,7 @@ npm install @letsrunit/store
 yarn add @letsrunit/store
 ```
 
-SQLite-backed persistence layer for letsrunit run history and artifacts. It manages the database schema and provides write functions for recording test sessions, features, scenarios, steps, runs, and file artifacts.
+SQLite-backed persistence layer for letsrunit run history and artifacts. It manages the database schema and provides write functions for recording runs, features, scenarios, tests, steps, and file artifacts.
 
 ## Schema
 
@@ -18,11 +18,11 @@ The store maintains six tables:
 
 | Table | Purpose |
 |---|---|
-| `sessions` | One row per test run invocation, keyed by UUID with optional git commit |
+| `runs` | One row per top-level invocation, keyed by UUID with optional git commit |
 | `features` | Gherkin feature files, keyed by a content hash of the file |
 | `scenarios` | Gherkin scenarios, linked to their feature |
 | `steps` | Individual steps within a scenario, ordered by index |
-| `runs` | One row per scenario execution within a session; status is `running`, `passed`, or `failed` |
+| `tests` | One row per scenario execution within a run; status is `running`, `passed`, or `failed` |
 | `artifacts` | Files (screenshots, HTML snapshots) produced during a step |
 
 ## API
@@ -43,13 +43,13 @@ All write functions take a `db` instance as their first argument.
 
 | Function | Description |
 |---|---|
-| `insertSession(db, id, gitCommit, startedAt)` | Records a new test session |
+| `insertRun(db, id, gitCommit, startedAt)` | Records a new run |
 | `upsertFeature(db, id, path, name)` | Inserts or replaces a feature file record |
 | `upsertScenario(db, id, featureId, name)` | Inserts or replaces a scenario record |
 | `upsertStep(db, id, scenarioId, idx, text)` | Inserts or replaces a step record |
-| `insertRun(db, id, sessionId, scenarioId, startedAt)` | Starts a new run with status `running` |
-| `finaliseRun(db, id, status, failedStepId?, error?)` | Updates a run's final status and optional failure details |
-| `insertArtifact(db, id, runId, stepId, filename)` | Links a saved file to a specific step in a run |
+| `insertTest(db, id, runId, scenarioId, startedAt)` | Starts a new test with status `running` |
+| `finaliseTest(db, id, status, failedStepId?, error?)` | Updates a test's final status and optional failure details |
+| `insertArtifact(db, id, testId, stepId, filename)` | Links a saved file to a specific step in a test |
 
 ## Testing
 

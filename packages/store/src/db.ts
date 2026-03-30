@@ -3,7 +3,7 @@ const { Database } = nodeWasm;
 export type Database = InstanceType<typeof nodeWasm.Database>;
 
 const SCHEMA = `
-CREATE TABLE IF NOT EXISTS sessions (
+CREATE TABLE IF NOT EXISTS runs (
   id          TEXT PRIMARY KEY,
   started_at  INTEGER NOT NULL,
   git_commit  TEXT
@@ -24,9 +24,9 @@ CREATE TABLE IF NOT EXISTS steps (
   idx         INTEGER NOT NULL,
   text        TEXT NOT NULL
 );
-CREATE TABLE IF NOT EXISTS runs (
+CREATE TABLE IF NOT EXISTS tests (
   id              TEXT PRIMARY KEY,
-  session_id      TEXT NOT NULL REFERENCES sessions(id),
+  run_id          TEXT NOT NULL REFERENCES runs(id),
   scenario_id     TEXT NOT NULL REFERENCES scenarios(id),
   status          TEXT NOT NULL DEFAULT 'running',
   failed_step_id  TEXT REFERENCES steps(id),
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS runs (
 );
 CREATE TABLE IF NOT EXISTS artifacts (
   id        TEXT PRIMARY KEY,
-  run_id    TEXT NOT NULL REFERENCES runs(id),
+  test_id   TEXT NOT NULL REFERENCES tests(id),
   step_id   TEXT NOT NULL REFERENCES steps(id),
   filename  TEXT NOT NULL
 );
