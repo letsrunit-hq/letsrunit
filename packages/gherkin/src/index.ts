@@ -3,3 +3,4 @@ export type { KeyCombo } from './keys/parse-key-combo';
 export * from './feature';
 export * from './sanitize';
 export * from './normalize-step';
+export * from './normalize-steps';

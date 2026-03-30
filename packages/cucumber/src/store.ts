@@ -20,7 +20,7 @@ import {
   upsertScenarioStep,
   upsertStep,
 } from '@letsrunit/store';
-import { normalizeStep } from '@letsrunit/gherkin';
+import { normalizeSteps } from '@letsrunit/gherkin';
 import { v4 as uuidv4 } from 'uuid';
 
 const DEFAULT_DIR = '.letsrunit/artifacts';
@@ -118,24 +118,15 @@ interface GherkinScenarioNode {
 }
 
 function normalizeScenarioTemplateStepIds(scenario: GherkinScenarioNode): string[] {
-  let currentKeyword = 'Given';
-  const stepIds: string[] = [];
-
-  for (const step of scenario.steps ?? []) {
-    let keyword = step.keyword.trim();
-    const lc = keyword.toLowerCase();
-
-    if (lc === 'and' || lc === 'but' || keyword === '*') {
-      keyword = currentKeyword;
-    } else {
-      currentKeyword = keyword;
-    }
-
-    const normalized = normalizeStep(keyword, step.text, step.docString, step.dataTable);
-    stepIds.push(computeStepId(normalized));
-  }
-
-  return stepIds;
+  const normalized = normalizeSteps(
+    (scenario.steps ?? []).map((step) => ({
+      keyword: step.keyword,
+      text: step.text,
+      docString: step.docString,
+      dataTable: step.dataTable,
+    })),
+  );
+  return normalized.map((text) => computeStepId(text));
 }
 
 function getFeatureBucket(featureBuckets: Map<string, FeatureBucket>, uri: string, name: string): FeatureBucket {
@@ -322,29 +313,16 @@ export default {
         const featureMeta = featureAstByUri.get(pickle.uri);
         const bucket = getFeatureBucket(featureBuckets, pickle.uri, featureMeta?.name ?? '');
 
-        let currentKeyword = 'Given';
-        const steps: { id: string; text: string }[] = [];
+        const normalizedPickleSteps = normalizeSteps(
+          pickle.steps.map((pickleStep) => ({
+            keyword: astStepMap.get(pickleStep.astNodeIds[0] ?? '')?.keyword ?? 'Given',
+            text: pickleStep.text,
+            docString: pickleStep.argument?.docString ? { content: pickleStep.argument.docString.content } : undefined,
+            dataTable: pickleStep.argument?.dataTable,
+          })),
+        );
 
-        for (const pickleStep of pickle.steps) {
-          const astStep = astStepMap.get(pickleStep.astNodeIds[0] ?? '');
-          let keyword = astStep?.keyword ?? 'Given';
-
-          const lc = keyword.toLowerCase();
-          if (lc === 'and' || lc === 'but' || keyword === '*') {
-            keyword = currentKeyword;
-          } else {
-            currentKeyword = keyword;
-          }
-
-          const normalized = normalizeStep(
-            keyword,
-            pickleStep.text,
-            pickleStep.argument?.docString ? { content: pickleStep.argument.docString.content } : undefined,
-            pickleStep.argument?.dataTable,
-          );
-
-          steps.push({ id: computeStepId(normalized), text: normalized });
-        }
+        const steps = normalizedPickleSteps.map((text) => ({ id: computeStepId(text), text }));
 
         const scenarioId = computeScenarioId(steps.map((s) => s.id));
 
