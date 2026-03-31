@@ -1,4 +1,5 @@
 export { registerDebug } from './debug';
+export { registerDiagnostics } from './diagnostics';
 export { registerDiff } from './diff';
 export { registerListSteps } from './list-steps';
 export { registerListSessions } from './list-sessions';

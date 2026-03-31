@@ -1,0 +1,238 @@
+import { createRequire } from 'node:module';
+import { loadConfiguration } from '@cucumber/cucumber/api';
+import { registry } from '@letsrunit/bdd';
+import { existsSync } from 'node:fs';
+import { glob } from 'node:fs/promises';
+import { isAbsolute, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
+
+type CucumberConfig = {
+  require?: unknown;
+  import?: unknown;
+  letsrunit?: {
+    ignore?: unknown;
+  };
+};
+
+type SupportEntry =
+  | { kind: 'path'; value: string }
+  | { kind: 'module'; value: string };
+
+const CUCUMBER_CONFIG_FILES = [
+  'cucumber.js',
+  'cucumber.mjs',
+  'cucumber.cjs',
+  'cucumber.ts',
+  'cucumber.mts',
+  'cucumber.cts',
+];
+
+const loadedProjectRoots = new Set<string>();
+const loadedSupportEntries = new Set<string>();
+
+export type SupportDiagnostics = {
+  envProjectCwd: string | null;
+  processCwd: string;
+  inputCwd: string | null;
+  effectiveCwd: string;
+  projectRoot: string;
+  cucumberConfigPath: string | null;
+  supportPatterns: string[];
+  ignorePatterns: string[];
+  ignoredPaths: string[];
+  supportEntries: SupportEntry[];
+  loadedProjectRoots: string[];
+  loadedSupportEntries: string[];
+  moduleResolution: {
+    serverBddPath: string | null;
+    projectBddPath: string | null;
+    sameModule: boolean;
+  };
+  registry: {
+    total: number;
+    byType: {
+      Given: number;
+      When: number;
+      Then: number;
+    };
+    definitions: Array<{
+      type: 'Given' | 'When' | 'Then';
+      source: string;
+      comment?: string;
+    }>;
+  };
+};
+
+function toStrings(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((entry): entry is string => typeof entry === 'string');
+}
+
+function hasGlobMagic(input: string): boolean {
+  return /[*?[\]{}]/.test(input);
+}
+
+function isPathLike(input: string): boolean {
+  return input.startsWith('.') || input.startsWith('/') || /^[A-Za-z]:[\\/]/.test(input);
+}
+
+function toAbsolutePath(baseDir: string, input: string): string {
+  return isAbsolute(input) ? resolve(input) : resolve(baseDir, input);
+}
+
+function normalizeMatch(baseDir: string, match: string): string {
+  return isAbsolute(match) ? resolve(match) : resolve(baseDir, match);
+}
+
+async function expandPathPatterns(baseDir: string, patterns: string[]): Promise<Set<string>> {
+  const files = new Set<string>();
+
+  for (const pattern of patterns) {
+    if (hasGlobMagic(pattern)) {
+      for await (const match of glob(pattern, { cwd: baseDir, absolute: true, withFileTypes: false })) {
+        files.add(normalizeMatch(baseDir, match));
+      }
+      continue;
+    }
+
+    files.add(toAbsolutePath(baseDir, pattern));
+  }
+
+  return files;
+}
+
+async function resolveSupportEntries(baseDir: string, entries: string[]): Promise<SupportEntry[]> {
+  const resolved: SupportEntry[] = [];
+
+  for (const entry of entries) {
+    if (hasGlobMagic(entry)) {
+      for await (const match of glob(entry, { cwd: baseDir, absolute: true, withFileTypes: false })) {
+        resolved.push({ kind: 'path', value: normalizeMatch(baseDir, match) });
+      }
+      continue;
+    }
+
+    if (!isPathLike(entry)) {
+      resolved.push({ kind: 'module', value: entry });
+      continue;
+    }
+
+    resolved.push({ kind: 'path', value: toAbsolutePath(baseDir, entry) });
+  }
+
+  return resolved;
+}
+
+function findCucumberConfig(cwd: string): string | null {
+  for (const filename of CUCUMBER_CONFIG_FILES) {
+    const path = resolve(cwd, filename);
+    if (existsSync(path)) return path;
+  }
+
+  return null;
+}
+
+async function loadLetsrunitIgnorePatterns(cwd: string): Promise<string[]> {
+  const configPath = findCucumberConfig(cwd);
+  if (!configPath) return [];
+
+  const configModule = await import(pathToFileURL(configPath).href);
+  const config = (configModule.default ?? configModule) as CucumberConfig;
+
+  return toStrings(config.letsrunit?.ignore);
+}
+
+function resolveEffectiveCwd(cwd?: string): string {
+  return cwd ?? process.env.LETSRUNIT_PROJECT_CWD ?? process.cwd();
+}
+
+function resolveFrom(moduleId: string, fromPath: string): string | null {
+  try {
+    const req = createRequire(fromPath);
+    return req.resolve(moduleId);
+  } catch {
+    return null;
+  }
+}
+
+export async function collectSupportDiagnostics(cwd?: string): Promise<SupportDiagnostics> {
+  const effectiveCwd = resolveEffectiveCwd(cwd);
+  const projectRoot = resolve(effectiveCwd);
+  const cucumberConfigPath = findCucumberConfig(projectRoot);
+  const { useConfiguration } = await loadConfiguration({}, { cwd: projectRoot });
+  const supportPatterns = [...toStrings(useConfiguration.require), ...toStrings(useConfiguration.import)];
+  const ignorePatterns = await loadLetsrunitIgnorePatterns(projectRoot);
+  const ignoredPaths = await expandPathPatterns(projectRoot, ignorePatterns);
+  const supportEntries = await resolveSupportEntries(projectRoot, supportPatterns);
+  const serverBddPath = resolveFrom('@letsrunit/bdd', import.meta.url);
+  const projectBddPath = resolveFrom('@letsrunit/bdd', resolve(projectRoot, 'package.json'));
+  const registryDefinitions = registry.defs.map((def) => ({
+    type: def.type,
+    source: def.source,
+    comment: def.comment,
+  }));
+
+  return {
+    envProjectCwd: process.env.LETSRUNIT_PROJECT_CWD ?? null,
+    processCwd: process.cwd(),
+    inputCwd: cwd ?? null,
+    effectiveCwd,
+    projectRoot,
+    cucumberConfigPath,
+    supportPatterns,
+    ignorePatterns,
+    ignoredPaths: [...ignoredPaths].sort(),
+    supportEntries,
+    loadedProjectRoots: [...loadedProjectRoots].sort(),
+    loadedSupportEntries: [...loadedSupportEntries].sort(),
+    moduleResolution: {
+      serverBddPath,
+      projectBddPath,
+      sameModule: !!serverBddPath && !!projectBddPath && serverBddPath === projectBddPath,
+    },
+    registry: {
+      total: registryDefinitions.length,
+      byType: {
+        Given: registryDefinitions.filter((d) => d.type === 'Given').length,
+        When: registryDefinitions.filter((d) => d.type === 'When').length,
+        Then: registryDefinitions.filter((d) => d.type === 'Then').length,
+      },
+      definitions: registryDefinitions,
+    },
+  };
+}
+
+export async function loadSupportFiles(cwd?: string): Promise<void> {
+  const projectRoot = resolve(resolveEffectiveCwd(cwd));
+  if (loadedProjectRoots.has(projectRoot)) return;
+
+  const { useConfiguration } = await loadConfiguration({}, { cwd: projectRoot });
+  const supportPatterns = [...toStrings(useConfiguration.require), ...toStrings(useConfiguration.import)];
+  if (supportPatterns.length === 0) {
+    loadedProjectRoots.add(projectRoot);
+    return;
+  }
+
+  const ignorePatterns = await loadLetsrunitIgnorePatterns(projectRoot);
+  const ignoredPaths = await expandPathPatterns(projectRoot, ignorePatterns);
+  const supportEntries = await resolveSupportEntries(projectRoot, supportPatterns);
+
+  for (const entry of supportEntries) {
+    if (entry.kind === 'path' && ignoredPaths.has(entry.value)) {
+      continue;
+    }
+
+    const key = `${entry.kind}:${entry.value}`;
+    if (loadedSupportEntries.has(key)) continue;
+
+    if (entry.kind === 'path') {
+      await import(pathToFileURL(entry.value).href);
+    } else {
+      await import(entry.value);
+    }
+
+    loadedSupportEntries.add(key);
+  }
+
+  loadedProjectRoots.add(projectRoot);
+}

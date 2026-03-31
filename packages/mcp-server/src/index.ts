@@ -6,6 +6,7 @@ import { SessionManager } from './sessions';
 const { version } = createRequire(import.meta.url)('../package.json') as { version: string };
 import {
   registerDebug,
+  registerDiagnostics,
   registerDiff,
   registerListSteps,
   registerListSessions,
@@ -33,6 +34,9 @@ registerSessionClose(server, sessions);
 registerListSteps(server, sessions);
 registerListSessions(server, sessions);
 registerDiff(server, sessions);
+if (process.env.LETSRUNIT_MCP_DIAGNOSTICS === 'enabled') {
+  registerDiagnostics(server);
+}
 
 const transport = new StdioServerTransport();
 await server.connect(transport);

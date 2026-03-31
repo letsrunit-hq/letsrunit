@@ -43,6 +43,10 @@ export function createRegistry() {
     },
 
     defineStep(type: StepType, expression: string | RegExp, fn: StepHandler, comment?: string): void {
+      const source = String(expression);
+      const duplicate = _entries.some((entry) => entry.type === type && String(entry.expression) === source);
+      if (duplicate) return;
+
       const expr =
         typeof expression === 'string'
           ? new CucumberExpression(sanitizeStepDefinition(expression), _paramRegistry)
@@ -72,7 +76,13 @@ export function createRegistry() {
   };
 }
 
-export const registry = createRegistry();
+const REGISTRY_KEY = Symbol.for('letsrunit.bdd.registry');
+type GlobalRegistryStore = typeof globalThis & {
+  [REGISTRY_KEY]?: ReturnType<typeof createRegistry>;
+};
+
+const registryStore = globalThis as GlobalRegistryStore;
+export const registry = registryStore[REGISTRY_KEY] ?? (registryStore[REGISTRY_KEY] = createRegistry());
 
 export function Given(expression: string | RegExp, fn: StepHandler, comment?: string): StepDefinition {
   const def: StepDefinition = { type: 'Given', expression, fn, comment };

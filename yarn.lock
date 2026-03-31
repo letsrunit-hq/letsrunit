@@ -4789,6 +4789,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@letsrunit/mcp-server@workspace:packages/mcp-server"
   dependencies:
+    "@cucumber/cucumber": "npm:^12.7.0"
     "@letsrunit/controller": "workspace:*"
     "@letsrunit/gherkin": "workspace:*"
     "@letsrunit/journal": "workspace:*"
