@@ -1,3 +1,16 @@
+# [0.10.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.9.1...v0.10.0) (2026-03-31)
+
+
+### Bug Fixes
+
+* **bdd,mcp-server:** dedupe shared registry steps and dump registry diagnostics ([9781a6f](https://github.com/letsrunit-hq/letsrunit/commit/9781a6f25a258d84a2d074be7ce4d89026113d30))
+* **mcp-server:** restore custom cucumber support loading ([637efb6](https://github.com/letsrunit-hq/letsrunit/commit/637efb695020ff830964c6ce3ba80be7bdd1b319))
+
+
+### Features
+
+* **mcp-server:** add env-gated runtime diagnostics tool ([9eb3ae7](https://github.com/letsrunit-hq/letsrunit/commit/9eb3ae793c3e36d056eba0ce6fa64a6701d3611b))
+
 ## [0.9.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.9.0...v0.9.1) (2026-03-28)
 
 
