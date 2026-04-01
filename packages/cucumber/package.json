@@ -34,11 +34,6 @@
         "types": "./dist/store.d.ts",
         "import": "./dist/store.js",
         "default": "./dist/store.js"
-      },
-      "./store-plugin": {
-        "types": "./dist/store-plugin.d.ts",
-        "import": "./dist/store-plugin.js",
-        "default": "./dist/store-plugin.js"
       }
     }
   },
@@ -78,11 +73,6 @@
       "types": "./src/store.ts",
       "import": "./src/store.ts",
       "default": "./src/store.ts"
-    },
-    "./store-plugin": {
-      "types": "./src/store-plugin.ts",
-      "import": "./src/store-plugin.ts",
-      "default": "./src/store-plugin.ts"
     }
   }
 }
