@@ -229,7 +229,20 @@ function registerScenarioAst(
 
 export type OnMessage = (key: 'message', handler: (value: Envelope) => void) => void;
 
-export function startStoreRecorder({ on, directory }: { on: OnMessage; directory?: string }): void {
+type RecorderContext = {
+  db: ReturnType<typeof openStore>;
+  runId: string;
+  artifactDir: string;
+  astStepMap: Map<string, AstStep>;
+  featureAstByUri: Map<string, FeatureAstMeta>;
+  featureBuckets: Map<string, FeatureBucket>;
+  pickleMap: Map<string, PickleEntry>;
+  testCaseMap: Map<string, TestCaseEntry>;
+  testMap: Map<string, TestEntry>;
+  pendingFailures: Map<string, FailureInfo>;
+};
+
+function createRecorderContext(directory?: string): RecorderContext {
   const runDir = directory ?? DEFAULT_DIR;
   const artifactDir = join(runDir, 'artifacts');
   ensureDirectory(runDir);
@@ -245,259 +258,286 @@ export function startStoreRecorder({ on, directory }: { on: OnMessage; directory
   } catch {}
   insertRun(db, runId, gitCommit, Date.now());
 
-  const astStepMap = new Map<string, AstStep>();
-  const featureAstByUri = new Map<string, FeatureAstMeta>();
-  const featureBuckets = new Map<string, FeatureBucket>();
+  return {
+    db,
+    runId,
+    artifactDir,
+    astStepMap: new Map<string, AstStep>(),
+    featureAstByUri: new Map<string, FeatureAstMeta>(),
+    featureBuckets: new Map<string, FeatureBucket>(),
+    pickleMap: new Map<string, PickleEntry>(),
+    testCaseMap: new Map<string, TestCaseEntry>(),
+    testMap: new Map<string, TestEntry>(),
+    pendingFailures: new Map<string, FailureInfo>(),
+  };
+}
 
-  const pickleMap = new Map<string, PickleEntry>();
-  const testCaseMap = new Map<string, TestCaseEntry>();
-  const testMap = new Map<string, TestEntry>();
-  const pendingFailures = new Map<string, FailureInfo>();
+function handleGherkinDocument(doc: NonNullable<Envelope['gherkinDocument']>, context: RecorderContext): void {
+  const uri = doc.uri ?? '';
+  const feature = doc.feature;
+  if (!feature) return;
 
-  on('message', (envelope: Envelope) => {
-    if (envelope.gherkinDocument) {
-      const doc = envelope.gherkinDocument;
-      const uri = doc.uri ?? '';
-      const feature = doc.feature;
-      if (!feature) return;
+  const scenarioByAstId = new Map<string, ScenarioAstMeta>();
+  const exampleRowByAstId = new Map<string, ExampleRowMeta>();
+  let ruleIndex = 0;
 
-      const scenarioByAstId = new Map<string, ScenarioAstMeta>();
-      const exampleRowByAstId = new Map<string, ExampleRowMeta>();
-
-      let ruleIndex = 0;
-
-      for (const child of feature.children ?? []) {
-        if (child.background) {
-          for (const step of child.background.steps ?? []) {
-            astStepMap.set(step.id, { keyword: step.keyword.trim() });
-          }
-        }
-
-        if (child.scenario) {
-          registerScenarioAst(
-            child.scenario,
-            scenarioByAstId,
-            exampleRowByAstId,
-            astStepMap,
-          );
-        }
-
-        if (child.rule) {
-          const currentRuleIndex = ruleIndex++;
-
-          for (const ruleChild of child.rule.children ?? []) {
-            if (ruleChild.background) {
-              for (const step of ruleChild.background.steps ?? []) {
-                astStepMap.set(step.id, { keyword: step.keyword.trim() });
-              }
-            }
-
-            if (ruleChild.scenario) {
-              registerScenarioAst(
-                ruleChild.scenario,
-                scenarioByAstId,
-                exampleRowByAstId,
-                astStepMap,
-                `${uri}::${currentRuleIndex}`,
-              );
-            }
-          }
-        }
+  for (const child of feature.children ?? []) {
+    if (child.background) {
+      for (const step of child.background.steps ?? []) {
+        context.astStepMap.set(step.id, { keyword: step.keyword.trim() });
       }
+    }
 
-      featureAstByUri.set(uri, {
-        uri,
-        name: feature.name ?? '',
+    if (child.scenario) {
+      registerScenarioAst(
+        child.scenario,
         scenarioByAstId,
         exampleRowByAstId,
-      });
-
-      getFeatureBucket(featureBuckets, uri, feature.name ?? '');
-
-      return;
-    }
-
-    if (envelope.pickle) {
-      const pickle = envelope.pickle;
-      const featureMeta = featureAstByUri.get(pickle.uri);
-      const bucket = getFeatureBucket(featureBuckets, pickle.uri, featureMeta?.name ?? '');
-
-      const normalizedPickleSteps = normalizeSteps(
-        pickle.steps.map((pickleStep) => ({
-          keyword: astStepMap.get(pickleStep.astNodeIds[0] ?? '')?.keyword ?? 'Given',
-          text: pickleStep.text,
-          docString: pickleStep.argument?.docString ? { content: pickleStep.argument.docString.content } : undefined,
-          dataTable: pickleStep.argument?.dataTable,
-        })),
+        context.astStepMap,
       );
-
-      const steps = normalizedPickleSteps.map((text) => ({ id: computeStepId(text), text }));
-
-      const scenarioId = computeScenarioId(steps.map((s) => s.id));
-
-      const scenarioAstId = pickle.astNodeIds.find((id) => featureMeta?.scenarioByAstId.has(id));
-      const scenarioMeta = scenarioAstId ? featureMeta?.scenarioByAstId.get(scenarioAstId) : undefined;
-
-      let outline: string | undefined;
-      let exampleRow: string | undefined;
-      let exampleIndex: number | undefined;
-
-      if (scenarioMeta?.isOutline) {
-        outline = computeOutlineId(scenarioMeta.outlineStepIds ?? []);
-
-        const rowAstId = pickle.astNodeIds.find((id) => featureMeta?.exampleRowByAstId.has(id));
-        const rowMeta = rowAstId ? featureMeta?.exampleRowByAstId.get(rowAstId) : undefined;
-
-        if (rowMeta) {
-          exampleIndex = rowMeta.index;
-          exampleRow = computeExampleRowId(rowMeta.values);
-        }
-      }
-
-      const entry: PickleEntry = {
-        pickleId: pickle.id,
-        uri: pickle.uri,
-        name: pickle.name,
-        scenarioId,
-        steps,
-        ruleKey: scenarioMeta?.ruleKey,
-        outline,
-        exampleRow,
-        exampleIndex,
-      };
-
-      pickleMap.set(pickle.id, entry);
-      bucket.pickles.push(entry);
-
-      return;
     }
 
-    if (envelope.testCase) {
-      const testCase = envelope.testCase;
-      const pickleEntry = pickleMap.get(testCase.pickleId);
-      if (!pickleEntry) return;
+    if (child.rule) {
+      const currentRuleIndex = ruleIndex++;
 
-      const bucket = featureBuckets.get(pickleEntry.uri);
-      if (!bucket) return;
-
-      ensureFeaturePersisted(db, bucket);
-
-      const stepIndexByTestStepId = new Map<string, number>();
-      let pickleStepIndex = 0;
-
-      for (const testStep of testCase.testSteps) {
-        if (testStep.pickleStepId !== undefined && testStep.pickleStepId !== '') {
-          stepIndexByTestStepId.set(testStep.id, pickleStepIndex++);
-        }
-      }
-
-      testCaseMap.set(testCase.id, {
-        scenarioId: pickleEntry.scenarioId,
-        stepIndexByTestStepId,
-      });
-
-      return;
-    }
-
-    if (envelope.testCaseStarted) {
-      const started = envelope.testCaseStarted;
-      const testCaseEntry = testCaseMap.get(started.testCaseId);
-      if (!testCaseEntry) return;
-
-      const testId = uuidv4();
-      insertTest(db, testId, runId, testCaseEntry.scenarioId, Date.now());
-
-      testMap.set(started.id, {
-        testId,
-        scenarioId: testCaseEntry.scenarioId,
-        stepIndexByTestStepId: testCaseEntry.stepIndexByTestStepId,
-      });
-
-      return;
-    }
-
-    if (envelope.testStepFinished) {
-      const finished = envelope.testStepFinished;
-      const status = finished.testStepResult.status;
-      const isFailing =
-        status === TestStepResultStatus.FAILED
-        || status === TestStepResultStatus.AMBIGUOUS
-        || status === TestStepResultStatus.UNDEFINED;
-
-      if (isFailing && !pendingFailures.has(finished.testCaseStartedId)) {
-        const testEntry = testMap.get(finished.testCaseStartedId);
-        const failedStepIndex = testEntry?.stepIndexByTestStepId.get(finished.testStepId);
-
-        if (failedStepIndex !== undefined) {
-          pendingFailures.set(finished.testCaseStartedId, {
-            failedStepIndex,
-            error: finished.testStepResult.message,
-          });
-        }
-      }
-
-      return;
-    }
-
-    if (envelope.testCaseFinished) {
-      const finished = envelope.testCaseFinished;
-      const failure = pendingFailures.get(finished.testCaseStartedId);
-      pendingFailures.delete(finished.testCaseStartedId);
-
-      let status: string;
-      if (finished.willBeRetried) {
-        status = 'running';
-      } else if (failure) {
-        status = 'failed';
-      } else {
-        status = 'passed';
-      }
-
-      finaliseTest(
-        db,
-        testMap.get(finished.testCaseStartedId)?.testId ?? '',
-        status,
-        failure?.failedStepIndex,
-        failure?.error,
-      );
-
-      return;
-    }
-
-    if (envelope.attachment) {
-      const attachment = envelope.attachment;
-      const bytes =
-        attachment.contentEncoding === AttachmentContentEncoding.BASE64
-          ? Buffer.from(attachment.body, 'base64')
-          : Buffer.from(attachment.body, 'utf-8');
-
-      const ext = mimeToExt(attachment.mediaType);
-
-      hashBytes(new Uint8Array(bytes)).then(async (hash) => {
-        const filename = `${hash}.${ext}`;
-        const filepath = join(artifactDir, filename);
-
-        if (existsSync(filepath)) {
-          const now = new Date();
-          await utimes(filepath, now, now);
-        } else {
-          await writeFile(filepath, bytes);
+      for (const ruleChild of child.rule.children ?? []) {
+        if (ruleChild.background) {
+          for (const step of ruleChild.background.steps ?? []) {
+            context.astStepMap.set(step.id, { keyword: step.keyword.trim() });
+          }
         }
 
-        const testCaseStartedId = attachment.testCaseStartedId;
-        const testStepId = attachment.testStepId;
-        if (!testCaseStartedId || !testStepId) return;
-
-        const testEntry = testMap.get(testCaseStartedId);
-        if (!testEntry) return;
-
-        const stepIndex = testEntry.stepIndexByTestStepId.get(testStepId);
-        if (stepIndex === undefined) return;
-
-        insertArtifact(db, uuidv4(), testEntry.testId, stepIndex, filename);
-      }).catch(() => {});
+        if (ruleChild.scenario) {
+          registerScenarioAst(
+            ruleChild.scenario,
+            scenarioByAstId,
+            exampleRowByAstId,
+            context.astStepMap,
+            `${uri}::${currentRuleIndex}`,
+          );
+        }
+      }
     }
+  }
+
+  context.featureAstByUri.set(uri, {
+    uri,
+    name: feature.name ?? '',
+    scenarioByAstId,
+    exampleRowByAstId,
   });
+
+  getFeatureBucket(context.featureBuckets, uri, feature.name ?? '');
+}
+
+function handlePickle(pickle: NonNullable<Envelope['pickle']>, context: RecorderContext): void {
+  const featureMeta = context.featureAstByUri.get(pickle.uri);
+  const bucket = getFeatureBucket(context.featureBuckets, pickle.uri, featureMeta?.name ?? '');
+
+  const normalizedPickleSteps = normalizeSteps(
+    pickle.steps.map((pickleStep) => ({
+      keyword: context.astStepMap.get(pickleStep.astNodeIds[0] ?? '')?.keyword ?? 'Given',
+      text: pickleStep.text,
+      docString: pickleStep.argument?.docString ? { content: pickleStep.argument.docString.content } : undefined,
+      dataTable: pickleStep.argument?.dataTable,
+    })),
+  );
+
+  const steps = normalizedPickleSteps.map((text) => ({ id: computeStepId(text), text }));
+  const scenarioId = computeScenarioId(steps.map((s) => s.id));
+  const scenarioAstId = pickle.astNodeIds.find((id) => featureMeta?.scenarioByAstId.has(id));
+  const scenarioMeta = scenarioAstId ? featureMeta?.scenarioByAstId.get(scenarioAstId) : undefined;
+
+  let outline: string | undefined;
+  let exampleRow: string | undefined;
+  let exampleIndex: number | undefined;
+
+  if (scenarioMeta?.isOutline) {
+    outline = computeOutlineId(scenarioMeta.outlineStepIds ?? []);
+    const rowAstId = pickle.astNodeIds.find((id) => featureMeta?.exampleRowByAstId.has(id));
+    const rowMeta = rowAstId ? featureMeta?.exampleRowByAstId.get(rowAstId) : undefined;
+
+    if (rowMeta) {
+      exampleIndex = rowMeta.index;
+      exampleRow = computeExampleRowId(rowMeta.values);
+    }
+  }
+
+  const entry: PickleEntry = {
+    pickleId: pickle.id,
+    uri: pickle.uri,
+    name: pickle.name,
+    scenarioId,
+    steps,
+    ruleKey: scenarioMeta?.ruleKey,
+    outline,
+    exampleRow,
+    exampleIndex,
+  };
+
+  context.pickleMap.set(pickle.id, entry);
+  bucket.pickles.push(entry);
+}
+
+function handleTestCase(testCase: NonNullable<Envelope['testCase']>, context: RecorderContext): void {
+  const pickleEntry = context.pickleMap.get(testCase.pickleId);
+  if (!pickleEntry) return;
+
+  const bucket = context.featureBuckets.get(pickleEntry.uri);
+  if (!bucket) return;
+
+  ensureFeaturePersisted(context.db, bucket);
+
+  const stepIndexByTestStepId = new Map<string, number>();
+  let pickleStepIndex = 0;
+
+  for (const testStep of testCase.testSteps) {
+    if (testStep.pickleStepId !== undefined && testStep.pickleStepId !== '') {
+      stepIndexByTestStepId.set(testStep.id, pickleStepIndex++);
+    }
+  }
+
+  context.testCaseMap.set(testCase.id, {
+    scenarioId: pickleEntry.scenarioId,
+    stepIndexByTestStepId,
+  });
+}
+
+function handleTestCaseStarted(
+  started: NonNullable<Envelope['testCaseStarted']>,
+  context: RecorderContext,
+): void {
+  const testCaseEntry = context.testCaseMap.get(started.testCaseId);
+  if (!testCaseEntry) return;
+
+  const testId = uuidv4();
+  insertTest(context.db, testId, context.runId, testCaseEntry.scenarioId, Date.now());
+
+  context.testMap.set(started.id, {
+    testId,
+    scenarioId: testCaseEntry.scenarioId,
+    stepIndexByTestStepId: testCaseEntry.stepIndexByTestStepId,
+  });
+}
+
+function handleTestStepFinished(
+  finished: NonNullable<Envelope['testStepFinished']>,
+  context: RecorderContext,
+): void {
+  const status = finished.testStepResult.status;
+  const isFailing =
+    status === TestStepResultStatus.FAILED
+    || status === TestStepResultStatus.AMBIGUOUS
+    || status === TestStepResultStatus.UNDEFINED;
+
+  if (isFailing && !context.pendingFailures.has(finished.testCaseStartedId)) {
+    const testEntry = context.testMap.get(finished.testCaseStartedId);
+    const failedStepIndex = testEntry?.stepIndexByTestStepId.get(finished.testStepId);
+    if (failedStepIndex === undefined) return;
+
+    context.pendingFailures.set(finished.testCaseStartedId, {
+      failedStepIndex,
+      error: finished.testStepResult.message,
+    });
+  }
+}
+
+function handleTestCaseFinished(
+  finished: NonNullable<Envelope['testCaseFinished']>,
+  context: RecorderContext,
+): void {
+  const failure = context.pendingFailures.get(finished.testCaseStartedId);
+  context.pendingFailures.delete(finished.testCaseStartedId);
+
+  let status: string;
+  if (finished.willBeRetried) {
+    status = 'running';
+  } else if (failure) {
+    status = 'failed';
+  } else {
+    status = 'passed';
+  }
+
+  finaliseTest(
+    context.db,
+    context.testMap.get(finished.testCaseStartedId)?.testId ?? '',
+    status,
+    failure?.failedStepIndex,
+    failure?.error,
+  );
+}
+
+async function persistAttachment(
+  attachment: NonNullable<Envelope['attachment']>,
+  context: RecorderContext,
+): Promise<void> {
+  const bytes =
+    attachment.contentEncoding === AttachmentContentEncoding.BASE64
+      ? Buffer.from(attachment.body, 'base64')
+      : Buffer.from(attachment.body, 'utf-8');
+  const ext = mimeToExt(attachment.mediaType);
+  const hash = await hashBytes(new Uint8Array(bytes));
+
+  const filename = `${hash}.${ext}`;
+  const filepath = join(context.artifactDir, filename);
+
+  if (existsSync(filepath)) {
+    const now = new Date();
+    await utimes(filepath, now, now);
+  } else {
+    await writeFile(filepath, bytes);
+  }
+
+  const testCaseStartedId = attachment.testCaseStartedId;
+  const testStepId = attachment.testStepId;
+  if (!testCaseStartedId || !testStepId) return;
+
+  const testEntry = context.testMap.get(testCaseStartedId);
+  if (!testEntry) return;
+
+  const stepIndex = testEntry.stepIndexByTestStepId.get(testStepId);
+  if (stepIndex === undefined) return;
+
+  insertArtifact(context.db, uuidv4(), testEntry.testId, stepIndex, filename);
+}
+
+function handleAttachment(attachment: NonNullable<Envelope['attachment']>, context: RecorderContext): void {
+  void persistAttachment(attachment, context).catch(() => {});
+}
+
+function handleEnvelope(envelope: Envelope, context: RecorderContext): void {
+  if (envelope.gherkinDocument) {
+    handleGherkinDocument(envelope.gherkinDocument, context);
+    return;
+  }
+  if (envelope.pickle) {
+    handlePickle(envelope.pickle, context);
+    return;
+  }
+  if (envelope.testCase) {
+    handleTestCase(envelope.testCase, context);
+    return;
+  }
+  if (envelope.testCaseStarted) {
+    handleTestCaseStarted(envelope.testCaseStarted, context);
+    return;
+  }
+  if (envelope.testStepFinished) {
+    handleTestStepFinished(envelope.testStepFinished, context);
+    return;
+  }
+  if (envelope.testCaseFinished) {
+    handleTestCaseFinished(envelope.testCaseFinished, context);
+    return;
+  }
+  if (envelope.attachment) {
+    handleAttachment(envelope.attachment, context);
+  }
+}
+
+export function startStoreRecorder({ on, directory }: { on: OnMessage; directory?: string }): void {
+  const context = createRecorderContext(directory);
+  on('message', (envelope: Envelope) => handleEnvelope(envelope, context));
 }
 
 type StorePluginOptions = {
