@@ -26,35 +26,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 const DEFAULT_DIR = '.letsrunit';
 
-function ensureDirectory(path: string): void {
-  if (existsSync(path)) {
-    if (statSync(path).isDirectory()) return;
-    throw new Error(`Path "${path}" exists and is not a directory`);
-  }
-
-  mkdirSync(path, { recursive: true });
-}
-
-function mimeToExt(mediaType: string): string {
-  const map: Record<string, string> = {
-    'image/png': 'png',
-    'image/jpeg': 'jpg',
-    'image/gif': 'gif',
-    'image/webp': 'webp',
-    'text/html': 'html',
-    'text/plain': 'txt',
-    'application/json': 'json',
-    'application/pdf': 'pdf',
-  };
-  return map[mediaType] ?? 'bin';
-}
-
-async function hashBytes(bytes: Uint8Array): Promise<string> {
-  const buffer = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
-  const digest = await crypto.subtle.digest('SHA-256', buffer);
-  return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('');
-}
-
 type AstStep = {
   keyword: string;
 };
@@ -141,6 +112,35 @@ type RecorderContext = {
   testMap: Map<string, TestEntry>;
   pendingFailures: Map<string, FailureInfo>;
 };
+
+function ensureDirectory(path: string): void {
+  if (existsSync(path)) {
+    if (statSync(path).isDirectory()) return;
+    throw new Error(`Path "${path}" exists and is not a directory`);
+  }
+
+  mkdirSync(path, { recursive: true });
+}
+
+function mimeToExt(mediaType: string): string {
+  const map: Record<string, string> = {
+    'image/png': 'png',
+    'image/jpeg': 'jpg',
+    'image/gif': 'gif',
+    'image/webp': 'webp',
+    'text/html': 'html',
+    'text/plain': 'txt',
+    'application/json': 'json',
+    'application/pdf': 'pdf',
+  };
+  return map[mediaType] ?? 'bin';
+}
+
+async function hashBytes(bytes: Uint8Array): Promise<string> {
+  const buffer = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
+  const digest = await crypto.subtle.digest('SHA-256', buffer);
+  return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('');
+}
 
 function normalizeScenarioTemplateStepIds(scenario: GherkinScenarioNode): string[] {
   const normalized = normalizeSteps(
