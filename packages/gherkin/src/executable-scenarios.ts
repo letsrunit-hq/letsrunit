@@ -81,7 +81,7 @@ function toStepInputs(pickle: PickleEnvelope['pickle'], astKeywords: Map<string,
   }));
 }
 
-function parseEnvelopes(input: string, uri: string): Envelope[] {
+function parseEnvelopes(input: string, uri: string): ReadonlyArray<Envelope> {
   return generateMessages(input, uri, SourceMediaType.TEXT_X_CUCUMBER_GHERKIN_PLAIN, {
     newId: () => newId(),
     includeGherkinDocument: true,
