@@ -1,8 +1,5 @@
-import { AttachmentContentEncoding, TestStepResultStatus, type Envelope } from '@cucumber/messages';
-import { execSync } from 'node:child_process';
-import { existsSync, mkdirSync, statSync } from 'node:fs';
-import { utimes, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { AttachmentContentEncoding, type Envelope, TestStepResultStatus } from '@cucumber/messages';
+import { normalizeSteps } from '@letsrunit/gherkin';
 import {
   computeExampleRowId,
   computeFeatureId,
@@ -20,10 +17,13 @@ import {
   upsertScenarioStep,
   upsertStep,
 } from '@letsrunit/store';
-import { normalizeSteps } from '@letsrunit/gherkin';
+import { execSync } from 'node:child_process';
+import { existsSync, mkdirSync, statSync } from 'node:fs';
+import { utimes, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { v4 as uuidv4 } from 'uuid';
 
-export const DEFAULT_DIR = '.letsrunit';
+const DEFAULT_DIR = '.letsrunit';
 
 function ensureDirectory(path: string): void {
   if (existsSync(path)) {
@@ -126,6 +126,21 @@ interface GherkinScenarioNode {
   }>;
 }
 
+type OnMessage = (key: 'message', handler: (value: Envelope) => void) => void;
+
+type RecorderContext = {
+  db: ReturnType<typeof openStore>;
+  runId: string;
+  artifactDir: string;
+  astStepMap: Map<string, AstStep>;
+  featureAstByUri: Map<string, FeatureAstMeta>;
+  featureBuckets: Map<string, FeatureBucket>;
+  pickleMap: Map<string, PickleEntry>;
+  testCaseMap: Map<string, TestCaseEntry>;
+  testMap: Map<string, TestEntry>;
+  pendingFailures: Map<string, FailureInfo>;
+};
+
 function normalizeScenarioTemplateStepIds(scenario: GherkinScenarioNode): string[] {
   const normalized = normalizeSteps(
     (scenario.steps ?? []).map((step) => ({
@@ -227,21 +242,6 @@ function registerScenarioAst(
   }
 }
 
-export type OnMessage = (key: 'message', handler: (value: Envelope) => void) => void;
-
-type RecorderContext = {
-  db: ReturnType<typeof openStore>;
-  runId: string;
-  artifactDir: string;
-  astStepMap: Map<string, AstStep>;
-  featureAstByUri: Map<string, FeatureAstMeta>;
-  featureBuckets: Map<string, FeatureBucket>;
-  pickleMap: Map<string, PickleEntry>;
-  testCaseMap: Map<string, TestCaseEntry>;
-  testMap: Map<string, TestEntry>;
-  pendingFailures: Map<string, FailureInfo>;
-};
-
 function createRecorderContext(directory?: string): RecorderContext {
   const runDir = directory ?? DEFAULT_DIR;
   const artifactDir = join(runDir, 'artifacts');
@@ -289,12 +289,7 @@ function handleGherkinDocument(doc: NonNullable<Envelope['gherkinDocument']>, co
     }
 
     if (child.scenario) {
-      registerScenarioAst(
-        child.scenario,
-        scenarioByAstId,
-        exampleRowByAstId,
-        context.astStepMap,
-      );
+      registerScenarioAst(child.scenario, scenarioByAstId, exampleRowByAstId, context.astStepMap);
     }
 
     if (child.rule) {
@@ -403,10 +398,7 @@ function handleTestCase(testCase: NonNullable<Envelope['testCase']>, context: Re
   });
 }
 
-function handleTestCaseStarted(
-  started: NonNullable<Envelope['testCaseStarted']>,
-  context: RecorderContext,
-): void {
+function handleTestCaseStarted(started: NonNullable<Envelope['testCaseStarted']>, context: RecorderContext): void {
   const testCaseEntry = context.testCaseMap.get(started.testCaseId);
   if (!testCaseEntry) return;
 
@@ -420,15 +412,12 @@ function handleTestCaseStarted(
   });
 }
 
-function handleTestStepFinished(
-  finished: NonNullable<Envelope['testStepFinished']>,
-  context: RecorderContext,
-): void {
+function handleTestStepFinished(finished: NonNullable<Envelope['testStepFinished']>, context: RecorderContext): void {
   const status = finished.testStepResult.status;
   const isFailing =
-    status === TestStepResultStatus.FAILED
-    || status === TestStepResultStatus.AMBIGUOUS
-    || status === TestStepResultStatus.UNDEFINED;
+    status === TestStepResultStatus.FAILED ||
+    status === TestStepResultStatus.AMBIGUOUS ||
+    status === TestStepResultStatus.UNDEFINED;
 
   if (isFailing && !context.pendingFailures.has(finished.testCaseStartedId)) {
     const testEntry = context.testMap.get(finished.testCaseStartedId);
@@ -442,10 +431,7 @@ function handleTestStepFinished(
   }
 }
 
-function handleTestCaseFinished(
-  finished: NonNullable<Envelope['testCaseFinished']>,
-  context: RecorderContext,
-): void {
+function handleTestCaseFinished(finished: NonNullable<Envelope['testCaseFinished']>, context: RecorderContext): void {
   const failure = context.pendingFailures.get(finished.testCaseStartedId);
   context.pendingFailures.delete(finished.testCaseStartedId);
 
@@ -535,7 +521,7 @@ function handleEnvelope(envelope: Envelope, context: RecorderContext): void {
   }
 }
 
-export function startStoreRecorder({ on, directory }: { on: OnMessage; directory?: string }): void {
+function startStoreRecorder({ on, directory }: { on: OnMessage; directory?: string }): void {
   const context = createRecorderContext(directory);
   on('message', (envelope: Envelope) => handleEnvelope(envelope, context));
 }
