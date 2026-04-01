@@ -1,6 +1,6 @@
 import { AttachmentContentEncoding, TestStepResultStatus, type Envelope } from '@cucumber/messages';
 import { execSync } from 'node:child_process';
-import { existsSync, mkdirSync } from 'node:fs';
+import { existsSync, mkdirSync, statSync } from 'node:fs';
 import { utimes, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
@@ -24,6 +24,15 @@ import { normalizeSteps } from '@letsrunit/gherkin';
 import { v4 as uuidv4 } from 'uuid';
 
 export const DEFAULT_DIR = '.letsrunit';
+
+function ensureDirectory(path: string): void {
+  if (existsSync(path)) {
+    if (statSync(path).isDirectory()) return;
+    throw new Error(`Path "${path}" exists and is not a directory`);
+  }
+
+  mkdirSync(path, { recursive: true });
+}
 
 function mimeToExt(mediaType: string): string {
   const map: Record<string, string> = {
@@ -223,8 +232,8 @@ export type OnMessage = (key: 'message', handler: (value: Envelope) => void) => 
 export function startStoreRecorder({ on, directory }: { on: OnMessage; directory?: string }): void {
   const runDir = directory ?? DEFAULT_DIR;
   const artifactDir = join(runDir, 'artifacts');
-  mkdirSync(runDir, { recursive: true });
-  mkdirSync(artifactDir, { recursive: true });
+  ensureDirectory(runDir);
+  ensureDirectory(artifactDir);
 
   const dbPath = join(runDir, 'letsrunit.db');
   const db = openStore(dbPath);
