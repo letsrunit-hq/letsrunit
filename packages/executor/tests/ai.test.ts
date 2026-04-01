@@ -4,6 +4,7 @@ import { analyseEmail } from '../src/ai/analyse-email';
 import { assessPage } from '../src/ai/assess-page';
 import { describePage } from '../src/ai/describe-page';
 import { detectPageChanges } from '../src/ai/detect-page-changes';
+import { explainFailure } from '../src/ai/explain-failure';
 import { refineSuggestion } from '../src/ai/refine-suggestion';
 
 vi.mock('@letsrunit/ai');
@@ -121,6 +122,23 @@ describe('AI Functions', () => {
         { html: 'h2', url: 'https://example.com' },
       );
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('explainFailure', () => {
+    it('should explain failure', async () => {
+      vi.mocked(generate).mockResolvedValue({
+        update: 'test',
+        reason: 'Reason',
+        advice: 'Advice',
+      });
+      const result = await explainFailure('Input');
+      expect(result).toEqual({
+        update: 'test',
+        reason: 'Reason',
+        advice: 'Advice',
+      });
+      expect(generate).toHaveBeenCalledWith(expect.stringContaining('Example response for a test update:'), 'Input', expect.any(Object));
     });
   });
 });

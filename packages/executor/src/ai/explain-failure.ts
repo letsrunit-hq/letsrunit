@@ -15,19 +15,19 @@ Classify the failure as one of:
 - "test": update required in the test
 - "code": likely product regression
 
-Use this style:
+Example response for a test update:
+\{
+  "update": "test",
+  "reason": "A new checkbox labeled \"I agree to the terms & conditions\" has been added to the registration form. This checkbox is required and must be checked before the form can be submitted.",
+  "advice": "Update your test to check this box before clicking \"Register\"."
+\}
 
-Update required
-A new checkbox labeled "I agree to the terms & conditions" has been added to the registration form. This checkbox is required and must be checked before the form can be submitted.
-
-Update your test to check this box before clicking "Register".
-
----
-
-Possible regression
-The "Proceed to payment" button was removed from the cart page. With this button gone, there's no clear way for users to continue to payment from the cart.
-
-This appears to be a regression. The button should be restored, or the checkout flow has fundamentally changed.
+Example response for a product regression:
+\{
+  "update": "code",
+  "reason": "The \"Proceed to payment\" button was removed from the cart page. With this button gone, there's no clear way for users to continue to payment from the cart.",
+  "advice": "This appears to be a regression. The button should be restored, or the checkout flow has fundamentally changed."
+\}
 
 Focus on user-visible behavior. Be precise and short.
 `;
