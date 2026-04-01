@@ -17,6 +17,7 @@ import {
   upsertScenarioStep,
   upsertStep,
 } from '@letsrunit/store';
+import { chain } from '@letsrunit/utils';
 import { execSync } from 'node:child_process';
 import { existsSync, mkdirSync, statSync } from 'node:fs';
 import { utimes, writeFile } from 'node:fs/promises';
@@ -272,10 +273,13 @@ function createRecorderContext(directory?: string): RecorderContext {
   };
 }
 
-function handleGherkinDocument(doc: NonNullable<Envelope['gherkinDocument']>, context: RecorderContext): void {
+function handleGherkinDocument(envelope: Envelope, context: RecorderContext): boolean {
+  const doc = envelope.gherkinDocument;
+  if (!doc) return false;
+
   const uri = doc.uri ?? '';
   const feature = doc.feature;
-  if (!feature) return;
+  if (!feature) return true;
 
   const scenarioByAstId = new Map<string, ScenarioAstMeta>();
   const exampleRowByAstId = new Map<string, ExampleRowMeta>();
@@ -323,9 +327,13 @@ function handleGherkinDocument(doc: NonNullable<Envelope['gherkinDocument']>, co
   });
 
   getFeatureBucket(context.featureBuckets, uri, feature.name ?? '');
+  return true;
 }
 
-function handlePickle(pickle: NonNullable<Envelope['pickle']>, context: RecorderContext): void {
+function handlePickle(envelope: Envelope, context: RecorderContext): boolean {
+  const pickle = envelope.pickle;
+  if (!pickle) return false;
+
   const featureMeta = context.featureAstByUri.get(pickle.uri);
   const bucket = getFeatureBucket(context.featureBuckets, pickle.uri, featureMeta?.name ?? '');
 
@@ -372,14 +380,18 @@ function handlePickle(pickle: NonNullable<Envelope['pickle']>, context: Recorder
 
   context.pickleMap.set(pickle.id, entry);
   bucket.pickles.push(entry);
+  return true;
 }
 
-function handleTestCase(testCase: NonNullable<Envelope['testCase']>, context: RecorderContext): void {
+function handleTestCase(envelope: Envelope, context: RecorderContext): boolean {
+  const testCase = envelope.testCase;
+  if (!testCase) return false;
+
   const pickleEntry = context.pickleMap.get(testCase.pickleId);
-  if (!pickleEntry) return;
+  if (!pickleEntry) return true;
 
   const bucket = context.featureBuckets.get(pickleEntry.uri);
-  if (!bucket) return;
+  if (!bucket) return true;
 
   ensureFeaturePersisted(context.db, bucket);
 
@@ -396,11 +408,15 @@ function handleTestCase(testCase: NonNullable<Envelope['testCase']>, context: Re
     scenarioId: pickleEntry.scenarioId,
     stepIndexByTestStepId,
   });
+  return true;
 }
 
-function handleTestCaseStarted(started: NonNullable<Envelope['testCaseStarted']>, context: RecorderContext): void {
+function handleTestCaseStarted(envelope: Envelope, context: RecorderContext): boolean {
+  const started = envelope.testCaseStarted;
+  if (!started) return false;
+
   const testCaseEntry = context.testCaseMap.get(started.testCaseId);
-  if (!testCaseEntry) return;
+  if (!testCaseEntry) return true;
 
   const testId = uuidv4();
   insertTest(context.db, testId, context.runId, testCaseEntry.scenarioId, Date.now());
@@ -410,9 +426,13 @@ function handleTestCaseStarted(started: NonNullable<Envelope['testCaseStarted']>
     scenarioId: testCaseEntry.scenarioId,
     stepIndexByTestStepId: testCaseEntry.stepIndexByTestStepId,
   });
+  return true;
 }
 
-function handleTestStepFinished(finished: NonNullable<Envelope['testStepFinished']>, context: RecorderContext): void {
+function handleTestStepFinished(envelope: Envelope, context: RecorderContext): boolean {
+  const finished = envelope.testStepFinished;
+  if (!finished) return false;
+
   const status = finished.testStepResult.status;
   const isFailing =
     status === TestStepResultStatus.FAILED ||
@@ -422,16 +442,20 @@ function handleTestStepFinished(finished: NonNullable<Envelope['testStepFinished
   if (isFailing && !context.pendingFailures.has(finished.testCaseStartedId)) {
     const testEntry = context.testMap.get(finished.testCaseStartedId);
     const failedStepIndex = testEntry?.stepIndexByTestStepId.get(finished.testStepId);
-    if (failedStepIndex === undefined) return;
+    if (failedStepIndex === undefined) return true;
 
     context.pendingFailures.set(finished.testCaseStartedId, {
       failedStepIndex,
       error: finished.testStepResult.message,
     });
   }
+  return true;
 }
 
-function handleTestCaseFinished(finished: NonNullable<Envelope['testCaseFinished']>, context: RecorderContext): void {
+function handleTestCaseFinished(envelope: Envelope, context: RecorderContext): boolean {
+  const finished = envelope.testCaseFinished;
+  if (!finished) return false;
+
   const failure = context.pendingFailures.get(finished.testCaseStartedId);
   context.pendingFailures.delete(finished.testCaseStartedId);
 
@@ -451,6 +475,7 @@ function handleTestCaseFinished(finished: NonNullable<Envelope['testCaseFinished
     failure?.failedStepIndex,
     failure?.error,
   );
+  return true;
 }
 
 async function persistAttachment(
@@ -487,43 +512,28 @@ async function persistAttachment(
   insertArtifact(context.db, uuidv4(), testEntry.testId, stepIndex, filename);
 }
 
-function handleAttachment(attachment: NonNullable<Envelope['attachment']>, context: RecorderContext): void {
+function handleAttachment(envelope: Envelope, context: RecorderContext): boolean {
+  const attachment = envelope.attachment;
+  if (!attachment) return false;
   void persistAttachment(attachment, context).catch(() => {});
+  return true;
 }
 
-function handleEnvelope(envelope: Envelope, context: RecorderContext): void {
-  if (envelope.gherkinDocument) {
-    handleGherkinDocument(envelope.gherkinDocument, context);
-    return;
-  }
-  if (envelope.pickle) {
-    handlePickle(envelope.pickle, context);
-    return;
-  }
-  if (envelope.testCase) {
-    handleTestCase(envelope.testCase, context);
-    return;
-  }
-  if (envelope.testCaseStarted) {
-    handleTestCaseStarted(envelope.testCaseStarted, context);
-    return;
-  }
-  if (envelope.testStepFinished) {
-    handleTestStepFinished(envelope.testStepFinished, context);
-    return;
-  }
-  if (envelope.testCaseFinished) {
-    handleTestCaseFinished(envelope.testCaseFinished, context);
-    return;
-  }
-  if (envelope.attachment) {
-    handleAttachment(envelope.attachment, context);
-  }
-}
+const handleEnvelope = chain<[Envelope, RecorderContext]>(
+  handleGherkinDocument,
+  handlePickle,
+  handleTestCase,
+  handleTestCaseStarted,
+  handleTestStepFinished,
+  handleTestCaseFinished,
+  handleAttachment,
+);
 
 function startStoreRecorder({ on, directory }: { on: OnMessage; directory?: string }): void {
   const context = createRecorderContext(directory);
-  on('message', (envelope: Envelope) => handleEnvelope(envelope, context));
+  on('message', (envelope: Envelope) => {
+    void handleEnvelope(envelope, context);
+  });
 }
 
 type StorePluginOptions = {

@@ -52,6 +52,7 @@
     "@letsrunit/gherkin": "workspace:*",
     "@letsrunit/playwright": "workspace:*",
     "@letsrunit/store": "workspace:*",
+    "@letsrunit/utils": "workspace:*",
     "@playwright/test": "^1.57.0",
     "uuid": "^13.0.0"
   },
