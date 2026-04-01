@@ -7,7 +7,7 @@ const BDD_IMPORT = '@letsrunit/cucumber';
 const CUCUMBER_CONFIG = `export default {
   require: ['features/support/**/*.js'],
   format: ['progress'],
-  plugin: ['@letsrunit/cucumber/dist/store.js'],
+  plugin: ['@letsrunit/cucumber/store'],
   pluginOptions: {
     letsrunitStore: {
       directory: '.letsrunit/artifacts',
