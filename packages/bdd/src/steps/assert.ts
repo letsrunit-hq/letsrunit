@@ -5,7 +5,7 @@ import { expectOrNot } from '../utils/test-helpers';
 const WAIT_TIMEOUT = 5000;
 
 export const see = Then(
-  'The page {contains|does not contain} {locator}',
+  'the page {contains|does not contain} {locator}',
   async function (visible: boolean, selector: string) {
     const el = await fuzzyLocator(this.page, selector);
     await expectOrNot(el, visible).toBeVisible({ timeout: WAIT_TIMEOUT });

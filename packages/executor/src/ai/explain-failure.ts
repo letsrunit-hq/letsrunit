@@ -8,7 +8,7 @@ Classify the failure as:
 - "code" when the failed step is caused by broken or missing functionality, or when the user can no longer complete the expected flow.
 
 The advise should match the classification. If the classification is to update the test, don't advise to update the code and visa-versa.
-The advise should be concrete, so no 'for example'.
+The advise must be a single concrete action to solve the failure without examples or alternatives.
 `;
 
 const ResponseSchema = z.object({

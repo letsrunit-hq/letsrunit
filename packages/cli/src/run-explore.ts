@@ -55,7 +55,7 @@ export async function runExplore(info: AppInfo, actions: Action[], storagePath?:
   const { stdout } = process;
 
   while (actions.length > 0) {
-    stdout.write(`\n\x1b[1m${info.title}\x1b[0m\n`);
+    stdout.write(`\n\x1b[1m${info.name}\x1b[0m\n`);
     stdout.write('What do you want to test? Choose one of the following options:\n');
 
     let count = 1;

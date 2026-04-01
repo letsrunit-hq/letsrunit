@@ -16,16 +16,19 @@ export async function runExplain(opts: { db?: string; artifacts?: string }) {
   }
 
   for (const item of result.explanations) {
-    stdout.write(`\n\x1b[1m${item.featurePath} :: ${item.scenarioName}\x1b[0m\n`);
-    stdout.write(`${item.steps}\n\n`);
-    stdout.write(`\x1b[1m${item.updateMessage}\x1b[0m\n`);
-    stdout.write(`${item.reason}\n`);
-    stdout.write(`💡 ${item.advice}\n`);
+    const color = item.update === 'test' ? '\x1b[33m' : '\x1b[31m';
+
+    stdout.write('\n');
+    stdout.write(`\x1b[1m${item.featurePath} :: ${item.scenarioName}\x1b[0m\n`);
+    stdout.write(` ${item.steps.replaceAll('\n', '\n ')}\n\n`);
+    stdout.write(` ${color}\x1b[1m${item.updateMessage}\x1b[0m\n`);
+    stdout.write(` ${item.reason.replaceAll('\n', '\n ')}\n`);
+    stdout.write(` 💡 ${item.advice.replaceAll('\n', '\n ')}\n`);
   }
 
   for (const err of result.errors) {
     stderr.write(`\n\x1b[31m${err.featurePath} :: ${err.scenarioName}\x1b[0m\n`);
-    stderr.write(`Error: ${err.error}\n`);
+    stderr.write(` ${err.error.replaceAll('\n', '\n ')}\n`);
   }
 
   process.exit(result.errors.length > 0 ? 1 : 0);

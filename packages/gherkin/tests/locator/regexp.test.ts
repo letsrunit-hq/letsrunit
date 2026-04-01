@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { locatorRegexp } from '../../src/locator';
 
 // These tests ensure the lexical/grammar regexp accepts the same
@@ -29,6 +29,9 @@ describe('locatorRegexp', () => {
     'field "Email" within `form#signup`',
     'section within `form#main`',
     'section with text "Hello" within `css=.foo >> nth(2)`',
+    'pager',
+    'the pager',
+    'pageable',
   ];
 
   it.each(positives)(`accepts: %s`, (input) => {
@@ -46,6 +49,9 @@ describe('locatorRegexp', () => {
     'text "Hello',
     // missing selector after within
     'field "Email" within',
+    // page exclusion
+    'page',
+    'the page',
   ];
 
   it.each(negatives)(`rejects: %s`, (input) => {
