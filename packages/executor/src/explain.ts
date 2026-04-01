@@ -1,6 +1,6 @@
 import { executableScenarioIds } from '@letsrunit/gherkin';
 import { unifiedHtmlDiff } from '@letsrunit/playwright';
-import { findArtifacts, findLastRun, findLastTest, openStore, type LastRunTest } from '@letsrunit/store';
+import { findArtifacts, findLastRun, findLastTest, type LastRunTest, openStore } from '@letsrunit/store';
 import { statusSymbol } from '@letsrunit/utils';
 import { readFileSync } from 'node:fs';
 import { dirname, isAbsolute, join } from 'node:path';
@@ -18,6 +18,7 @@ export interface ExplainScenario {
   steps: string;
   failureMessage: string;
   update: 'test' | 'code';
+  updateMessage: string;
   reason: string;
   advice: string;
 }
@@ -60,9 +61,7 @@ function renderStepSymbol(index: number, failedStepIndex: number): string {
 }
 
 function renderScenarioSteps(test: LastRunTest, failedStepIndex: number): string {
-  return test.steps
-    .map((step) => `${renderStepSymbol(step.index, failedStepIndex)} ${step.text}`)
-    .join('\n');
+  return test.steps.map((step) => `${renderStepSymbol(step.index, failedStepIndex)} ${step.text}`).join('\n');
 }
 
 function pickLatestHtmlFilename(filenames: Array<{ filename: string }>): string | null {
@@ -72,7 +71,7 @@ function pickLatestHtmlFilename(filenames: Array<{ filename: string }>): string 
 }
 
 function asHeading(update: ExplainFailureResponse['update']): string {
-  return update === 'test' ? 'Update required' : 'Possible regression';
+  return update === 'test' ? 'Test outdated' : 'Possible regression';
 }
 
 function buildPrompt(test: LastRunTest, renderedSteps: string, failureMessage: string, diff: string): string {
@@ -181,7 +180,8 @@ export default async function explain(options: ExplainOptions = {}): Promise<Exp
           steps: renderedSteps,
           failureMessage,
           update: ai.update,
-          reason: `${asHeading(ai.update)}\n${ai.reason}`,
+          updateMessage: asHeading(ai.update),
+          reason: ai.reason,
           advice: ai.advice,
         });
       } catch (error) {

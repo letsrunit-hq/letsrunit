@@ -17,6 +17,6 @@ describe('explainFailure', () => {
       reason: 'Reason',
       advice: 'Advice',
     });
-    expect(generate).toHaveBeenCalledWith(expect.stringContaining('Example response for a test update:'), 'Input', expect.any(Object));
+    expect(generate).toHaveBeenCalledWith(expect.stringContaining('Classify the failure as:'), 'Input', expect.any(Object));
   });
 });

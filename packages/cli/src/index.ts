@@ -1,4 +1,4 @@
-import { explain as explainRun, explore, generate, refineSuggestion, run } from '@letsrunit/executor';
+import { explore, generate, refineSuggestion, run } from '@letsrunit/executor';
 import { makeFeature } from '@letsrunit/gherkin';
 import { CliSink, Journal } from '@letsrunit/journal';
 import { getMailbox } from '@letsrunit/mailbox';
@@ -9,6 +9,7 @@ import { readFileSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { runExplain } from './run-explain';
 import { runExplore } from './run-explore';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -148,35 +149,7 @@ program
   .option('--db <path>', 'Path to letsrunit SQLite DB')
   .option('--artifacts <path>', 'Path to letsrunit artifacts directory')
   .action(async (opts: { db?: string; artifacts?: string }) => {
-    const result = await explainRun({ dbPath: opts.db, artifactsDir: opts.artifacts });
-
-    if (!result.hasRun) {
-      console.error('No letsrunit run found.');
-      process.exit(1);
-    }
-
-    if (result.totalFailed === 0) {
-      console.log('No failures in latest run; nothing to explain.');
-      process.exit(0);
-    }
-
-    for (const item of result.explanations) {
-      console.log(`${item.featurePath} :: ${item.scenarioName}`);
-      console.log(item.steps);
-      console.log('');
-      console.log(item.reason);
-      console.log('');
-      console.log(item.advice);
-      console.log('');
-    }
-
-    for (const err of result.errors) {
-      console.error(`${err.featurePath} :: ${err.scenarioName}`);
-      console.error(`Error: ${err.error}`);
-      console.error('');
-    }
-
-    process.exit(result.errors.length > 0 ? 1 : 0);
+    await runExplain(opts);
   });
 
 program.parse();

@@ -121,7 +121,8 @@ describe('explain', () => {
     expect(result.totalFailed).toBe(1);
     expect(result.errors).toHaveLength(0);
     expect(result.explanations).toHaveLength(1);
-    expect(result.explanations[0].reason).toContain('Possible regression');
+    expect(result.explanations[0].updateMessage).toContain('Possible regression');
+    expect(result.explanations[0].reason).toBe('The checkout CTA disappeared from cart.');
     expect(result.explanations[0].steps).toContain('✓ Given I am on "/cart"');
     expect(result.explanations[0].steps).toContain('✘ When I click "Proceed to payment"');
     expect(result.explanations[0].steps).toContain('○ Then I should be on "/payment"');
