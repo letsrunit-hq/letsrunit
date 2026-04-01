@@ -38,6 +38,8 @@ export default {
 
 A Cucumber plugin that listens to the message stream and writes structured run data to `.letsrunit/letsrunit.db` (via `@letsrunit/store`). It also saves all step attachments (screenshots, HTML) as content-addressed files under `.letsrunit/artifacts/`.
 
+`pluginOptions.letsrunitStore.directory` is the root letsrunit directory (for example `.letsrunit`), not the artifacts directory.
+
 Recorded data per run:
 - Session with the current git commit
 - Feature, scenario, and step records (deterministic UUIDs stable across re-runs)
@@ -52,7 +54,7 @@ export default {
     plugin: ['@letsrunit/cucumber/store'],
     pluginOptions: {
       letsrunitStore: {
-        directory: '.letsrunit/artifacts',
+        directory: '.letsrunit',
       },
     },
     // ...

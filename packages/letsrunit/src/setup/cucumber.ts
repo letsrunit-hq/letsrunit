@@ -9,7 +9,7 @@ const CUCUMBER_CONFIG = `export default {
   plugin: ['@letsrunit/cucumber/store'],
   pluginOptions: {
     letsrunitStore: {
-      directory: '.letsrunit/artifacts',
+      directory: '.letsrunit',
     },
   },
   worldParameters: {

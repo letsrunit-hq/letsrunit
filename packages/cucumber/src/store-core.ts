@@ -23,7 +23,7 @@ import {
 import { normalizeSteps } from '@letsrunit/gherkin';
 import { v4 as uuidv4 } from 'uuid';
 
-export const DEFAULT_DIR = '.letsrunit/artifacts';
+export const DEFAULT_DIR = '.letsrunit';
 
 function mimeToExt(mediaType: string): string {
   const map: Record<string, string> = {
@@ -221,10 +221,12 @@ function registerScenarioAst(
 export type OnMessage = (key: 'message', handler: (value: Envelope) => void) => void;
 
 export function startStoreRecorder({ on, directory }: { on: OnMessage; directory?: string }): void {
-  const artifactDir = directory ?? DEFAULT_DIR;
+  const runDir = directory ?? DEFAULT_DIR;
+  const artifactDir = join(runDir, 'artifacts');
+  mkdirSync(runDir, { recursive: true });
   mkdirSync(artifactDir, { recursive: true });
 
-  const dbPath = join(artifactDir, '../letsrunit.db');
+  const dbPath = join(runDir, 'letsrunit.db');
   const db = openStore(dbPath);
 
   const runId = uuidv4();
