@@ -10,9 +10,9 @@ npm install @letsrunit/cucumber
 yarn add @letsrunit/cucumber
 ```
 
-Cucumber CLI integration for letsrunit. It wires the `@letsrunit/bdd` step library into a Cucumber test suite and provides a formatter that persists run history and artifacts to the SQLite store.
+Cucumber CLI integration for letsrunit. It wires the `@letsrunit/bdd` step library into a Cucumber test suite and provides a plugin that persists run history and artifacts to the SQLite store.
 
-This package has two entry points.
+This package has three entry points.
 
 ## `@letsrunit/cucumber` — support file
 
@@ -34,9 +34,9 @@ export default {
 };
 ```
 
-## `@letsrunit/cucumber/store` — formatter
+## `@letsrunit/cucumber/store-plugin` — plugin (recommended)
 
-A Cucumber formatter that listens to the message stream and writes structured run data to `.letsrunit/letsrunit.db` (via `@letsrunit/store`). It also saves all step attachments (screenshots, HTML) as content-addressed files under `.letsrunit/artifacts/`.
+A Cucumber plugin that listens to the message stream and writes structured run data to `.letsrunit/letsrunit.db` (via `@letsrunit/store`). It also saves all step attachments (screenshots, HTML) as content-addressed files under `.letsrunit/artifacts/`.
 
 Recorded data per run:
 - Session with the current git commit
@@ -48,7 +48,29 @@ Recorded data per run:
 // cucumber.js
 export default {
   default: {
-    format: ['@letsrunit/cucumber/dist/store.js'],
+    format: ['progress'],
+    plugin: ['@letsrunit/cucumber/dist/store-plugin.js'],
+    pluginOptions: {
+      letsrunitStore: {
+        directory: '.letsrunit/artifacts',
+      },
+    },
+    // ...
+  },
+};
+```
+
+## `@letsrunit/cucumber/store` — formatter (legacy compatibility)
+
+Legacy formatter entrypoint. This still works, but it is not recommended when combined with console formatters such as `progress` because Cucumber treats formatter entries without `:path` as stdout candidates and only keeps one stdout formatter.
+
+If you must use it, always set a formatter path:
+
+```js
+// cucumber.js
+export default {
+  default: {
+    format: ['progress', '@letsrunit/cucumber/dist/store.js:.letsrunit/artifacts'],
     // ...
   },
 };
