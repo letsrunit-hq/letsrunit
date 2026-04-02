@@ -54,14 +54,26 @@ function isFailed(test: LastRunTest): boolean {
   return test.failedStepIndex !== null || test.status === 'failed';
 }
 
-function renderStepSymbol(index: number, failedStepIndex: number): string {
-  if (index < failedStepIndex) return statusSymbol('success');
-  if (index === failedStepIndex) return statusSymbol('failure');
-  return statusSymbol();
+function colorize(status: string, text: string): string {
+  switch (status) {
+    case 'success':
+    case 'skipped':
+      return `\x1b[90m${text}\x1b[0m`;
+    case 'failure':
+      return `\x1b[31m${text}\x1b[0m`;
+    default:
+      return text;
+  }
 }
 
 function renderScenarioSteps(test: LastRunTest, failedStepIndex: number): string {
-  return test.steps.map((step) => `${renderStepSymbol(step.index, failedStepIndex)} ${step.text}`).join('\n');
+  return test.steps
+    .map((step) => {
+      const status = step.index < failedStepIndex ? 'success' : step.index === failedStepIndex ? 'failure' : 'skipped';
+      const symbol = statusSymbol(status);
+      return colorize(status, `${symbol} ${step.text}`);
+    })
+    .join('\n');
 }
 
 function pickLatestHtmlFilename(filenames: Array<{ filename: string }>): string | null {

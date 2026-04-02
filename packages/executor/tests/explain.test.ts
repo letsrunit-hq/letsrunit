@@ -123,9 +123,9 @@ describe('explain', () => {
     expect(result.explanations).toHaveLength(1);
     expect(result.explanations[0].updateMessage).toContain('Possible regression');
     expect(result.explanations[0].reason).toBe('The checkout CTA disappeared from cart.');
-    expect(result.explanations[0].steps).toContain('✓ Given I am on "/cart"');
-    expect(result.explanations[0].steps).toContain('✘ When I click "Proceed to payment"');
-    expect(result.explanations[0].steps).toContain('○ Then I should be on "/payment"');
+    expect(result.explanations[0].steps).toContain('✔ Given I am on "/cart"');
+    expect(result.explanations[0].steps).toContain('✖ When I click "Proceed to payment"');
+    expect(result.explanations[0].steps).toContain('- Then I should be on "/payment"');
   });
 
   it('reports scenario-changed error and continues', async () => {
