@@ -1,14 +1,18 @@
 import { describe, expect, it } from 'vitest';
 
-import { statusSymbol } from '../src/status-symbol';
+import { statusSymbol } from '../src';
 
 describe('statusSymbol', () => {
   it('returns check mark for success', () => {
-    expect(statusSymbol('success')).toBe('✓');
+    expect(statusSymbol('success')).toBe('✔');
   });
 
   it('returns cross mark for failure', () => {
-    expect(statusSymbol('failure')).toBe('✘');
+    expect(statusSymbol('failure')).toBe('✖');
+  });
+
+  it('returns circle for skipped status', () => {
+    expect(statusSymbol('skipped')).toBe('-');
   });
 
   it('returns circle for undefined or unknown status', () => {
