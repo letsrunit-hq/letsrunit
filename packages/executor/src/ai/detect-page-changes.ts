@@ -1,6 +1,6 @@
 import { generate } from '@letsrunit/ai';
 import { Journal } from '@letsrunit/journal';
-import { unifiedHtmlDiff } from '../../../playwright/src/unified-html-diff';
+import { unifiedHtmlDiff } from '@letsrunit/playwright';
 import { locatorRules } from './locator-rules';
 
 const PROMPT = `You analyze a diff of two HTML files. Your task is to detect the most significant user-visible changes and output 0 to 3 Playwright Gherkin steps using only these step definitions:
