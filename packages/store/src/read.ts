@@ -1,5 +1,5 @@
 import type { Database } from './db';
-import { fromIdBlob, toIdBlob } from './id-codec';
+import { fromIdBlob, toIdBlob } from './ids';
 
 export function findLastTest(
   db: Database,

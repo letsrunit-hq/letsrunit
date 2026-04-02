@@ -1,18 +1,21 @@
-import { describe, beforeEach, expect, it } from 'vitest';
-import { openStore } from '../src/db';
+import type { Database } from 'node-sqlite3-wasm';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
+  computeStepId,
+  finaliseTest,
+  findArtifacts,
+  findLastPassingBaseline,
+  findLastRun,
+  findLastTest,
+  insertArtifact,
   insertRun,
+  insertTest,
+  openStore,
   upsertFeature,
   upsertScenario,
-  upsertStep,
   upsertScenarioStep,
-  insertTest,
-  finaliseTest,
-  insertArtifact,
-} from '../src/write';
-import { findLastRun, findLastTest, findLastPassingBaseline, findArtifacts } from '../src/read';
-import { computeStepId } from '../src/ids';
-import type { Database } from 'node-sqlite3-wasm';
+  upsertStep,
+} from '../src';
 
 let db: Database;
 

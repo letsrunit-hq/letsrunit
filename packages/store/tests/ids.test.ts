@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
-  computeStepId,
-  computeScenarioId,
-  computeFeatureId,
-  computeRuleId,
-  computeOutlineId,
   computeExampleRowId,
-} from '../src/ids';
+  computeFeatureId,
+  computeOutlineId,
+  computeRuleId,
+  computeScenarioId,
+  computeStepId,
+} from '../src';
 
 describe('computeStepId', () => {
   it('returns the same ID for the same text', () => {

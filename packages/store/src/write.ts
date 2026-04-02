@@ -1,8 +1,13 @@
 import type { Database } from './db';
-import { toIdBlob } from './id-codec';
+
+import { toIdBlob } from './ids';
 
 export function insertRun(db: Database, id: string, gitCommit: string | null, startedAt: number): void {
-  db.run('INSERT OR IGNORE INTO runs (id, started_at, git_commit) VALUES (?, ?, ?)', [toIdBlob(id), startedAt, gitCommit]);
+  db.run('INSERT OR IGNORE INTO runs (id, started_at, git_commit) VALUES (?, ?, ?)', [
+    toIdBlob(id),
+    startedAt,
+    gitCommit,
+  ]);
 }
 
 export function upsertFeature(db: Database, id: string, path: string, name: string): void {

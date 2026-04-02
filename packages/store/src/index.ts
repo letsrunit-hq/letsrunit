@@ -1,4 +1,4 @@
-export { openStore } from './db.js';
+export { openStore } from './db';
 export {
   insertRun,
   upsertFeature,
@@ -8,7 +8,7 @@ export {
   insertTest,
   finaliseTest,
   insertArtifact,
-} from './write.js';
+} from './write';
 export {
   computeStepId,
   computeScenarioId,
@@ -16,6 +16,6 @@ export {
   computeRuleId,
   computeOutlineId,
   computeExampleRowId,
-} from './ids.js';
-export { findLastTest, findLastPassingBaseline, findArtifacts, findLastRun } from './read.js';
-export type { LastRun, LastRunTest, LastRunStep } from './read.js';
+} from './ids';
+export { findLastTest, findLastPassingBaseline, findArtifacts, findLastRun } from './read';
+export type { LastRun, LastRunTest, LastRunStep } from './read';
