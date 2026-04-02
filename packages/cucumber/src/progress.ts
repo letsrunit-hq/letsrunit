@@ -1,9 +1,9 @@
-import { computeScenarioId, computeStepId, findLastPassingBaseline, openStore } from '@letsrunit/store';
+import { formatterHelpers, type IFormatterOptions, ProgressFormatter as Base } from '@cucumber/cucumber';
 import { normalizeSteps } from '@letsrunit/gherkin';
-import { formatterHelpers, ProgressFormatter, type IFormatterOptions } from '@cucumber/cucumber';
+import { computeScenarioId, computeStepId, findLastPassingBaseline, openStore } from '@letsrunit/store';
 import { execSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { getConfiguredStoreDbPath } from './store-config';
 
 const STATUS_CHARACTER_MAPPING = new Map<string, string>([
   ['AMBIGUOUS', '✖'],
@@ -17,7 +17,8 @@ const STATUS_CHARACTER_MAPPING = new Map<string, string>([
 type ParsedStep = {
   keyword: string;
   text?: string;
-  result: { status: string; message?: string };
+  result: { status: StepStatus; message?: string };
+  attachments?: Array<{ body: string; mediaType: string; fileName?: string }>;
   argument?: {
     docString?: { content: string };
     dataTable?: { rows: ReadonlyArray<{ cells: ReadonlyArray<{ value: string }> }> };
@@ -34,7 +35,8 @@ type LastPassed = {
   line: string;
 };
 
-type LogIssuesParam = Parameters<ProgressFormatter['logIssues']>[0];
+type LogIssuesParam = Parameters<Base['logIssues']>[0];
+type StepStatus = Parameters<IFormatterOptions['colorFns']['forStatus']>[0];
 
 function isFailureStatus(status: string): boolean {
   return status === 'FAILED' || status === 'AMBIGUOUS' || status === 'UNDEFINED';
@@ -68,20 +70,16 @@ function shortCommit(commit: string): string {
   return commit.slice(0, 7);
 }
 
-function formatDistance(distance: number): string {
+function formatCommit(commit: string, distance: number): string {
+  if (distance === 0) return `${shortCommit(commit)} (HEAD)`;
+  
   const word = distance === 1 ? 'commit' : 'commits';
-  return `${distance} ${word} ago`;
+  return `${shortCommit(commit)}, ${distance} ${word} ago`;
 }
 
-function resolveLastPassedLine({
-  cwd,
-  scenarioId,
-}: {
-  cwd: string;
-  scenarioId: string;
-}): LastPassed | null {
-  const dbPath = process.env.LETSRUNIT_DB_PATH ?? join(cwd, '.letsrunit', 'letsrunit.db');
-  if (!existsSync(dbPath)) return null;
+function resolveLastPassedLine({ scenarioId }: { scenarioId: string }): LastPassed | null {
+  const dbPath = getConfiguredStoreDbPath();
+  if (!dbPath || !existsSync(dbPath)) return null;
 
   let db: ReturnType<typeof openStore> | undefined;
   try {
@@ -97,7 +95,7 @@ function resolveLastPassedLine({
       return { line: `Last passed: commit ${shortCommit(commit)}` };
     }
 
-    return { line: `Last passed: commit ${shortCommit(commit)}, ${formatDistance(distance)}` };
+    return { line: `Last passed: commit ${formatCommit(commit, distance)}` };
   } catch {
     return null;
   } finally {
@@ -131,6 +129,28 @@ function extractUrl(lines: string[]): string | undefined {
   return undefined;
 }
 
+function normalizeUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    return `${parsed.pathname}${parsed.search}${parsed.hash}` || '/';
+  } catch {
+    return url.trim();
+  }
+}
+
+function extractUrlFromAttachments(attachments?: Array<{ body: string; mediaType: string }>): string | undefined {
+  if (!attachments || attachments.length === 0) return undefined;
+
+  for (const attachment of attachments) {
+    if (attachment.mediaType === 'text/x-letsrunit-url' || attachment.mediaType === 'text/uri-list') {
+      const raw = attachment.body.trim();
+      if (raw) return normalizeUrl(raw);
+    }
+  }
+
+  return undefined;
+}
+
 function extractError(lines: string[]): string | undefined {
   const callLogIdx = lines.findIndex((line) => line.trim().startsWith('Call log:'));
   const stackIdx = lines.findIndex(isStackLine);
@@ -146,10 +166,9 @@ function extractError(lines: string[]): string | undefined {
 
   if (candidates.length > 0) return candidates[candidates.length - 1];
 
-  const fallback = lines
+  return lines
     .map((line) => line.trim())
     .find((line) => line.length > 0 && !isStackLine(line) && !line.startsWith('Call log:'));
-  return fallback;
 }
 
 export function extractFailureDetails(message?: string): FailureDetails {
@@ -170,25 +189,29 @@ function formatScenarioLine(
   return `${number}) Scenario: ${testCase.name}${location}\n`;
 }
 
-function formatStepLine(step: ParsedStep): string {
+function formatStepLine(step: ParsedStep, colorFns: IFormatterOptions['colorFns']): string {
   const char = STATUS_CHARACTER_MAPPING.get(step.result.status) ?? '?';
   const identifier = `${step.keyword}${step.text ?? ''}`;
-  const indent = step.result.status === 'SKIPPED' ? ' ' : '';
-  return `   ${indent}${char} ${identifier}\n`;
+  const line = `   ${char} ${identifier}`;
+  return `${colorFns.forStatus(step.result.status)(line)}\n`;
 }
 
-function formatFailureDetails(step: ParsedStep): string {
+function formatFailureDetails(step: ParsedStep, colorFns: IFormatterOptions['colorFns']): string {
   if (!isFailureStatus(step.result.status)) return '';
 
   const details = extractFailureDetails(step.result.message);
+  const urlFromAttachment = extractUrlFromAttachments(step.attachments);
+  const url = urlFromAttachment ?? details.url;
   const lines: string[] = [];
-  if (details.error) lines.push(`     Error: ${details.error}`);
-  if (details.url) lines.push(`     URL: ${details.url}`);
-  if (details.locator) lines.push(`     Locator: ${details.locator}`);
-  return lines.length > 0 ? `${lines.join('\n')}\n` : '';
+  if (url) lines.push(`       URL: ${url}`);
+  if (details.locator) lines.push(`       Locator: ${details.locator}`);
+  if (details.error) lines.push(`       Error: ${details.error}`);
+  if (lines.length === 0) return '';
+
+  return `${colorFns.forStatus(step.result.status)(lines.join('\n'))}\n`;
 }
 
-export default class LetsrunitProgressFormatter extends ProgressFormatter {
+export default class ProgressFormatter extends Base {
   static readonly documentation = 'Progress formatter with concise Playwright-aware failure summaries.';
 
   constructor(options: IFormatterOptions) {
@@ -214,13 +237,13 @@ export default class LetsrunitProgressFormatter extends ProgressFormatter {
 
       const scenarioId = toScenarioId(parsed.testSteps as ParsedStep[]);
       if (scenarioId) {
-        const lastPassed = resolveLastPassedLine({ cwd: this.cwd, scenarioId });
-        if (lastPassed) this.log(`  ${lastPassed.line}\n`);
+        const lastPassed = resolveLastPassedLine({ scenarioId });
+        if (lastPassed) this.log(`${this.colorFns.location(`   ${lastPassed.line}`)}\n`);
       }
 
       for (const step of parsed.testSteps as ParsedStep[]) {
-        this.log(formatStepLine(step));
-        this.log(formatFailureDetails(step));
+        this.log(formatStepLine(step, this.colorFns));
+        this.log(formatFailureDetails(step, this.colorFns));
       }
 
       this.log('\n');

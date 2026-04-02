@@ -1,8 +1,8 @@
 import { After, AfterStep, Before, BeforeAll, defineParameterType, Given, Then, When } from '@cucumber/cucumber';
+import { registry, typeDefinitions } from '@letsrunit/bdd'; // importing bdd registers built-in steps as a side effect
+import { sanitizeStepDefinition } from '@letsrunit/gherkin';
 import { browse, createDateEngine, createFieldEngine, scrubHtml } from '@letsrunit/playwright';
 import { chromium, selectors } from '@playwright/test';
-import { sanitizeStepDefinition } from '@letsrunit/gherkin';
-import { typeDefinitions, registry } from '@letsrunit/bdd'; // importing bdd registers built-in steps as a side effect
 
 for (const type of typeDefinitions) {
   defineParameterType(type);
@@ -39,11 +39,14 @@ AfterStep(async function () {
   const page = this.page;
   if (!page || page.url() === 'about:blank') return;
   try {
-    const [screenshotBuffer, html] = await Promise.all([
+    const [screenshotBuffer, html, url] = await Promise.all([
       page.screenshot(),
       scrubHtml(page),
+      Promise.resolve(page.url()),
     ]);
-    await this.attach(screenshotBuffer, 'image/png');
-    await this.attach(html, 'text/html');
+
+    this.attach(screenshotBuffer, 'image/png');
+    this.attach(html, 'text/html');
+    this.attach(url, 'text/x-letsrunit-url');
   } catch {}
 });

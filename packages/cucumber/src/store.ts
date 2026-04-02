@@ -23,6 +23,7 @@ import { existsSync, mkdirSync, statSync } from 'node:fs';
 import { utimes, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { v4 as uuidv4 } from 'uuid';
+import { setConfiguredStoreDirectory } from './store-config';
 
 const DEFAULT_DIR = '.letsrunit';
 
@@ -482,6 +483,9 @@ async function persistAttachment(
   attachment: NonNullable<Envelope['attachment']>,
   context: RecorderContext,
 ): Promise<void> {
+  // Reporter-only metadata; never persist to artifact storage.
+  if (attachment.mediaType === 'text/x-letsrunit-url') return;
+
   const bytes =
     attachment.contentEncoding === AttachmentContentEncoding.BASE64
       ? Buffer.from(attachment.body, 'base64')
@@ -553,6 +557,7 @@ export default {
     operation: 'loadSources' | 'loadSupport' | 'runCucumber';
   }) {
     if (operation !== 'runCucumber') return;
+    setConfiguredStoreDirectory(options?.directory);
     startStoreRecorder({ on, directory: options?.directory });
   },
 };
