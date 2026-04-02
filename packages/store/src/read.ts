@@ -34,6 +34,16 @@ export function findLastTest(
   return { id: fromIdBlob(row.id), gitCommit: row.git_commit };
 }
 
+export function findLastPassingBaseline(
+  db: Database,
+  scenarioId: string,
+  allowedCommits?: string[],
+): { testId: string; gitCommit: string | null } | null {
+  const test = findLastTest(db, scenarioId, 'passed', allowedCommits);
+  if (!test) return null;
+  return { testId: test.id, gitCommit: test.gitCommit };
+}
+
 export function findArtifacts(
   db: Database,
   testId: string,

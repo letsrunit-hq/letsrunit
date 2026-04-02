@@ -10,7 +10,7 @@ import {
   finaliseTest,
   insertArtifact,
 } from '../src/write';
-import { findLastRun, findLastTest, findArtifacts } from '../src/read';
+import { findLastRun, findLastTest, findLastPassingBaseline, findArtifacts } from '../src/read';
 import { computeStepId } from '../src/ids';
 import type { Database } from 'node-sqlite3-wasm';
 
@@ -118,6 +118,44 @@ describe('findLastTest', () => {
 
     const result = findLastTest(db, id('scen-1'), 'passed');
     expect(result?.gitCommit).toBeNull();
+  });
+});
+
+describe('findLastPassingBaseline', () => {
+  beforeEach(seed);
+
+  it('returns latest passing test for a scenario', () => {
+    insertTest(db, id('test-1'), id('run-1'), id('scen-1'), 100);
+    finaliseTest(db, id('test-1'), 'passed');
+    insertTest(db, id('test-2'), id('run-2'), id('scen-1'), 200);
+    finaliseTest(db, id('test-2'), 'passed');
+
+    const result = findLastPassingBaseline(db, id('scen-1'));
+    expect(result).toEqual({
+      testId: id('test-2'),
+      gitCommit: 'def456',
+    });
+  });
+
+  it('returns null when no passing baseline exists', () => {
+    insertTest(db, id('test-1'), id('run-1'), id('scen-1'), 100);
+    finaliseTest(db, id('test-1'), 'failed', 0);
+
+    const result = findLastPassingBaseline(db, id('scen-1'));
+    expect(result).toBeNull();
+  });
+
+  it('respects allowedCommits filter', () => {
+    insertTest(db, id('test-1'), id('run-1'), id('scen-1'), 100);
+    finaliseTest(db, id('test-1'), 'passed');
+    insertTest(db, id('test-2'), id('run-2'), id('scen-1'), 200);
+    finaliseTest(db, id('test-2'), 'passed');
+
+    const result = findLastPassingBaseline(db, id('scen-1'), ['abc123']);
+    expect(result).toEqual({
+      testId: id('test-1'),
+      gitCommit: 'abc123',
+    });
   });
 });
 

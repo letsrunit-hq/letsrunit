@@ -34,6 +34,11 @@
         "types": "./dist/store.d.ts",
         "import": "./dist/store.js",
         "default": "./dist/store.js"
+      },
+      "./progress": {
+        "types": "./dist/progress.d.ts",
+        "import": "./dist/progress.js",
+        "default": "./dist/progress.js"
       }
     }
   },
@@ -74,6 +79,11 @@
       "types": "./src/store.ts",
       "import": "./src/store.ts",
       "default": "./src/store.ts"
+    },
+    "./progress": {
+      "types": "./src/progress.ts",
+      "import": "./src/progress.ts",
+      "default": "./src/progress.ts"
     }
   }
 }

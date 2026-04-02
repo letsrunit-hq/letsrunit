@@ -52,6 +52,7 @@ All write functions take a `db` instance as their first argument.
 | `insertTest(db, id, runId, scenarioId, startedAt)` | Starts a new test with status `running` |
 | `finaliseTest(db, id, status, failedStepIndex?, error?)` | Updates a test's final status and optional failure details |
 | `insertArtifact(db, id, testId, stepIndex, filename)` | Links a saved file to a specific step index in a test |
+| `findLastPassingBaseline(db, scenarioId, allowedCommits?)` | Returns latest passing test id + run commit for a scenario |
 | `findLastRun(db)` | Returns latest run metadata and all tests (with ordered scenario steps) in that run |
 
 ## Testing

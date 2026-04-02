@@ -17,5 +17,5 @@ export {
   computeOutlineId,
   computeExampleRowId,
 } from './ids.js';
-export { findLastTest, findArtifacts, findLastRun } from './read.js';
+export { findLastTest, findLastPassingBaseline, findArtifacts, findLastRun } from './read.js';
 export type { LastRun, LastRunTest, LastRunStep } from './read.js';

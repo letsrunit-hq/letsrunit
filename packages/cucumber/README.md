@@ -12,7 +12,7 @@ yarn add @letsrunit/cucumber
 
 Cucumber CLI integration for letsrunit. It wires the `@letsrunit/bdd` step library into a Cucumber test suite and provides a plugin that persists run history and artifacts to the SQLite store.
 
-This package has two entry points.
+This package has three entry points.
 
 ## `@letsrunit/cucumber` — support file
 
@@ -46,11 +46,20 @@ Recorded data per run:
 - Run status (`passed` / `failed`) with the failing step and error message
 - All step artifacts linked to their step
 
+## `@letsrunit/cucumber/progress` — custom formatter
+
+A drop-in progress-like formatter:
+
+- Successful run output is identical to Cucumber's built-in `progress` formatter
+- Failure output is rewritten to a concise `Failures:` block
+- For Playwright assertion errors, it prefers the Playwright error detail and locator over wrapper expect text
+- If a previous passing baseline exists in `.letsrunit/letsrunit.db`, it prints `Last passed: commit <sha>, <n> commits ago`
+
 ```js
 // cucumber.js
 export default {
   default: {
-    format: ['progress'],
+    format: ['@letsrunit/cucumber/progress'],
     plugin: ['@letsrunit/cucumber/store'],
     pluginOptions: {
       letsrunitStore: {
