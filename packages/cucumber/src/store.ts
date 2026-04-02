@@ -256,7 +256,10 @@ function createRecorderContext(directory?: string): RecorderContext {
   const runId = uuidv4();
   let gitCommit: string | null = null;
   try {
-    gitCommit = execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim();
+    gitCommit = execSync('git rev-parse HEAD', {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
   } catch {}
   insertRun(db, runId, gitCommit, Date.now());
 
