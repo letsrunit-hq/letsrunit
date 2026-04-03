@@ -12,7 +12,7 @@ yarn add @letsrunit/cucumber
 
 Cucumber CLI integration for letsrunit. It wires the `@letsrunit/bdd` step library into a Cucumber test suite and provides a plugin that persists run history and artifacts to the SQLite store.
 
-This package has three entry points.
+This package has four entry points.
 
 ## `@letsrunit/cucumber` — support file
 
@@ -67,6 +67,29 @@ export default {
       },
     },
     // ...
+  },
+};
+```
+
+## `@letsrunit/cucumber/agent` — NDJSON formatter
+
+Machine-oriented formatter that emits one JSON object per line (NDJSON):
+
+- `run_start`, `scenario_start`, `step_result`, `scenario_end`, `run_end` events
+- Failure events include exact raw error text and structured fields (`summary`, `locator`, `url`, etc.)
+- When store plugin data is available, failure events include baseline metadata and inline unified HTML diff
+
+```js
+// cucumber.js
+export default {
+  default: {
+    format: ['@letsrunit/cucumber/agent'],
+    plugin: ['@letsrunit/cucumber/store'],
+    pluginOptions: {
+      letsrunitStore: {
+        directory: '.letsrunit',
+      },
+    },
   },
 };
 ```
