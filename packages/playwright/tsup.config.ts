@@ -9,4 +9,7 @@ export default defineConfig({
   clean: true,
   treeshake: true,
   outDir: 'dist',
+  banner: {
+    js: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);",
+  },
 });
