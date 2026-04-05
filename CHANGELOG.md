@@ -1,3 +1,36 @@
+# [0.11.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.10.0...v0.11.0) (2026-04-05)
+
+
+### Bug Fixes
+
+* **build:** add package-level tsup configs across workspaces ([201386b](https://github.com/letsrunit-hq/letsrunit/commit/201386b496bdcb896ffefac141a6e4e321b6b610))
+* **ci:** include store tarball in init matrix overrides ([c84cc72](https://github.com/letsrunit-hq/letsrunit/commit/c84cc72e57964ee4bc06d380fb42238f90bf03c4))
+* **cucumber:** expose store as plugin-only entrypoint ([fb0d518](https://github.com/letsrunit-hq/letsrunit/commit/fb0d518af4cb4397878560dedf4472083b71bfd5))
+* **cucumber:** finalize custom progress reporter wiring ([d5e81c2](https://github.com/letsrunit-hq/letsrunit/commit/d5e81c20f446ef1e6a52ce4194e167e84cd770fc))
+* **cucumber:** make store directory creation idempotent ([0d407d9](https://github.com/letsrunit-hq/letsrunit/commit/0d407d91922c5a230a9aee47988a6c06147e32b0))
+* **cucumber:** silence git lookup outside repositories ([5a69a36](https://github.com/letsrunit-hq/letsrunit/commit/5a69a3640b28c560339c5eb863f23d711528c2c8))
+* **cucumber:** treat store directory as letsrunit root ([18cc702](https://github.com/letsrunit-hq/letsrunit/commit/18cc702af1036d96923777682105209c5a8206e1))
+* **cucumber:** use package subpath for store plugin specifier ([f4204e8](https://github.com/letsrunit-hq/letsrunit/commit/f4204e8f300aae9aad46381b31a3da1194393f2d))
+* don't specify the formatter in cucumber config ([af6a3be](https://github.com/letsrunit-hq/letsrunit/commit/af6a3bedd9360dfcffd18ca08e1c1a863678cb4f))
+* **gherkin:** accept readonly envelopes from generateMessages ([4e1c337](https://github.com/letsrunit-hq/letsrunit/commit/4e1c3373e754e03942ede428c8e3ff410d9e4d97))
+* no path imports to other packages ([9fe4dbf](https://github.com/letsrunit-hq/letsrunit/commit/9fe4dbf9ef0a354aa903d3f0ac76c38507926391))
+* **playwright:** support bundled CJS requires in ESM build ([daa0093](https://github.com/letsrunit-hq/letsrunit/commit/daa00932c34a0fc2b660069dceea32b24ecaf477))
+* **playwright:** use node-targeted tsup config ([4b3fc4b](https://github.com/letsrunit-hq/letsrunit/commit/4b3fc4b2bca75b30c77475e8a635f8c9b8994054))
+
+
+### Features
+
+* **cli:** add explain command for latest run failures ([ff81519](https://github.com/letsrunit-hq/letsrunit/commit/ff8151985faea426ac0cc7ab32e56bc5172eabbe))
+* **cucumber:** add progress formatter with concise failures ([435f431](https://github.com/letsrunit-hq/letsrunit/commit/435f431d96706dd76d35f6335e1c34a282b6503a))
+* **cucumber:** add store plugin and keep formatter as legacy ([84f02b4](https://github.com/letsrunit-hq/letsrunit/commit/84f02b494fef76aab2039b0f4a43cd16603b5968))
+* enhance explain command with refine regexp selectors, and update prompt constraints ([3f1b2f3](https://github.com/letsrunit-hq/letsrunit/commit/3f1b2f3dd021fe8839b6cb4ea1c84336d8b6638c))
+* **explain:** improve step formatting with colorized symbols ([5161a43](https://github.com/letsrunit-hq/letsrunit/commit/5161a431db13178f17c65eeb8bbed5732e9418b6))
+* refactor explain command to runExplain and improve formatting ([64d550d](https://github.com/letsrunit-hq/letsrunit/commit/64d550debd62e1a34344afea4e192bd090bbe474))
+* rename store session/run model to run/test ([66b16a6](https://github.com/letsrunit-hq/letsrunit/commit/66b16a6bc2543b74c81da81aa67948b4246a0d62))
+* **store:** make rule and outline ids content-addressed ([dbf9127](https://github.com/letsrunit-hq/letsrunit/commit/dbf9127722f222f2e381302af1cd081a761d1e8d))
+* **store:** redesign schema with hash IDs and scenario step mapping ([c91abb7](https://github.com/letsrunit-hq/letsrunit/commit/c91abb7eb8410bd1e75e1eb6e0fc877ba89bebbd))
+* use JSON examples in explainFailure prompt ([59baf77](https://github.com/letsrunit-hq/letsrunit/commit/59baf77ddbcf182cd2a915c204aa0fc3cbad0ea3))
+
 # [0.10.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.9.1...v0.10.0) (2026-03-31)
 
 
