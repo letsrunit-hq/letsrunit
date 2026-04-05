@@ -40,12 +40,12 @@ describe('steps/assert (definitions)', () => {
   it('waits for element to be visible or hidden with timeout 5000', async () => {
     const page = {} as any;
 
-    await runStep(see, 'The page contains `#thing`', { page } as any);
+    await runStep(see, 'the page contains `#thing`', { page } as any);
     expect(resolveLocator).toHaveBeenLastCalledWith(page, '#thing');
     expect(toBeVisible).toHaveBeenLastCalledWith({ timeout: 5000 });
     expect(expectOrNot).toHaveBeenLastCalledWith(elementLocatorMock, true);
 
-    await runStep(see, 'The page does not contain `.item`', { page } as any);
+    await runStep(see, 'the page does not contain `.item`', { page } as any);
     expect(resolveLocator).toHaveBeenLastCalledWith(page, '.item');
     expect(toBeVisible).toHaveBeenLastCalledWith({ timeout: 5000 });
     expect(expectOrNot).toHaveBeenLastCalledWith(elementLocatorMock, false);

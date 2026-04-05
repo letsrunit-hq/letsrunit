@@ -64,3 +64,34 @@ Scenario: User logs in
 ```bash
 letsrunit run <url> <feature>
 ```
+
+## letsrunit explain
+
+`letsrunit explain` analyzes failures from the latest stored run and prints a human-readable explanation of whether the test likely needs an update or the product likely regressed.
+
+It stores test results with HTML and screenshots for every step, allowing it to create a diff to identify the issue. It also tracks the git commit hash for each test run to show what has changed since the last time a scenario passed.
+
+```bash
+letsrunit explain
+```
+
+The output identifies the failing step, the URL, and the specific locator that failed:
+
+```
+Scenario: Visitor sees the homepage greeting # features/homepage.feature:3
+   Last passed: commit d498a33, 1 commit ago
+   ✔ Before
+   ✔ Given I'm on the homepage
+   ✖ Then the page contains text "Hello world"
+       URL: /
+       Locator: text=/Hello world/i
+       Error: element(s) not found
+   - And I should be on page "/"
+   ✔ After
+```
+
+If the latest run has no failures, it exits successfully with nothing to explain.
+
+```bash
+letsrunit explain --db .letsrunit/letsrunit.db --artifacts .letsrunit/artifacts
+```

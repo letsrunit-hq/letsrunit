@@ -9,6 +9,7 @@ import { readFileSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { runExplain } from './run-explain';
 import { runExplore } from './run-explore';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -140,6 +141,15 @@ program
   .action(async (target: string, featureFile: string, opts: { verbose: boolean; silent: boolean }) => {
     const feature = await fs.readFile(featureFile, 'utf-8');
     await run(target, feature, { headless: false, journal: createJournal(opts) });
+  });
+
+program
+  .command('explain')
+  .description('Explain failures from the latest letsrunit run')
+  .option('--db <path>', 'Path to letsrunit SQLite DB')
+  .option('--artifacts <path>', 'Path to letsrunit artifacts directory')
+  .action(async (opts: { db?: string; artifacts?: string }) => {
+    await runExplain(opts);
   });
 
 program.parse();

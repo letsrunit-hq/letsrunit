@@ -6,6 +6,13 @@ const BDD_IMPORT = '@letsrunit/cucumber';
 
 const CUCUMBER_CONFIG = `export default {
   require: ['features/support/**/*.js'],
+  format: ['@letsrunit/cucumber/progress'],
+  plugin: ['@letsrunit/cucumber/store'],
+  pluginOptions: {
+    letsrunitStore: {
+      directory: '.letsrunit',
+    },
+  },
   worldParameters: {
     baseURL: 'http://localhost:3000',
   },

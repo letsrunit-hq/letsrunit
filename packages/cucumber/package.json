@@ -34,6 +34,11 @@
         "types": "./dist/store.d.ts",
         "import": "./dist/store.js",
         "default": "./dist/store.js"
+      },
+      "./progress": {
+        "types": "./dist/progress.d.ts",
+        "import": "./dist/progress.js",
+        "default": "./dist/progress.js"
       }
     }
   },
@@ -52,6 +57,7 @@
     "@letsrunit/gherkin": "workspace:*",
     "@letsrunit/playwright": "workspace:*",
     "@letsrunit/store": "workspace:*",
+    "@letsrunit/utils": "workspace:*",
     "@playwright/test": "^1.57.0",
     "uuid": "^13.0.0"
   },
@@ -73,6 +79,11 @@
       "types": "./src/store.ts",
       "import": "./src/store.ts",
       "default": "./src/store.ts"
+    },
+    "./progress": {
+      "types": "./src/progress.ts",
+      "import": "./src/progress.ts",
+      "default": "./src/progress.ts"
     }
   }
 }

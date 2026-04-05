@@ -10,9 +10,9 @@ npm install @letsrunit/cucumber
 yarn add @letsrunit/cucumber
 ```
 
-Cucumber CLI integration for letsrunit. It wires the `@letsrunit/bdd` step library into a Cucumber test suite and provides a formatter that persists run history and artifacts to the SQLite store.
+Cucumber CLI integration for letsrunit. It wires the `@letsrunit/bdd` step library into a Cucumber test suite and provides a plugin that persists run history and artifacts to the SQLite store.
 
-This package has two entry points.
+This package has three entry points.
 
 ## `@letsrunit/cucumber` — support file
 
@@ -34,9 +34,11 @@ export default {
 };
 ```
 
-## `@letsrunit/cucumber/store` — formatter
+## `@letsrunit/cucumber/store` — plugin
 
-A Cucumber formatter that listens to the message stream and writes structured run data to `.letsrunit/letsrunit.db` (via `@letsrunit/store`). It also saves all step attachments (screenshots, HTML) as content-addressed files under `.letsrunit/artifacts/`.
+A Cucumber plugin that listens to the message stream and writes structured run data to `.letsrunit/letsrunit.db` (via `@letsrunit/store`). It also saves all step attachments (screenshots, HTML) as content-addressed files under `.letsrunit/artifacts/`.
+
+`pluginOptions.letsrunitStore.directory` is the root letsrunit directory (for example `.letsrunit`), not the artifacts directory.
 
 Recorded data per run:
 - Session with the current git commit
@@ -44,11 +46,26 @@ Recorded data per run:
 - Run status (`passed` / `failed`) with the failing step and error message
 - All step artifacts linked to their step
 
+## `@letsrunit/cucumber/progress` — custom formatter
+
+A drop-in progress-like formatter:
+
+- Successful run output is identical to Cucumber's built-in `progress` formatter
+- Failure output is rewritten to a concise `Failures:` block
+- For Playwright assertion errors, it prefers the Playwright error detail and locator over wrapper expect text
+- If a previous passing baseline exists in `.letsrunit/letsrunit.db`, it prints `Last passed: commit <sha>, <n> commits ago`
+
 ```js
 // cucumber.js
 export default {
   default: {
-    format: ['@letsrunit/cucumber/dist/store.js'],
+    format: ['@letsrunit/cucumber/progress'],
+    plugin: ['@letsrunit/cucumber/store'],
+    pluginOptions: {
+      letsrunitStore: {
+        directory: '.letsrunit',
+      },
+    },
     // ...
   },
 };

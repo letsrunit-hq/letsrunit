@@ -1,8 +1,7 @@
 import { generate } from '@letsrunit/ai';
 import type { PageInfo } from '@letsrunit/playwright';
+import { extractPageInfo, scrubHtml } from '@letsrunit/playwright';
 import { stringify as toYaml } from 'yaml';
-import { extractPageInfo } from '../../../playwright/src/page-info';
-import { scrubHtml } from '../../../playwright/src/scrub-html';
 
 const PROMPT = `Convert raw HTML into compact Markdown using a limited set of custom blocks. The output feeds must be consistent.
 

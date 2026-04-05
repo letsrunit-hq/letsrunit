@@ -37,13 +37,28 @@ Anyone on the team can read this and understand what it tests. letsrunit handles
 
 ### Failure explanations
 
-When a scenario fails, letsrunit explains what changed in plain language. Not a stack trace, but a description of what the browser actually showed versus what the test expected. That makes it straightforward to tell whether the code broke something or the test needs updating.
+When a scenario fails, letsrunit explains what changed in plain language. It stores test results with HTML and screenshots for every step, which it uses to create a diff and identify the exact cause of the failure.
+
+Because letsrunit stores the git commit hash for each test run, it knows exactly what has changed since the last time a scenario passed. Instead of a stack trace, you get a description of what the browser actually showed versus what the test expected, making it clear whether the code broke or the test needs an update.
+
+```
+Scenario: Visitor sees the homepage greeting # features/homepage.feature:3
+   Last passed: commit d498a33, 1 commit ago
+   ✔ Before
+   ✔ Given I'm on the homepage
+   ✖ Then the page contains text "Hello world"
+       URL: /
+       Locator: text=/Hello world/i
+       Error: element(s) not found
+   - And I should be on page "/"
+   ✔ After
+```
 
 ### Test generation
 
 Tests are generated from either a live site or a plain-language description of what you want to check.
 
-You can point it at a URL and it will explore the page, identify user flows, and turn those into Gherkin scenarios. This is mainly useful to get started quickly. In practice, you will often describe what you want to test yourself, for example by pasting a user story, issue, or short instruction. That input is used to generate test scenarios that reflect the intended behavior.
+You can point it at a URL, and it will explore the page, identify user flows, and turn those into Gherkin scenarios. This is mainly useful to get started quickly. In practice, you will often describe what you want to test yourself, for example by pasting a user story, issue, or short instruction. That input is used to generate test scenarios that reflect the intended behavior.
 
 ## With AI agents
 
@@ -75,7 +90,7 @@ letsrunit uses Playwright internally. The difference is the layer you work at.
   <tbody>
     <tr>
       <td>Installation</td>
-      <td><a href="installation">Installation</a></td>
+      <td><a href="installation.md">Installation</a></td>
     </tr>
     <tr>
       <td>AI Agent Integration</td>
@@ -83,11 +98,11 @@ letsrunit uses Playwright internally. The difference is the layer you work at.
     </tr>
     <tr>
       <td>Generating Tests</td>
-      <td><a href="generating-tests">Generating Tests</a></td>
+      <td><a href="generating-tests.md">Generating Tests</a></td>
     </tr>
     <tr>
       <td>Running Tests</td>
-      <td><a href="running-tests">Running Tests</a></td>
+      <td><a href="running-tests.md">Running Tests</a></td>
     </tr>
   </tbody>
 </table>

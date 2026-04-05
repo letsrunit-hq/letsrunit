@@ -2,7 +2,7 @@
 
 # CLI
 
-The `letsrunit` CLI allows you to explore websites, generate Gherkin features using AI, and run tests locally.
+The `letsrunit` CLI allows you to explore websites, generate Gherkin features using AI, run tests locally, and explain recent failures.
 
 ## Commands
 
@@ -22,6 +22,13 @@ echo "Login with email and password" | yarn cli generate <url> -o ./features
 Executes a Gherkin feature file against a target URL.
 ```bash
 yarn cli run <url> ./features/login.feature
+```
+
+### `explain`
+Explains failures from the latest run in `.letsrunit/letsrunit.db`.
+```bash
+yarn cli explain
+yarn cli explain --db .letsrunit/letsrunit.db --artifacts .letsrunit/artifacts
 ```
 
 ## Options

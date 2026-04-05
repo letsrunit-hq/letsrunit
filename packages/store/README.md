@@ -10,20 +10,21 @@ npm install @letsrunit/store
 yarn add @letsrunit/store
 ```
 
-SQLite-backed persistence layer for letsrunit run history and artifacts. It manages the database schema and provides write functions for recording test sessions, features, scenarios, steps, runs, and file artifacts.
+SQLite-backed persistence layer for letsrunit run history and artifacts. It manages the database schema and provides write functions for recording runs, features, scenarios, rules/outline metadata, tests, steps, and file artifacts.
 
 ## Schema
 
-The store maintains six tables:
+The store maintains seven tables:
 
 | Table | Purpose |
 |---|---|
-| `sessions` | One row per test run invocation, keyed by UUID with optional git commit |
-| `features` | Gherkin feature files, keyed by a content hash of the file |
-| `scenarios` | Gherkin scenarios, linked to their feature |
-| `steps` | Individual steps within a scenario, ordered by index |
-| `runs` | One row per scenario execution within a session; status is `running`, `passed`, or `failed` |
-| `artifacts` | Files (screenshots, HTML snapshots) produced during a step |
+| `runs` | One row per top-level invocation, keyed by a hash ID with optional git commit |
+| `features` | Gherkin feature files, keyed by hash of ordered scenario IDs |
+| `scenarios` | Executable scenarios (including outline rows), with nullable `rule`, `outline`, and `example_row` grouping fields |
+| `steps` | Canonical normalized step definitions, keyed by step-text hash |
+| `scenario_steps` | Ordered step placement for each scenario |
+| `tests` | One row per scenario execution within a run; status is `running`, `passed`, or `failed` |
+| `artifacts` | Files (screenshots, HTML snapshots) produced at a scenario step index in a test |
 
 ## API
 
@@ -43,13 +44,16 @@ All write functions take a `db` instance as their first argument.
 
 | Function | Description |
 |---|---|
-| `insertSession(db, id, gitCommit, startedAt)` | Records a new test session |
+| `insertRun(db, id, gitCommit, startedAt)` | Records a new run |
 | `upsertFeature(db, id, path, name)` | Inserts or replaces a feature file record |
-| `upsertScenario(db, id, featureId, name)` | Inserts or replaces a scenario record |
-| `upsertStep(db, id, scenarioId, idx, text)` | Inserts or replaces a step record |
-| `insertRun(db, id, sessionId, scenarioId, startedAt)` | Starts a new run with status `running` |
-| `finaliseRun(db, id, status, failedStepId?, error?)` | Updates a run's final status and optional failure details |
-| `insertArtifact(db, id, runId, stepId, filename)` | Links a saved file to a specific step in a run |
+| `upsertScenario(db, id, featureId, index, name, refs?)` | Inserts or replaces a scenario record |
+| `upsertStep(db, id, text)` | Inserts or replaces a canonical step record |
+| `upsertScenarioStep(db, scenarioId, index, stepId)` | Inserts or replaces a scenario-step mapping |
+| `insertTest(db, id, runId, scenarioId, startedAt)` | Starts a new test with status `running` |
+| `finaliseTest(db, id, status, failedStepIndex?, error?)` | Updates a test's final status and optional failure details |
+| `insertArtifact(db, id, testId, stepIndex, filename)` | Links a saved file to a specific step index in a test |
+| `findLastPassingBaseline(db, scenarioId, allowedCommits?)` | Returns latest passing test id + run commit for a scenario |
+| `findLastRun(db)` | Returns latest run metadata and all tests (with ordered scenario steps) in that run |
 
 ## Testing
 

@@ -40,6 +40,7 @@ jobs:
           yarn workspace @letsrunit/journal pack --out /tmp/journal.tgz
           yarn workspace @letsrunit/mailbox pack --out /tmp/mailbox.tgz
           yarn workspace @letsrunit/playwright pack --out /tmp/playwright.tgz
+          yarn workspace @letsrunit/store pack --out /tmp/store.tgz
           yarn workspace @letsrunit/utils pack --out /tmp/utils.tgz
 
       - uses: actions/upload-artifact@v4
@@ -58,6 +59,7 @@ jobs:
             /tmp/journal.tgz
             /tmp/mailbox.tgz
             /tmp/playwright.tgz
+            /tmp/store.tgz
             /tmp/utils.tgz
 
   init:
@@ -105,6 +107,7 @@ jobs:
           cp /tmp/journal.tgz     /tmp/test-${{ matrix.pm }}/journal.tgz
           cp /tmp/mailbox.tgz     /tmp/test-${{ matrix.pm }}/mailbox.tgz
           cp /tmp/playwright.tgz  /tmp/test-${{ matrix.pm }}/playwright.tgz
+          cp /tmp/store.tgz       /tmp/test-${{ matrix.pm }}/store.tgz
           cp /tmp/utils.tgz       /tmp/test-${{ matrix.pm }}/utils.tgz
           node -e "
             const fs = require('fs');
@@ -122,6 +125,7 @@ jobs:
               '@letsrunit/journal':     'file:./journal.tgz',
               '@letsrunit/mailbox':     'file:./mailbox.tgz',
               '@letsrunit/playwright':  'file:./playwright.tgz',
+              '@letsrunit/store':       'file:./store.tgz',
               '@letsrunit/utils':       'file:./utils.tgz',
             };
             const pkg = {

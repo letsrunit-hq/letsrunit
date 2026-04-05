@@ -2,6 +2,7 @@ export * from './browser';
 export * from './field/index';
 export * from './format-html';
 export * from './fuzzy-locator';
+export * from './page-info';
 export * from './selector';
 export * from './snapshot';
 export * from './screenshot';

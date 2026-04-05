@@ -3,41 +3,53 @@ const { Database } = nodeWasm;
 export type Database = InstanceType<typeof nodeWasm.Database>;
 
 const SCHEMA = `
-CREATE TABLE IF NOT EXISTS sessions (
-  id          TEXT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS runs (
+  id          BLOB PRIMARY KEY,
   started_at  INTEGER NOT NULL,
   git_commit  TEXT
 );
 CREATE TABLE IF NOT EXISTS features (
-  id    TEXT PRIMARY KEY,
+  id    BLOB PRIMARY KEY,
   path  TEXT NOT NULL,
   name  TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS scenarios (
-  id          TEXT PRIMARY KEY,
-  feature_id  TEXT NOT NULL REFERENCES features(id),
-  name        TEXT NOT NULL
+  id             BLOB PRIMARY KEY,
+  feature        BLOB NOT NULL REFERENCES features(id),
+  "index"        INTEGER NOT NULL,
+  name           TEXT NOT NULL,
+  rule           BLOB,
+  outline        BLOB,
+  example_row    BLOB,
+  example_index  INTEGER,
+  UNIQUE(feature, "index"),
+  CHECK (outline IS NULL OR example_row IS NOT NULL),
+  CHECK (example_row IS NULL OR outline IS NOT NULL)
 );
 CREATE TABLE IF NOT EXISTS steps (
-  id          TEXT PRIMARY KEY,
-  scenario_id TEXT NOT NULL REFERENCES scenarios(id),
-  idx         INTEGER NOT NULL,
-  text        TEXT NOT NULL
+  id    BLOB PRIMARY KEY,
+  text  TEXT NOT NULL
 );
-CREATE TABLE IF NOT EXISTS runs (
-  id              TEXT PRIMARY KEY,
-  session_id      TEXT NOT NULL REFERENCES sessions(id),
-  scenario_id     TEXT NOT NULL REFERENCES scenarios(id),
-  status          TEXT NOT NULL DEFAULT 'running',
-  failed_step_id  TEXT REFERENCES steps(id),
-  error           TEXT,
-  started_at      INTEGER NOT NULL
+CREATE TABLE IF NOT EXISTS scenario_steps (
+  scenario  BLOB NOT NULL REFERENCES scenarios(id),
+  "index"   INTEGER NOT NULL,
+  step      BLOB NOT NULL REFERENCES steps(id),
+  PRIMARY KEY (scenario, "index")
+);
+CREATE TABLE IF NOT EXISTS tests (
+  id                 BLOB PRIMARY KEY,
+  run                BLOB NOT NULL REFERENCES runs(id),
+  scenario           BLOB NOT NULL REFERENCES scenarios(id),
+  status             TEXT NOT NULL DEFAULT 'running',
+  failed_step_index  INTEGER,
+  error              TEXT,
+  started_at         INTEGER NOT NULL
 );
 CREATE TABLE IF NOT EXISTS artifacts (
-  id        TEXT PRIMARY KEY,
-  run_id    TEXT NOT NULL REFERENCES runs(id),
-  step_id   TEXT NOT NULL REFERENCES steps(id),
-  filename  TEXT NOT NULL
+  id          BLOB PRIMARY KEY,
+  test        BLOB NOT NULL REFERENCES tests(id),
+  step_index  INTEGER NOT NULL,
+  filename    TEXT NOT NULL
 );
 `;
 

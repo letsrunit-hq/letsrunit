@@ -53,7 +53,7 @@ describe('registerRun', () => {
     expect(result.steps).toEqual(runResult.steps);
     expect(result.journal).toEqual([]);
     expect(typeof result.scenarioId).toBe('string');
-    expect(result.scenarioId).toMatch(/^[0-9a-f-]{36}$/);
+    expect(result.scenarioId).toMatch(/^[0-9a-f]{64}$/);
   });
 
   it('returns the same scenarioId for the same input steps regardless of formatting', async () => {

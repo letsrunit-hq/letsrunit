@@ -47,8 +47,7 @@
     "@letsrunit/journal": "workspace:*",
     "@letsrunit/mailbox": "workspace:*",
     "@letsrunit/utils": "workspace:*",
-    "commander": "^14.0.2",
-    "letsrunit": "workspace:*"
+    "commander": "^14.0.2"
   },
   "devDependencies": {
     "tsx": "^4.21.0"

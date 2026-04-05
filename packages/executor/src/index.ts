@@ -1,4 +1,5 @@
 export { refineSuggestion } from './ai/refine-suggestion';
+export { default as explain, type ExplainResult } from './explain';
 export { default as explore, type PreparedAction as Action } from './explore';
 export { default as generate } from './generate';
 export { default as run } from './run';

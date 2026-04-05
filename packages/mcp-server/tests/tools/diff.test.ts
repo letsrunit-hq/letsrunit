@@ -4,7 +4,7 @@ import { captureHandler, makeSession, makeSessionManager, parseResult } from '..
 
 vi.mock('@letsrunit/store', () => ({
   openStore: vi.fn(),
-  findLastRun: vi.fn(),
+  findLastTest: vi.fn(),
   findArtifacts: vi.fn(),
 }));
 
@@ -27,7 +27,7 @@ import { unifiedHtmlDiff } from '@letsrunit/playwright';
 
 const mockDb = { close: vi.fn() };
 const SCENARIO_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
-const RUN_ID = 'run-1';
+const TEST_ID = 'test-1';
 const GIT_COMMIT = 'abc123';
 
 describe('registerDiff', () => {
@@ -38,7 +38,7 @@ describe('registerDiff', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(store.openStore).mockReturnValue(mockDb as any);
-    vi.mocked(store.findLastRun).mockReturnValue({ id: RUN_ID, gitCommit: GIT_COMMIT });
+    vi.mocked(store.findLastTest).mockReturnValue({ id: TEST_ID, gitCommit: GIT_COMMIT });
     vi.mocked(store.findArtifacts).mockReturnValue([
       { filename: 'snap.html', stepId: 'step-1', stepIdx: 0 },
       { filename: 'screen.png', stepId: 'step-1', stepIdx: 0 },
@@ -61,7 +61,7 @@ describe('registerDiff', () => {
   it('returns diff and baseline metadata on happy path', async () => {
     const result = parseResult(await call({ sessionId: 'sess-abc', scenarioId: SCENARIO_ID }));
     expect(result.diff).toContain('--- before');
-    expect(result.baseline.runId).toBe(RUN_ID);
+    expect(result.baseline.testId).toBe(TEST_ID);
     expect(result.baseline.commit).toBe(GIT_COMMIT);
     expect(result.baseline.screenshots).toHaveLength(1);
     expect(result.baseline.screenshots[0]).toMatch(/screen\.png$/);
@@ -72,9 +72,9 @@ describe('registerDiff', () => {
     expect(execSync).toHaveBeenCalledWith('git log --format=%H', { encoding: 'utf8' });
   });
 
-  it('passes allowedCommits to findLastRun when gitTreeOnly is true', async () => {
+  it('passes allowedCommits to findLastTest when gitTreeOnly is true', async () => {
     await call({ sessionId: 'sess-abc', scenarioId: SCENARIO_ID, gitTreeOnly: true });
-    expect(store.findLastRun).toHaveBeenCalledWith(
+    expect(store.findLastTest).toHaveBeenCalledWith(
       mockDb,
       SCENARIO_ID,
       'passed',
@@ -87,22 +87,22 @@ describe('registerDiff', () => {
     expect(execSync).not.toHaveBeenCalled();
   });
 
-  it('passes undefined allowedCommits to findLastRun when gitTreeOnly is false', async () => {
+  it('passes undefined allowedCommits to findLastTest when gitTreeOnly is false', async () => {
     await call({ sessionId: 'sess-abc', scenarioId: SCENARIO_ID, gitTreeOnly: false });
-    expect(store.findLastRun).toHaveBeenCalledWith(mockDb, SCENARIO_ID, 'passed', undefined);
+    expect(store.findLastTest).toHaveBeenCalledWith(mockDb, SCENARIO_ID, 'passed', undefined);
   });
 
   it('proceeds unfiltered when git log fails', async () => {
     vi.mocked(execSync).mockImplementation(() => { throw new Error('not a git repo'); });
     await call({ sessionId: 'sess-abc', scenarioId: SCENARIO_ID });
-    expect(store.findLastRun).toHaveBeenCalledWith(mockDb, SCENARIO_ID, 'passed', undefined);
+    expect(store.findLastTest).toHaveBeenCalledWith(mockDb, SCENARIO_ID, 'passed', undefined);
   });
 
-  it('returns isError when no passing run is found', async () => {
-    vi.mocked(store.findLastRun).mockReturnValue(null);
+  it('returns isError when no passing test is found', async () => {
+    vi.mocked(store.findLastTest).mockReturnValue(null);
     const result = await call({ sessionId: 'sess-abc', scenarioId: SCENARIO_ID });
     expect(result.isError).toBe(true);
-    expect(result.content[0].text).toContain('No passing run');
+    expect(result.content[0].text).toContain('No passing test');
   });
 
   it('returns isError when no HTML artifact is found', async () => {
@@ -126,8 +126,8 @@ describe('registerDiff', () => {
     expect(mockDb.close).toHaveBeenCalled();
   });
 
-  it('closes the DB when findLastRun returns null', async () => {
-    vi.mocked(store.findLastRun).mockReturnValue(null);
+  it('closes the DB when findLastTest returns null', async () => {
+    vi.mocked(store.findLastTest).mockReturnValue(null);
     await call({ sessionId: 'sess-abc', scenarioId: SCENARIO_ID });
     expect(mockDb.close).toHaveBeenCalled();
   });
