@@ -79,7 +79,7 @@ export function registerDiff(server: McpServer, sessions: SessionManager): void 
         const diff = await unifiedHtmlDiff({ html: storedHtml, url: 'about:blank' }, session.controller.page);
 
         const screenshots = artifacts
-          .filter((a) => a.filename.endsWith('.png'))
+          .filter((a) => a.stepIdx === htmlArtifact.stepIdx && a.filename.endsWith('.png'))
           .map((a) => join(artifactDir, a.filename));
 
         return text(

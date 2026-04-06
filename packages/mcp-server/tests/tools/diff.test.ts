@@ -40,8 +40,10 @@ describe('registerDiff', () => {
     vi.mocked(store.openStore).mockReturnValue(mockDb as any);
     vi.mocked(store.findLastTest).mockReturnValue({ id: TEST_ID, gitCommit: GIT_COMMIT });
     vi.mocked(store.findArtifacts).mockReturnValue([
+      { filename: 'screen-step0.png', stepId: 'step-0', stepIdx: 0 },
       { filename: 'snap.html', stepId: 'step-1', stepIdx: 0 },
       { filename: 'screen.png', stepId: 'step-1', stepIdx: 0 },
+      { filename: 'screen-step2.png', stepId: 'step-2', stepIdx: 2 },
     ]);
     vi.mocked(readFileSync).mockReturnValue('<html><body>old</body></html>' as any);
     vi.mocked(execSync).mockReturnValue('abc123\ndef456\n' as any);
@@ -63,8 +65,9 @@ describe('registerDiff', () => {
     expect(result.diff).toContain('--- before');
     expect(result.baseline.testId).toBe(TEST_ID);
     expect(result.baseline.commit).toBe(GIT_COMMIT);
-    expect(result.baseline.screenshots).toHaveLength(1);
-    expect(result.baseline.screenshots[0]).toMatch(/screen\.png$/);
+    expect(result.baseline.screenshots).toHaveLength(2);
+    expect(result.baseline.screenshots.some((p: string) => /screen-step0\.png$/.test(p))).toBe(true);
+    expect(result.baseline.screenshots.some((p: string) => /screen\.png$/.test(p))).toBe(true);
   });
 
   it('calls git log when gitTreeOnly is true (default)', async () => {

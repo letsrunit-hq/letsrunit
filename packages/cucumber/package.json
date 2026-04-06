@@ -39,6 +39,11 @@
         "types": "./dist/progress.d.ts",
         "import": "./dist/progress.js",
         "default": "./dist/progress.js"
+      },
+      "./agent": {
+        "types": "./dist/agent.d.ts",
+        "import": "./dist/agent.js",
+        "default": "./dist/agent.js"
       }
     }
   },
@@ -84,6 +89,11 @@
       "types": "./src/progress.ts",
       "import": "./src/progress.ts",
       "default": "./src/progress.ts"
+    },
+    "./agent": {
+      "types": "./src/agent.ts",
+      "import": "./src/agent.ts",
+      "default": "./src/agent.ts"
     }
   }
 }

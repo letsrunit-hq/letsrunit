@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: ['src/index.ts', 'src/store.ts', 'src/progress.ts'],
+  entry: ['src/index.ts', 'src/store.ts', 'src/progress.ts', 'src/agent.ts'],
   format: ['esm'],
   platform: 'node',
   dts: true,
