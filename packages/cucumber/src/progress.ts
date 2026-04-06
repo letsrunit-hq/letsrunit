@@ -17,6 +17,7 @@ const STATUS_CHARACTER_MAPPING = new Map<string, string>([
 type ParsedStep = {
   keyword: string;
   text?: string;
+  name?: string;
   result: { status: StepStatus; message?: string };
   attachments?: Array<{ body: string; mediaType: string; fileName?: string }>;
   argument?: {
@@ -28,6 +29,7 @@ type ParsedStep = {
 type FailureDetails = {
   error?: string;
   locator?: string;
+  locatorFuzzy?: boolean;
   url?: string;
 };
 
@@ -103,11 +105,15 @@ function resolveLastPassedLine({ scenarioId }: { scenarioId: string }): LastPass
   }
 }
 
-function trimLocator(locator: string): string {
+function simplifyLocator(locator: string): { locator: string; fuzzy: boolean } {
   const raw = locator.trim();
-  const match = raw.match(/^locator\((['"`])(.*)\1\)(?:\.[A-Za-z_]\w*\([^)]*\))*$/);
-  if (!match) return raw;
-  return match[2];
+  const fuzzy = raw.includes('.or(');
+
+  const firstLocatorMatch = raw.match(/locator\((['"`])([\s\S]*?)\1\)/);
+  if (!firstLocatorMatch) return { locator: raw, fuzzy };
+
+  const simplified = firstLocatorMatch[2].trim();
+  return { locator: simplified || raw, fuzzy };
 }
 
 function isStackLine(line: string): boolean {
@@ -118,7 +124,15 @@ function extractLocator(lines: string[]): string | undefined {
   const locatorLine = lines.find((line) => line.trim().startsWith('Locator:'));
   if (!locatorLine) return undefined;
   const raw = locatorLine.replace(/^\s*Locator:\s*/, '').trim();
-  return raw ? trimLocator(raw) : undefined;
+  return raw ? simplifyLocator(raw).locator : undefined;
+}
+
+function extractLocatorFuzzy(lines: string[]): boolean | undefined {
+  const locatorLine = lines.find((line) => line.trim().startsWith('Locator:'));
+  if (!locatorLine) return undefined;
+  const raw = locatorLine.replace(/^\s*Locator:\s*/, '').trim();
+  if (!raw) return undefined;
+  return simplifyLocator(raw).fuzzy;
 }
 
 function extractUrl(lines: string[]): string | undefined {
@@ -177,6 +191,7 @@ export function extractFailureDetails(message?: string): FailureDetails {
   return {
     error: extractError(lines),
     locator: extractLocator(lines),
+    locatorFuzzy: extractLocatorFuzzy(lines),
     url: extractUrl(lines),
   };
 }
@@ -192,7 +207,8 @@ function formatScenarioLine(
 function formatStepLine(step: ParsedStep, colorFns: IFormatterOptions['colorFns']): string {
   const char = STATUS_CHARACTER_MAPPING.get(step.result.status) ?? '?';
   const identifier = `${step.keyword}${step.text ?? ''}`;
-  const line = `   ${char} ${identifier}`;
+  const named = step.name ? `${identifier} (${step.name})` : identifier;
+  const line = `   ${char} ${named}`;
   return `${colorFns.forStatus(step.result.status)(line)}\n`;
 }
 
@@ -204,7 +220,10 @@ function formatFailureDetails(step: ParsedStep, colorFns: IFormatterOptions['col
   const url = urlFromAttachment ?? details.url;
   const lines: string[] = [];
   if (url) lines.push(`       URL: ${url}`);
-  if (details.locator) lines.push(`       Locator: ${details.locator}`);
+  if (details.locator) {
+    const fuzzy = details.locatorFuzzy ? ' {fuzzy}' : '';
+    lines.push(`       Locator: ${details.locator}${fuzzy}`);
+  }
   if (details.error) lines.push(`       Error: ${details.error}`);
   if (lines.length === 0) return '';
 

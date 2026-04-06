@@ -21,7 +21,19 @@ describe('extractFailureDetails', () => {
     const details = extractFailureDetails(message);
     expect(details.error).toBe('element(s) not found');
     expect(details.locator).toBe('text=/Hi world/i');
+    expect(details.locatorFuzzy).toBe(false);
     expect(details.url).toBeUndefined();
+  });
+
+  it('simplifies fuzzy locator chains and marks them as fuzzy', () => {
+    const message = [
+      "Locator: locator('role=button [name=\"Use Item\"i]').or(locator('role=button').filter({ hasText: 'Use Item' })).or(locator('text=Use Item').locator('..').locator('role=button')).first()",
+      'Error: element(s) not found',
+    ].join('\n');
+
+    const details = extractFailureDetails(message);
+    expect(details.locator).toBe('role=button [name="Use Item"i]');
+    expect(details.locatorFuzzy).toBe(true);
   });
 
   it('falls back to first useful line for non-Playwright message', () => {

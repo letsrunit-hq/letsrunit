@@ -24,14 +24,14 @@ BeforeAll(async function () {
   } catch {}
 });
 
-Before(async function () {
+Before({ name: 'Launch browser session' }, async function () {
   const browser = await chromium.launch({ headless: true });
   this._browser = browser;
   this.page = await browse(browser, this.parameters);
   this.startTime = Date.now();
 });
 
-After(async function () {
+After({ name: 'Close browser session' }, async function () {
   await this._browser?.close();
 });
 
