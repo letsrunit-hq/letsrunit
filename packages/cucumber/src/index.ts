@@ -38,15 +38,15 @@ After(async function () {
 AfterStep(async function () {
   const page = this.page;
   if (!page || page.url() === 'about:blank') return;
+
   try {
-    const [screenshotBuffer, html, url] = await Promise.all([
-      page.screenshot(),
-      scrubHtml(page),
-      Promise.resolve(page.url()),
+    const [screenshot, html] = await Promise.all([
+      page.screenshot().catch(() => null),
+      scrubHtml(page).catch(() => null),
     ]);
 
-    this.attach(screenshotBuffer, 'image/png');
-    this.attach(html, 'text/html');
-    this.attach(url, 'text/x-letsrunit-url');
+    this.attach(page.url(), 'text/x-letsrunit-url');
+    if (screenshot) this.attach(screenshot, 'image/png');
+    if (html) this.attach(html, 'text/html');
   } catch {}
 });

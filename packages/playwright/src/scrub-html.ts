@@ -176,8 +176,9 @@ export async function realScrubHtml(
   opts: ScrubHtmlOptions = {},
 ): Promise<string> {
   const o = { ...getDefaults(html.length), ...opts };
+  const htmlForDom = preStripHtmlForJSDOM(html, o.dropHead);
 
-  const dom = new JSDOM(html, { url });
+  const dom = new JSDOM(htmlForDom, { url });
   const doc = dom.window.document;
 
   if (o.pickMain) pickMain(doc);
@@ -248,6 +249,16 @@ function pickMain(doc: Document): boolean {
   doc.body.innerHTML = '';
   doc.body.appendChild(clone);
   return true;
+}
+
+function preStripHtmlForJSDOM(html: string, dropHead: boolean): string {
+  let out = html;
+  if (dropHead) out = out.replace(/<head\b[\s\S]*?<\/head>/gi, '');
+
+  // Prevent jsdom/cssom import-rule recursion while preserving body semantics.
+  out = out.replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '');
+  out = out.replace(/<link\b[^>]*\brel\s*=\s*["']?stylesheet["']?[^>]*>/gi, '');
+  return out;
 }
 
 function dropInfraAndSvg(doc: Document, dropSvg: boolean) {
