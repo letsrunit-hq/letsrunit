@@ -4,15 +4,42 @@ import { setRadioGroup } from '../../src/field/radio-group';
 
 describe('setRadioGroup', () => {
   const makeGroup = (ariaRadios: Array<{ value: string; label: string; checked?: boolean }>) => {
-    const items = ariaRadios.map(({ value, label, checked }) => ({
-      getAttribute: vi.fn().mockImplementation((attr: string) => {
-        if (attr === 'aria-checked') return Promise.resolve(checked ? 'true' : 'false');
-        return Promise.resolve(null);
+    const items = ariaRadios.map(({ value, label, checked }) => {
+      let state = checked ? 'true' : 'false';
+      return {
+        getAttribute: vi.fn().mockImplementation((attr: string) => {
+          if (attr === 'aria-checked') return Promise.resolve(state);
+          return Promise.resolve(null);
+        }),
+        click: vi.fn().mockImplementation(() => {
+          state = 'true';
+          return Promise.resolve(undefined);
+        }),
+        isChecked: vi.fn().mockResolvedValue(checked ?? false),
+        _value: value,
+        _label: label,
+      };
+    });
+
+    const makeLocator = (found: typeof items) => ({
+      count: vi.fn().mockResolvedValue(found.length),
+      first: vi.fn().mockReturnValue(found[0] ?? null),
+      nth: vi.fn().mockImplementation((index: number) => ({
+        textContent: vi.fn().mockResolvedValue(found[index]?._label ?? ''),
+        click: vi.fn().mockResolvedValue(undefined),
+      })),
+      filter: vi.fn().mockImplementation(({ hasText }: { hasText?: RegExp }) => {
+        if (!hasText) return makeLocator(found);
+        const filtered = found.filter((i) => hasText.test(i._label));
+        return makeLocator(filtered);
       }),
+      locator: vi.fn().mockImplementation((selector: string) => {
+        if (selector === 'input[type=radio]') return makeLocator(found);
+        return makeLocator([]);
+      }),
+      textContent: vi.fn().mockResolvedValue(found[0]?._label ?? ''),
       click: vi.fn().mockResolvedValue(undefined),
-      _value: value,
-      _label: label,
-    }));
+    });
 
     const el = {
       locator: vi.fn().mockImplementation((selector: string) => {
@@ -24,30 +51,34 @@ describe('setRadioGroup', () => {
         const match = selector.match(/\[role="radio"\]\[value="([^"]+)"\]/);
         if (match) {
           const found = items.filter((i) => i._value === match[1]);
-          return {
-            count: vi.fn().mockResolvedValue(found.length),
-            first: vi.fn().mockReturnValue(found[0] ?? null),
-          };
+          return makeLocator(found);
         }
-        return { count: vi.fn().mockResolvedValue(0) };
+        if (selector === 'label') return makeLocator([]);
+        return makeLocator([]);
       }),
       getByLabel: vi.fn().mockImplementation((label: string) => ({
         locator: vi.fn().mockImplementation((selector: string) => {
           if (selector === 'input[type=radio]') {
-            return { count: vi.fn().mockResolvedValue(0), check: vi.fn() };
+            return makeLocator([]);
           }
           if (selector === '[role="radio"]') {
             const found = items.filter(
               (i) => i._label.toLowerCase() === label.toLowerCase(),
             );
-            return {
-              count: vi.fn().mockResolvedValue(found.length),
-              first: vi.fn().mockReturnValue(found[0] ?? null),
-            };
+            return makeLocator(found);
           }
-          return { count: vi.fn().mockResolvedValue(0) };
+          return makeLocator([]);
         }),
       })),
+      getByRole: vi.fn().mockImplementation((role: string, opts?: { name?: string | RegExp }) => {
+        if (role !== 'radio') return makeLocator([]);
+        if (!opts?.name) return makeLocator(items);
+        const found = items.filter((i) => {
+          if (opts.name instanceof RegExp) return opts.name.test(i._label);
+          return i._label.toLowerCase() === String(opts.name).toLowerCase();
+        });
+        return makeLocator(found);
+      }),
     } as unknown as Locator;
 
     return { el, items };
@@ -90,10 +121,20 @@ describe('setRadioGroup', () => {
       check: vi.fn().mockResolvedValue(undefined),
     };
     const el = {
-      locator: vi.fn().mockReturnValue({ count: vi.fn().mockResolvedValue(0), check: vi.fn() }),
+      locator: vi.fn().mockImplementation(() => ({
+        count: vi.fn().mockResolvedValue(0),
+        check: vi.fn(),
+        filter: vi.fn().mockReturnThis(),
+        locator: vi.fn().mockReturnThis(),
+        first: vi.fn().mockReturnThis(),
+        nth: vi.fn().mockReturnThis(),
+        textContent: vi.fn().mockResolvedValue(''),
+        click: vi.fn().mockResolvedValue(undefined),
+      })),
       getByLabel: vi.fn().mockImplementation(() => ({
         locator: vi.fn().mockReturnValue(nativeRadioByLabel),
       })),
+      getByRole: vi.fn().mockReturnValue({ count: vi.fn().mockResolvedValue(0) }),
     } as unknown as Locator;
 
     const result = await setRadioGroup({ el, tag: 'div', type: null }, 'Blue');

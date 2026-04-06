@@ -16,39 +16,58 @@ describe('selectAria', () => {
   }) => {
     const optionLocators = (options ?? []).map(({ value, name }) => ({
       click: vi.fn().mockResolvedValue(undefined),
+      getAttribute: vi.fn().mockImplementation((attr: string) => {
+        if (attr === 'aria-selected') return Promise.resolve('true');
+        return Promise.resolve(null);
+      }),
       _value: value,
       _name: name,
     }));
 
-    const makeOptionLocator = (found: typeof optionLocators) => ({
+    const makeOptionLocator = (found: typeof optionLocators) => {
+      const first = found[0] ?? null;
+      return {
       count: vi.fn().mockResolvedValue(found.length),
-      first: vi.fn().mockReturnValue(found[0] ?? null),
-    });
+        first: vi.fn().mockReturnValue(first),
+      };
+    };
 
-    const listbox = {
+    const emptyLocator: any = {
+      count: vi.fn().mockResolvedValue(0),
+      waitFor: vi.fn().mockResolvedValue(undefined),
+    };
+    emptyLocator.first = vi.fn().mockReturnValue(emptyLocator);
+
+    const listbox: any = {
+      count: vi.fn().mockResolvedValue(1),
+      first: vi.fn(),
+      waitFor: vi.fn().mockResolvedValue(undefined),
       locator: vi.fn().mockImplementation((selector: string) => {
         const match = selector.match(/\[role="option"\]\[value="([^"]+)"\]/);
         if (match) {
           const found = optionLocators.filter((o) => o._value === match[1]);
           return makeOptionLocator(found);
         }
-        return { count: vi.fn().mockResolvedValue(0) };
+        return emptyLocator;
       }),
-      getByRole: vi.fn().mockImplementation((role: string, opts?: { name?: string }) => {
+      getByRole: vi.fn().mockImplementation((role: string, opts?: { name?: string | RegExp }) => {
         if (role === 'option' && opts?.name) {
-          const found = optionLocators.filter(
-            (o) => o._name.toLowerCase() === opts.name!.toLowerCase(),
-          );
+          const found = optionLocators.filter((o) => {
+            if (opts.name instanceof RegExp) return opts.name.test(o._name);
+            return o._name.toLowerCase() === String(opts.name).toLowerCase();
+          });
           return makeOptionLocator(found);
         }
-        return { count: vi.fn().mockResolvedValue(0) };
+        return emptyLocator;
       }),
     };
+    listbox.first.mockReturnValue(listbox);
 
     const page = {
       locator: vi.fn().mockImplementation((selector: string) => {
-        if (ariaControls && selector === `#${ariaControls}`) return listbox;
-        return { count: vi.fn().mockResolvedValue(0) };
+        if (ariaControls && selector === `[role="listbox"][id="${ariaControls}"]`) return listbox;
+        if (selector === '[role="listbox"]:visible') return emptyLocator;
+        return emptyLocator;
       }),
     };
 
@@ -60,6 +79,8 @@ describe('selectAria', () => {
         return Promise.resolve(null);
       }),
       click: vi.fn().mockResolvedValue(undefined),
+      locator: vi.fn().mockImplementation(() => emptyLocator),
+      evaluate: vi.fn().mockResolvedValue('before'),
       page: vi.fn().mockReturnValue(page),
     } as unknown as Locator;
 

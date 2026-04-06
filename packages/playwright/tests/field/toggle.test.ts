@@ -3,15 +3,24 @@ import { describe, expect, it, vi } from 'vitest';
 import { setToggle } from '../../src/field/toggle';
 
 describe('setToggle', () => {
-  const makeEl = (role: string | null, ariaChecked: string | null) =>
-    ({
+  const makeEl = (role: string | null, ariaChecked: string | null) => {
+    let current = ariaChecked;
+    return ({
       getAttribute: vi.fn().mockImplementation((attr: string) => {
         if (attr === 'role') return Promise.resolve(role);
-        if (attr === 'aria-checked') return Promise.resolve(ariaChecked);
+        if (attr === 'aria-checked') return Promise.resolve(current);
         return Promise.resolve(null);
       }),
-      click: vi.fn().mockResolvedValue(undefined),
+      click: vi.fn().mockImplementation(() => {
+        current = current === 'true' ? 'false' : 'true';
+        return Promise.resolve(undefined);
+      }),
+      locator: vi.fn().mockReturnValue({
+        first: vi.fn().mockReturnThis(),
+        count: vi.fn().mockResolvedValue(0),
+      }),
     }) as unknown as Locator;
+  };
 
   it('returns false if value is not boolean or null', async () => {
     const el = makeEl('checkbox', 'false');
