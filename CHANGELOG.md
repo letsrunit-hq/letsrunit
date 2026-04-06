@@ -1,3 +1,10 @@
+# [0.12.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.11.0...v0.12.0) (2026-04-06)
+
+
+### Features
+
+* **cucumber:** add agent NDJSON formatter ([be6a41a](https://github.com/letsrunit-hq/letsrunit/commit/be6a41a62a73029a61d429c87ee6858eb9ea7695))
+
 # [0.11.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.10.0...v0.11.0) (2026-04-05)
 
 
