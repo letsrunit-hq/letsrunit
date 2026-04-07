@@ -4,18 +4,26 @@ import { type Environment, execPm } from '../detect.js';
 
 const BDD_IMPORT = '@letsrunit/cucumber';
 
-const CUCUMBER_CONFIG = `export default {
+const CUCUMBER_CONFIG = `import { resolveDebugWorldParameters } from '@letsrunit/cucumber/config';
+
+const { failFast, worldParameters } = resolveDebugWorldParameters({
+  argv: process.argv,
+  baseWorldParameters: {
+    baseURL: 'http://localhost:3000',
+  },
+});
+
+export default {
   require: ['features/support/**/*.js'],
   format: ['@letsrunit/cucumber/progress'],
+  failFast,
   plugin: ['@letsrunit/cucumber/store'],
   pluginOptions: {
     letsrunitStore: {
       directory: '.letsrunit',
     },
   },
-  worldParameters: {
-    baseURL: 'http://localhost:3000',
-  },
+  worldParameters,
 };
 `;
 

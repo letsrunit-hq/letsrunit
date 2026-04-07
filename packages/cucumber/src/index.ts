@@ -3,6 +3,7 @@ import { registry, typeDefinitions } from '@letsrunit/bdd'; // importing bdd reg
 import { sanitizeStepDefinition } from '@letsrunit/gherkin';
 import { browse, createDateEngine, createFieldEngine, scrubHtml } from '@letsrunit/playwright';
 import { chromium, selectors } from '@playwright/test';
+import { resolveHeadless, shouldKeepBrowserOpenOnFailure } from './run-policy';
 
 for (const type of typeDefinitions) {
   defineParameterType(type);
@@ -25,13 +26,14 @@ BeforeAll(async function () {
 });
 
 Before({ name: 'Launch browser session' }, async function () {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({ headless: resolveHeadless(this.parameters) });
   this._browser = browser;
   this.page = await browse(browser, this.parameters);
   this.startTime = Date.now();
 });
 
-After({ name: 'Close browser session' }, async function () {
+After({ name: 'Close browser session' }, async function ({ result }: { result?: { status?: string } }) {
+  if (shouldKeepBrowserOpenOnFailure(this.parameters, result?.status)) return;
   await this._browser?.close();
 });
 

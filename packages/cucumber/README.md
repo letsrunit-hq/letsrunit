@@ -21,7 +21,8 @@ Import this in your Cucumber support file (or via `require`/`import` in `cucumbe
 - Registers all built-in letsrunit BDD step definitions (`Given`/`When`/`Then`) from `@letsrunit/bdd`
 - Registers custom parameter types
 - Registers the `field` and `date` Playwright selector engines in `BeforeAll`
-- Launches a headless Chromium browser in `Before` and closes it in `After`
+- Launches Chromium in `Before` using `worldParameters.headless` (defaults to `true`)
+- Closes the browser in `After` unless `worldParameters.skipCloseOnFailure` is `true` and the scenario failed
 - Captures a screenshot and HTML snapshot after every step in `AfterStep` (attached to the Cucumber report)
 
 ```js
@@ -32,6 +33,33 @@ export default {
     // ...
   },
 };
+```
+
+### Debug Run Policy Helper
+
+Use `@letsrunit/cucumber/config` to derive `failFast` and `worldParameters` from CLI args:
+
+```js
+import { resolveDebugWorldParameters } from '@letsrunit/cucumber/config';
+
+const { failFast, worldParameters } = resolveDebugWorldParameters({
+  argv: process.argv,
+  baseWorldParameters: {
+    baseURL: 'http://localhost:3000',
+  },
+});
+
+export default {
+  format: ['@letsrunit/cucumber/progress'],
+  failFast,
+  worldParameters,
+};
+```
+
+Running headed + fail-fast:
+
+```bash
+cucumber-js --fail-fast --world-parameters '{"headless":false}'
 ```
 
 ## `@letsrunit/cucumber/store` — plugin

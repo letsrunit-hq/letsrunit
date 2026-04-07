@@ -44,6 +44,11 @@
         "types": "./dist/agent.d.ts",
         "import": "./dist/agent.js",
         "default": "./dist/agent.js"
+      },
+      "./config": {
+        "types": "./dist/config.d.ts",
+        "import": "./dist/config.js",
+        "default": "./dist/config.js"
       }
     }
   },
@@ -94,6 +99,11 @@
       "types": "./src/agent.ts",
       "import": "./src/agent.ts",
       "default": "./src/agent.ts"
+    },
+    "./config": {
+      "types": "./src/config.ts",
+      "import": "./src/config.ts",
+      "default": "./src/config.ts"
     }
   }
 }
