@@ -1,3 +1,17 @@
+# [0.13.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.12.0...v0.13.0) (2026-04-07)
+
+
+### Bug Fixes
+
+* **cucumber:** keep URL attachments despite scrub failures ([02828cb](https://github.com/letsrunit-hq/letsrunit/commit/02828cb5eee2effb23eac1be94845386e19be9ad))
+* **cucumber:** simplify fuzzy locators in progress output ([c43fd3d](https://github.com/letsrunit-hq/letsrunit/commit/c43fd3daa1020c1e9dbbe4c603465fa458e67855))
+
+
+### Features
+
+* **cucumber:** add config helper for headed fail-fast debug runs ([11e09b1](https://github.com/letsrunit-hq/letsrunit/commit/11e09b16dd958201378ff8f386bc0041209b7013))
+* **cucumber:** add run policy and config helpers ([877991e](https://github.com/letsrunit-hq/letsrunit/commit/877991ea69f7553085e2e53bc39e8c93fa33e230))
+
 # [0.12.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.11.0...v0.12.0) (2026-04-06)
 
 
