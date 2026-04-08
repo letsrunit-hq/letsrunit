@@ -11,14 +11,14 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Enable Corepack
         run: corepack enable
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: yarn
 
       - name: Build monorepo
@@ -44,7 +44,7 @@ jobs:
           yarn workspace @letsrunit/store pack --out /tmp/store.tgz
           yarn workspace @letsrunit/utils pack --out /tmp/utils.tgz
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: tarballs
           path: |
@@ -67,6 +67,8 @@ jobs:
   init:
     name: Init (${{ matrix.pm }})
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.57.0-noble
     needs: build
     strategy:
       fail-fast: false
@@ -77,19 +79,25 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         if: matrix.pm == 'pnpm'
         with:
           version: latest
 
+      - name: Install Bun prerequisites
+        if: matrix.pm == 'bun'
+        run: |
+          apt-get update
+          apt-get install -y unzip build-essential
+
       - uses: oven-sh/setup-bun@v2
         if: matrix.pm == 'bun'
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: tarballs
           path: /tmp
@@ -166,10 +174,6 @@ jobs:
             bun)  bun install ;;
           esac
 
-      - name: Install Playwright system deps
-        working-directory: /tmp/test-${{ matrix.pm }}
-        run: node_modules/.bin/playwright install-deps chromium
-
       - name: Run init
         working-directory: /tmp/test-${{ matrix.pm }}
         run: node node_modules/letsrunit/dist/bin.js init --yes
@@ -192,18 +196,42 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - uses: actions/download-artifact@v7
         with:
           name: tarballs
           path: /tmp
 
-      - name: MCP handshake smoke (tools/list)
+      - name: MCP smoke (startup + tools/list)
         shell: bash
         run: |
           set -euo pipefail
-          npx -y @modelcontextprotocol/inspector --cli \
-            npx -y /tmp/mcp-server.tgz \
-            --method tools/list > /tmp/mcp-tools.json
+
+          cat >/tmp/run-mcp.sh <<'EOF'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          exec npx -y file:/tmp/mcp-server.tgz 2>/tmp/mcp-server.stderr
+          EOF
+          chmod +x /tmp/run-mcp.sh
+
+          set +e
+          timeout 5s /tmp/run-mcp.sh >/tmp/mcp-server.stdout
+          startup_rc=$?
+          set -e
+          if [ "$startup_rc" -ne 124 ]; then
+            echo "MCP server crashed on startup"
+            sed -n '1,200p' /tmp/mcp-server.stderr || true
+            exit 1
+          fi
+
+          if ! npx -y @modelcontextprotocol/inspector --cli /tmp/run-mcp.sh --method tools/list > /tmp/mcp-tools.json; then
+            echo "Inspector handshake failed"
+            sed -n '1,200p' /tmp/mcp-server.stderr || true
+            exit 1
+          fi
+
           jq -e '.tools | length > 0' /tmp/mcp-tools.json >/dev/null
           jq -e '.tools[] | select(.name == "letsrunit_session_start")' /tmp/mcp-tools.json >/dev/null
-
