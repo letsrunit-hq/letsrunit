@@ -1,3 +1,10 @@
+## [0.13.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.13.0...v0.13.1) (2026-04-08)
+
+
+### Bug Fixes
+
+* **mcp-server:** enable node shims for ESM bundle ([6d146ae](https://github.com/letsrunit-hq/letsrunit/commit/6d146aec7f63bde4b657e949b8306bae0a943b7b))
+
 # [0.13.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.12.0...v0.13.0) (2026-04-07)
 
 
