@@ -141,7 +141,6 @@ jobs:
               private: true,
               type: 'module',
               dependencies: {
-                'letsrunit':               'file:./letsrunit.tgz',
                 '@letsrunit/cli':          'file:./cli.tgz',
                 '@letsrunit/cucumber':     'file:./cucumber.tgz',
                 '@cucumber/cucumber':      '*',
@@ -173,7 +172,7 @@ jobs:
 
       - name: Run init
         working-directory: /tmp/test-${{ matrix.pm }}
-        run: node node_modules/letsrunit/dist/bin.js init --yes
+        run: npx -y file:./letsrunit.tgz init --yes
 
       - name: Start web server
         run: |
@@ -186,7 +185,13 @@ jobs:
 
       - name: CLI smoke test
         working-directory: /tmp/test-${{ matrix.pm }}
-        run: node_modules/.bin/letsrunit --help
+        run: |
+          case "${{ matrix.pm }}" in
+            npm)  npx letsrunit --help ;;
+            yarn) yarn letsrunit --help ;;
+            pnpm) pnpm exec letsrunit --help ;;
+            bun)  bunx letsrunit --help ;;
+          esac
         
   mcp-server-integration:
     name: MCP Server Integration
