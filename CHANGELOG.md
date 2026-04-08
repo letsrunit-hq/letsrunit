@@ -1,3 +1,10 @@
+## [0.13.2](https://github.com/letsrunit-hq/letsrunit/compare/v0.13.1...v0.13.2) (2026-04-08)
+
+
+### Bug Fixes
+
+* **mcp-server:** add createRequire shim to bundled entry ([e616df4](https://github.com/letsrunit-hq/letsrunit/commit/e616df45dd288d19ee3dddd8b619367ba54c6a0f))
+
 ## [0.13.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.13.0...v0.13.1) (2026-04-08)
 
 
