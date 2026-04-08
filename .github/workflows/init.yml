@@ -202,8 +202,7 @@ jobs:
         run: |
           set -euo pipefail
           npx -y @modelcontextprotocol/inspector --cli \
-            npx -y /tmp/mcp-server.tgz \
+            npx -y file:/tmp/mcp-server.tgz \
             --method tools/list > /tmp/mcp-tools.json
           jq -e '.tools | length > 0' /tmp/mcp-tools.json >/dev/null
           jq -e '.tools[] | select(.name == "letsrunit_session_start")' /tmp/mcp-tools.json >/dev/null
-
