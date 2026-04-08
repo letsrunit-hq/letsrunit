@@ -198,6 +198,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: mcr.microsoft.com/playwright:v1.59.1-noble
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
     needs: build
     steps:
       - uses: actions/setup-node@v6
@@ -209,7 +211,7 @@ jobs:
           name: tarballs
           path: /tmp
 
-      - name: MCP integration (packaged server + core tools)
+      - name: MCP integration (deterministic install + npx path)
         shell: bash
         run: |
           set -euo pipefail
@@ -226,11 +228,13 @@ jobs:
             "private": true,
             "type": "module",
             "dependencies": {
-              "@modelcontextprotocol/sdk": "^1.18.2"
+              "@letsrunit/mcp-server": "file:/tmp/mcp-server.tgz",
+              "@modelcontextprotocol/sdk": "^1.26.0"
             }
           }
           EOF
           (cd /tmp/mcp-int && npm install --no-audit --no-fund)
+          (cd /tmp/mcp-int && npx playwright install chromium)
 
           cat >/tmp/mcp-int/run.mjs <<'EOF'
           import { Client } from '@modelcontextprotocol/sdk/client/index.js';
@@ -258,17 +262,16 @@ jobs:
             return parsed.value;
           }
 
-          const transport = new StdioClientTransport({
-            command: 'npx',
-            args: ['-y', 'file:/tmp/mcp-server.tgz'],
-            stderr: 'pipe',
-          });
-          transport.stderr?.on('data', (chunk) => process.stderr.write(chunk));
-
-          const client = new Client({ name: 'mcp-integration', version: '1.0.0' });
-          await client.connect(transport);
-
-          try {
+          async function runFlow(name, transportConfig) {
+            process.stderr.write(`\n[mcp-integration] running ${name}\n`);
+            const transport = new StdioClientTransport({
+              ...transportConfig,
+              stderr: 'pipe',
+            });
+            transport.stderr?.on('data', (chunk) => process.stderr.write(chunk));
+            const client = new Client({ name: `mcp-integration-${name}`, version: '1.0.0' });
+            await client.connect(transport);
+            try {
             const { tools } = await client.listTools();
             if (!tools.some((tool) => tool.name === 'letsrunit_session_start')) {
               throw new Error('Missing letsrunit_session_start tool');
@@ -312,9 +315,20 @@ jobs:
             }
 
             await callTool(client, 'letsrunit_session_close', { sessionId });
-          } finally {
-            await client.close();
+            } finally {
+              await client.close();
+            }
           }
+
+          await runFlow('deterministic', {
+            command: 'node',
+            args: ['/tmp/mcp-int/node_modules/@letsrunit/mcp-server/dist/index.js'],
+          });
+
+          await runFlow('npx', {
+            command: 'npx',
+            args: ['-y', 'file:/tmp/mcp-server.tgz'],
+          });
           EOF
 
           node /tmp/mcp-int/run.mjs
