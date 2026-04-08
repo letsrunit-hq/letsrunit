@@ -2,7 +2,7 @@ name: Init Integration Test
 
 on:
   push:
-    branches: [installation]
+    branches: [main]
   pull_request:
     branches: [main]
 
