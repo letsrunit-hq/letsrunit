@@ -197,12 +197,33 @@ jobs:
           name: tarballs
           path: /tmp
 
-      - name: MCP handshake smoke (tools/list)
+      - name: MCP smoke (startup + tools/list)
         shell: bash
         run: |
           set -euo pipefail
-          npx -y @modelcontextprotocol/inspector --cli \
-            npx -y file:/tmp/mcp-server.tgz \
-            --method tools/list > /tmp/mcp-tools.json
+
+          cat >/tmp/run-mcp.sh <<'EOF'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          exec npx -y file:/tmp/mcp-server.tgz 2>/tmp/mcp-server.stderr
+          EOF
+          chmod +x /tmp/run-mcp.sh
+
+          set +e
+          timeout 5s /tmp/run-mcp.sh >/tmp/mcp-server.stdout
+          startup_rc=$?
+          set -e
+          if [ "$startup_rc" -ne 124 ]; then
+            echo "MCP server crashed on startup"
+            sed -n '1,200p' /tmp/mcp-server.stderr || true
+            exit 1
+          fi
+
+          if ! npx -y @modelcontextprotocol/inspector --cli /tmp/run-mcp.sh --method tools/list > /tmp/mcp-tools.json; then
+            echo "Inspector handshake failed"
+            sed -n '1,200p' /tmp/mcp-server.stderr || true
+            exit 1
+          fi
+
           jq -e '.tools | length > 0' /tmp/mcp-tools.json >/dev/null
           jq -e '.tools[] | select(.name == "letsrunit_session_start")' /tmp/mcp-tools.json >/dev/null
