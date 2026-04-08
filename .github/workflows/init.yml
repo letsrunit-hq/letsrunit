@@ -65,7 +65,7 @@ jobs:
     name: Init (${{ matrix.pm }})
     runs-on: ubuntu-latest
     container:
-      image: mcr.microsoft.com/playwright:v1.57.0-noble
+      image: mcr.microsoft.com/playwright:v1.59.1-noble
     needs: build
     strategy:
       fail-fast: false
@@ -197,7 +197,7 @@ jobs:
     name: MCP Server Integration
     runs-on: ubuntu-latest
     container:
-      image: mcr.microsoft.com/playwright:v1.57.0-noble
+      image: mcr.microsoft.com/playwright:v1.59.1-noble
     needs: build
     steps:
       - uses: actions/setup-node@v6
