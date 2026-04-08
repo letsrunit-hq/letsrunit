@@ -7,6 +7,40 @@ on:
     branches: [main]
 
 jobs:
+  mcp-server-npx-smoke:
+    name: MCP Server Bundle Smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install and build mcp-server
+        run: |
+          yarn install --immutable
+          yarn workspace @letsrunit/mcp-server build
+
+      - name: Pack local mcp-server tarball
+        run: |
+          cd packages/mcp-server
+          npm pack
+
+      - name: MCP handshake smoke (tools/list)
+        shell: bash
+        run: |
+          set -euo pipefail
+          TARBALL="$(ls -t packages/mcp-server/letsrunit-mcp-server-*.tgz | head -n1)"
+          npx -y @modelcontextprotocol/inspector --cli \
+            npx -y "$TARBALL" \
+            --method tools/list > /tmp/mcp-tools.json
+          jq -e '.tools | length > 0' /tmp/mcp-tools.json >/dev/null
+          jq -e '.tools[] | select(.name == "letsrunit_session_start")' /tmp/mcp-tools.json >/dev/null
+
   build:
     name: Build
     runs-on: ubuntu-latest
