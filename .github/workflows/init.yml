@@ -191,9 +191,11 @@ jobs:
         working-directory: /tmp/test-${{ matrix.pm }}
         run: node_modules/.bin/letsrunit --help
         
-  mcp-server-smoke:
-    name: MCP Server Smoke
+  mcp-server-integration:
+    name: MCP Server Integration
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.57.0-noble
     needs: build
     steps:
       - uses: actions/setup-node@v6
@@ -205,33 +207,112 @@ jobs:
           name: tarballs
           path: /tmp
 
-      - name: MCP smoke (startup + tools/list)
+      - name: MCP integration (packaged server + core tools)
         shell: bash
         run: |
           set -euo pipefail
 
-          cat >/tmp/run-mcp.sh <<'EOF'
-          #!/usr/bin/env bash
-          set -euo pipefail
-          exec npx -y file:/tmp/mcp-server.tgz 2>/tmp/mcp-server.stderr
+          node -e "require('http').createServer((req, res) => { res.setHeader('Content-Type', 'text/html'); res.end('<html><head><title>MCP Test</title></head><body><h1>Welcome</h1><button>Click me</button></body></html>'); }).listen(3000)" >/tmp/mcp-demo.log 2>&1 &
+          DEMO_PID=$!
+          trap 'kill "$DEMO_PID" 2>/dev/null || true' EXIT
+          curl --retry 10 --retry-delay 1 --retry-connrefused -sf http://127.0.0.1:3000/
+
+          mkdir -p /tmp/mcp-int
+          cat >/tmp/mcp-int/package.json <<'EOF'
+          {
+            "name": "mcp-int",
+            "private": true,
+            "type": "module",
+            "dependencies": {
+              "@modelcontextprotocol/sdk": "^1.18.2"
+            }
+          }
           EOF
-          chmod +x /tmp/run-mcp.sh
+          (cd /tmp/mcp-int && npm install --no-audit --no-fund)
 
-          set +e
-          timeout 5s /tmp/run-mcp.sh >/tmp/mcp-server.stdout
-          startup_rc=$?
-          set -e
-          if [ "$startup_rc" -ne 124 ]; then
-            echo "MCP server crashed on startup"
-            sed -n '1,200p' /tmp/mcp-server.stderr || true
-            exit 1
-          fi
+          cat >/tmp/mcp-int/run.mjs <<'EOF'
+          import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+          import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
-          if ! npx -y @modelcontextprotocol/inspector --cli /tmp/run-mcp.sh --method tools/list > /tmp/mcp-tools.json; then
-            echo "Inspector handshake failed"
-            sed -n '1,200p' /tmp/mcp-server.stderr || true
-            exit 1
-          fi
+          function parseToolResponse(response) {
+            if (!response || response.isError) {
+              return { isError: true, value: response?.content?.[0]?.text ?? response };
+            }
+            const text = response.content?.[0]?.text;
+            if (typeof text !== 'string') return { isError: false, value: response };
+            try {
+              return { isError: false, value: JSON.parse(text) };
+            } catch {
+              return { isError: false, value: text };
+            }
+          }
 
-          jq -e '.tools | length > 0' /tmp/mcp-tools.json >/dev/null
-          jq -e '.tools[] | select(.name == "letsrunit_session_start")' /tmp/mcp-tools.json >/dev/null
+          async function callTool(client, name, args) {
+            const result = await client.callTool({ name, arguments: args });
+            const parsed = parseToolResponse(result);
+            if (parsed.isError) {
+              throw new Error(`${name} failed: ${JSON.stringify(parsed.value)}`);
+            }
+            return parsed.value;
+          }
+
+          const transport = new StdioClientTransport({
+            command: 'npx',
+            args: ['-y', 'file:/tmp/mcp-server.tgz'],
+            stderr: 'pipe',
+          });
+          transport.stderr?.on('data', (chunk) => process.stderr.write(chunk));
+
+          const client = new Client({ name: 'mcp-integration', version: '1.0.0' });
+          await client.connect(transport);
+
+          try {
+            const { tools } = await client.listTools();
+            if (!tools.some((tool) => tool.name === 'letsrunit_session_start')) {
+              throw new Error('Missing letsrunit_session_start tool');
+            }
+
+            const started = await callTool(client, 'letsrunit_session_start', {
+              baseURL: 'http://127.0.0.1:3000',
+              headless: true,
+            });
+            if (!started?.sessionId || typeof started.sessionId !== 'string') {
+              throw new Error(`Invalid session_start response: ${JSON.stringify(started)}`);
+            }
+            const { sessionId } = started;
+
+            const runResult = await callTool(client, 'letsrunit_run', {
+              sessionId,
+              input: 'Given I\\'m on the homepage\\nThen the page contains text "Welcome"',
+            });
+            if (runResult?.status !== 'passed') {
+              throw new Error(`Run did not pass: ${JSON.stringify(runResult)}`);
+            }
+
+            const snapshotResult = await callTool(client, 'letsrunit_snapshot', {
+              sessionId,
+              scrubScripts: true,
+              scrubStyles: true,
+              scrubComments: true,
+            });
+            if (!snapshotResult?.html || typeof snapshotResult.html !== 'string') {
+              throw new Error(`Snapshot did not return html: ${JSON.stringify(snapshotResult)}`);
+            }
+
+            const screenshotResult = await callTool(client, 'letsrunit_screenshot', { sessionId });
+            if (!screenshotResult?.path || typeof screenshotResult.path !== 'string') {
+              throw new Error(`Screenshot did not return path: ${JSON.stringify(screenshotResult)}`);
+            }
+
+            const listed = await callTool(client, 'letsrunit_list_sessions', {});
+            if (!Array.isArray(listed?.sessions) || !listed.sessions.some((session) => session.id === sessionId)) {
+              throw new Error(`Session not found in list_sessions: ${JSON.stringify(listed)}`);
+            }
+
+            await callTool(client, 'letsrunit_session_close', { sessionId });
+          } finally {
+            await client.close();
+          }
+          EOF
+
+          node /tmp/mcp-int/run.mjs
