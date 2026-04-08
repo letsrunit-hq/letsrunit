@@ -2,6 +2,10 @@ import { chain, isArray, isRange } from '@letsrunit/utils';
 import type { Locator } from '@playwright/test';
 import { pickFieldElement } from '../utils/pick-field-element';
 import { setCalendarDate } from './calendar';
+import { setCompositeDate } from './composite-date';
+import { setCompositeSelect } from './composite-select';
+import { setCompositeSlider } from './composite-slider';
+import { setCompositeToggle } from './composite-toggle';
 import { setDateGroup } from './date-group';
 import { setDateTextInput } from './date-text-input';
 import { setNativeCheckbox } from './native-checkbox';
@@ -42,6 +46,11 @@ export async function setFieldValue(el: Locator, value: Value, options?: SetOpti
     setCalendarDate,
     setOtpValue,
     setSliderValue,
+    // generic non-semantic composite controls
+    setCompositeToggle,
+    setCompositeSelect,
+    setCompositeSlider,
+    setCompositeDate,
     // fallback (eg contenteditable or will fail)
     setFallback,
   );

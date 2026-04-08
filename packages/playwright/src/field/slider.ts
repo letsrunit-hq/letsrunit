@@ -111,10 +111,15 @@ async function getSliderElement(el: Locator, options?: SetOptions): Promise<Loca
   const role = await el.getAttribute('role', options).catch(() => null);
   if (role === 'slider') return el;
 
-  const slider = el.getByRole('slider');
-  if ((await slider.count()) > 0) {
-    return slider.first();
-  }
+  const sliderByRole = el.getByRole('slider');
+  if ((await sliderByRole.count()) > 0) return sliderByRole.first();
+
+  const sliderByAria = el.locator('[aria-valuenow][aria-valuemin][aria-valuemax]');
+  if ((await sliderByAria.count()) > 0) return sliderByAria.first();
+
+  const sliderByValueNow = el.locator('[aria-valuenow]');
+  if ((await sliderByValueNow.count()) > 0) return sliderByValueNow.first();
+
   return null;
 }
 

@@ -23,6 +23,10 @@ describe('setSliderValue', () => {
       focus: vi.fn().mockResolvedValue(undefined),
       page: vi.fn().mockReturnValue(pageMock),
       getByRole: vi.fn(),
+      locator: vi.fn().mockReturnValue({
+        count: vi.fn().mockResolvedValue(0),
+        first: vi.fn().mockReturnValue(null),
+      }),
       count: vi.fn().mockResolvedValue(1),
       first: vi.fn().mockReturnValue(null),
     } as unknown as any;
