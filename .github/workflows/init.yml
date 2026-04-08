@@ -285,7 +285,7 @@ jobs:
 
             const runResult = await callTool(client, 'letsrunit_run', {
               sessionId,
-              input: 'Given I\\'m on the homepage\\nThen the page contains text "Welcome"',
+              input: `Given I'm on the homepage\nThen the page contains text "Welcome"`,
             });
             if (runResult?.status !== 'passed') {
               throw new Error(`Run did not pass: ${JSON.stringify(runResult)}`);
