@@ -11,6 +11,6 @@ export default defineConfig({
   treeshake: true,
   outDir: 'dist',
   banner: {
-    js: '#!/usr/bin/env node',
+    js: "#!/usr/bin/env node\nimport * as __m from 'node:module'; const require = __m.createRequire(import.meta.url);",
   },
 });
