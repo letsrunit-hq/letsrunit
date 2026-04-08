@@ -67,6 +67,8 @@ jobs:
   init:
     name: Init (${{ matrix.pm }})
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.57.0-noble
     needs: build
     strategy:
       fail-fast: false
@@ -165,10 +167,6 @@ jobs:
             pnpm) pnpm install ;;
             bun)  bun install ;;
           esac
-
-      - name: Install Playwright system deps
-        working-directory: /tmp/test-${{ matrix.pm }}
-        run: node_modules/.bin/playwright install-deps chromium
 
       - name: Run init
         working-directory: /tmp/test-${{ matrix.pm }}

@@ -45,6 +45,8 @@ jobs:
   compat:
     name: Test ${{ matrix.workspace }}
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.57.0-noble
     strategy:
       fail-fast: false
       matrix:
@@ -66,7 +68,7 @@ jobs:
         run: yarn build:packages
 
       - name: Install Playwright Browsers
-        run: yarn workspace ${{ matrix.workspace }} playwright install --with-deps
+        run: yarn workspace ${{ matrix.workspace }} playwright install chromium
 
       - name: Run Tests
         run: yarn workspace ${{ matrix.workspace }} test
