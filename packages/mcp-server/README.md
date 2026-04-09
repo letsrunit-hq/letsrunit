@@ -50,6 +50,17 @@ args = ["-y", "@letsrunit/mcp-server@latest"]
 }
 ```
 
+## Project-local support files
+
+Keep using the same MCP command (`npx -y @letsrunit/mcp-server@latest`).
+
+At runtime, letsrunit checks the current project:
+
+- If the project has `@letsrunit/mcp-server` installed, it hands off to that project-local server and loads support files/custom steps.
+- If not, it stays in standalone mode and runs built-in letsrunit steps only.
+
+So custom steps from `features/support/**` are available when `@letsrunit/mcp-server` is installed in that project.
+
 ## Tools
 
 | Tool | Description |

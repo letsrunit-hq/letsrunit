@@ -20,7 +20,9 @@ export function registerSessionStart(server: McpServer, sessions: SessionManager
     },
     async (input) => {
       try {
-        await loadSupportFiles();
+        if (process.env.LETSRUNIT_MCP_RUNTIME_MODE === 'project') {
+          await loadSupportFiles();
+        }
 
         const viewport =
           input.viewportWidth || input.viewportHeight

@@ -14,6 +14,7 @@ describe('registerSessionStart', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubEnv('LETSRUNIT_MCP_RUNTIME_MODE', 'project');
     sessions = makeSessionManager({ create: vi.fn().mockResolvedValue(session) });
     call = captureHandler(registerSessionStart, sessions);
   });
@@ -26,6 +27,12 @@ describe('registerSessionStart', () => {
   it('loads support files from cucumber config before session creation', async () => {
     await call({});
     expect(loadSupportFiles).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not load support files in standalone mode', async () => {
+    vi.stubEnv('LETSRUNIT_MCP_RUNTIME_MODE', 'standalone');
+    await call({});
+    expect(loadSupportFiles).not.toHaveBeenCalled();
   });
 
   it('calls sessions.create with headless defaulting to true', async () => {
