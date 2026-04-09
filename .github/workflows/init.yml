@@ -123,9 +123,13 @@ jobs:
         run: npx -y file:./letsrunit.tgz init --yes
 
       - name: Start web server
+        shell: bash
         run: |
-          node -e "require('http').createServer((_, res) => { res.setHeader('Content-Type', 'text/html'); res.end('<html><body><h1>Welcome</h1></body></html>'); }).listen(3000)" &
-          curl --retry 5 --retry-delay 1 --retry-connrefused -sf http://127.0.0.1:3000/
+          set -euo pipefail
+          node -e "require('http').createServer((_, res) => { res.setHeader('Content-Type', 'text/html'); res.end('<html><body><h1>Welcome</h1></body></html>'); }).listen(3000)" >/tmp/init-demo.log 2>&1 &
+          DEMO_PID=$!
+          trap 'kill "$DEMO_PID" 2>/dev/null || true' EXIT
+          curl --retry 10 --retry-delay 1 --retry-connrefused -sf http://127.0.0.1:3000/
 
       - name: Run Cucumber
         working-directory: /tmp/test-${{ matrix.pm }}
@@ -140,7 +144,7 @@ jobs:
             pnpm) pnpm exec letsrunit --help ;;
             bun)  bunx letsrunit --help ;;
           esac
-        
+
   mcp-server-integration:
     name: MCP Server Integration
     runs-on: ubuntu-latest
@@ -160,6 +164,13 @@ jobs:
         with:
           name: tarballs
           path: /tmp
+
+      - name: MCP integration (npx tools/list)
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp .github/scripts/mcp/run-npx-tools-list.mjs /tmp/mcp-int/run-npx-tools-list.mjs
+          node /tmp/mcp-int/run-npx-tools-list.mjs --package file:/tmp/mcp-server.tgz
 
       - name: MCP integration (deterministic full flow)
         shell: bash
@@ -189,10 +200,3 @@ jobs:
           node /tmp/mcp-int/run-deterministic-flow.mjs \
             --server /tmp/mcp-int/node_modules/@letsrunit/mcp-server/dist/index.js \
             --baseUrl http://127.0.0.1:3000
-
-      - name: MCP integration (npx tools/list)
-        shell: bash
-        run: |
-          set -euo pipefail
-          cp .github/scripts/mcp/run-npx-tools-list.mjs /tmp/mcp-int/run-npx-tools-list.mjs
-          node /tmp/mcp-int/run-npx-tools-list.mjs --package file:/tmp/mcp-server.tgz
