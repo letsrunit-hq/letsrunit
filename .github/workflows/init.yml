@@ -193,6 +193,8 @@ jobs:
           EOF
           (cd /tmp/mcp-int && npm install --no-audit --no-fund)
           (cd /tmp/mcp-int && npx playwright install chromium)
-          node .github/scripts/mcp/run-deterministic-flow.mjs \
+          cp .github/scripts/mcp/run-deterministic-flow.mjs /tmp/mcp-int/run-deterministic-flow.mjs
+          node /tmp/mcp-int/run-deterministic-flow.mjs \
             --server /tmp/mcp-int/node_modules/@letsrunit/mcp-server/dist/index.js \
+            --cwd /tmp/mcp-int \
             --baseUrl http://127.0.0.1:3000

@@ -41,16 +41,18 @@ async function main() {
   const args = parseArgs();
   const serverPath = args.server;
   const baseUrl = args.baseUrl;
+  const serverCwd = args.cwd;
 
   if (!serverPath || !baseUrl) {
     throw new Error(
-      'Usage: node run-deterministic-flow.mjs --server <path-to-mcp-server-dist-index.js> --baseUrl <http://host:port>',
+      'Usage: node run-deterministic-flow.mjs --server <path-to-mcp-server-dist-index.js> --baseUrl <http://host:port> [--cwd <server-working-directory>]',
     );
   }
 
   const transport = new StdioClientTransport({
     command: 'node',
     args: [serverPath],
+    cwd: serverCwd,
     stderr: 'pipe',
   });
   transport.stderr?.on('data', (chunk) => process.stderr.write(chunk));
@@ -97,7 +99,10 @@ async function main() {
     }
 
     const listed = await callTool(client, 'letsrunit_list_sessions', {});
-    if (!Array.isArray(listed?.sessions) || !listed.sessions.some((session) => session.id === sessionId)) {
+    const hasSession =
+      Array.isArray(listed?.sessions) &&
+      listed.sessions.some((session) => session.id === sessionId || session.sessionId === sessionId);
+    if (!hasSession) {
       throw new Error(`Session not found in list_sessions: ${JSON.stringify(listed)}`);
     }
 
