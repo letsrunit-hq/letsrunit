@@ -24,6 +24,9 @@ export default {
     },
   },
   worldParameters,
+  letsrunit: {
+    ignore: ['features/support/world.js'],
+  },
 };
 `;
 
