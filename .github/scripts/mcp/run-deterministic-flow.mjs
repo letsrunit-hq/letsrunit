@@ -30,6 +30,13 @@ function parseToolResponse(response) {
   }
 }
 
+function buildTransportEnv() {
+  if (!process.env.PLAYWRIGHT_BROWSERS_PATH) return undefined;
+  return {
+    PLAYWRIGHT_BROWSERS_PATH: process.env.PLAYWRIGHT_BROWSERS_PATH,
+  };
+}
+
 async function callTool(client, name, args) {
   const result = await client.callTool({ name, arguments: args });
   const parsed = parseToolResponse(result);
@@ -53,6 +60,7 @@ async function main() {
     command: 'node',
     args: [serverPath],
     cwd: serverCwd,
+    env: buildTransportEnv(),
     stderr: 'pipe',
   });
   transport.stderr?.on('data', (chunk) => process.stderr.write(chunk));
