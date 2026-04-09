@@ -122,7 +122,8 @@ jobs:
         working-directory: /tmp/test-${{ matrix.pm }}
         run: npx -y file:./letsrunit.tgz init --yes
 
-      - name: Start web server
+      - name: Run Cucumber (with web server)
+        working-directory: /tmp/test-${{ matrix.pm }}
         shell: bash
         run: |
           set -euo pipefail
@@ -130,10 +131,7 @@ jobs:
           DEMO_PID=$!
           trap 'kill "$DEMO_PID" 2>/dev/null || true' EXIT
           curl --retry 10 --retry-delay 1 --retry-connrefused -sf http://127.0.0.1:3000/
-
-      - name: Run Cucumber
-        working-directory: /tmp/test-${{ matrix.pm }}
-        run: npx cucumber-js
+          npx cucumber-js
 
       - name: CLI smoke test
         working-directory: /tmp/test-${{ matrix.pm }}
@@ -169,8 +167,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cp .github/scripts/mcp/run-npx-tools-list.mjs /tmp/mcp-int/run-npx-tools-list.mjs
-          node /tmp/mcp-int/run-npx-tools-list.mjs --package file:/tmp/mcp-server.tgz
+          node .github/scripts/mcp/run-npx-tools-list.mjs --package file:/tmp/mcp-server.tgz
 
       - name: MCP integration (deterministic full flow)
         shell: bash
@@ -196,7 +193,6 @@ jobs:
           EOF
           (cd /tmp/mcp-int && npm install --no-audit --no-fund)
           (cd /tmp/mcp-int && npx playwright install chromium)
-          cp .github/scripts/mcp/run-deterministic-flow.mjs /tmp/mcp-int/run-deterministic-flow.mjs
-          node /tmp/mcp-int/run-deterministic-flow.mjs \
+          node .github/scripts/mcp/run-deterministic-flow.mjs \
             --server /tmp/mcp-int/node_modules/@letsrunit/mcp-server/dist/index.js \
             --baseUrl http://127.0.0.1:3000
