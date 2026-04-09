@@ -1,3 +1,11 @@
+# [0.14.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.13.3...v0.14.0) (2026-04-09)
+
+
+### Features
+
+* **init:** install project mcp server by default ([a5fa1f7](https://github.com/letsrunit-hq/letsrunit/commit/a5fa1f748d364940ef38a2dd9a0f5fdd84098756))
+* **mcp-server:** hand off to project-local server when available ([ec343bf](https://github.com/letsrunit-hq/letsrunit/commit/ec343bf0bad7dff4920b333f9184481f814b8ef4))
+
 ## [0.13.3](https://github.com/letsrunit-hq/letsrunit/compare/v0.13.2...v0.13.3) (2026-04-09)
 
 

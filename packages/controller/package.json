@@ -1,6 +1,6 @@
 {
   "name": "@letsrunit/controller",
-  "version": "0.13.3",
+  "version": "0.14.0",
   "description": "Browser automation controller for letsrunit",
   "keywords": [
     "testing",
