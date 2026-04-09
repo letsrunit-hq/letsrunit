@@ -1,3 +1,12 @@
+## [0.13.3](https://github.com/letsrunit-hq/letsrunit/compare/v0.13.2...v0.13.3) (2026-04-09)
+
+
+### Bug Fixes
+
+* **ci:** restore inspector-based mcp npx check ([3da7343](https://github.com/letsrunit-hq/letsrunit/commit/3da73439dfac2b7a30d19a57e35ff1e791cd7e83))
+* **cucumber:** add ignore configuration for world.js in letsrunit setup ([51f99b5](https://github.com/letsrunit-hq/letsrunit/commit/51f99b571ce0e4588008f65bfecc1a00cc166bf6))
+* **mcp-server:** avoid bundling node_modules in esm build ([c8366eb](https://github.com/letsrunit-hq/letsrunit/commit/c8366eb8d2dbca53f418d286f8222406558ee443))
+
 ## [0.13.2](https://github.com/letsrunit-hq/letsrunit/compare/v0.13.1...v0.13.2) (2026-04-08)
 
 
