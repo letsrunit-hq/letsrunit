@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { RUNTIME_MODE_ENV } from '../../src/bootstrap';
 import { loadSupportFiles } from '../../src/utility/support';
 import { registerSessionStart } from '../../src/tools/session-start';
 import { captureHandler, makeSession, makeSessionManager, parseResult } from '../_helpers';
@@ -15,7 +14,7 @@ describe('registerSessionStart', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.stubEnv(RUNTIME_MODE_ENV, 'project');
+    vi.stubEnv('LETSRUNIT_MCP_RUNTIME_MODE', 'project');
     sessions = makeSessionManager({ create: vi.fn().mockResolvedValue(session) });
     call = captureHandler(registerSessionStart, sessions);
   });
@@ -31,7 +30,7 @@ describe('registerSessionStart', () => {
   });
 
   it('does not load support files in standalone mode', async () => {
-    vi.stubEnv(RUNTIME_MODE_ENV, 'standalone');
+    vi.stubEnv('LETSRUNIT_MCP_RUNTIME_MODE', 'standalone');
     await call({});
     expect(loadSupportFiles).not.toHaveBeenCalled();
   });

@@ -5,9 +5,6 @@ import { dirname, resolve } from 'node:path';
 
 export type McpRuntimeMode = 'project' | 'standalone';
 
-const BOOTSTRAPPED_ENV = 'LETSRUNIT_MCP_BOOTSTRAPPED';
-export const RUNTIME_MODE_ENV = 'LETSRUNIT_MCP_RUNTIME_MODE';
-
 export type HandoffDecision = {
   shouldHandoff: boolean;
   runtimeMode: McpRuntimeMode;
@@ -90,8 +87,8 @@ function runProjectLocalServer(projectPackageJsonPath: string): never {
     stdio: 'inherit',
     env: {
       ...process.env,
-      [BOOTSTRAPPED_ENV]: '1',
-      [RUNTIME_MODE_ENV]: 'project',
+      LETSRUNIT_MCP_BOOTSTRAPPED: '1',
+      LETSRUNIT_MCP_RUNTIME_MODE: 'project',
     },
   });
 
@@ -101,7 +98,7 @@ function runProjectLocalServer(projectPackageJsonPath: string): never {
 
 export function bootstrapProjectServer(): McpRuntimeMode {
   const projectRoot = resolveProjectRoot();
-  const isBootstrapped = process.env[BOOTSTRAPPED_ENV] === '1';
+  const isBootstrapped = process.env.LETSRUNIT_MCP_BOOTSTRAPPED === '1';
   const currentReq = createRequire(import.meta.url);
 
   const currentPackageJsonPath = toRealpath(currentReq.resolve('../package.json'));
@@ -113,6 +110,6 @@ export function bootstrapProjectServer(): McpRuntimeMode {
     runProjectLocalServer(projectPackageJsonPath);
   }
 
-  process.env[RUNTIME_MODE_ENV] = decision.runtimeMode;
+  process.env.LETSRUNIT_MCP_RUNTIME_MODE = decision.runtimeMode;
   return decision.runtimeMode;
 }

@@ -3,12 +3,14 @@ import { detectEnvironment, type Environment } from './detect.js';
 import { installCli, isCliInstalled } from './setup/cli.js';
 import { installCucumber, setupCucumber } from './setup/cucumber.js';
 import { installGithubAction } from './setup/github-actions.js';
+import { installMcpServer, isMcpServerInstalled } from './setup/mcp.js';
 import { hasPlaywrightBrowsers, installPlaywrightBrowsers } from './setup/playwright.js';
 
 const BDD_IMPORT = '@letsrunit/cucumber';
 
 export interface InitOptions {
   yes?: boolean;
+  noMcp?: boolean;
 }
 
 async function stepInstallCli(env: Environment): Promise<void> {
@@ -42,6 +44,34 @@ async function stepEnsureCucumber(env: Environment, { yes }: InitOptions): Promi
   installCucumber(env);
   s.stop('@cucumber/cucumber installed');
   return true;
+}
+
+async function stepInstallMcpServer(env: Environment, { yes, noMcp }: InitOptions): Promise<void> {
+  if (noMcp) {
+    log.info('Skipped @letsrunit/mcp-server installation (--no-mcp).');
+    return;
+  }
+
+  if (isMcpServerInstalled(env)) {
+    log.success('@letsrunit/mcp-server already installed');
+    return;
+  }
+
+  if (!yes && env.isInteractive) {
+    const install = await confirm({
+      message: 'Install @letsrunit/mcp-server for project-local MCP support?',
+      initialValue: true,
+    });
+    if (install !== true) {
+      log.info('Skipped @letsrunit/mcp-server installation.');
+      return;
+    }
+  }
+
+  const s = spinner();
+  s.start('Installing @letsrunit/mcp-server…');
+  installMcpServer(env);
+  s.stop('@letsrunit/mcp-server installed');
 }
 
 function stepSetupCucumber(env: Environment): void {
@@ -101,6 +131,7 @@ export async function init(options: InitOptions = {}): Promise<void> {
   const env = detectEnvironment();
 
   await stepInstallCli(env);
+  await stepInstallMcpServer(env, options);
 
   const hasCucumber = await stepEnsureCucumber(env, options);
   if (hasCucumber) {

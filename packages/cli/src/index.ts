@@ -51,8 +51,9 @@ program
   .command('init')
   .description('Set up letsrunit in the current project')
   .option('-y, --yes', 'Skip confirmation prompts')
-  .action(async (opts: { yes?: boolean }) => {
-    await init({ yes: opts.yes });
+  .option('--no-mcp', 'Do not install @letsrunit/mcp-server')
+  .action(async (opts: { yes?: boolean; mcp?: boolean }) => {
+    await init({ yes: opts.yes, noMcp: opts.mcp === false });
   });
 
 program

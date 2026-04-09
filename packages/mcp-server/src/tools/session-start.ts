@@ -1,7 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { SessionManager } from '../sessions';
-import { RUNTIME_MODE_ENV } from '../bootstrap';
 import { err, text } from '../utility/response';
 import { loadSupportFiles } from '../utility/support';
 
@@ -21,7 +20,7 @@ export function registerSessionStart(server: McpServer, sessions: SessionManager
     },
     async (input) => {
       try {
-        if (process.env[RUNTIME_MODE_ENV] === 'project') {
+        if (process.env.LETSRUNIT_MCP_RUNTIME_MODE === 'project') {
           await loadSupportFiles();
         }
 
