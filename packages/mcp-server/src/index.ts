@@ -1,10 +1,13 @@
 import { createRequire } from 'module';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { SessionManager } from './sessions';
+import { bootstrapProjectServer } from './bootstrap';
 
 const { version } = createRequire(import.meta.url)('../package.json') as { version: string };
-import {
+bootstrapProjectServer();
+
+const { SessionManager } = await import('./sessions');
+const {
   registerDebug,
   registerDiagnostics,
   registerDiff,
@@ -15,7 +18,7 @@ import {
   registerSessionClose,
   registerSessionStart,
   registerSnapshot,
-} from './tools';
+} = await import('./tools');
 
 const sessions = new SessionManager();
 
