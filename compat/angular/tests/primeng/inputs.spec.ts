@@ -7,10 +7,6 @@ import {
   PrimeNgRadioGroupFixture,
   PrimeNgToggleSwitchFixture,
 } from '../../src/primeng/inputs';
-import { registerHtmlDump } from '../ng-zorro-antd/debug-html';
-
-registerHtmlDump(test);
-
 test.describe('PrimeNG InputText', () => {
   test('set value', async ({ mount, page }) => {
     await mount(PrimeNgInputTextFixture);

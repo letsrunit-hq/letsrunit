@@ -1,10 +1,6 @@
 import { setFieldValue } from '@letsrunit/playwright';
 import { expect, test } from '@sand4rt/experimental-ct-angular';
 import { NzDatepickerFixture, NzDateRangePickerFixture } from '../../src/ng-zorro-antd/date';
-import { registerHtmlDump } from './debug-html';
-
-registerHtmlDump(test);
-
 test.describe('Nz Datepicker', () => {
   test('select date', async ({ mount, page }) => {
     test.skip(

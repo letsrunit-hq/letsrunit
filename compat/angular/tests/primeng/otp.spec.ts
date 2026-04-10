@@ -1,10 +1,6 @@
 import { setFieldValue } from '@letsrunit/playwright';
 import { expect, test } from '@sand4rt/experimental-ct-angular';
 import { PrimeNgInputOtp6Fixture, PrimeNgInputOtpFixture } from '../../src/primeng/otp';
-import { registerHtmlDump } from '../ng-zorro-antd/debug-html';
-
-registerHtmlDump(test);
-
 test.describe('PrimeNG InputOtp', () => {
   test('fill out', async ({ mount, page }) => {
     await mount(PrimeNgInputOtpFixture);

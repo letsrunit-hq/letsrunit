@@ -1,6 +1,5 @@
 import { setFieldValue } from '@letsrunit/playwright';
 import { expect, test } from '@sand4rt/experimental-ct-angular';
-import { registerHtmlDump } from './debug-html';
 import {
   NzCheckboxFixture,
   NzInputFixture,
@@ -9,8 +8,6 @@ import {
   NzSelectFixture,
   NzSwitchFixture,
 } from '../../src/ng-zorro-antd/inputs';
-
-registerHtmlDump(test);
 
 test.describe('Nz Input', () => {
   test('set value', async ({ mount, page }) => {
