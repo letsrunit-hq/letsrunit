@@ -1,3 +1,10 @@
+## [0.14.2](https://github.com/letsrunit-hq/letsrunit/compare/v0.14.1...v0.14.2) (2026-04-10)
+
+
+### Bug Fixes
+
+* **mcp-server:** resolve project handoff without package.json subpath ([fee014f](https://github.com/letsrunit-hq/letsrunit/commit/fee014f39debd275c84dd826133095e36cf697d7))
+
 ## [0.14.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.14.0...v0.14.1) (2026-04-10)
 
 
