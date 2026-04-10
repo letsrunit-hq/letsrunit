@@ -1,9 +1,10 @@
-import { createRequire } from 'module';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { bootstrapProjectServer } from './bootstrap';
 
-const { version } = createRequire(import.meta.url)('../package.json') as { version: string };
+declare const __LETSRUNIT_VERSION__: string;
+
+const version = typeof __LETSRUNIT_VERSION__ === 'string' ? __LETSRUNIT_VERSION__ : 'unknown';
 bootstrapProjectServer();
 
 const { SessionManager } = await import('./sessions');

@@ -7,6 +7,8 @@ import { isAbsolute, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { decideHandoff } from '../bootstrap';
 
+declare const __LETSRUNIT_VERSION__: string;
+
 type CucumberConfig = {
   require?: unknown;
   import?: unknown;
@@ -182,6 +184,10 @@ function pickLetsrunitEnv(): Record<string, string> {
   );
 }
 
+function resolveMcpServerVersion(): string {
+  return typeof __LETSRUNIT_VERSION__ === 'string' ? __LETSRUNIT_VERSION__ : 'unknown';
+}
+
 export async function collectSupportDiagnostics(cwd?: string): Promise<SupportDiagnostics> {
   const effectiveCwd = resolveEffectiveCwd(cwd);
   const projectRoot = resolve(effectiveCwd);
@@ -194,7 +200,6 @@ export async function collectSupportDiagnostics(cwd?: string): Promise<SupportDi
   const serverBddPath = toRealpath(resolveFrom('@letsrunit/bdd', import.meta.url));
   const projectBddPath = toRealpath(resolveFrom('@letsrunit/bdd', resolve(projectRoot, 'package.json')));
   const projectMcpEntryPath = resolveFrom('@letsrunit/mcp-server', resolve(projectRoot, 'package.json'));
-  const currentReq = createRequire(import.meta.url);
   const currentEntrypointPath = toRealpath(fileURLToPath(import.meta.url));
   const projectEntrypointPath = toRealpath(projectMcpEntryPath);
   const handoffDecision = decideHandoff(
@@ -205,7 +210,7 @@ export async function collectSupportDiagnostics(cwd?: string): Promise<SupportDi
   const serverMcpPath = toRealpath(resolveFrom('@letsrunit/mcp-server', import.meta.url));
   const projectMcpPath = toRealpath(projectMcpEntryPath);
   const executablePath = toRealpath(process.argv[1] ?? null);
-  const { version } = currentReq('../../package.json') as { version: string };
+  const version = resolveMcpServerVersion();
   const registryDefinitions = registry.defs.map((def) => ({
     type: def.type,
     source: def.source,
