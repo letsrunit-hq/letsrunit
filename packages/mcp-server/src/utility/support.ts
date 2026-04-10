@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module';
 import { loadConfiguration } from '@cucumber/cucumber/api';
 import { registry } from '@letsrunit/bdd';
-import { existsSync } from 'node:fs';
+import { existsSync, realpathSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
 import { isAbsolute, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -43,6 +43,13 @@ export type SupportDiagnostics = {
   supportEntries: SupportEntry[];
   loadedProjectRoots: string[];
   loadedSupportEntries: string[];
+  mcpServer: {
+    runtimeMode: string;
+    projectServerUsed: boolean;
+    serverMcpPath: string | null;
+    projectMcpPath: string | null;
+    sameModule: boolean;
+  };
   moduleResolution: {
     serverBddPath: string | null;
     projectBddPath: string | null;
@@ -155,6 +162,15 @@ function resolveFrom(moduleId: string, fromPath: string): string | null {
   }
 }
 
+function toRealpath(path: string | null): string | null {
+  if (!path) return null;
+  try {
+    return realpathSync(path);
+  } catch {
+    return path;
+  }
+}
+
 export async function collectSupportDiagnostics(cwd?: string): Promise<SupportDiagnostics> {
   const effectiveCwd = resolveEffectiveCwd(cwd);
   const projectRoot = resolve(effectiveCwd);
@@ -164,8 +180,11 @@ export async function collectSupportDiagnostics(cwd?: string): Promise<SupportDi
   const ignorePatterns = await loadLetsrunitIgnorePatterns(projectRoot);
   const ignoredPaths = await expandPathPatterns(projectRoot, ignorePatterns);
   const supportEntries = await resolveSupportEntries(projectRoot, supportPatterns);
-  const serverBddPath = resolveFrom('@letsrunit/bdd', import.meta.url);
-  const projectBddPath = resolveFrom('@letsrunit/bdd', resolve(projectRoot, 'package.json'));
+  const serverBddPath = toRealpath(resolveFrom('@letsrunit/bdd', import.meta.url));
+  const projectBddPath = toRealpath(resolveFrom('@letsrunit/bdd', resolve(projectRoot, 'package.json')));
+  const serverMcpPath = toRealpath(resolveFrom('@letsrunit/mcp-server', import.meta.url));
+  const projectMcpPath = toRealpath(resolveFrom('@letsrunit/mcp-server', resolve(projectRoot, 'package.json')));
+  const runtimeMode = process.env.LETSRUNIT_MCP_RUNTIME_MODE ?? 'standalone';
   const registryDefinitions = registry.defs.map((def) => ({
     type: def.type,
     source: def.source,
@@ -185,6 +204,13 @@ export async function collectSupportDiagnostics(cwd?: string): Promise<SupportDi
     supportEntries,
     loadedProjectRoots: [...loadedProjectRoots].sort(),
     loadedSupportEntries: [...loadedSupportEntries].sort(),
+    mcpServer: {
+      runtimeMode,
+      projectServerUsed: runtimeMode === 'project',
+      serverMcpPath,
+      projectMcpPath,
+      sameModule: !!serverMcpPath && !!projectMcpPath && serverMcpPath === projectMcpPath,
+    },
     moduleResolution: {
       serverBddPath,
       projectBddPath,
