@@ -1,3 +1,10 @@
+## [0.14.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.14.0...v0.14.1) (2026-04-10)
+
+
+### Bug Fixes
+
+* bump ([b617ff6](https://github.com/letsrunit-hq/letsrunit/commit/b617ff66ed6d0adb218759f24f1f7676b33ad987))
+
 # [0.14.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.13.3...v0.14.0) (2026-04-09)
 
 
