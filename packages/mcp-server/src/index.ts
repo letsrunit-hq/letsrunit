@@ -38,7 +38,7 @@ registerListSteps(server, sessions);
 registerListSessions(server, sessions);
 registerDiff(server, sessions);
 if (process.env.LETSRUNIT_MCP_DIAGNOSTICS === 'enabled') {
-  registerDiagnostics(server);
+  registerDiagnostics(server, sessions);
 }
 
 const transport = new StdioServerTransport();

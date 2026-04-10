@@ -1,10 +1,11 @@
-import { createRequire } from 'node:module';
 import { loadConfiguration } from '@cucumber/cucumber/api';
 import { registry } from '@letsrunit/bdd';
 import { existsSync, realpathSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import { isAbsolute, resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { decideHandoff } from '../bootstrap';
 
 type CucumberConfig = {
   require?: unknown;
@@ -14,9 +15,7 @@ type CucumberConfig = {
   };
 };
 
-type SupportEntry =
-  | { kind: 'path'; value: string }
-  | { kind: 'module'; value: string };
+type SupportEntry = { kind: 'path'; value: string } | { kind: 'module'; value: string };
 
 const CUCUMBER_CONFIG_FILES = [
   'cucumber.js',
@@ -44,16 +43,20 @@ export type SupportDiagnostics = {
   loadedProjectRoots: string[];
   loadedSupportEntries: string[];
   mcpServer: {
-    runtimeMode: string;
+    version: string;
+    executablePath: string | null;
     projectServerUsed: boolean;
+    handoffDecision: {
+      shouldHandoff: boolean;
+      runtimeMode: string;
+    };
     serverMcpPath: string | null;
     projectMcpPath: string | null;
-    sameModule: boolean;
   };
+  letsrunitEnv: Record<string, string>;
   moduleResolution: {
     serverBddPath: string | null;
     projectBddPath: string | null;
-    sameModule: boolean;
   };
   registry: {
     total: number;
@@ -96,7 +99,7 @@ async function expandPathPatterns(baseDir: string, patterns: string[]): Promise<
 
   for (const pattern of patterns) {
     if (hasGlobMagic(pattern)) {
-      for await (const match of glob(pattern, { cwd: baseDir, absolute: true, withFileTypes: false })) {
+      for await (const match of glob(pattern, { cwd: baseDir })) {
         files.add(normalizeMatch(baseDir, match));
       }
       continue;
@@ -113,7 +116,7 @@ async function resolveSupportEntries(baseDir: string, entries: string[]): Promis
 
   for (const entry of entries) {
     if (hasGlobMagic(entry)) {
-      for await (const match of glob(entry, { cwd: baseDir, absolute: true, withFileTypes: false })) {
+      for await (const match of glob(entry, { cwd: baseDir })) {
         resolved.push({ kind: 'path', value: normalizeMatch(baseDir, match) });
       }
       continue;
@@ -171,6 +174,14 @@ function toRealpath(path: string | null): string | null {
   }
 }
 
+function pickLetsrunitEnv(): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(process.env)
+      .filter(([key, value]) => key.startsWith('LETSRUNIT_') && typeof value === 'string')
+      .map(([key, value]) => [key, value as string]),
+  );
+}
+
 export async function collectSupportDiagnostics(cwd?: string): Promise<SupportDiagnostics> {
   const effectiveCwd = resolveEffectiveCwd(cwd);
   const projectRoot = resolve(effectiveCwd);
@@ -182,9 +193,19 @@ export async function collectSupportDiagnostics(cwd?: string): Promise<SupportDi
   const supportEntries = await resolveSupportEntries(projectRoot, supportPatterns);
   const serverBddPath = toRealpath(resolveFrom('@letsrunit/bdd', import.meta.url));
   const projectBddPath = toRealpath(resolveFrom('@letsrunit/bdd', resolve(projectRoot, 'package.json')));
+  const projectMcpEntryPath = resolveFrom('@letsrunit/mcp-server', resolve(projectRoot, 'package.json'));
+  const currentReq = createRequire(import.meta.url);
+  const currentEntrypointPath = toRealpath(fileURLToPath(import.meta.url));
+  const projectEntrypointPath = toRealpath(projectMcpEntryPath);
+  const handoffDecision = decideHandoff(
+    currentEntrypointPath,
+    projectEntrypointPath,
+    process.env.LETSRUNIT_MCP_BOOTSTRAPPED === '1',
+  );
   const serverMcpPath = toRealpath(resolveFrom('@letsrunit/mcp-server', import.meta.url));
-  const projectMcpPath = toRealpath(resolveFrom('@letsrunit/mcp-server', resolve(projectRoot, 'package.json')));
-  const runtimeMode = process.env.LETSRUNIT_MCP_RUNTIME_MODE ?? 'standalone';
+  const projectMcpPath = toRealpath(projectMcpEntryPath);
+  const executablePath = toRealpath(process.argv[1] ?? null);
+  const { version } = currentReq('../../package.json') as { version: string };
   const registryDefinitions = registry.defs.map((def) => ({
     type: def.type,
     source: def.source,
@@ -205,16 +226,20 @@ export async function collectSupportDiagnostics(cwd?: string): Promise<SupportDi
     loadedProjectRoots: [...loadedProjectRoots].sort(),
     loadedSupportEntries: [...loadedSupportEntries].sort(),
     mcpServer: {
-      runtimeMode,
-      projectServerUsed: runtimeMode === 'project',
+      version,
+      executablePath,
+      projectServerUsed: handoffDecision.runtimeMode === 'project',
+      handoffDecision: {
+        shouldHandoff: handoffDecision.shouldHandoff,
+        runtimeMode: handoffDecision.runtimeMode,
+      },
       serverMcpPath,
       projectMcpPath,
-      sameModule: !!serverMcpPath && !!projectMcpPath && serverMcpPath === projectMcpPath,
     },
+    letsrunitEnv: pickLetsrunitEnv(),
     moduleResolution: {
       serverBddPath,
       projectBddPath,
-      sameModule: !!serverBddPath && !!projectBddPath && serverBddPath === projectBddPath,
     },
     registry: {
       total: registryDefinitions.length,
