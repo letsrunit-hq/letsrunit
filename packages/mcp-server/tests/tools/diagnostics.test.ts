@@ -17,6 +17,13 @@ vi.mock('../../src/utility/support', () => ({
     supportEntries: [{ kind: 'path', value: '/tmp/project/features/support/steps.ts' }],
     loadedProjectRoots: [],
     loadedSupportEntries: [],
+    mcpServer: {
+      runtimeMode: 'standalone',
+      projectServerUsed: false,
+      serverMcpPath: '/tmp/mcp/node_modules/@letsrunit/mcp-server/dist/index.js',
+      projectMcpPath: '/tmp/project/node_modules/@letsrunit/mcp-server/dist/index.js',
+      sameModule: false,
+    },
     moduleResolution: {
       serverBddPath: '/tmp/mcp/node_modules/@letsrunit/bdd/dist/index.js',
       projectBddPath: '/tmp/project/node_modules/@letsrunit/bdd/dist/index.js',
@@ -54,6 +61,7 @@ describe('registerDiagnostics', () => {
     expect(result.supportEntries).toEqual([
       { kind: 'path', value: '/tmp/project/features/support/steps.ts' },
     ]);
+    expect(result.mcpServer.runtimeMode).toBe('standalone');
     expect(result.moduleResolution.sameModule).toBe(false);
     expect(result.registry.total).toBe(1);
     expect(result.registry.byType.Given).toBe(1);

@@ -61,6 +61,14 @@ describe('loadSupportFiles', () => {
     expect(diagnostics.effectiveCwd).toBe(cwd);
     expect(diagnostics.projectRoot).toBe(cwd);
     expect(diagnostics.cucumberConfigPath).toBe(join(cwd, 'cucumber.mjs'));
+    expect(diagnostics.mcpServer).toBeDefined();
+    expect(Object.keys(diagnostics.mcpServer).sort()).toEqual([
+      'projectMcpPath',
+      'projectServerUsed',
+      'runtimeMode',
+      'sameModule',
+      'serverMcpPath',
+    ]);
     expect(diagnostics.moduleResolution).toBeDefined();
     expect(Object.keys(diagnostics.moduleResolution).sort()).toEqual([
       'projectBddPath',

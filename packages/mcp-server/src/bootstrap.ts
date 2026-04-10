@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { readFileSync, realpathSync } from 'node:fs';
+import { existsSync, readFileSync, realpathSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, resolve } from 'node:path';
 
@@ -25,6 +25,19 @@ function resolveFromProject(moduleId: string, projectRoot: string): string | nul
   } catch {
     return null;
   }
+}
+
+function findPackageJsonPath(entryPath: string | null): string | null {
+  if (!entryPath) return null;
+
+  let dir = dirname(entryPath);
+  while (dir !== dirname(dir)) {
+    const packageJsonPath = resolve(dir, 'package.json');
+    if (existsSync(packageJsonPath)) return packageJsonPath;
+    dir = dirname(dir);
+  }
+
+  return null;
 }
 
 function toRealpath(path: string | null): string | null {
@@ -102,7 +115,8 @@ export function bootstrapProjectServer(): McpRuntimeMode {
   const currentReq = createRequire(import.meta.url);
 
   const currentPackageJsonPath = toRealpath(currentReq.resolve('../package.json'));
-  const projectPackageJsonPath = toRealpath(resolveFromProject('@letsrunit/mcp-server/package.json', projectRoot));
+  const projectEntryPath = resolveFromProject('@letsrunit/mcp-server', projectRoot);
+  const projectPackageJsonPath = toRealpath(findPackageJsonPath(projectEntryPath));
 
   const decision = decideHandoff(currentPackageJsonPath, projectPackageJsonPath, isBootstrapped);
 
