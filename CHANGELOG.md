@@ -1,3 +1,10 @@
+## [0.14.3](https://github.com/letsrunit-hq/letsrunit/compare/v0.14.2...v0.14.3) (2026-04-10)
+
+
+### Bug Fixes
+
+* **mcp-server:** simplify runtime handoff and improve diagnostics ([fd90cc2](https://github.com/letsrunit-hq/letsrunit/commit/fd90cc2b83eb2cc9acdfe88ceae2b6aa369f05a2))
+
 ## [0.14.2](https://github.com/letsrunit-hq/letsrunit/compare/v0.14.1...v0.14.2) (2026-04-10)
 
 
