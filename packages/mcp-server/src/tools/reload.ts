@@ -1,4 +1,3 @@
-import { resetRegistryToBuiltInSteps } from '@letsrunit/bdd';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { McpRuntimeMode } from '../bootstrap';
@@ -8,6 +7,17 @@ import { reloadSupportFiles } from '../utility/support';
 type Options = {
   runtimeMode: McpRuntimeMode;
 };
+
+async function resetBuiltInStepRegistry(): Promise<void> {
+  const bdd = (await import('@letsrunit/bdd')) as Record<string, unknown>;
+  const reset = bdd.resetRegistryToBuiltInSteps;
+  if (typeof reset !== 'function') {
+    throw new Error(
+      'Installed @letsrunit/bdd does not expose resetRegistryToBuiltInSteps. Update @letsrunit/bdd to a compatible version.',
+    );
+  }
+  reset();
+}
 
 export function registerReload(server: McpServer, options: Options): void {
   server.registerTool(
@@ -28,7 +38,7 @@ export function registerReload(server: McpServer, options: Options): void {
       }
 
       try {
-        resetRegistryToBuiltInSteps();
+        await resetBuiltInStepRegistry();
         const result = await reloadSupportFiles(input.cwd);
         return text(
           JSON.stringify({

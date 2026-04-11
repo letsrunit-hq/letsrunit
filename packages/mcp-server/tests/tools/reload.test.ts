@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { resetRegistryToBuiltInSteps } from '@letsrunit/bdd';
+import * as bdd from '@letsrunit/bdd';
 import { registerReload } from '../../src/tools/reload';
 import { reloadSupportFiles } from '../../src/utility/support';
 import { captureHandler, parseResult } from '../_helpers';
@@ -28,7 +28,7 @@ describe('registerReload', () => {
   it('resets registry and reloads support files in project mode', async () => {
     const result = parseResult(await call({}));
 
-    expect(resetRegistryToBuiltInSteps).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(bdd.resetRegistryToBuiltInSteps)).toHaveBeenCalledTimes(1);
     expect(reloadSupportFiles).toHaveBeenCalledTimes(1);
     expect(result).toEqual({
       reloaded: true,
@@ -52,7 +52,7 @@ describe('registerReload', () => {
 
     expect(result.isError).toBe(true);
     expect(result.content[0].text).toContain('only available in project runtime mode');
-    expect(resetRegistryToBuiltInSteps).not.toHaveBeenCalled();
+    expect(vi.mocked(bdd.resetRegistryToBuiltInSteps)).not.toHaveBeenCalled();
     expect(reloadSupportFiles).not.toHaveBeenCalled();
   });
 
