@@ -2,7 +2,8 @@ import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { collectSupportDiagnostics, loadSupportFiles } from '../../src/utility/support';
+import { collectDiagnostics } from '../../src/utility/diagnostics';
+import { loadSupportFiles } from '../../src/utility/support';
 
 describe('loadSupportFiles', () => {
   afterEach(() => {
@@ -56,7 +57,7 @@ describe('loadSupportFiles', () => {
     );
     vi.stubEnv('LETSRUNIT_PROJECT_CWD', cwd);
 
-    const diagnostics = await collectSupportDiagnostics();
+    const diagnostics = await collectDiagnostics();
     expect(diagnostics.envProjectCwd).toBe(cwd);
     expect(diagnostics.effectiveCwd).toBe(cwd);
     expect(diagnostics.projectRoot).toBe(cwd);

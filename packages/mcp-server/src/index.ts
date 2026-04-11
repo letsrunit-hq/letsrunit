@@ -4,7 +4,7 @@ import { bootstrapProjectServer } from './bootstrap';
 
 declare const __LETSRUNIT_VERSION__: string | undefined;
 
-const version = __LETSRUNIT_VERSION__ ?? 'unknown';
+const version = typeof __LETSRUNIT_VERSION__ === 'string' ? __LETSRUNIT_VERSION__ : 'unknown';
 const runtimeMode = bootstrapProjectServer();
 
 const { SessionManager } = await import('./sessions');

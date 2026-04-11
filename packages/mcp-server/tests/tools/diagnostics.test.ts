@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { registerDiagnostics } from '../../src/tools';
-import { collectSupportDiagnostics } from '../../src/utility/support';
+import { collectDiagnostics } from '../../src/utility/diagnostics';
 import { parseResult } from '../_helpers';
 
-vi.mock('../../src/utility/support', () => ({
-  collectSupportDiagnostics: vi.fn().mockResolvedValue({
+vi.mock('../../src/utility/diagnostics', () => ({
+  collectDiagnostics: vi.fn().mockResolvedValue({
     envProjectCwd: '/tmp/project',
     processCwd: '/tmp/process',
     inputCwd: null,
@@ -86,12 +86,12 @@ describe('registerDiagnostics', () => {
     expect(result.session.pageUrl).toBe('http://localhost:3000/');
     expect(result.registry.total).toBe(1);
     expect(result.registry.byType.Given).toBe(1);
-    expect(collectSupportDiagnostics).toHaveBeenCalledTimes(1);
+    expect(collectDiagnostics).toHaveBeenCalledTimes(1);
     expect(sessions.get).toHaveBeenCalledWith('sess-abc');
   });
 
   it('returns error payload when diagnostics collection fails', async () => {
-    vi.mocked(collectSupportDiagnostics).mockRejectedValueOnce(new Error('diagnostics boom'));
+    vi.mocked(collectDiagnostics).mockRejectedValueOnce(new Error('diagnostics boom'));
 
     const result = await call({ sessionId: 'sess-abc' });
     expect(result.isError).toBe(true);

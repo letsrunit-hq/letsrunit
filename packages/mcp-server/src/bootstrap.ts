@@ -38,21 +38,34 @@ function sameEntrypoint(a: string | null, b: string | null): boolean {
   return a === b;
 }
 
+export function resolveRuntimeModeOverride(): McpRuntimeMode | null {
+  const runtimeMode = process.env.LETSRUNIT_MCP_RUNTIME_MODE;
+  if (runtimeMode == null || runtimeMode === '') {
+    return null;
+  }
+  if (runtimeMode === 'project' || runtimeMode === 'standalone') {
+    return runtimeMode;
+  }
+  throw new Error(
+    `Invalid LETSRUNIT_MCP_RUNTIME_MODE: ${runtimeMode}. Expected "project" or "standalone".`,
+  );
+}
+
 export function decideHandoff(
   currentEntrypointPath: string | null,
   projectEntrypointPath: string | null,
-  isBootstrapped: boolean,
+  runtimeModeOverride: McpRuntimeMode | null,
 ): HandoffDecision {
+  if (runtimeModeOverride) {
+    return { shouldHandoff: false, runtimeMode: runtimeModeOverride };
+  }
+
   if (!projectEntrypointPath) {
     return { shouldHandoff: false, runtimeMode: 'standalone' };
   }
 
   if (sameEntrypoint(currentEntrypointPath, projectEntrypointPath)) {
     return { shouldHandoff: false, runtimeMode: 'project' };
-  }
-
-  if (isBootstrapped) {
-    return { shouldHandoff: false, runtimeMode: 'standalone' };
   }
 
   return { shouldHandoff: true, runtimeMode: 'project' };
@@ -63,7 +76,6 @@ function runProjectLocalServer(projectEntrypointPath: string): never {
     stdio: 'inherit',
     env: {
       ...process.env,
-      LETSRUNIT_MCP_BOOTSTRAPPED: '1',
       LETSRUNIT_MCP_RUNTIME_MODE: 'project',
     },
   });
@@ -74,12 +86,12 @@ function runProjectLocalServer(projectEntrypointPath: string): never {
 
 export function bootstrapProjectServer(): McpRuntimeMode {
   const projectRoot = resolveProjectRoot();
-  const isBootstrapped = process.env.LETSRUNIT_MCP_BOOTSTRAPPED === '1';
+  const runtimeModeOverride = resolveRuntimeModeOverride();
 
   const currentEntryPath = toRealpath(fileURLToPath(import.meta.url));
   const projectEntryPath = toRealpath(resolveFromProject('@letsrunit/mcp-server', projectRoot));
 
-  const decision = decideHandoff(currentEntryPath, projectEntryPath, isBootstrapped);
+  const decision = decideHandoff(currentEntryPath, projectEntryPath, runtimeModeOverride);
 
   if (decision.shouldHandoff && projectEntryPath) {
     runProjectLocalServer(projectEntryPath);
