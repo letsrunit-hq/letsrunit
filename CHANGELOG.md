@@ -1,3 +1,10 @@
+## [0.14.4](https://github.com/letsrunit-hq/letsrunit/compare/v0.14.3...v0.14.4) (2026-04-11)
+
+
+### Bug Fixes
+
+* **mcp-server:** inject build-time version constant ([f9a14a1](https://github.com/letsrunit-hq/letsrunit/commit/f9a14a11b24e5501b512c6e616b9665c3339ebbe))
+
 ## [0.14.3](https://github.com/letsrunit-hq/letsrunit/compare/v0.14.2...v0.14.3) (2026-04-10)
 
 
