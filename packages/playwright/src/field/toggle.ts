@@ -1,7 +1,10 @@
 import type { Loc, SetOptions, Value } from './types';
 
 async function getToggleTarget(el: Loc['el'], options?: SetOptions): Promise<Loc['el'] | null> {
-  const role = await el.getAttribute('role', options).catch(/* v8 ignore next */ () => null);
+  const role = await el.getAttribute('role', options).catch(
+    /* v8 ignore next — attribute might be missing or element might have detached during the check */
+    () => null,
+  );
   if (role === 'checkbox' || role === 'switch') return el;
 
   const byRole = el.locator('[role="switch"], [role="checkbox"]').first();
@@ -19,11 +22,17 @@ export async function setToggle({ el }: Loc, value: Value, options?: SetOptions)
   const target = await getToggleTarget(el, options);
   if (!target) return false;
 
-  const ariaChecked = await target.getAttribute('aria-checked', options).catch(/* v8 ignore next */ () => null);
+  const ariaChecked = await target.getAttribute('aria-checked', options).catch(
+    /* v8 ignore next — attribute might be missing or element might have detached during the check */
+    () => null,
+  );
   const isChecked = ariaChecked === 'true';
 
   if (Boolean(value) !== isChecked) await target.click(options);
 
-  const nextAriaChecked = await target.getAttribute('aria-checked', options).catch(/* v8 ignore next */ () => null);
+  const nextAriaChecked = await target.getAttribute('aria-checked', options).catch(
+    /* v8 ignore next — attribute might be missing or element might have detached during the check */
+    () => null,
+  );
   return nextAriaChecked === String(Boolean(value));
 }

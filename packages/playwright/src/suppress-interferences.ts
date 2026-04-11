@@ -79,7 +79,11 @@ async function tryClick(page: Page, selectors: string[], _label: string) {
 }
 
 async function closeNativeJsAlerts(page: Page) {
-  page.on('dialog', /* v8 ignore next */ (d) => d.accept().catch(() => {}));
+  page.on(
+    'dialog',
+    /* v8 ignore next — callback runs in browser context, not Node */
+    (d) => d.accept().catch(() => {}),
+  );
 }
 
 // 1) Known cookie CMPs (quick wins)
@@ -175,7 +179,7 @@ async function sweepOverlays(page: Page, regex: TrRegExps): Promise<boolean> {
 
   return await page
     .evaluate(
-      /* v8 ignore start */
+      /* v8 ignore start — callback runs in browser context, not Node */
       ([source, flags]) => {
         const acceptRx = new RegExp(source, flags);
         const isBig = (el: Element) => {
@@ -227,7 +231,7 @@ async function sweepOverlays(page: Page, regex: TrRegExps): Promise<boolean> {
       /* v8 ignore stop */
       [acceptRxSource, acceptRxFlags],
     )
-    .catch(/* v8 ignore next */ () => false);
+    .catch(() => false);
 }
 
 export async function suppressInterferences(page: Page, opts: Options = {}) {
@@ -268,9 +272,7 @@ export async function suppressInterferences(page: Page, opts: Options = {}) {
 
       // Optional: bail if we are hitting a loop of re-spawning popups
       if (actions >= maxActions) {
-        /* v8 ignore start */
         if (opts.verbose) console.log(`[suppressInterferences] Max actions ${maxActions} reached, stopping.`);
-        /* v8 ignore stop */
         break;
       }
 

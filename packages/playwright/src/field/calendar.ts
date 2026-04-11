@@ -184,14 +184,12 @@ async function navigateToMonth(
   const afterMonths = await getCurrentMonthsAndYears(root, target);
   if (afterMonths.some((m) => m.year * 12 + m.month === targetTotal)) return true;
 
-  /* v8 ignore start */
   if ((options?.retry ?? 0) < 3) {
     const retry = (options?.retry ?? 0) + 1;
     return await navigateToMonth(root, target, { ...options, wait: 50 + 50 * retry, retry }); // Retry max 3x
   }
 
   return false;
-  /* v8 ignore stop */
 }
 
 async function setDayByAriaLabel(table: Locator, value: Date, options?: SetOptions): Promise<boolean> {

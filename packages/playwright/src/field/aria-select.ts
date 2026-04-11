@@ -10,7 +10,10 @@ function caseInsensitiveExact(value: string): RegExp {
 }
 
 async function getComboboxRoot(el: Loc['el'], options?: SetOptions) {
-  const role = await el.getAttribute('role', options).catch(/* v8 ignore next */ () => null);
+  const role = await el.getAttribute('role', options).catch(
+    /* v8 ignore next — attribute might be missing or element might have detached during the check */
+    () => null,
+  );
   if (role === 'combobox') return el;
 
   const byRole = el.locator('[role="combobox"]').first();
@@ -27,7 +30,10 @@ async function getComboboxRoot(el: Loc['el'], options?: SetOptions) {
 async function getControlledListbox(el: Loc['el'], options?: SetOptions) {
   const ids: string[] = [];
   for (const attr of ['aria-controls', 'aria-owns']) {
-    const raw = await el.getAttribute(attr, options).catch(/* v8 ignore next */ () => null);
+    const raw = await el.getAttribute(attr, options).catch(
+      /* v8 ignore next — attribute might be missing or element might have detached during the check */
+      () => null,
+    );
     if (!raw) continue;
     ids.push(...raw.split(/\s+/).filter(Boolean));
   }
@@ -85,7 +91,10 @@ export async function selectAria({ el }: Loc, value: Value, options?: SetOptions
 
   let listbox = await getControlledListbox(root, options);
 
-  const ariaExpanded = await root.getAttribute('aria-expanded', options).catch(/* v8 ignore next */ () => null);
+  const ariaExpanded = await root.getAttribute('aria-expanded', options).catch(
+    /* v8 ignore next — attribute might be missing or element might have detached during the check */
+    () => null,
+  );
   if (ariaExpanded !== 'true') {
     await root.click(options);
     listbox = listbox ?? (await getControlledListbox(root, options));

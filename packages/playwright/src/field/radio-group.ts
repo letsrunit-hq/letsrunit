@@ -50,10 +50,16 @@ export async function setRadioGroup(
     const ariaRadioByName = el.getByRole('radio', { name: caseInsensitiveExact(stringValue) });
     if ((await ariaRadioByName.count()) >= 1) {
       const item = ariaRadioByName.first();
-      const ariaChecked = await item.getAttribute('aria-checked', options).catch(/* v8 ignore next */ () => null);
+      const ariaChecked = await item.getAttribute('aria-checked', options).catch(
+        /* v8 ignore next — attribute might be missing or element might have detached during the check */
+        () => null,
+      );
       if (ariaChecked !== 'true') await item.click(options);
 
-      const nextAriaChecked = await item.getAttribute('aria-checked', options).catch(/* v8 ignore next */ () => null);
+      const nextAriaChecked = await item.getAttribute('aria-checked', options).catch(
+        /* v8 ignore next — attribute might be missing or element might have detached during the check */
+        () => null,
+      );
       return nextAriaChecked === 'true';
     }
 
@@ -65,10 +71,16 @@ export async function setRadioGroup(
     );
     if ((await ariaRadioByValue.count()) >= 1) {
       const item = ariaRadioByValue.first();
-      const ariaChecked = await item.getAttribute('aria-checked', options).catch(/* v8 ignore next */ () => null);
+      const ariaChecked = await item.getAttribute('aria-checked', options).catch(
+        /* v8 ignore next — attribute might be missing or element might have detached during the check */
+        () => null,
+      );
       if (ariaChecked !== 'true') await item.click(options);
 
-      const nextAriaChecked = await item.getAttribute('aria-checked', options).catch(/* v8 ignore next */ () => null);
+      const nextAriaChecked = await item.getAttribute('aria-checked', options).catch(
+        /* v8 ignore next — attribute might be missing or element might have detached during the check */
+        () => null,
+      );
       return nextAriaChecked === 'true';
     }
   }
@@ -77,8 +89,7 @@ export async function setRadioGroup(
   const roleRadio = el.getByRole('radio', { name: caseInsensitiveLooseExact(stringValue) });
   if ((await roleRadio.count()) >= 1) {
     await roleRadio.first().click(options);
-    const checked = await roleRadio.first().isChecked(options).catch(() => false);
-    return checked;
+    return await roleRadio.first().isChecked(options).catch(() => false);
   }
 
   // 6. Fallback: iterate label text manually
@@ -86,7 +97,7 @@ export async function setRadioGroup(
   const labelCount = await labels.count();
   for (let i = 0; i < labelCount; i++) {
     const label = labels.nth(i);
-    const text = (await label.textContent(options).catch(() => '')).replace(/\s+/g, ' ').trim().toLowerCase();
+    const text = (await label.textContent(options).catch(() => ''))?.replace(/\s+/g, ' ').trim().toLowerCase();
     if (text !== stringValue.trim().toLowerCase()) continue;
 
     await label.click({ ...options, force: true });
