@@ -234,6 +234,9 @@ async function setInputValue(
       if (!success2) continue;
     }
 
+    // Temporary diagnostic bypass: skip ambiguous-date probing/reapply.
+    return true;
+
     if (!isAmbiguous(value, value2)) return true; // Done
 
     const probeResult = await tryProbe(el, value, order, sep, pad, options, el2);
