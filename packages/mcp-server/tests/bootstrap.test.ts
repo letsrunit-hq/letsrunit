@@ -1,9 +1,13 @@
-import { describe, expect, it } from 'vitest';
-import { decideHandoff } from '../src/bootstrap';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { decideHandoff, resolveRuntimeModeOverride } from '../src/bootstrap';
 
 describe('decideHandoff', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it('uses standalone mode when project mcp server is not available', () => {
-    const result = decideHandoff('/npx/@letsrunit/mcp-server/package.json', null, false);
+    const result = decideHandoff('/npx/@letsrunit/mcp-server/package.json', null, null);
     expect(result).toEqual({ shouldHandoff: false, runtimeMode: 'standalone' });
   });
 
@@ -11,7 +15,7 @@ describe('decideHandoff', () => {
     const result = decideHandoff(
       '/repo/node_modules/@letsrunit/mcp-server/package.json',
       '/repo/node_modules/@letsrunit/mcp-server/package.json',
-      false,
+      null,
     );
     expect(result).toEqual({ shouldHandoff: false, runtimeMode: 'project' });
   });
@@ -20,17 +24,24 @@ describe('decideHandoff', () => {
     const result = decideHandoff(
       '/npx-cache/@letsrunit/mcp-server/package.json',
       '/repo/node_modules/@letsrunit/mcp-server/package.json',
-      false,
+      null,
     );
     expect(result).toEqual({ shouldHandoff: true, runtimeMode: 'project' });
   });
 
-  it('does not handoff when bootstrap guard is set', () => {
+  it('uses runtime override without handoff', () => {
     const result = decideHandoff(
       '/npx-cache/@letsrunit/mcp-server/package.json',
       '/repo/node_modules/@letsrunit/mcp-server/package.json',
-      true,
+      'project',
     );
-    expect(result).toEqual({ shouldHandoff: false, runtimeMode: 'standalone' });
+    expect(result).toEqual({ shouldHandoff: false, runtimeMode: 'project' });
+  });
+
+  it('throws for invalid LETSRUNIT_MCP_RUNTIME_MODE', () => {
+    vi.stubEnv('LETSRUNIT_MCP_RUNTIME_MODE', 'bad-value');
+    expect(() => resolveRuntimeModeOverride()).toThrow(
+      'Invalid LETSRUNIT_MCP_RUNTIME_MODE: bad-value. Expected "project" or "standalone".',
+    );
   });
 });

@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { SessionManager } from '../sessions';
-import { collectSupportDiagnostics } from '../utility/support';
+import { collectDiagnostics } from '../utility/diagnostics';
 import { err, text } from '../utility/response';
 
 export function registerDiagnostics(server: McpServer, sessions: SessionManager): void {
@@ -16,7 +16,7 @@ export function registerDiagnostics(server: McpServer, sessions: SessionManager)
     },
     async (input) => {
       try {
-        const diagnostics = await collectSupportDiagnostics();
+        const diagnostics = await collectDiagnostics();
         const session = sessions.get(input.sessionId);
         const sessionInfo = {
           sessionId: session.id,

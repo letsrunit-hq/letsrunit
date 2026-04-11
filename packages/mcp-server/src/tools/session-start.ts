@@ -1,17 +1,27 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { McpRuntimeMode } from '../bootstrap';
 import type { SessionManager } from '../sessions';
 import { err, text } from '../utility/response';
 import { loadSupportFiles } from '../utility/support';
 
-export function registerSessionStart(server: McpServer, sessions: SessionManager): void {
+interface Options {
+  runtimeMode: McpRuntimeMode;
+}
+
+export function registerSessionStart(server: McpServer, sessions: SessionManager, opts?: Options): void {
   server.registerTool(
     'letsrunit_session_start',
     {
       description:
         'Launch a new browser session. Does not navigate anywhere — use letsrunit_run with a Given step to navigate. Set baseURL to enable relative paths like "Given I\'m on the homepage".',
       inputSchema: {
-        baseURL: z.string().optional().describe('Base URL for the session, e.g. "http://localhost:3000". Enables relative paths in Given steps like "Given I\'m on the homepage" or "Given I\'m on page \\"/login\\""'),
+        baseURL: z
+          .string()
+          .optional()
+          .describe(
+            'Base URL for the session, e.g. "http://localhost:3000". Enables relative paths in Given steps like "Given I\'m on the homepage" or "Given I\'m on page \\"/login\\""',
+          ),
         language: z.string().optional().describe("Browser language code, e.g. 'en', 'fr'"),
         headless: z.boolean().optional().describe('Run browser in headless mode (default: true)'),
         viewportWidth: z.number().int().optional().describe('Viewport width in pixels (default: 1280)'),
@@ -20,7 +30,7 @@ export function registerSessionStart(server: McpServer, sessions: SessionManager
     },
     async (input) => {
       try {
-        if (process.env.LETSRUNIT_MCP_RUNTIME_MODE === 'project') {
+        if (opts?.runtimeMode === 'project') {
           await loadSupportFiles();
         }
 
