@@ -1,3 +1,11 @@
+## [0.14.5](https://github.com/letsrunit-hq/letsrunit/compare/v0.14.4...v0.14.5) (2026-04-11)
+
+
+### Bug Fixes
+
+* **mcp-server:** pass runtime mode explicitly to session startup ([c11d38e](https://github.com/letsrunit-hq/letsrunit/commit/c11d38e353ae772e5f931a667814865a16804c61))
+* **mcp-server:** simplify runtime mode handoff and diagnostics ([4739b5d](https://github.com/letsrunit-hq/letsrunit/commit/4739b5db8bd3b807ae7270ee297dab44ee0263c5))
+
 ## [0.14.4](https://github.com/letsrunit-hq/letsrunit/compare/v0.14.3...v0.14.4) (2026-04-11)
 
 
