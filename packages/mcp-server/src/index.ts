@@ -14,6 +14,7 @@ const {
   registerDiff,
   registerListSteps,
   registerListSessions,
+  registerReload,
   registerRun,
   registerScreenshot,
   registerSessionClose,
@@ -37,6 +38,7 @@ registerDebug(server, sessions);
 registerSessionClose(server, sessions);
 registerListSteps(server, sessions);
 registerListSessions(server, sessions);
+registerReload(server, { runtimeMode });
 registerDiff(server, sessions);
 if (process.env.LETSRUNIT_MCP_DIAGNOSTICS === 'enabled') {
   registerDiagnostics(server, sessions);

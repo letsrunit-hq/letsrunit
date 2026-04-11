@@ -61,6 +61,8 @@ At runtime, letsrunit checks the current project:
 
 So custom steps from `features/support/**` are available when `@letsrunit/mcp-server` is installed in that project.
 
+When you edit existing support files during a long-running agent session, call `letsrunit_reload` to rebuild and reload step definitions without restarting the agent.
+
 ## Tools
 
 | Tool | Description |
@@ -71,6 +73,7 @@ So custom steps from `features/support/**` are available when `@letsrunit/mcp-se
 | `letsrunit_snapshot` | Get the current page HTML, scrubbed for LLM consumption. Scope to a DOM subtree with `selector`. |
 | `letsrunit_screenshot` | Take a screenshot. Optionally crop to a selector or highlight elements before capturing. |
 | `letsrunit_debug` | Evaluate JavaScript on the current page via `page.evaluate()`. Use for debugging, not test logic. |
+| `letsrunit_reload` | Rebuild and reload built-in + project support step definitions after step-file changes. Available in project runtime mode. |
 | `letsrunit_diagnostics` | Return runtime diagnostics (`cwd`, `LETSRUNIT_PROJECT_CWD`, detected cucumber config, resolved support entries). Available only when `LETSRUNIT_MCP_DIAGNOSTICS=enabled`. |
 | `letsrunit_session_close` | Close a browser session and release its resources. |
 | `letsrunit_list_sessions` | List all active browser sessions. |

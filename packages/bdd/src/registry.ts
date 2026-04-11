@@ -16,15 +16,19 @@ interface Entry {
   expr: CucumberExpression | RegularExpression;
 }
 
-export function createRegistry() {
-  const _paramRegistry = new ParameterTypeRegistry();
-  const _entries: Entry[] = [];
-
+function createParameterRegistry(): ParameterTypeRegistry {
+  const registry = new ParameterTypeRegistry();
   for (const t of typeDefinitions) {
-    _paramRegistry.defineParameterType(
+    registry.defineParameterType(
       new ParameterType(t.name, t.regexp, null, t.transformer as any, t.useForSnippets),
     );
   }
+  return registry;
+}
+
+export function createRegistry() {
+  let _paramRegistry = createParameterRegistry();
+  const _entries: Entry[] = [];
 
   return {
     /** IStepRegistry-compatible defs (source = String(expression), no raw expr). */
@@ -60,6 +64,11 @@ export function createRegistry() {
       );
     },
 
+    reset(): void {
+      _entries.length = 0;
+      _paramRegistry = createParameterRegistry();
+    },
+
     match(text: string) {
       for (const entry of _entries) {
         const args = entry.expr.match(text);
@@ -83,6 +92,10 @@ type GlobalRegistryStore = typeof globalThis & {
 
 const registryStore = globalThis as GlobalRegistryStore;
 export const registry = registryStore[REGISTRY_KEY] ?? (registryStore[REGISTRY_KEY] = createRegistry());
+
+export function resetRegistry(): void {
+  registry.reset();
+}
 
 export function Given(expression: string | RegExp, fn: StepHandler, comment?: string): StepDefinition {
   const def: StepDefinition = { type: 'Given', expression, fn, comment };

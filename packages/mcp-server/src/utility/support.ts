@@ -26,6 +26,16 @@ const CUCUMBER_CONFIG_FILES = [
 const loadedProjectRoots = new Set<string>();
 const loadedSupportEntries = new Set<string>();
 
+export type SupportLoadResult = {
+  projectRoot: string;
+  supportEntriesLoaded: number;
+  ignoredEntries: number;
+};
+
+type LoadSupportOptions = {
+  forceReload?: boolean;
+};
+
 function toStrings(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   return value.filter((entry): entry is string => typeof entry === 'string');
@@ -116,37 +126,62 @@ export function getSupportLoadState(): { loadedProjectRoots: string[]; loadedSup
   };
 }
 
-export async function loadSupportFiles(cwd?: string): Promise<void> {
+export function clearSupportLoadState(): void {
+  loadedProjectRoots.clear();
+  loadedSupportEntries.clear();
+}
+
+function buildReloadedFileUrl(path: string): string {
+  const url = pathToFileURL(path);
+  url.searchParams.set('letsrunitReload', Date.now().toString(36));
+  return url.href;
+}
+
+export async function loadSupportFiles(cwd?: string, options?: LoadSupportOptions): Promise<SupportLoadResult> {
   const projectRoot = resolve(resolveEffectiveCwd(cwd));
-  if (loadedProjectRoots.has(projectRoot)) return;
+  const forceReload = options?.forceReload === true;
+
+  if (!forceReload && loadedProjectRoots.has(projectRoot)) {
+    return { projectRoot, supportEntriesLoaded: 0, ignoredEntries: 0 };
+  }
 
   const { useConfiguration } = await loadConfiguration({}, { cwd: projectRoot });
   const supportPatterns = [...toStrings(useConfiguration.require), ...toStrings(useConfiguration.import)];
   if (supportPatterns.length === 0) {
     loadedProjectRoots.add(projectRoot);
-    return;
+    return { projectRoot, supportEntriesLoaded: 0, ignoredEntries: 0 };
   }
 
   const ignorePatterns = await loadLetsrunitIgnorePatterns(projectRoot);
   const ignoredPaths = await expandPathPatterns(projectRoot, ignorePatterns);
   const supportEntries = await resolveSupportEntries(projectRoot, supportPatterns);
+  let supportEntriesLoaded = 0;
+  let ignoredEntries = 0;
 
   for (const entry of supportEntries) {
     if (entry.kind === 'path' && ignoredPaths.has(entry.value)) {
+      ignoredEntries += 1;
       continue;
     }
 
     const key = `${entry.kind}:${entry.value}`;
-    if (loadedSupportEntries.has(key)) continue;
+    if (!forceReload && loadedSupportEntries.has(key)) continue;
 
     if (entry.kind === 'path') {
-      await import(pathToFileURL(entry.value).href);
+      await import(forceReload ? buildReloadedFileUrl(entry.value) : pathToFileURL(entry.value).href);
     } else {
       await import(entry.value);
     }
 
+    supportEntriesLoaded += 1;
     loadedSupportEntries.add(key);
   }
 
   loadedProjectRoots.add(projectRoot);
+  return { projectRoot, supportEntriesLoaded, ignoredEntries };
+}
+
+export async function reloadSupportFiles(cwd?: string): Promise<SupportLoadResult> {
+  clearSupportLoadState();
+  return loadSupportFiles(cwd, { forceReload: true });
 }
