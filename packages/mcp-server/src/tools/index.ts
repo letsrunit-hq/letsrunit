@@ -4,6 +4,7 @@ export { registerDiff } from './diff';
 export { registerListSteps } from './list-steps';
 export { registerListSessions } from './list-sessions';
 export { registerRun } from './run';
+export { registerReload } from './reload';
 export { registerScreenshot } from './screenshot';
 export { registerSessionClose } from './session-close';
 export { registerSessionStart } from './session-start';
