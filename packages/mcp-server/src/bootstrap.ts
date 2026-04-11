@@ -85,6 +85,5 @@ export function bootstrapProjectServer(): McpRuntimeMode {
     runProjectLocalServer(projectEntryPath);
   }
 
-  process.env.LETSRUNIT_MCP_RUNTIME_MODE = decision.runtimeMode;
   return decision.runtimeMode;
 }

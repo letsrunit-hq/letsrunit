@@ -2,10 +2,10 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { bootstrapProjectServer } from './bootstrap';
 
-declare const __LETSRUNIT_VERSION__: string;
+declare const __LETSRUNIT_VERSION__: string | undefined;
 
-const version = typeof __LETSRUNIT_VERSION__ === 'string' ? __LETSRUNIT_VERSION__ : 'unknown';
-bootstrapProjectServer();
+const version = __LETSRUNIT_VERSION__ ?? 'unknown';
+const runtimeMode = bootstrapProjectServer();
 
 const { SessionManager } = await import('./sessions');
 const {
@@ -29,7 +29,7 @@ const server = new McpServer({
   websiteUrl: 'https://letsrunit.ai',
 });
 
-registerSessionStart(server, sessions);
+registerSessionStart(server, sessions, { runtimeMode });
 registerRun(server, sessions);
 registerSnapshot(server, sessions);
 registerScreenshot(server, sessions);

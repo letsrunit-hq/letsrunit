@@ -14,9 +14,10 @@ describe('registerSessionStart', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.stubEnv('LETSRUNIT_MCP_RUNTIME_MODE', 'project');
     sessions = makeSessionManager({ create: vi.fn().mockResolvedValue(session) });
-    call = captureHandler(registerSessionStart, sessions);
+    call = captureHandler((server, sessionManager) => {
+      registerSessionStart(server, sessionManager, { runtimeMode: 'project' });
+    }, sessions);
   });
 
   it('returns the sessionId', async () => {
@@ -30,7 +31,9 @@ describe('registerSessionStart', () => {
   });
 
   it('does not load support files in standalone mode', async () => {
-    vi.stubEnv('LETSRUNIT_MCP_RUNTIME_MODE', 'standalone');
+    call = captureHandler((server, sessionManager) => {
+      registerSessionStart(server, sessionManager, { runtimeMode: 'standalone' });
+    }, sessions);
     await call({});
     expect(loadSupportFiles).not.toHaveBeenCalled();
   });
