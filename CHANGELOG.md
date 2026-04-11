@@ -1,3 +1,15 @@
+# [0.15.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.14.5...v0.15.0) (2026-04-11)
+
+
+### Bug Fixes
+
+* **mcp-server:** avoid hard import on reload registry reset ([85f94f2](https://github.com/letsrunit-hq/letsrunit/commit/85f94f200f9bde0f7dbcaa26853f9640fd5cc696))
+
+
+### Features
+
+* **mcp-server:** add explicit step reload tool ([77ef5ec](https://github.com/letsrunit-hq/letsrunit/commit/77ef5ecd58d8e34bb4a334dbfa2b5115ebac18c0))
+
 ## [0.14.5](https://github.com/letsrunit-hq/letsrunit/compare/v0.14.4...v0.14.5) (2026-04-11)
 
 
