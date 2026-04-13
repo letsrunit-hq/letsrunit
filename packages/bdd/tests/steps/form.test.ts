@@ -42,6 +42,26 @@ describe('steps/form (definitions)', () => {
     expect(setFieldValue).toHaveBeenLastCalledWith(testLocator, expect.any(Date), { timeout: 500 });
   });
 
+  it('sets a locator with generated password value', async () => {
+    const previousSeed = process.env.LETSRUNIT_PASSWORD_SEED;
+    try {
+      process.env.LETSRUNIT_PASSWORD_SEED = 'test-seed';
+      const { setFieldValue } = await import('@letsrunit/playwright');
+      const page = {} as any;
+
+      await runStep(setStep, 'I set `#password` to password of "user-1"', { page } as any);
+      expect(setFieldValue).toHaveBeenCalledWith(testLocator, expect.stringMatching(/^Lr![a-f0-9]{18}a1$/), {
+        timeout: 500,
+      });
+    } finally {
+      if (previousSeed === undefined) {
+        delete process.env.LETSRUNIT_PASSWORD_SEED;
+      } else {
+        process.env.LETSRUNIT_PASSWORD_SEED = previousSeed;
+      }
+    }
+  });
+
   it('clears a locator', async () => {
     const { setFieldValue } = await import('@letsrunit/playwright');
     const page = {} as any;
