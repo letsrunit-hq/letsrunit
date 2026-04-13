@@ -1,6 +1,6 @@
 import { setFieldValue } from '@letsrunit/playwright';
 import { expect, test } from '@sand4rt/experimental-ct-angular';
-import { TaigaDatepickerFixture, TaigaDateRangeFixture } from '../../src/taiga-ui/date';
+import { TaigaCalendarFixture, TaigaDatepickerFixture, TaigaDateRangeFixture } from '../../src/taiga-ui/date';
 
 test.describe('Taiga Datepicker', () => {
   test('select date with defaults', async ({ mount, page }) => {
@@ -18,8 +18,24 @@ test.describe('Taiga Datepicker', () => {
   });
 });
 
-test.describe('Taiga Datepicker TODOs (hard-failing by design)', () => {
-  test('TODO: support generic range-object semantics for Taiga date group wrappers', async ({ mount, page }) => {
+test.describe('Taiga Calendar', () => {
+  test('select date with defaults', async ({ mount, page }) => {
+    await mount(TaigaCalendarFixture);
+
+    await setFieldValue(page.locator('tui-calendar'), new Date('2024-07-15'), { timeout: 5000 });
+    await expect(page.getByLabel('result')).toContainText('2024-07-15');
+  });
+
+  test('select date in the past', async ({ mount, page }) => {
+    await mount(TaigaCalendarFixture);
+
+    await setFieldValue(page.locator('tui-calendar'), new Date('2023-12-05'), { timeout: 5000 });
+    await expect(page.getByLabel('result')).toContainText('2023-12-05');
+  });
+});
+
+test.describe('Taiga Date Range', () => {
+  test('set range via generic date-group semantics', async ({ mount, page }) => {
     await mount(TaigaDateRangeFixture);
 
     await setFieldValue(
@@ -28,7 +44,6 @@ test.describe('Taiga Datepicker TODOs (hard-failing by design)', () => {
       { timeout: 5000 },
     );
 
-    // Aspirational assertion: currently unsupported path should be made to pass later.
     await expect(page.getByLabel('start')).toHaveValue('2024-02-10');
     await expect(page.getByLabel('end')).toHaveValue('2024-02-20');
   });

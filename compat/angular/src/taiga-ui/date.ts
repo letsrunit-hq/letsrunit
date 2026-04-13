@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { TuiDay } from '@taiga-ui/cdk/date-time';
+import { TuiCalendar } from '@taiga-ui/core/components/calendar';
 import { FormsModule } from '@angular/forms';
 import { TuiTextfield } from '@taiga-ui/core/components/textfield';
 import { TuiInputDate } from '@taiga-ui/kit/components/input-date';
@@ -38,5 +40,21 @@ export class TaigaDateRangeFixture {
 
   get result(): string {
     return `${String(this.start)} - ${String(this.end)}`;
+  }
+}
+
+@Component({
+  standalone: true,
+  imports: [TuiCalendar],
+  template: `
+    <tui-calendar aria-label="calendar" [(value)]="value"></tui-calendar>
+    <div aria-label="result">{{ result }}</div>
+  `,
+})
+export class TaigaCalendarFixture {
+  value: TuiDay | null = null;
+
+  get result(): string {
+    return this.value ? this.value.toString('yyyy/mm/dd', '-') : 'no date';
   }
 }
