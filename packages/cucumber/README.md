@@ -37,10 +37,10 @@ export default {
 
 ### Debug Run Policy Helper
 
-Use `@letsrunit/cucumber/config` to derive `failFast` and `worldParameters` from CLI args:
+Use `@letsrunit/cucumber/config` to derive `failFast` and `worldParameters` from CLI args and pick the formatter based on the current agent environment:
 
 ```js
-import { resolveDebugWorldParameters } from '@letsrunit/cucumber/config';
+import { isAgentEnvironment, resolveDebugWorldParameters } from '@letsrunit/cucumber/config';
 
 const { failFast, worldParameters } = resolveDebugWorldParameters({
   argv: process.argv,
@@ -49,11 +49,27 @@ const { failFast, worldParameters } = resolveDebugWorldParameters({
   },
 });
 
+const format = [
+  isAgentEnvironment(process.env)
+    ? '@letsrunit/cucumber/agent'
+    : '@letsrunit/cucumber/progress',
+];
+
 export default {
-  format: ['@letsrunit/cucumber/progress'],
+  format,
   failFast,
   worldParameters,
 };
+```
+
+Pass extra env var keys for other agents:
+
+```js
+const format = [
+  isAgentEnvironment(process.env, ['FOO_AGENT'])
+    ? '@letsrunit/cucumber/agent'
+    : '@letsrunit/cucumber/progress',
+];
 ```
 
 Running headed + fail-fast:

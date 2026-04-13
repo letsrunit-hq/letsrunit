@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readCliWorldParameters, resolveDebugWorldParameters } from '../src/config';
+import { isAgentEnvironment, readCliWorldParameters, resolveDebugWorldParameters } from '../src/config';
 
 describe('readCliWorldParameters', () => {
   it('reads inline --world-parameters=JSON', () => {
@@ -50,3 +50,25 @@ describe('resolveDebugWorldParameters', () => {
   });
 });
 
+describe('isAgentEnvironment', () => {
+  it('returns false when no agent env vars are present', () => {
+    expect(isAgentEnvironment({})).toBe(false);
+  });
+
+  it('returns true for known agent env vars', () => {
+    expect(isAgentEnvironment({ CODEX_CI: '1' })).toBe(true);
+    expect(isAgentEnvironment({ CLAUDECODE: '1' })).toBe(true);
+    expect(isAgentEnvironment({ GEMINI_CLI: '1' })).toBe(true);
+    expect(isAgentEnvironment({ CURSOR_AGENT: '1' })).toBe(true);
+  });
+
+  it('accepts extra env var keys', () => {
+    expect(isAgentEnvironment({ FOO_AGENT: '1' }, ['FOO_AGENT'])).toBe(true);
+  });
+
+  it('treats falsey values as disabled', () => {
+    expect(isAgentEnvironment({ CODEX_CI: '' })).toBe(false);
+    expect(isAgentEnvironment({ CODEX_CI: '0' })).toBe(false);
+    expect(isAgentEnvironment({ CODEX_CI: 'false' })).toBe(false);
+  });
+});

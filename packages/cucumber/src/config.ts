@@ -6,6 +6,8 @@ export type DebugWorldParametersInput = {
 
 type JsonObject = Record<string, unknown>;
 
+const BUILTIN_AGENT_ENV_VAR_KEYS = ['CODEX_CI', 'CLAUDECODE', 'GEMINI_CLI', 'CURSOR_AGENT'] as const;
+
 function parseJsonObject(raw: string | undefined): JsonObject {
   if (!raw) return {};
 
@@ -27,6 +29,21 @@ export function readCliWorldParameters(argv: string[]): JsonObject {
   if (index < 0) return {};
 
   return parseJsonObject(argv[index + 1]);
+}
+
+function isEnabledEnvVar(value: string | undefined): boolean {
+  if (!value) return false;
+  const normalized = value.trim().toLowerCase();
+  if (!normalized) return false;
+  return normalized !== '0' && normalized !== 'false';
+}
+
+export function isAgentEnvironment(
+  env: Record<string, string | undefined> = process.env,
+  extraEnvVarKeys: string[] = [],
+): boolean {
+  const keys = [...BUILTIN_AGENT_ENV_VAR_KEYS, ...extraEnvVarKeys];
+  return keys.some((key) => isEnabledEnvVar(env[key]));
 }
 
 export function resolveDebugWorldParameters(input: DebugWorldParametersInput = {}): {
@@ -53,4 +70,3 @@ export function resolveDebugWorldParameters(input: DebugWorldParametersInput = {
     },
   };
 }
-
