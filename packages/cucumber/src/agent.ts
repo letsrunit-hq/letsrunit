@@ -54,6 +54,7 @@ type FailurePayload = {
   expected?: string;
   actual?: string;
   timeout_ms?: number;
+  html_snapshot?: string;
   baseline?: { test_id: string; commit: string | null; screenshots: string[] };
   diff?: string;
   diff_available: boolean;
@@ -387,20 +388,28 @@ export default class AgentFormatter extends Formatter {
     stepIndex: number,
   ): Promise<FailurePayload> {
     const base = this.createBaseFailurePayload(step);
+    const currentHtml = findAttachment(step, 'text/html');
+
+    const withSnapshotWhenNoDiff = (payload: FailurePayload): FailurePayload => {
+      if (!payload.diff_available && currentHtml) {
+        return { ...payload, html_snapshot: currentHtml };
+      }
+      return payload;
+    };
 
     const dbPath = this.resolveStoreDbPath();
-    if (!dbPath) return { ...base, diff_available: false, diff_reason: 'no_store_config' };
+    if (!dbPath) return withSnapshotWhenNoDiff({ ...base, diff_available: false, diff_reason: 'no_store_config' });
 
     if (!scenarioId) {
-      return { ...base, diff_available: false, diff_reason: 'no_baseline' };
+      return withSnapshotWhenNoDiff({ ...base, diff_available: false, diff_reason: 'no_baseline' });
     }
 
     try {
       const baseline = this.loadBaselineContext(dbPath, scenarioId);
-      if (!baseline) return { ...base, diff_available: false, diff_reason: 'no_baseline' };
-      return await this.buildFailureFromBaseline(step, stepIndex, baseline, base);
+      if (!baseline) return withSnapshotWhenNoDiff({ ...base, diff_available: false, diff_reason: 'no_baseline' });
+      return withSnapshotWhenNoDiff(await this.buildFailureFromBaseline(step, stepIndex, baseline, base));
     } catch {
-      return { ...base, diff_available: false, diff_reason: 'diff_compute_failed' };
+      return withSnapshotWhenNoDiff({ ...base, diff_available: false, diff_reason: 'diff_compute_failed' });
     }
   }
 

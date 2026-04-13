@@ -124,6 +124,7 @@ Machine-oriented formatter that emits one JSON object per line (NDJSON):
 - `run_id` is emitted only in `run_start`
 - `will_be_retried` is emitted only when `true`
 - Failure events include `failure.error` (ANSI-stripped full message) and flattened fields (`kind`, `summary`, `locator`, `locator_full`, `url`, etc.)
+- When `diff_available` is `false` and a current scrubbed HTML attachment exists, failure events include `failure.html_snapshot`
 - When store plugin data is available, failure events include baseline metadata and inline unified HTML diff
 
 ```js
