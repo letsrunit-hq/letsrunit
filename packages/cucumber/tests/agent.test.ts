@@ -131,7 +131,7 @@ describe('agent formatter payload shape', () => {
                 'Error: element(s) not found',
               ].join('\n'),
             },
-            attachments: [],
+            attachments: [{ mediaType: 'text/html', body: '<html><body><div>snapshot</div></body></html>' }],
           },
         ],
       } as any;
@@ -198,6 +198,7 @@ describe('agent formatter payload shape', () => {
     expect(failure?.locator).toBe('role=button [name="Use Item"i]');
     expect(failure?.locator_full).toBe("locator('role=button [name=\"Use Item\"i]').or(locator('role=button')).first()");
     expect(failure?.summary).toBe('element(s) not found');
+    expect(failure?.html_snapshot).toBe('<html><body><div>snapshot</div></body></html>');
     expect(failure?.error_raw).toBeUndefined();
     expect(failure?.error_structured).toBeUndefined();
   });

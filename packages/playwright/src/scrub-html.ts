@@ -32,7 +32,7 @@ export type ScrubHtmlOptions = {
   /** Limit lists to max items: -1 mean no limit. Default: -1 */
   limitLists?: number;
   /** Strip utility-framework classes (Tailwind, Bootstrap, UnoCSS, Windi) from class
-   *  attributes. Removes the attribute entirely when all classes are stripped. Default: false */
+   *  attributes. Removes the attribute entirely when all classes are stripped. Default: true */
   dropUtilityClasses?: boolean;
 };
 
@@ -51,7 +51,7 @@ function getDefaults(contentLength: number): Required<ScrubHtmlOptions> {
     dropComments: true,
     replaceBrInHeadings: true,
     limitLists: contentLength >= HTML_LIMIT_LISTS_THRESHOLD ? 20 : -1,
-    dropUtilityClasses: false,
+    dropUtilityClasses: true,
   };
 }
 
@@ -350,10 +350,25 @@ const UTILITY_STANDALONE = new Set([
   'sr-only', 'not-sr-only', 'clearfix', 'row', 'col',
 ]);
 
+const SPACING_ALPHA_VALUES = new Set(['auto', 'px']);
+
+function isSpacingUtility(token: string): boolean {
+  const match = token.match(/^-?([mp][xytblrse]?)-(.*)$/i);
+  if (!match) return false;
+
+  const value = match[2];
+  if (!value) return false;
+
+  if (/^[0-9./[\]-]+$/.test(value)) return true;
+  if (SPACING_ALPHA_VALUES.has(value.toLowerCase())) return true;
+  return false;
+}
+
 function isUtilityClass(token: string): boolean {
   if (UTILITY_VARIANT_RE.test(token)) return true;
   const base = token.startsWith('-') ? token.slice(1) : token;
   if (UTILITY_STANDALONE.has(base)) return true;
+  if (/^-?[mp][xytblrse]?-/i.test(token)) return isSpacingUtility(token);
   return UTILITY_PREFIX_RE.test(token);
 }
 
