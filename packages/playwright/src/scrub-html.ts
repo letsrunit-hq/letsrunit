@@ -182,7 +182,7 @@ export async function realScrubHtml(
   const doc = dom.window.document;
 
   if (o.pickMain) pickMain(doc);
-  dropInfraAndSvg(doc, !!o.dropSvg);
+  dropInfraAndSvg(doc, Boolean(o.dropSvg));
   if (o.dropHidden) dropHiddenTrees(doc);
   if (o.stripAttributes) stripAttributesAndSanitize(doc, o.stripAttributes);
   if (o.dropComments) dropHtmlComments(doc);
