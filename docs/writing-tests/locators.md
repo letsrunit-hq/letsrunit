@@ -29,6 +29,15 @@ letsrunit resolves locators in priority order: accessible names first, then visi
 When I click button "Submit" within `#checkout-form`
 ```
 
+To target elements inside an iframe, scope with `within iframe "..."`:
+
+```gherkin
+When I click button "Submit" within iframe "ownable widget"
+```
+
+The iframe name matches case-insensitively against iframe `title`, `name`, `aria-label`, or `id`.
+If multiple iframes match, the step fails and you should use a more specific name.
+
 **Filter** by descendants with `with` or `without`:
 
 ```gherkin
