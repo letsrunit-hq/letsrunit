@@ -1,3 +1,13 @@
+## [0.17.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.17.0...v0.17.1) (2026-04-13)
+
+
+### Bug Fixes
+
+* **cucumber:** auto-select agent formatter by environment ([cc949eb](https://github.com/letsrunit-hq/letsrunit/commit/cc949eb2d06a5030fd94ef7a727bb3345855bf1e))
+* **cucumber:** fix dts enum status lookup ([eee9e51](https://github.com/letsrunit-hq/letsrunit/commit/eee9e5151f5614bb386f08eeaf2d75230892ec45))
+* **cucumber:** stream compact agent formatter output ([1395826](https://github.com/letsrunit-hq/letsrunit/commit/1395826ed54b12d6a5766f5d7cadb615c1027f11))
+* **cucumber:** streamline agent NDJSON failure payload ([98b36e9](https://github.com/letsrunit-hq/letsrunit/commit/98b36e9b62431a028183ec29632ed71807fe9814))
+
 # [0.17.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.16.0...v0.17.0) (2026-04-13)
 
 
