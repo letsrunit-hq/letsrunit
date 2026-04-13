@@ -1,3 +1,11 @@
+# [0.18.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.17.1...v0.18.0) (2026-04-13)
+
+
+### Features
+
+* **cucumber:** include html snapshot when diff is unavailable ([ec8f815](https://github.com/letsrunit-hq/letsrunit/commit/ec8f8150ed10313342d9270c70dd22bd0eb54c5f))
+* **playwright:** enable utility class scrubbing by default ([57618f6](https://github.com/letsrunit-hq/letsrunit/commit/57618f67bccd20ddcf7e695469c01e64d04017cb))
+
 ## [0.17.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.17.0...v0.17.1) (2026-04-13)
 
 
