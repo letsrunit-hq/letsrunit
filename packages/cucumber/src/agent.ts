@@ -29,6 +29,7 @@ type FailureStructured = {
   kind: 'assertion' | 'timeout' | 'navigation' | 'unknown';
   summary?: string;
   locator?: string;
+  locator_full?: string;
   url?: string;
   expected?: string;
   actual?: string;
@@ -44,8 +45,15 @@ type DiffReason =
   | 'diff_compute_failed';
 
 type FailurePayload = {
-  error_raw: string;
-  error_structured: FailureStructured;
+  error: string;
+  kind: FailureStructured['kind'];
+  summary?: string;
+  locator?: string;
+  locator_full?: string;
+  url?: string;
+  expected?: string;
+  actual?: string;
+  timeout_ms?: number;
   baseline?: { test_id: string; commit: string | null; screenshots: string[] };
   diff?: string;
   diff_available: boolean;
@@ -119,18 +127,32 @@ function isStackLine(line: string): boolean {
   return /^\s*at\s+/.test(line);
 }
 
-function trimLocator(locator: string): string {
-  const raw = locator.trim();
-  const match = raw.match(/^locator\((['"`])(.*)\1\)(?:\.[A-Za-z_]\w*\([^)]*\))*$/);
-  if (!match) return raw;
-  return match[2];
+function stripAnsi(input: string): string {
+  // Regex from chalk/strip-ansi to remove ANSI escape sequences
+  const pattern =
+    /[\u001B\u009B][[\]()#;?]*(?:((?:[a-zA-Z\d]*(?:;[a-zA-Z\d]*)*)?\u0007)|(?:\d{1,4}(?:;\d{0,4})*)?[\dA-PR-TZcf-nq-uy=><~])/g;
+  return input.replace(pattern, '');
 }
 
-function extractLocator(lines: string[]): string | undefined {
+function simplifyLocator(locator: string): string {
+  const raw = locator.trim();
+  const firstLocatorMatch = raw.match(/locator\((['"`])([\s\S]*?)\1\)/);
+  if (!firstLocatorMatch) return raw;
+  const simplified = firstLocatorMatch[2].trim();
+  return simplified || raw;
+}
+
+function extractLocatorRaw(lines: string[]): string | undefined {
   const line = lines.find((l) => l.trim().startsWith('Locator:'));
   if (!line) return undefined;
   const raw = line.replace(/^\s*Locator:\s*/, '').trim();
-  return raw ? trimLocator(raw) : undefined;
+  return raw || undefined;
+}
+
+function extractLocator(lines: string[]): string | undefined {
+  const raw = extractLocatorRaw(lines);
+  if (!raw) return undefined;
+  return simplifyLocator(raw);
 }
 
 function extractExpected(lines: string[]): string | undefined {
@@ -189,7 +211,7 @@ function classifyFailureKind(message: string, timeoutMs?: number): FailureStruct
 }
 
 export function buildStructuredFailure(step: ParsedStep): FailureStructured {
-  const raw = step.result.message ?? '';
+  const raw = stripAnsi(step.result.message ?? '');
   const lines = raw.split('\n');
   const url = extractUrlFromStep(step) ?? extractUrlFromMessage(lines);
   const timeout_ms = extractTimeout(lines);
@@ -198,6 +220,7 @@ export function buildStructuredFailure(step: ParsedStep): FailureStructured {
     kind: classifyFailureKind(raw, timeout_ms),
     summary: extractErrorSummary(lines),
     locator: extractLocator(lines),
+    locator_full: extractLocatorRaw(lines),
     url,
     expected: extractExpected(lines),
     actual: extractActual(lines),
@@ -248,10 +271,25 @@ export default class AgentFormatter extends Formatter {
     });
   }
 
-  private createBaseFailurePayload(step: ParsedStep): Pick<FailurePayload, 'error_raw' | 'error_structured'> {
-    const error_raw = step.result.message ?? '';
-    const error_structured = buildStructuredFailure(step);
-    return { error_raw, error_structured };
+  private createBaseFailurePayload(
+    step: ParsedStep,
+  ): Pick<
+    FailurePayload,
+    'error' | 'kind' | 'summary' | 'locator' | 'locator_full' | 'url' | 'expected' | 'actual' | 'timeout_ms'
+  > {
+    const error = stripAnsi(step.result.message ?? '');
+    const errorStructured = buildStructuredFailure(step);
+    return {
+      error,
+      kind: errorStructured.kind,
+      summary: errorStructured.summary,
+      locator: errorStructured.locator,
+      locator_full: errorStructured.locator_full,
+      url: errorStructured.url,
+      expected: errorStructured.expected,
+      actual: errorStructured.actual,
+      timeout_ms: errorStructured.timeout_ms,
+    };
   }
 
   private resolveStoreDbPath(): string | null {
@@ -282,7 +320,10 @@ export default class AgentFormatter extends Formatter {
     step: ParsedStep,
     stepIndex: number,
     baseline: BaselineContext,
-    base: Pick<FailurePayload, 'error_raw' | 'error_structured'>,
+    base: Pick<
+      FailurePayload,
+      'error' | 'kind' | 'summary' | 'locator' | 'locator_full' | 'url' | 'expected' | 'actual' | 'timeout_ms'
+    >,
   ): Promise<FailurePayload> {
     const screenshots = resolveBaselineScreenshots(baseline.artifacts, baseline.artifactDir, stepIndex);
 
@@ -418,13 +459,11 @@ export default class AgentFormatter extends Formatter {
     scenarioId: string | undefined,
     step: ParsedStep,
     idx: number,
-    attempt: number,
   ): Promise<void> {
     const status = normalizeStatus(step.result.status);
     const baseEvent: Record<string, unknown> = {
       event_type: 'step_result',
       scenario_id: scenarioId,
-      attempt,
       step_index: idx,
       keyword: step.keyword,
       text: step.text,
@@ -498,7 +537,7 @@ export default class AgentFormatter extends Formatter {
     const step = parsed.steps[stepIndex];
     if (!step) return;
 
-    await this.emitStepResult(context.scenarioId, step, stepIndex, context.attempt);
+    await this.emitStepResult(context.scenarioId, step, stepIndex);
   }
 
   private handleTestCaseFinished(envelope: Envelope): void {

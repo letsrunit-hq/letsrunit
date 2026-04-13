@@ -69,6 +69,7 @@ describe('buildStructuredFailure', () => {
     expect(structured.kind).toBe('assertion');
     expect(structured.summary).toBe('element(s) not found');
     expect(structured.locator).toBe('text=/Hi world/i');
+    expect(structured.locator_full).toBe("locator('text=/Hi world/i').first()");
     expect(structured.expected).toBe('visible');
     expect(structured.timeout_ms).toBe(5000);
   });
@@ -85,6 +86,27 @@ describe('buildStructuredFailure', () => {
     expect(structured.kind).toBe('unknown');
     expect(structured.url).toBe('/ok?x=1');
   });
+
+  it('keeps simplified and full locator forms', () => {
+    const step = {
+      keyword: 'Then ',
+      text: 'foo',
+      result: {
+        status: 'FAILED',
+        message: [
+          "Locator: locator('role=button [name=\"Use Item\"i]').or(locator('role=button').filter({ hasText: 'Use Item' })).first()",
+          'Error: element(s) not found',
+        ].join('\n'),
+      },
+      attachments: [],
+    };
+
+    const structured = buildStructuredFailure(step as any);
+    expect(structured.locator).toBe('role=button [name="Use Item"i]');
+    expect(structured.locator_full).toBe(
+      "locator('role=button [name=\"Use Item\"i]').or(locator('role=button').filter({ hasText: 'Use Item' })).first()",
+    );
+  });
 });
 
 describe('agent formatter payload shape', () => {
@@ -98,7 +120,17 @@ describe('agent formatter payload shape', () => {
           {
             keyword: 'Given ',
             text: 'foo',
-            result: { status: 'PASSED', duration: { seconds: 1, nanos: 0 } },
+            result: {
+              status: 'FAILED',
+              duration: { seconds: 1, nanos: 0 },
+              message: [
+                'Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible() failed',
+                "Locator: locator('role=button [name=\"Use Item\"i]').or(locator('role=button')).first()",
+                'Expected: visible',
+                'Timeout: 5000ms',
+                'Error: element(s) not found',
+              ].join('\n'),
+            },
             attachments: [],
           },
         ],
@@ -155,6 +187,19 @@ describe('agent formatter payload shape', () => {
 
     const scenarioEnd = logs.find((entry) => entry.event_type === 'scenario_end');
     expect(scenarioEnd?.will_be_retried).toBeUndefined();
+
+    const stepResult = logs.find((entry) => entry.event_type === 'step_result');
+    const failure = stepResult?.failure as Record<string, unknown> | undefined;
+    expect(failure).toBeDefined();
+    expect(stepResult?.attempt).toBeUndefined();
+    expect(failure?.error).toContain('expect(locator).toBeVisible() failed');
+    expect(String(failure?.error)).not.toContain('\u001b[');
+    expect(failure?.kind).toBe('assertion');
+    expect(failure?.locator).toBe('role=button [name="Use Item"i]');
+    expect(failure?.locator_full).toBe("locator('role=button [name=\"Use Item\"i]').or(locator('role=button')).first()");
+    expect(failure?.summary).toBe('element(s) not found');
+    expect(failure?.error_raw).toBeUndefined();
+    expect(failure?.error_structured).toBeUndefined();
   });
 
   it('emits will_be_retried only when true', async () => {

@@ -123,7 +123,7 @@ Machine-oriented formatter that emits one JSON object per line (NDJSON):
 - compact payloads: no `schema_version`, `timestamp`, `event_id`, or `sequence`
 - `run_id` is emitted only in `run_start`
 - `will_be_retried` is emitted only when `true`
-- Failure events include exact raw error text and structured fields (`summary`, `locator`, `url`, etc.)
+- Failure events include `failure.error` (ANSI-stripped full message) and flattened fields (`kind`, `summary`, `locator`, `locator_full`, `url`, etc.)
 - When store plugin data is available, failure events include baseline metadata and inline unified HTML diff
 
 ```js
