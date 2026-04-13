@@ -18,12 +18,6 @@ Generates a `.feature` file from natural language instructions.
 echo "Login with email and password" | yarn cli generate <url> -o ./features
 ```
 
-### `run`
-Executes a Gherkin feature file against a target URL.
-```bash
-yarn cli run <url> ./features/login.feature
-```
-
 ### `explain`
 Explains failures from the latest run in `.letsrunit/letsrunit.db`.
 ```bash

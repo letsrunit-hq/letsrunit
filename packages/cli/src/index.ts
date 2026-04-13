@@ -45,7 +45,7 @@ async function readStdin(): Promise<string> {
   });
 }
 
-program.name('letsrunit').description('Vibe testing done right').version(version);
+program.name('letsrunit').description('Write, run, and analyze E2E tests with AI assistance').version(version);
 
 program
   .command('init')
@@ -58,6 +58,7 @@ program
 
 program
   .command('explore')
+  .description('Generate feature scenarios by exploring a URL')
   .argument('<target>', 'Target URL or project')
   .option('-v, --verbose', 'Enable verbose logging', false)
   .option('-s, --silent', 'Only output errors', false)
@@ -75,6 +76,7 @@ program
 
 program
   .command('generate')
+  .description('Generate a feature scenario from a test description')
   .argument('<target>', 'Target URL or project')
   .option('-v, --verbose', 'Enable verbose logging', false)
   .option('-s, --silent', 'Only output errors', false)
@@ -103,6 +105,7 @@ program
 
 program
   .command('register')
+  .description('Register a test user in your app')
   .argument('<target>', 'Target URL or project')
   .option('-v, --verbose', 'Enable verbose logging', false)
   .option('-s, --silent', 'Only output errors', false)
@@ -134,7 +137,16 @@ program
   });
 
 program
-  .command('run')
+  .command('explain')
+  .description('Explain failures from the latest cucumber run')
+  .option('--db <path>', 'Path to letsrunit SQLite DB')
+  .option('--artifacts <path>', 'Path to letsrunit artifacts directory')
+  .action(async (opts: { db?: string; artifacts?: string }) => {
+    await runExplain(opts);
+  });
+
+program
+  .command('run', { hidden: true })
   .argument('<target>', 'Target URL or project')
   .argument('<feature>', 'Gherkin feature file')
   .option('-v, --verbose', 'Enable verbose logging', false)
@@ -142,15 +154,6 @@ program
   .action(async (target: string, featureFile: string, opts: { verbose: boolean; silent: boolean }) => {
     const feature = await fs.readFile(featureFile, 'utf-8');
     await run(target, feature, { headless: false, journal: createJournal(opts) });
-  });
-
-program
-  .command('explain')
-  .description('Explain failures from the latest letsrunit run')
-  .option('--db <path>', 'Path to letsrunit SQLite DB')
-  .option('--artifacts <path>', 'Path to letsrunit artifacts directory')
-  .action(async (opts: { db?: string; artifacts?: string }) => {
-    await runExplain(opts);
   });
 
 program.parse();
