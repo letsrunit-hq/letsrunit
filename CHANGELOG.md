@@ -1,3 +1,15 @@
+# [0.17.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.16.0...v0.17.0) (2026-04-13)
+
+
+### Bug Fixes
+
+* **cli:** make target optional with cucumber world fallback ([35af6a1](https://github.com/letsrunit-hq/letsrunit/commit/35af6a177ab60dbf0d62b6601b3a2d8334a112ba))
+
+
+### Features
+
+* **gherkin:** support password value literals with required seed ([dba94ab](https://github.com/letsrunit-hq/letsrunit/commit/dba94abb84243beafb9fec691ecfc0ccee443a58))
+
 # [0.16.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.15.1...v0.16.0) (2026-04-13)
 
 
