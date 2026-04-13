@@ -78,7 +78,10 @@ When I set field "Price range" to range of 10 to 100
 | Boolean | `true` / `false` |
 | Date (absolute) | `date "2025-01-22"` |
 | Date (relative) | `date of tomorrow`, `date of 3 days ago`, `date of 8 weeks from now` |
+| Generated password | `password of "user-uuid"` |
 | Array | `["Option A", "Option B"]` |
+
+To use `password of "..."`, set `LETSRUNIT_PASSWORD_SEED` in your environment.
 
 ## Keyboard
 
