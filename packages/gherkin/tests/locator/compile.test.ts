@@ -112,6 +112,18 @@ describe('compileLocator', () => {
     );
   });
 
+  it('button "Foo" within iframe "ownable widget" enters iframe then finds the target', () => {
+    expect(compileLocator('button "Foo" within iframe "ownable widget"')).to.eq(
+      'css=iframe:is([title="ownable widget" i],[name="ownable widget" i],[aria-label="ownable widget" i],[id="ownable widget" i]) >> internal:control=enter-frame >> role=button [name="Foo"i]',
+    );
+  });
+
+  it('supports chains combining iframe and non-iframe ancestors', () => {
+    expect(compileLocator('button "Save" within iframe "widget" within `#shell`')).to.eq(
+      'css=iframe:is([title="widget" i],[name="widget" i],[aria-label="widget" i],[id="widget" i]) >> internal:control=enter-frame >> #shell >> role=button [name="Save"i]',
+    );
+  });
+
   it('supports multiple within clauses in parser order', () => {
     expect(compileLocator('button "Save" within `section` within `#root`')).to.eq(
       'section >> #root >> role=button [name="Save"i]',

@@ -169,6 +169,13 @@ describe('locatorParameter', () => {
     expect(arg.getValue(null)).to.eq('role=button [name="Submit"i]');
   });
 
+  it('compiles iframe-scoped locators using enter-frame', () => {
+    const [arg] = expr.match('button "Submit" within iframe "ownable widget"')!;
+    expect(arg.getValue(null)).to.eq(
+      'css=iframe:is([title="ownable widget" i],[name="ownable widget" i],[aria-label="ownable widget" i],[id="ownable widget" i]) >> internal:control=enter-frame >> role=button [name="Submit"i]',
+    );
+  });
+
   it('returns the raw locator when compile fails', () => {
     const param = locatorParameter();
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
