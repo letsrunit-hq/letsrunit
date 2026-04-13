@@ -1,3 +1,10 @@
+# [0.16.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.15.1...v0.16.0) (2026-04-13)
+
+
+### Features
+
+* **gherkin:** support within iframe locator traversal ([3633710](https://github.com/letsrunit-hq/letsrunit/commit/3633710b8da0982834da96387bcacb979197bb59))
+
 ## [0.15.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.15.0...v0.15.1) (2026-04-13)
 
 
