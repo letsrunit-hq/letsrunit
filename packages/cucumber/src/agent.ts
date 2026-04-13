@@ -76,7 +76,8 @@ type ScenarioContext = {
 function normalizeStatus(status: string | number | undefined): string {
   if (typeof status === 'string') return status.toLowerCase();
   if (typeof status === 'number') {
-    const name = TestStepResultStatus[status];
+    const names = TestStepResultStatus as Record<number, string>;
+    const name = names[status];
     if (typeof name === 'string') return name.toLowerCase();
   }
   return 'unknown';
