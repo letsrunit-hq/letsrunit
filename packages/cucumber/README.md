@@ -120,6 +120,9 @@ export default {
 Machine-oriented formatter that emits one JSON object per line (NDJSON):
 
 - `run_start`, `scenario_start`, `step_result`, `scenario_end`, `run_end` events
+- compact payloads: no `schema_version`, `timestamp`, `event_id`, or `sequence`
+- `run_id` is emitted only in `run_start`
+- `will_be_retried` is emitted only when `true`
 - Failure events include exact raw error text and structured fields (`summary`, `locator`, `url`, etc.)
 - When store plugin data is available, failure events include baseline metadata and inline unified HTML diff
 

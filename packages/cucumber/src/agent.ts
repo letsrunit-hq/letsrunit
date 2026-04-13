@@ -1,4 +1,5 @@
 import { formatterHelpers, type IFormatterOptions, Formatter } from '@cucumber/cucumber';
+import { type Envelope, TestStepResultStatus } from '@cucumber/messages';
 import { normalizeSteps } from '@letsrunit/gherkin';
 import { findArtifacts, findLastTest, openStore, computeScenarioId, computeStepId } from '@letsrunit/store';
 import { unifiedHtmlDiff } from '@letsrunit/playwright';
@@ -58,14 +59,19 @@ type BaselineContext = {
   artifactDir: string;
 };
 
-const SCHEMA_VERSION = '1';
+type ScenarioContext = {
+  scenarioId?: string;
+  attempt: number;
+  stepIndexById: Map<string, number>;
+};
 
-function nowIso(): string {
-  return new Date().toISOString();
-}
-
-function normalizeStatus(status: string): string {
-  return status.toLowerCase();
+function normalizeStatus(status: string | number | undefined): string {
+  if (typeof status === 'string') return status.toLowerCase();
+  if (typeof status === 'number') {
+    const name = TestStepResultStatus[status];
+    if (typeof name === 'string') return name.toLowerCase();
+  }
+  return 'unknown';
 }
 
 function toDurationMs(duration?: { seconds?: number; nanos?: number }): number | undefined {
@@ -226,10 +232,20 @@ export default class AgentFormatter extends Formatter {
   static readonly documentation = 'Machine-focused NDJSON formatter for agent consumption.';
 
   private readonly runId = uuidv4();
-  private sequence = 0;
+  private runStarted = false;
+  private processing: Promise<void> = Promise.resolve();
+  private passed = 0;
+  private failed = 0;
+  private skipped = 0;
+  private readonly scenarios = new Map<string, ScenarioContext>();
 
   constructor(options: IFormatterOptions) {
     super(options);
+    options.eventBroadcaster.on('envelope', (envelope: Envelope) => {
+      this.processing = this.processing.then(async () => {
+        await this.handleEnvelope(envelope);
+      });
+    });
   }
 
   private createBaseFailurePayload(step: ParsedStep): Pick<FailurePayload, 'error_raw' | 'error_structured'> {
@@ -346,23 +362,15 @@ export default class AgentFormatter extends Formatter {
     }
   }
 
-  private nextEventMeta(): { event_id: string; sequence: number } {
-    this.sequence += 1;
-    return {
-      event_id: `${this.runId}:${this.sequence}`,
-      sequence: this.sequence,
-    };
-  }
-
   private emit(payload: Record<string, unknown>): void {
-    emitLine(this.log, { ...this.nextEventMeta(), ...payload });
+    emitLine(this.log, payload);
   }
 
   private emitRunStart(): void {
+    if (this.runStarted) return;
+    this.runStarted = true;
     this.emit({
-      schema_version: SCHEMA_VERSION,
       event_type: 'run_start',
-      timestamp: nowIso(),
       run_id: this.runId,
     });
   }
@@ -371,16 +379,11 @@ export default class AgentFormatter extends Formatter {
     scenario: ParsedScenario,
     scenarioId: string | undefined,
     attempt: number,
-    willBeRetried: boolean,
   ): void {
     this.emit({
-      schema_version: SCHEMA_VERSION,
       event_type: 'scenario_start',
-      timestamp: nowIso(),
-      run_id: this.runId,
       scenario_id: scenarioId,
       attempt,
-      will_be_retried: willBeRetried,
       name: scenario.name,
       uri: scenario.sourceLocation?.uri,
       line: scenario.sourceLocation?.line,
@@ -393,24 +396,19 @@ export default class AgentFormatter extends Formatter {
     attempt: number,
     willBeRetried: boolean,
   ): void {
-    this.emit({
-      schema_version: SCHEMA_VERSION,
+    const payload: Record<string, unknown> = {
       event_type: 'scenario_end',
-      timestamp: nowIso(),
-      run_id: this.runId,
       scenario_id: scenarioId,
       attempt,
-      will_be_retried: willBeRetried,
       status,
-    });
+    };
+    if (willBeRetried) payload.will_be_retried = true;
+    this.emit(payload);
   }
 
   private emitRunEnd(passed: number, failed: number, skipped: number): void {
     this.emit({
-      schema_version: SCHEMA_VERSION,
       event_type: 'run_end',
-      timestamp: nowIso(),
-      run_id: this.runId,
       status: failed > 0 ? 'failed' : 'passed',
       scenarios: { passed, failed, skipped },
     });
@@ -421,17 +419,12 @@ export default class AgentFormatter extends Formatter {
     step: ParsedStep,
     idx: number,
     attempt: number,
-    willBeRetried: boolean,
   ): Promise<void> {
     const status = normalizeStatus(step.result.status);
     const baseEvent: Record<string, unknown> = {
-      schema_version: SCHEMA_VERSION,
       event_type: 'step_result',
-      timestamp: nowIso(),
-      run_id: this.runId,
       scenario_id: scenarioId,
       attempt,
-      will_be_retried: willBeRetried,
       step_index: idx,
       keyword: step.keyword,
       text: step.text,
@@ -448,42 +441,116 @@ export default class AgentFormatter extends Formatter {
     this.emit(baseEvent);
   }
 
-  async finished(): Promise<void> {
-    this.emitRunStart();
-
-    const attempts = this.eventDataCollector.getTestCaseAttempts();
-    let passed = 0;
-    let failed = 0;
-    let skipped = 0;
-
-    for (const attempt of attempts) {
+  private parseAttempt(testCaseStartedId: string): { scenario: ParsedScenario; steps: ParsedStep[]; attempt: number } | null {
+    try {
+      const attempt = this.eventDataCollector.getTestCaseAttempt(testCaseStartedId);
       const parsed = formatterHelpers.parseTestCaseAttempt({
         snippetBuilder: this.snippetBuilder,
         supportCodeLibrary: this.supportCodeLibrary,
         testCaseAttempt: attempt,
       });
+      return {
+        scenario: parsed.testCase as ParsedScenario,
+        steps: parsed.testSteps as ParsedStep[],
+        attempt: attempt.attempt + 1,
+      };
+    } catch {
+      return null;
+    }
+  }
 
-      const scenario = parsed.testCase as ParsedScenario;
-      const steps = parsed.testSteps as ParsedStep[];
-      const scenarioId = toScenarioId(steps) ?? undefined;
-      const scenarioStatus = normalizeStatus(attempt.worstTestStepResult.status);
-      const scenarioAttempt = attempt.attempt + 1;
+  private async handleTestCaseStarted(envelope: Envelope): Promise<void> {
+    const started = envelope.testCaseStarted;
+    if (!started) return;
 
-      this.emitScenarioStart(scenario, scenarioId, scenarioAttempt, attempt.willBeRetried);
+    const parsed = this.parseAttempt(started.id);
+    if (!parsed) return;
 
-      for (let idx = 0; idx < steps.length; idx += 1) {
-        await this.emitStepResult(scenarioId, steps[idx], idx, scenarioAttempt, attempt.willBeRetried);
-      }
+    const attemptData = this.eventDataCollector.getTestCaseAttempt(started.id);
+    const stepIndexById = new Map<string, number>();
+    attemptData.testCase.testSteps.forEach((step, idx) => {
+      stepIndexById.set(step.id, idx);
+    });
 
-      if (scenarioStatus === 'passed') passed += 1;
-      else if (scenarioStatus === 'skipped') skipped += 1;
-      else failed += 1;
+    const scenarioId = toScenarioId(parsed.steps) ?? undefined;
+    this.scenarios.set(started.id, {
+      scenarioId,
+      attempt: parsed.attempt,
+      stepIndexById,
+    });
 
-      this.emitScenarioEnd(scenarioId, scenarioStatus, scenarioAttempt, attempt.willBeRetried);
+    this.emitScenarioStart(parsed.scenario, scenarioId, parsed.attempt);
+  }
+
+  private async handleTestStepFinished(envelope: Envelope): Promise<void> {
+    const finished = envelope.testStepFinished;
+    if (!finished) return;
+
+    const context = this.scenarios.get(finished.testCaseStartedId);
+    if (!context) return;
+
+    const parsed = this.parseAttempt(finished.testCaseStartedId);
+    if (!parsed) return;
+
+    const stepIndex = context.stepIndexById.get(finished.testStepId);
+    if (stepIndex === undefined) return;
+
+    const step = parsed.steps[stepIndex];
+    if (!step) return;
+
+    await this.emitStepResult(context.scenarioId, step, stepIndex, context.attempt);
+  }
+
+  private handleTestCaseFinished(envelope: Envelope): void {
+    const finished = envelope.testCaseFinished;
+    if (!finished) return;
+
+    const context = this.scenarios.get(finished.testCaseStartedId);
+    const attemptData = this.eventDataCollector.getTestCaseAttempt(finished.testCaseStartedId);
+    const status = normalizeStatus(attemptData.worstTestStepResult.status);
+    const attempt = context?.attempt ?? attemptData.attempt + 1;
+    const scenarioId = context?.scenarioId;
+
+    if (status === 'passed') this.passed += 1;
+    else if (status === 'skipped') this.skipped += 1;
+    else this.failed += 1;
+
+    this.emitScenarioEnd(scenarioId, status, attempt, finished.willBeRetried);
+    this.scenarios.delete(finished.testCaseStartedId);
+  }
+
+  private handleTestRunFinished(): void {
+    this.emitRunEnd(this.passed, this.failed, this.skipped);
+  }
+
+  private async handleEnvelope(envelope: Envelope): Promise<void> {
+    if (envelope.testRunStarted) {
+      this.emitRunStart();
+      return;
     }
 
-    this.emitRunEnd(passed, failed, skipped);
+    if (envelope.testCaseStarted) {
+      await this.handleTestCaseStarted(envelope);
+      return;
+    }
 
+    if (envelope.testStepFinished) {
+      await this.handleTestStepFinished(envelope);
+      return;
+    }
+
+    if (envelope.testCaseFinished) {
+      this.handleTestCaseFinished(envelope);
+      return;
+    }
+
+    if (envelope.testRunFinished) {
+      this.handleTestRunFinished();
+    }
+  }
+
+  async finished(): Promise<void> {
+    await this.processing;
     await super.finished();
   }
 }
