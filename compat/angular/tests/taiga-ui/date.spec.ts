@@ -44,7 +44,7 @@ test.describe('Taiga Date Range', () => {
       { timeout: 5000 },
     );
 
-    await expect(page.getByLabel('start')).toHaveValue('2024-02-10');
-    await expect(page.getByLabel('end')).toHaveValue('2024-02-20');
+    await expect(page.getByLabel('start')).toHaveValue('10.02.2024');
+    await expect(page.getByLabel('end')).toHaveValue('20.02.2024');
   });
 });
