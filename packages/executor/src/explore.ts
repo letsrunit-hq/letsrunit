@@ -31,7 +31,13 @@ export default async function explore(
   let controller: Controller | undefined;
 
   try {
-    controller = await Controller.launch({ headless: opts.headless, baseURL: base, journal, debug: true });
+    controller = await Controller.launch({
+      headless: opts.headless,
+      baseURL: base,
+      journal,
+      debug: true,
+      capture: true,
+    });
     const { page } = await controller.run(makeFeature({ name: `Explore website "${base}"`, steps }));
     const pageInfo = await extractPageInfo(page);
     const name = pageInfo.name ?? pageInfo.url;

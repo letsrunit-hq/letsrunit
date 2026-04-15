@@ -20,7 +20,7 @@ export default async function run(
   let controller: Controller | undefined;
 
   try {
-    controller = await Controller.launch({ headless: opts.headless, baseURL: base, journal });
+    controller = await Controller.launch({ headless: opts.headless, baseURL: base, journal, capture: true });
     const featureText = typeof feature === 'string' ? feature : makeFeature(feature);
 
     const { status } = await controller.run(featureText);

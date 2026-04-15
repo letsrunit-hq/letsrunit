@@ -30,7 +30,7 @@ export default async function generate(
   let controller: Controller | undefined;
 
   try {
-    controller = await Controller.launch({ headless: opts.headless, baseURL: base, journal });
+    controller = await Controller.launch({ headless: opts.headless, baseURL: base, journal, capture: true });
     const signal = opts.timeout ? AbortSignal.timeout(opts.timeout) : undefined;
 
     return await generateFeature({
