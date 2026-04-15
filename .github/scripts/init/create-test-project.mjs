@@ -18,6 +18,8 @@ const TAR_FILES = [
   'utils.tgz',
 ];
 
+const PLAYWRIGHT_VERSION = '1.58.2';
+
 function parseArgs() {
   const args = process.argv.slice(2);
   const result = {};
@@ -76,7 +78,7 @@ function main() {
       '@letsrunit/cli': 'file:./cli.tgz',
       '@letsrunit/cucumber': 'file:./cucumber.tgz',
       '@cucumber/cucumber': '*',
-      playwright: '*',
+      playwright: PLAYWRIGHT_VERSION,
     },
   };
 
