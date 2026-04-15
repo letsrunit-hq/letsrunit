@@ -1,58 +1,21 @@
 name: Init Integration Test
-
 on:
-  push:
-    branches: [installation]
   pull_request:
     branches: [main]
 
 jobs:
-  mcp-server-npx-smoke:
-    name: MCP Server Bundle Smoke
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Enable Corepack
-        run: corepack enable
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-
-      - name: Install and build mcp-server
-        run: |
-          yarn install --immutable
-          yarn workspace @letsrunit/mcp-server build
-
-      - name: Pack local mcp-server tarball
-        run: |
-          cd packages/mcp-server
-          npm pack
-
-      - name: MCP handshake smoke (tools/list)
-        shell: bash
-        run: |
-          set -euo pipefail
-          TARBALL="$(ls -t packages/mcp-server/letsrunit-mcp-server-*.tgz | head -n1)"
-          npx -y @modelcontextprotocol/inspector --cli \
-            npx -y "$TARBALL" \
-            --method tools/list > /tmp/mcp-tools.json
-          jq -e '.tools | length > 0' /tmp/mcp-tools.json >/dev/null
-          jq -e '.tools[] | select(.name == "letsrunit_session_start")' /tmp/mcp-tools.json >/dev/null
-
   build:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Enable Corepack
         run: corepack enable
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: yarn
 
       - name: Build monorepo
@@ -65,6 +28,7 @@ jobs:
           yarn workspace letsrunit pack --out /tmp/letsrunit.tgz
           yarn workspace @letsrunit/ai pack --out /tmp/ai.tgz
           yarn workspace @letsrunit/bdd pack --out /tmp/bdd.tgz
+          yarn workspace @letsrunit/mcp-server pack --out /tmp/mcp-server.tgz
           yarn workspace @letsrunit/cucumber pack --out /tmp/cucumber.tgz
           yarn workspace @letsrunit/cli pack --out /tmp/cli.tgz
           yarn workspace @letsrunit/controller pack --out /tmp/controller.tgz
@@ -77,13 +41,14 @@ jobs:
           yarn workspace @letsrunit/store pack --out /tmp/store.tgz
           yarn workspace @letsrunit/utils pack --out /tmp/utils.tgz
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: tarballs
           path: |
             /tmp/letsrunit.tgz
             /tmp/ai.tgz
             /tmp/bdd.tgz
+            /tmp/mcp-server.tgz
             /tmp/cucumber.tgz
             /tmp/cli.tgz
             /tmp/controller.tgz
@@ -99,6 +64,8 @@ jobs:
   init:
     name: Init (${{ matrix.pm }})
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.59.1-noble
     needs: build
     strategy:
       fail-fast: false
@@ -106,87 +73,40 @@ jobs:
         pm: [npm, yarn, pnpm, bun]
 
     steps:
+      - uses: actions/checkout@v6
+
       - name: Enable Corepack
         run: corepack enable
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         if: matrix.pm == 'pnpm'
         with:
           version: latest
 
+      - name: Install Bun prerequisites
+        if: matrix.pm == 'bun'
+        run: |
+          apt-get update
+          apt-get install -y unzip build-essential
+
       - uses: oven-sh/setup-bun@v2
         if: matrix.pm == 'bun'
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: tarballs
           path: /tmp
 
       - name: Create test project
         run: |
-          mkdir -p /tmp/test-${{ matrix.pm }}
-          cp /tmp/letsrunit.tgz   /tmp/test-${{ matrix.pm }}/letsrunit.tgz
-          cp /tmp/ai.tgz          /tmp/test-${{ matrix.pm }}/ai.tgz
-          cp /tmp/bdd.tgz         /tmp/test-${{ matrix.pm }}/bdd.tgz
-          cp /tmp/cucumber.tgz    /tmp/test-${{ matrix.pm }}/cucumber.tgz
-          cp /tmp/cli.tgz         /tmp/test-${{ matrix.pm }}/cli.tgz
-          cp /tmp/controller.tgz  /tmp/test-${{ matrix.pm }}/controller.tgz
-          cp /tmp/executor.tgz    /tmp/test-${{ matrix.pm }}/executor.tgz
-          cp /tmp/gherker.tgz     /tmp/test-${{ matrix.pm }}/gherker.tgz
-          cp /tmp/gherkin.tgz     /tmp/test-${{ matrix.pm }}/gherkin.tgz
-          cp /tmp/journal.tgz     /tmp/test-${{ matrix.pm }}/journal.tgz
-          cp /tmp/mailbox.tgz     /tmp/test-${{ matrix.pm }}/mailbox.tgz
-          cp /tmp/playwright.tgz  /tmp/test-${{ matrix.pm }}/playwright.tgz
-          cp /tmp/store.tgz       /tmp/test-${{ matrix.pm }}/store.tgz
-          cp /tmp/utils.tgz       /tmp/test-${{ matrix.pm }}/utils.tgz
-          node -e "
-            const fs = require('fs');
-            const pm = '${{ matrix.pm }}';
-            const localOverrides = {
-              'letsrunit':              'file:./letsrunit.tgz',
-              '@letsrunit/ai':          'file:./ai.tgz',
-              '@letsrunit/bdd':         'file:./bdd.tgz',
-              '@letsrunit/cucumber':    'file:./cucumber.tgz',
-              '@letsrunit/cli':         'file:./cli.tgz',
-              '@letsrunit/controller':  'file:./controller.tgz',
-              '@letsrunit/executor':    'file:./executor.tgz',
-              '@letsrunit/gherker':     'file:./gherker.tgz',
-              '@letsrunit/gherkin':     'file:./gherkin.tgz',
-              '@letsrunit/journal':     'file:./journal.tgz',
-              '@letsrunit/mailbox':     'file:./mailbox.tgz',
-              '@letsrunit/playwright':  'file:./playwright.tgz',
-              '@letsrunit/store':       'file:./store.tgz',
-              '@letsrunit/utils':       'file:./utils.tgz',
-            };
-            const pkg = {
-              name: 'test-project',
-              version: '1.0.0',
-              private: true,
-              type: 'module',
-              dependencies: {
-                'letsrunit':               'file:./letsrunit.tgz',
-                '@letsrunit/cli':          'file:./cli.tgz',
-                '@letsrunit/cucumber':     'file:./cucumber.tgz',
-                '@cucumber/cucumber':      '*',
-                'playwright':              '*'
-              }
-            };
-            if (pm === 'yarn') {
-              pkg.packageManager = 'yarn@1.22.22';
-              pkg.resolutions = localOverrides;
-            }
-            if (pm === 'pnpm') {
-              pkg.pnpm = { overrides: localOverrides };
-            }
-            if (pm === 'npm' || pm === 'bun') {
-              pkg.overrides = localOverrides;
-            }
-            fs.writeFileSync('/tmp/test-' + pm + '/package.json', JSON.stringify(pkg, null, 2));
-          "
+          node .github/scripts/init/create-test-project.mjs \
+            --pm "${{ matrix.pm }}" \
+            --tarballs-dir /tmp \
+            --target-dir "/tmp/test-${{ matrix.pm }}"
 
       - name: Install dependencies
         working-directory: /tmp/test-${{ matrix.pm }}
@@ -198,23 +118,83 @@ jobs:
             bun)  bun install ;;
           esac
 
-      - name: Install Playwright system deps
-        working-directory: /tmp/test-${{ matrix.pm }}
-        run: node_modules/.bin/playwright install-deps chromium
-
       - name: Run init
         working-directory: /tmp/test-${{ matrix.pm }}
-        run: node node_modules/letsrunit/dist/bin.js init --yes
+        run: npx -y file:./letsrunit.tgz init --yes
 
-      - name: Start web server
-        run: |
-          node -e "require('http').createServer((_, res) => { res.setHeader('Content-Type', 'text/html'); res.end('<html><body><h1>Welcome</h1></body></html>'); }).listen(3000)" &
-          curl --retry 5 --retry-delay 1 --retry-connrefused -sf http://127.0.0.1:3000/
-
-      - name: Run Cucumber
+      - name: Run Cucumber (with web server)
         working-directory: /tmp/test-${{ matrix.pm }}
-        run: npx cucumber-js
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e "require('http').createServer((_, res) => { res.setHeader('Content-Type', 'text/html'); res.end('<html><body><h1>Welcome</h1></body></html>'); }).listen(3000)" >/tmp/init-demo.log 2>&1 &
+          DEMO_PID=$!
+          trap 'kill "$DEMO_PID" 2>/dev/null || true' EXIT
+          curl --retry 10 --retry-delay 1 --retry-connrefused -sf http://127.0.0.1:3000/
+          npx cucumber-js
 
       - name: CLI smoke test
         working-directory: /tmp/test-${{ matrix.pm }}
-        run: node_modules/.bin/letsrunit --help
+        run: |
+          case "${{ matrix.pm }}" in
+            npm)  npx letsrunit --help ;;
+            yarn) yarn letsrunit --help ;;
+            pnpm) pnpm exec letsrunit --help ;;
+            bun)  bunx letsrunit --help ;;
+          esac
+
+  mcp-server-integration:
+    name: MCP Server Integration
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.59.1-noble
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+    needs: build
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - uses: actions/download-artifact@v7
+        with:
+          name: tarballs
+          path: /tmp
+
+      - name: MCP integration (npx tools/list)
+        shell: bash
+        run: |
+          set -euo pipefail
+          node .github/scripts/mcp/run-npx-tools-list.mjs --package file:/tmp/mcp-server.tgz
+
+      - name: MCP integration (deterministic full flow)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          node -e "require('http').createServer((req, res) => { res.setHeader('Content-Type', 'text/html'); res.end('<html><head><title>MCP Test</title></head><body><h1>Welcome</h1><button>Click me</button></body></html>'); }).listen(3000)" >/tmp/mcp-demo.log 2>&1 &
+          DEMO_PID=$!
+          trap 'kill "$DEMO_PID" 2>/dev/null || true' EXIT
+          curl --retry 10 --retry-delay 1 --retry-connrefused -sf http://127.0.0.1:3000/
+
+          mkdir -p /tmp/mcp-int
+          cat >/tmp/mcp-int/package.json <<'EOF'
+          {
+            "name": "mcp-int",
+            "private": true,
+            "type": "module",
+            "dependencies": {
+              "@letsrunit/mcp-server": "file:/tmp/mcp-server.tgz",
+              "@modelcontextprotocol/sdk": "^1.26.0"
+            }
+          }
+          EOF
+          (cd /tmp/mcp-int && npm install --no-audit --no-fund)
+          (cd /tmp/mcp-int && npx playwright install chromium)
+          cp .github/scripts/mcp/run-deterministic-flow.mjs /tmp/mcp-int/run-deterministic-flow.mjs
+          node /tmp/mcp-int/run-deterministic-flow.mjs \
+            --server /tmp/mcp-int/node_modules/@letsrunit/mcp-server/dist/index.js \
+            --cwd /tmp/mcp-int \
+            --baseUrl http://127.0.0.1:3000

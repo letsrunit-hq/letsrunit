@@ -1,3 +1,133 @@
+## [0.18.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.18.0...v0.18.1) (2026-04-15)
+
+
+### Bug Fixes
+
+* **cucumber:** log unexpected errors when gathering attachments in cucumber reporter ([6387f0a](https://github.com/letsrunit-hq/letsrunit/commit/6387f0adde677d96539e540bbaa1f4086c7f8651))
+
+# [0.18.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.17.1...v0.18.0) (2026-04-13)
+
+
+### Features
+
+* **cucumber:** include html snapshot when diff is unavailable ([ec8f815](https://github.com/letsrunit-hq/letsrunit/commit/ec8f8150ed10313342d9270c70dd22bd0eb54c5f))
+* **playwright:** enable utility class scrubbing by default ([57618f6](https://github.com/letsrunit-hq/letsrunit/commit/57618f67bccd20ddcf7e695469c01e64d04017cb))
+
+## [0.17.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.17.0...v0.17.1) (2026-04-13)
+
+
+### Bug Fixes
+
+* **cucumber:** auto-select agent formatter by environment ([cc949eb](https://github.com/letsrunit-hq/letsrunit/commit/cc949eb2d06a5030fd94ef7a727bb3345855bf1e))
+* **cucumber:** fix dts enum status lookup ([eee9e51](https://github.com/letsrunit-hq/letsrunit/commit/eee9e5151f5614bb386f08eeaf2d75230892ec45))
+* **cucumber:** stream compact agent formatter output ([1395826](https://github.com/letsrunit-hq/letsrunit/commit/1395826ed54b12d6a5766f5d7cadb615c1027f11))
+* **cucumber:** streamline agent NDJSON failure payload ([98b36e9](https://github.com/letsrunit-hq/letsrunit/commit/98b36e9b62431a028183ec29632ed71807fe9814))
+
+# [0.17.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.16.0...v0.17.0) (2026-04-13)
+
+
+### Bug Fixes
+
+* **cli:** make target optional with cucumber world fallback ([35af6a1](https://github.com/letsrunit-hq/letsrunit/commit/35af6a177ab60dbf0d62b6601b3a2d8334a112ba))
+
+
+### Features
+
+* **gherkin:** support password value literals with required seed ([dba94ab](https://github.com/letsrunit-hq/letsrunit/commit/dba94abb84243beafb9fec691ecfc0ccee443a58))
+
+# [0.16.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.15.1...v0.16.0) (2026-04-13)
+
+
+### Features
+
+* **gherkin:** support within iframe locator traversal ([3633710](https://github.com/letsrunit-hq/letsrunit/commit/3633710b8da0982834da96387bcacb979197bb59))
+
+## [0.15.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.15.0...v0.15.1) (2026-04-13)
+
+
+### Bug Fixes
+
+* Improve CLI help ([3b3bf31](https://github.com/letsrunit-hq/letsrunit/commit/3b3bf310255538a4d15eeb3b0e42d24cedebf33f))
+
+# [0.15.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.14.5...v0.15.0) (2026-04-11)
+
+
+### Bug Fixes
+
+* **mcp-server:** avoid hard import on reload registry reset ([85f94f2](https://github.com/letsrunit-hq/letsrunit/commit/85f94f200f9bde0f7dbcaa26853f9640fd5cc696))
+
+
+### Features
+
+* **mcp-server:** add explicit step reload tool ([77ef5ec](https://github.com/letsrunit-hq/letsrunit/commit/77ef5ecd58d8e34bb4a334dbfa2b5115ebac18c0))
+
+## [0.14.5](https://github.com/letsrunit-hq/letsrunit/compare/v0.14.4...v0.14.5) (2026-04-11)
+
+
+### Bug Fixes
+
+* **mcp-server:** pass runtime mode explicitly to session startup ([c11d38e](https://github.com/letsrunit-hq/letsrunit/commit/c11d38e353ae772e5f931a667814865a16804c61))
+* **mcp-server:** simplify runtime mode handoff and diagnostics ([4739b5d](https://github.com/letsrunit-hq/letsrunit/commit/4739b5db8bd3b807ae7270ee297dab44ee0263c5))
+
+## [0.14.4](https://github.com/letsrunit-hq/letsrunit/compare/v0.14.3...v0.14.4) (2026-04-11)
+
+
+### Bug Fixes
+
+* **mcp-server:** inject build-time version constant ([f9a14a1](https://github.com/letsrunit-hq/letsrunit/commit/f9a14a11b24e5501b512c6e616b9665c3339ebbe))
+
+## [0.14.3](https://github.com/letsrunit-hq/letsrunit/compare/v0.14.2...v0.14.3) (2026-04-10)
+
+
+### Bug Fixes
+
+* **mcp-server:** simplify runtime handoff and improve diagnostics ([fd90cc2](https://github.com/letsrunit-hq/letsrunit/commit/fd90cc2b83eb2cc9acdfe88ceae2b6aa369f05a2))
+
+## [0.14.2](https://github.com/letsrunit-hq/letsrunit/compare/v0.14.1...v0.14.2) (2026-04-10)
+
+
+### Bug Fixes
+
+* **mcp-server:** resolve project handoff without package.json subpath ([fee014f](https://github.com/letsrunit-hq/letsrunit/commit/fee014f39debd275c84dd826133095e36cf697d7))
+
+## [0.14.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.14.0...v0.14.1) (2026-04-10)
+
+
+### Bug Fixes
+
+* bump ([b617ff6](https://github.com/letsrunit-hq/letsrunit/commit/b617ff66ed6d0adb218759f24f1f7676b33ad987))
+
+# [0.14.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.13.3...v0.14.0) (2026-04-09)
+
+
+### Features
+
+* **init:** install project mcp server by default ([a5fa1f7](https://github.com/letsrunit-hq/letsrunit/commit/a5fa1f748d364940ef38a2dd9a0f5fdd84098756))
+* **mcp-server:** hand off to project-local server when available ([ec343bf](https://github.com/letsrunit-hq/letsrunit/commit/ec343bf0bad7dff4920b333f9184481f814b8ef4))
+
+## [0.13.3](https://github.com/letsrunit-hq/letsrunit/compare/v0.13.2...v0.13.3) (2026-04-09)
+
+
+### Bug Fixes
+
+* **ci:** restore inspector-based mcp npx check ([3da7343](https://github.com/letsrunit-hq/letsrunit/commit/3da73439dfac2b7a30d19a57e35ff1e791cd7e83))
+* **cucumber:** add ignore configuration for world.js in letsrunit setup ([51f99b5](https://github.com/letsrunit-hq/letsrunit/commit/51f99b571ce0e4588008f65bfecc1a00cc166bf6))
+* **mcp-server:** avoid bundling node_modules in esm build ([c8366eb](https://github.com/letsrunit-hq/letsrunit/commit/c8366eb8d2dbca53f418d286f8222406558ee443))
+
+## [0.13.2](https://github.com/letsrunit-hq/letsrunit/compare/v0.13.1...v0.13.2) (2026-04-08)
+
+
+### Bug Fixes
+
+* **mcp-server:** add createRequire shim to bundled entry ([e616df4](https://github.com/letsrunit-hq/letsrunit/commit/e616df45dd288d19ee3dddd8b619367ba54c6a0f))
+
+## [0.13.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.13.0...v0.13.1) (2026-04-08)
+
+
+### Bug Fixes
+
+* **mcp-server:** enable node shims for ESM bundle ([6d146ae](https://github.com/letsrunit-hq/letsrunit/commit/6d146aec7f63bde4b657e949b8306bae0a943b7b))
+
 # [0.13.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.12.0...v0.13.0) (2026-04-07)
 
 

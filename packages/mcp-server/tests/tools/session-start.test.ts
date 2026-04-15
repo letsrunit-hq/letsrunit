@@ -15,7 +15,9 @@ describe('registerSessionStart', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     sessions = makeSessionManager({ create: vi.fn().mockResolvedValue(session) });
-    call = captureHandler(registerSessionStart, sessions);
+    call = captureHandler((server, sessionManager) => {
+      registerSessionStart(server, sessionManager, { runtimeMode: 'project' });
+    }, sessions);
   });
 
   it('returns the sessionId', async () => {
@@ -26,6 +28,14 @@ describe('registerSessionStart', () => {
   it('loads support files from cucumber config before session creation', async () => {
     await call({});
     expect(loadSupportFiles).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not load support files in standalone mode', async () => {
+    call = captureHandler((server, sessionManager) => {
+      registerSessionStart(server, sessionManager, { runtimeMode: 'standalone' });
+    }, sessions);
+    await call({});
+    expect(loadSupportFiles).not.toHaveBeenCalled();
   });
 
   it('calls sessions.create with headless defaulting to true', async () => {

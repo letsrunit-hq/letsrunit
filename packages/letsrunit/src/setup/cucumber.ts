@@ -4,7 +4,7 @@ import { type Environment, execPm } from '../detect.js';
 
 const BDD_IMPORT = '@letsrunit/cucumber';
 
-const CUCUMBER_CONFIG = `import { resolveDebugWorldParameters } from '@letsrunit/cucumber/config';
+const CUCUMBER_CONFIG = `import { isAgentEnvironment, resolveDebugWorldParameters } from '@letsrunit/cucumber/config';
 
 const { failFast, worldParameters } = resolveDebugWorldParameters({
   argv: process.argv,
@@ -13,9 +13,15 @@ const { failFast, worldParameters } = resolveDebugWorldParameters({
   },
 });
 
+const format = [
+  isAgentEnvironment(process.env)
+    ? '@letsrunit/cucumber/agent'
+    : '@letsrunit/cucumber/progress',
+];
+
 export default {
   require: ['features/support/**/*.js'],
-  format: ['@letsrunit/cucumber/progress'],
+  format,
   failFast,
   plugin: ['@letsrunit/cucumber/store'],
   pluginOptions: {
@@ -24,6 +30,9 @@ export default {
     },
   },
   worldParameters,
+  letsrunit: {
+    ignore: ['features/support/world.js'],
+  },
 };
 `;
 

@@ -11,6 +11,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runExplain } from './run-explain';
 import { runExplore } from './run-explore';
+import { resolveTarget } from './target';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const { version } = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf-8')) as { version: string };
@@ -45,24 +46,27 @@ async function readStdin(): Promise<string> {
   });
 }
 
-program.name('letsrunit').description('Vibe testing done right').version(version);
+program.name('letsrunit').description('Write, run, and analyze E2E tests with AI assistance').version(version);
 
 program
   .command('init')
   .description('Set up letsrunit in the current project')
   .option('-y, --yes', 'Skip confirmation prompts')
-  .action(async (opts: { yes?: boolean }) => {
-    await init({ yes: opts.yes });
+  .option('--no-mcp', 'Do not install @letsrunit/mcp-server')
+  .action(async (opts: { yes?: boolean; mcp?: boolean }) => {
+    await init({ yes: opts.yes, noMcp: opts.mcp === false });
   });
 
 program
   .command('explore')
-  .argument('<target>', 'Target URL or project')
+  .description('Generate feature scenarios by exploring a URL')
+  .option('-t, --target <target>', 'Target URL or project')
   .option('-v, --verbose', 'Enable verbose logging', false)
   .option('-s, --silent', 'Only output errors', false)
   .option('-o, --save <path>', 'Path to save .feature file', '')
-  .action(async (target: string, opts: { verbose: boolean; silent: boolean; save: string }) => {
+  .action(async (opts: { target?: string; verbose: boolean; silent: boolean; save: string }) => {
     const journal = createJournal({ ...opts, artifactPath: opts.save });
+    const target = await resolveTarget(opts.target);
 
     const { status } = await explore(target, { headless: false, journal }, async (info, actions) => {
       journal.sink.endSection();
@@ -74,11 +78,12 @@ program
 
 program
   .command('generate')
-  .argument('<target>', 'Target URL or project')
+  .description('Generate a feature scenario from a test description')
+  .option('-t, --target <target>', 'Target URL or project')
   .option('-v, --verbose', 'Enable verbose logging', false)
   .option('-s, --silent', 'Only output errors', false)
   .option('-o, --save <path>', 'Path to save .feature file', '')
-  .action(async (target: string, opts: { verbose: boolean; silent: boolean; save: string }) => {
+  .action(async (opts: { target?: string; verbose: boolean; silent: boolean; save: string }) => {
     const instructions = (await readStdin()).trim();
 
     if (!instructions) {
@@ -90,6 +95,7 @@ program
 
     await journal.info('Refining test instructions');
     const suggestion = await refineSuggestion(instructions);
+    const target = await resolveTarget(opts.target);
 
     const { feature, status } = await generate(target, suggestion, { headless: false, journal });
 
@@ -102,11 +108,12 @@ program
 
 program
   .command('register')
-  .argument('<target>', 'Target URL or project')
+  .description('Register a test user in your app')
+  .option('-t, --target <target>', 'Target URL or project')
   .option('-v, --verbose', 'Enable verbose logging', false)
   .option('-s, --silent', 'Only output errors', false)
   .option('-o, --save <path>', 'Path to save .feature file', '')
-  .action(async (target: string, opts: { verbose: boolean; silent: boolean; save: string }) => {
+  .action(async (opts: { target?: string; verbose: boolean; silent: boolean; save: string }) => {
     const journal = createJournal({ ...opts, artifactPath: opts.save });
 
     const suggestion = {
@@ -122,6 +129,7 @@ program
     };
 
     const email = getMailbox(randomUUID());
+    const target = await resolveTarget(opts.target);
 
     const { feature, status } = await generate(target, suggestion, { headless: false, journal, accounts: { email } });
 
@@ -133,7 +141,16 @@ program
   });
 
 program
-  .command('run')
+  .command('explain')
+  .description('Explain failures from the latest cucumber run')
+  .option('--db <path>', 'Path to letsrunit SQLite DB')
+  .option('--artifacts <path>', 'Path to letsrunit artifacts directory')
+  .action(async (opts: { db?: string; artifacts?: string }) => {
+    await runExplain(opts);
+  });
+
+program
+  .command('run', { hidden: true })
   .argument('<target>', 'Target URL or project')
   .argument('<feature>', 'Gherkin feature file')
   .option('-v, --verbose', 'Enable verbose logging', false)
@@ -141,15 +158,6 @@ program
   .action(async (target: string, featureFile: string, opts: { verbose: boolean; silent: boolean }) => {
     const feature = await fs.readFile(featureFile, 'utf-8');
     await run(target, feature, { headless: false, journal: createJournal(opts) });
-  });
-
-program
-  .command('explain')
-  .description('Explain failures from the latest letsrunit run')
-  .option('--db <path>', 'Path to letsrunit SQLite DB')
-  .option('--artifacts <path>', 'Path to letsrunit artifacts directory')
-  .action(async (opts: { db?: string; artifacts?: string }) => {
-    await runExplain(opts);
   });
 
 program.parse();

@@ -37,10 +37,10 @@ export default {
 
 ### Debug Run Policy Helper
 
-Use `@letsrunit/cucumber/config` to derive `failFast` and `worldParameters` from CLI args:
+Use `@letsrunit/cucumber/config` to derive `failFast` and `worldParameters` from CLI args and pick the formatter based on the current agent environment:
 
 ```js
-import { resolveDebugWorldParameters } from '@letsrunit/cucumber/config';
+import { isAgentEnvironment, resolveDebugWorldParameters } from '@letsrunit/cucumber/config';
 
 const { failFast, worldParameters } = resolveDebugWorldParameters({
   argv: process.argv,
@@ -49,11 +49,27 @@ const { failFast, worldParameters } = resolveDebugWorldParameters({
   },
 });
 
+const format = [
+  isAgentEnvironment(process.env)
+    ? '@letsrunit/cucumber/agent'
+    : '@letsrunit/cucumber/progress',
+];
+
 export default {
-  format: ['@letsrunit/cucumber/progress'],
+  format,
   failFast,
   worldParameters,
 };
+```
+
+Pass extra env var keys for other agents:
+
+```js
+const format = [
+  isAgentEnvironment(process.env, ['FOO_AGENT'])
+    ? '@letsrunit/cucumber/agent'
+    : '@letsrunit/cucumber/progress',
+];
 ```
 
 Running headed + fail-fast:
@@ -104,7 +120,11 @@ export default {
 Machine-oriented formatter that emits one JSON object per line (NDJSON):
 
 - `run_start`, `scenario_start`, `step_result`, `scenario_end`, `run_end` events
-- Failure events include exact raw error text and structured fields (`summary`, `locator`, `url`, etc.)
+- compact payloads: no `schema_version`, `timestamp`, `event_id`, or `sequence`
+- `run_id` is emitted only in `run_start`
+- `will_be_retried` is emitted only when `true`
+- Failure events include `failure.error` (ANSI-stripped full message) and flattened fields (`kind`, `summary`, `locator`, `locator_full`, `url`, etc.)
+- When `diff_available` is `false` and a current scrubbed HTML attachment exists, failure events include `failure.html_snapshot`
 - When store plugin data is available, failure events include baseline metadata and inline unified HTML diff
 
 ```js

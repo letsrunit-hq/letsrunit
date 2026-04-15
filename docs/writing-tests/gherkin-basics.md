@@ -85,7 +85,9 @@ letsrunit extends Cucumber with three parameter types used across the step libra
 | Type | Accepts | Example |
 |------|---------|---------|
 | `{locator}` | Any locator expression | `button "Sign in"`, `field "Email"`, `` `#submit` `` |
-| `{value}` | String, number, date expression, or array | `"hello"`, `42`, `date of tomorrow`, `["A", "B"]` |
+| `{value}` | String, number, date expression, generated password, or array | `"hello"`, `42`, `date of tomorrow`, `password of "user-uuid"`, `["A", "B"]` |
+
+`password of "..."` requires the `LETSRUNIT_PASSWORD_SEED` environment variable.
 | `{keys}` | Quoted key or key combination | `"Enter"`, `"Control+A"`, `"Shift+Tab"` |
 
 See [Locators](locators.md) for the full locator syntax and [Step Reference](step-reference.md) for every available step.

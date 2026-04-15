@@ -6,7 +6,7 @@ import type { Snapshot } from './types';
 import { waitForDomIdle } from './wait';
 
 export type SnapshotOptions = {
-  /** Strip utility-framework classes (Tailwind, Bootstrap, UnoCSS, Windi) from the captured HTML. */
+  /** Strip utility-framework classes (Tailwind, Bootstrap, UnoCSS, Windi) from the captured HTML. Default: true. */
   dropUtilityClasses?: boolean;
 };
 
@@ -16,7 +16,9 @@ export async function snapshot(page: Page, opts: SnapshotOptions = {}): Promise<
 
   const [url, html, file] = await Promise.all([page.url(), getContentWithMarkedHidden(page), screenshot(page)]);
 
-  const finalHtml = opts.dropUtilityClasses
+  const dropUtilityClasses = opts.dropUtilityClasses ?? true;
+
+  const finalHtml = dropUtilityClasses
     ? await realScrubHtml({ html, url }, {
         dropHidden: false, dropHead: false, dropSvg: false, pickMain: false,
         stripAttributes: 0, normalizeWhitespace: false, dropComments: false,

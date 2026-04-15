@@ -27,6 +27,12 @@ npx letsrunit init
 {% endstep %}
 
 {% step %}
+## Install the MCP server
+
+`@letsrunit/mcp-server` is added to your dev dependencies so AI agents can use a project-local MCP server (and load your project support files safely). You can skip this step with `--no-mcp`.
+{% endstep %}
+
+{% step %}
 ## Install Cucumber
 
 letsrunit uses [Cucumber.js](https://cucumber.io/) as the test runner. If it's not already installed, the wizard will offer to add `@cucumber/cucumber` to your dev dependencies.
@@ -36,6 +42,7 @@ It also creates two files:
 **`cucumber.js`** tells Cucumber where your app is running:
 ```js
 export default {
+  // ...
   worldParameters: {
     baseURL: 'http://localhost:3000',
   },

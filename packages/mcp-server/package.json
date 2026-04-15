@@ -1,6 +1,6 @@
 {
   "name": "@letsrunit/mcp-server",
-  "version": "0.13.0",
+  "version": "0.18.1",
   "description": "MCP server for letsrunit — AI-agent browser test generation and execution",
   "keywords": [
     "testing",
@@ -47,6 +47,7 @@
   "packageManager": "yarn@4.10.3",
   "dependencies": {
     "@cucumber/cucumber": "^12.7.0",
+    "@letsrunit/bdd": "workspace:*",
     "@letsrunit/controller": "workspace:*",
     "@letsrunit/gherkin": "workspace:*",
     "@letsrunit/journal": "workspace:*",

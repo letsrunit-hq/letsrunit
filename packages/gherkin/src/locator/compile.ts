@@ -54,6 +54,10 @@ function escapeForAttributeSelector(value: string, exact = false): string {
   return `"${value.trim().replace(/\\/g, '\\\\').replace(/["]/g, '\\"')}"${exact ? 's' : 'i'}`;
 }
 
+function escapeForCssAttributeValue(value: string): string {
+  return value.trim().replace(/\\/g, '\\\\').replace(/["]/g, '\\"');
+}
+
 // ---------- Builders for internal engines ----------
 function getByAttributeTextSelector(attrName: string, text: string, props = ''): string {
   return `[${attrName}=${escapeForAttributeSelector(text)}]` + (props ? ` ${props}` : '');
@@ -81,6 +85,23 @@ function getByDateSelector(text: string): string {
 
 function getByRoleSelector(role: string, name: string = '', props = ''): string {
   return `role=${role}` + (name ? ` [name=${escapeForAttributeSelector(name)}]` : '') + (props ? ` ${props}` : '');
+}
+
+function isIframeRoleSelector(sel: Selector): sel is RoleSelector {
+  return sel.mode === 'role' && sel.role.toLowerCase() === 'iframe' && !!sel.name;
+}
+
+function getByIframeSelector(name: string): string {
+  const value = escapeForCssAttributeValue(name);
+  return `css=iframe:is([title="${value}" i],[name="${value}" i],[aria-label="${value}" i],[id="${value}" i])`;
+}
+
+function compileAncestorSelector(sel: Selector): string {
+  if (isIframeRoleSelector(sel)) {
+    return `${getByIframeSelector(sel.name)} >> internal:control=enter-frame`;
+  }
+
+  return compileBaseSelector(sel);
 }
 
 // ---------- Core compile helpers ----------
@@ -148,7 +169,7 @@ export function compileLocator(input: string): string {
   const ast = parse(input) as Expr;
 
   // 1) compile ancestor containers (outer → inner)
-  const chain: string[] = ast.ancestors.map(compileBaseSelector);
+  const chain: string[] = ast.ancestors.map(compileAncestorSelector);
 
   // 2) compile base
   const base = compileBaseSelector(ast.base.selector);

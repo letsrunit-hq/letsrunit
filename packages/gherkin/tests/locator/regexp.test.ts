@@ -29,6 +29,8 @@ describe('locatorRegexp', () => {
     'field "Email" within `form#signup`',
     'section within `form#main`',
     'section with text "Hello" within `css=.foo >> nth(2)`',
+    'button "Foo" within iframe "ownable widget"',
+    'button "Save" within iframe "widget" within `#shell`',
     'pager',
     'the pager',
     'pageable',

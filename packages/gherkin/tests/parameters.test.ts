@@ -1,5 +1,5 @@
 import { CucumberExpression, ParameterType, ParameterTypeRegistry } from '@cucumber/cucumber-expressions';
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   booleanParameter,
   enumParameter,
@@ -79,12 +79,26 @@ describe('valueParameter', () => {
   let param: ParameterTypeDefinition<unknown>;
   let reg: ParameterTypeRegistry;
   let expr: CucumberExpression;
+  let originalPasswordSeed: string | undefined;
 
   beforeAll(() => {
     param = valueParameter();
     reg = new ParameterTypeRegistry();
     defineParameterType(reg, param);
     expr = new CucumberExpression('value is {value}', reg);
+  });
+
+  beforeEach(() => {
+    originalPasswordSeed = process.env.LETSRUNIT_PASSWORD_SEED;
+  });
+
+  afterEach(() => {
+    if (originalPasswordSeed === undefined) {
+      delete process.env.LETSRUNIT_PASSWORD_SEED;
+      return;
+    }
+
+    process.env.LETSRUNIT_PASSWORD_SEED = originalPasswordSeed;
   });
 
   it('parses a quoted string value', () => {
@@ -127,6 +141,29 @@ describe('valueParameter', () => {
     expect(formatDateTimeLocal(value as Date)).to.eq('1981-08-22T15:04');
   });
 
+  it('parses a password value deterministically', () => {
+    process.env.LETSRUNIT_PASSWORD_SEED = 'test-seed';
+
+    const [a] = expr.match('value is password of "user-1"')!;
+    const [b] = expr.match('value is password of "user-1"')!;
+    const [c] = expr.match('value is password of "user-2"')!;
+
+    const valueA = a.getValue(null);
+    const valueB = b.getValue(null);
+    const valueC = c.getValue(null);
+
+    expect(valueA).to.eq(valueB);
+    expect(valueA).not.to.eq(valueC);
+    expect(valueA).to.match(/^Lr![a-f0-9]{18}a1$/);
+  });
+
+  it('throws when password value is used without LETSRUNIT_PASSWORD_SEED', () => {
+    delete process.env.LETSRUNIT_PASSWORD_SEED;
+
+    const [v] = expr.match('value is password of "user-1"')!;
+    expect(() => v.getValue(null)).toThrow('LETSRUNIT_PASSWORD_SEED is required');
+  });
+
   it('parses an array of values', () => {
     const res = expr.match('value is ["foo", 42]');
     expect(res).not.to.be.null;
@@ -149,6 +186,19 @@ describe('valueParameter', () => {
     expect(val[1]).to.be.instanceOf(Date);
     expect(formatDateTimeLocal(val[1] as Date)).to.eq('1981-08-22T15:04');
   });
+
+  it('parses an array containing password values', () => {
+    process.env.LETSRUNIT_PASSWORD_SEED = 'test-seed';
+
+    const res = expr.match('value is [password of "user-1", "fallback"]');
+    expect(res).not.to.be.null;
+
+    const [v] = res!;
+    const val = v.getValue(null) as any[];
+    expect(val).to.have.length(2);
+    expect(val[0]).to.match(/^Lr![a-f0-9]{18}a1$/);
+    expect(val[1]).to.eq('fallback');
+  });
 });
 
 describe('locatorParameter', () => {
@@ -167,6 +217,13 @@ describe('locatorParameter', () => {
     const [arg] = expr.match('button "Submit"')!;
     expect(arg.getParameterType().name).to.eq('locator');
     expect(arg.getValue(null)).to.eq('role=button [name="Submit"i]');
+  });
+
+  it('compiles iframe-scoped locators using enter-frame', () => {
+    const [arg] = expr.match('button "Submit" within iframe "ownable widget"')!;
+    expect(arg.getValue(null)).to.eq(
+      'css=iframe:is([title="ownable widget" i],[name="ownable widget" i],[aria-label="ownable widget" i],[id="ownable widget" i]) >> internal:control=enter-frame >> role=button [name="Submit"i]',
+    );
   });
 
   it('returns the raw locator when compile fails', () => {

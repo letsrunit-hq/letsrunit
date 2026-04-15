@@ -37,12 +37,10 @@ Anyone on the team can read this and understand what it tests. letsrunit handles
 
 ### Failure explanations
 
-When a scenario fails, letsrunit explains what changed in plain language. It stores test results with HTML and screenshots for every step, which it uses to create a diff and identify the exact cause of the failure.
-
-Because letsrunit stores the git commit hash for each test run, it knows exactly what has changed since the last time a scenario passed. Instead of a stack trace, you get a description of what the browser actually showed versus what the test expected, making it clear whether the code broke or the test needs an update.
-
 ```
-Scenario: Visitor sees the homepage greeting # features/homepage.feature:3
+$ npx cucumber-js
+
+1) Scenario: Visitor sees the homepage greeting # features/homepage.feature:3
    Last passed: commit d498a33, 1 commit ago
    ✔ Before
    ✔ Given I'm on the homepage
@@ -53,6 +51,24 @@ Scenario: Visitor sees the homepage greeting # features/homepage.feature:3
    - And I should be on page "/"
    ✔ After
 ```
+
+When a scenario fails, letsrunit explains what changed in plain language. It stores test results with HTML and screenshots for every step, which it uses to create a diff and identify the exact cause of the failure.
+
+```
+$ npx letsrunit explain
+
+features/homepage.feature :: Visitor sees the homepage greeting
+  ✔ Given I'm on the homepage
+  ✖ Then the page contains text "Hello world"
+  - Then I should be on page "/"
+
+  Possible regression
+  The page heading text was changed from "Hello world" to "Hllo world", so the expected greeting is missing.
+  💡 Fix the homepage text to read exactly "Hello world".
+```
+
+Because letsrunit stores the git commit hash for each test run, it knows exactly what has changed since the last time a scenario passed. Instead of a stack trace, you get a description of what the browser actually showed versus what the test expected, making it clear whether the code broke or the test needs an update.
+
 
 ### Test generation
 

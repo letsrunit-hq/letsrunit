@@ -273,10 +273,10 @@ describe('dropUtilityClasses', () => {
     expect(out).toContain('class="card is-open"');
   });
 
-  it('is disabled by default and leaves class attributes unchanged', async () => {
+  it('is enabled by default and strips utility classes', async () => {
     const html = '<div class="flex p-4 my-component">x</div>';
     const out = await realScrubHtml(page(html));
-    expect(out).toContain('class="flex p-4 my-component"');
+    expect(out).toContain('class="my-component"');
   });
 });
 
