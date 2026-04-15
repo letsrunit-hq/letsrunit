@@ -1,8 +1,9 @@
 import { After, AfterStep, Before, BeforeAll, defineParameterType, Given, Then, When } from '@cucumber/cucumber';
 import { registry, typeDefinitions } from '@letsrunit/bdd'; // importing bdd registers built-in steps as a side effect
 import { sanitizeStepDefinition } from '@letsrunit/gherkin';
-import { browse, createDateEngine, createFieldEngine, scrubHtml } from '@letsrunit/playwright';
+import { browse, createDateEngine, createFieldEngine } from '@letsrunit/playwright';
 import { chromium, selectors } from '@playwright/test';
+import { captureAfterStepArtifacts } from './after-step-artifacts';
 import { resolveHeadless, shouldKeepBrowserOpenOnFailure } from './run-policy';
 
 for (const type of typeDefinitions) {
@@ -38,17 +39,5 @@ After({ name: 'Close browser session' }, async function ({ result }: { result?: 
 });
 
 AfterStep(async function () {
-  const page = this.page;
-  if (!page || page.url() === 'about:blank') return;
-
-  try {
-    const [screenshot, html] = await Promise.all([
-      page.screenshot().catch(() => null),
-      scrubHtml(page).catch(() => null),
-    ]);
-
-    this.attach(page.url(), 'text/x-letsrunit-url');
-    if (screenshot) this.attach(screenshot, 'image/png');
-    if (html) this.attach(html, 'text/html');
-  } catch {}
+  await captureAfterStepArtifacts(this);
 });
