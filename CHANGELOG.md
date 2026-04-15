@@ -1,3 +1,11 @@
+## [0.18.2](https://github.com/letsrunit-hq/letsrunit/compare/v0.18.1...v0.18.2) (2026-04-15)
+
+
+### Bug Fixes
+
+* **controller:** disable capture by default ([461e6b1](https://github.com/letsrunit-hq/letsrunit/commit/461e6b110c2ce836e3a952612ad1b476db05ebab))
+* **playwright:** handle svg className in utility class stripping ([1770d16](https://github.com/letsrunit-hq/letsrunit/commit/1770d16c42eba8b6095e019fe79cc25855bd5e6a)), closes [#60](https://github.com/letsrunit-hq/letsrunit/issues/60)
+
 ## [0.18.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.18.0...v0.18.1) (2026-04-15)
 
 
