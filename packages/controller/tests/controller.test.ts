@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Controller } from '../src/controller';
 import { runner } from '../src/runner';
-import { screenshot } from '@letsrunit/playwright';
+import { screenshot, snapshot } from '@letsrunit/playwright';
 
 vi.mock('../src/runner', () => ({
   runner: {
@@ -157,13 +157,37 @@ describe('Controller', () => {
         return mockResult as any;
       });
 
-      const controller = await Controller.launch();
+      const controller = await Controller.launch({ capture: true });
       const feature = 'Feature: test\n  Scenario: test\n    Given a step';
       const result = await controller.run(feature);
 
       expect(runner.run).toHaveBeenCalledWith(feature, expect.anything(), expect.any(Function), {});
       expect(result.status).toBe('passed');
       expect(result.page).toBeDefined();
+      await controller.close();
+    });
+
+    it('does not capture screenshots or snapshots by default', async () => {
+      const mockResult = {
+        status: 'passed',
+        steps: [{ text: 'Given a step', status: 'success' }],
+        reason: undefined,
+      };
+      vi.mocked(runner.run).mockImplementation(async (f, w, wrapper, opts) => {
+        if (wrapper) {
+          await wrapper({ id: '1', text: 'Given a step', args: [] }, async () => ({ status: 'success' }));
+        }
+        return mockResult as any;
+      });
+
+      const controller = await Controller.launch();
+      const result = await controller.run('Feature: test\n  Scenario: test\n    Given a step');
+
+      expect(result.status).toBe('passed');
+      expect(result.page.url).toBe('http://localhost');
+      expect(result.page.html).toBe('');
+      expect(snapshot).not.toHaveBeenCalled();
+      expect(screenshot).not.toHaveBeenCalled();
       await controller.close();
     });
 
@@ -183,7 +207,7 @@ describe('Controller', () => {
         return mockResult as any;
       });
 
-      const controller = await Controller.launch();
+      const controller = await Controller.launch({ capture: true });
       const feature = 'Feature: test\n  Scenario: test\n    Given a step';
       const result = await controller.run(feature);
 
@@ -212,7 +236,7 @@ describe('Controller', () => {
         return mockResult as any;
       });
 
-      const controller = await Controller.launch();
+      const controller = await Controller.launch({ capture: true });
       const feature = 'Feature: test\n  Scenario: test\n    Then I see "text"';
       const result = await controller.run(feature);
 
@@ -240,7 +264,7 @@ describe('Controller', () => {
         return mockResult as any;
       });
 
-      const controller = await Controller.launch();
+      const controller = await Controller.launch({ capture: true });
       const result = await controller.run('Feature: test\n  Scenario: test\n    Then I don\'t see "text"');
       expect(result.status).toBe('passed');
       await controller.close();
@@ -263,7 +287,7 @@ describe('Controller', () => {
         return mockResult as any;
       });
 
-      const controller = await Controller.launch();
+      const controller = await Controller.launch({ capture: true });
       await controller.run('Feature: test\n  Scenario: test\n    Given a step');
       // Should not throw
       await controller.close();
@@ -284,7 +308,7 @@ describe('Controller', () => {
         return mockResult as any;
       });
 
-      const controller = await Controller.launch();
+      const controller = await Controller.launch({ capture: true });
       await controller.run('Feature: test\n  Scenario: test\n    Given a step');
       // Should not throw
       await controller.close();

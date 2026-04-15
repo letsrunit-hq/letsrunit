@@ -278,6 +278,15 @@ describe('dropUtilityClasses', () => {
     const out = await realScrubHtml(page(html));
     expect(out).toContain('class="my-component"');
   });
+
+  it('handles svg className values and strips utility classes without throwing', async () => {
+    const html = '<svg class="lucide lucide-menu w-4 h-4"><circle cx="10" cy="10" r="5" /></svg>';
+    const out = await realScrubHtml(page(html), { dropUtilityClasses: true });
+
+    expect(out).toContain('class="lucide lucide-menu"');
+    expect(out).not.toContain('w-4');
+    expect(out).not.toContain('h-4');
+  });
 });
 
 describe('scrubHtml (Page overload)', () => {

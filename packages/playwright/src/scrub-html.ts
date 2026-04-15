@@ -373,10 +373,10 @@ function isUtilityClass(token: string): boolean {
 }
 
 function stripUtilityClasses(doc: Document) {
-  for (const el of doc.body.querySelectorAll<HTMLElement>('[class]')) {
-    const kept = el.className.split(/\s+/).filter((t) => t && !isUtilityClass(t));
+  for (const el of doc.body.querySelectorAll<Element>('[class]')) {
+    const kept = [...el.classList].filter((t) => t && !isUtilityClass(t));
     if (kept.length === 0) el.removeAttribute('class');
-    else el.className = kept.join(' ');
+    else el.setAttribute('class', kept.join(' '));
   }
 }
 

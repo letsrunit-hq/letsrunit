@@ -30,6 +30,7 @@ export interface ControllerOptions extends BrowserContextOptions {
   headless?: boolean;
   debug?: boolean;
   journal?: Journal;
+  capture?: boolean;
 }
 
 export interface RunOptions {
@@ -44,6 +45,7 @@ export class Controller {
     private world: World,
     readonly journal: Journal,
     private readonly pendingArtifacts: Set<File>,
+    private readonly capture: boolean,
   ) {}
 
   get lang(): { code: string; name: string } | null {
@@ -72,7 +74,7 @@ export class Controller {
 
     return {
       page,
-      parameters: omit(options, ['headless', 'journal', 'debug']),
+      parameters: omit(options, ['headless', 'journal', 'debug', 'capture']),
       startTime: Date.now(),
       async attach(data, options) {
         pendingArtifacts.add(toFile(data, options));
@@ -101,15 +103,22 @@ export class Controller {
     const journal = options.journal ?? Journal.nil();
     const pendingArtifacts = new Set<File>();
     const world = this.createWorld(page, { ...options, journal }, pendingArtifacts);
+    const capture = options.capture ?? false;
 
-    return new Controller(browser, world, journal, pendingArtifacts);
+    return new Controller(browser, world, journal, pendingArtifacts, capture);
   }
 
   async run(feature: string, opts: RunOptions = {}): Promise<Result> {
     await this.logFeature(feature);
 
     const { world: _, ...result } = await runner.run(feature, this.world, (...args) => this.runStep(...args), opts);
-    const page = await snapshot(this.world.page);
+    const page = this.capture
+      ? await snapshot(this.world.page)
+      : {
+          url: this.world.page.url(),
+          html: '',
+          screenshot: new File([], 'snapshot-disabled.png', { type: 'image/png' }),
+        };
 
     return { ...result, page };
   }
@@ -141,18 +150,21 @@ export class Controller {
     }
 
     const urlBefore = this.world.page.url();
-    const screenshotBefore = urlBefore !== 'about:blank' ? await this.makeScreenshot({ mask: locators }) : undefined;
-    const htmlBefore = await this.makeHtmlFile();
+    const screenshotBefore = this.capture && urlBefore !== 'about:blank'
+      ? await this.makeScreenshot({ mask: locators })
+      : undefined;
+    const htmlBefore = this.capture ? await this.makeHtmlFile() : undefined;
     await this.journal.start(step.text, { artifacts: clean([screenshotBefore, htmlBefore]) });
 
     const result = await run();
 
     const urlAfter = this.world.page.url();
-    const screenshotAfter =
-      (!screenshotBefore && urlAfter !== 'about:blank') ||
-      (!step.text.startsWith('Then') && urlAfter === urlBefore && (await this.areAllVisible(locators)))
-        ? await this.makeScreenshot({ mask: locators })
-        : undefined;
+    const shouldTakeAfterScreenshot = this.capture
+      && (
+        (!screenshotBefore && urlAfter !== 'about:blank') ||
+        (!step.text.startsWith('Then') && urlAfter === urlBefore && (await this.areAllVisible(locators)))
+      );
+    const screenshotAfter = shouldTakeAfterScreenshot ? await this.makeScreenshot({ mask: locators }) : undefined;
 
     await this.journal
       .batch()

@@ -67,7 +67,7 @@ describe('SessionManager', () => {
       const manager = new SessionManager();
       await manager.create({ headless: false, locale: 'fr' });
       expect(Controller.launch).toHaveBeenCalledWith(
-        expect.objectContaining({ headless: false, locale: 'fr' }),
+        expect.objectContaining({ headless: false, locale: 'fr', capture: false }),
       );
     });
 

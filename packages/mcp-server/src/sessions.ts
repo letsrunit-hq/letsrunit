@@ -32,7 +32,7 @@ export class SessionManager {
     const sink = new MemorySink(artifactDir);
     const journal = new Journal(sink);
 
-    const controller = await Controller.launch({ ...options, journal });
+    const controller = await Controller.launch({ ...options, journal, capture: false });
 
     const session: Session = {
       id,
