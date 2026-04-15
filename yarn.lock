@@ -4899,6 +4899,7 @@ __metadata:
     "@ng-web-apis/platform": "npm:^5.2.0"
     "@ng-web-apis/resize-observer": "npm:^5.2.0"
     "@ng-web-apis/screen-orientation": "npm:^5.2.0"
+    "@playwright/test": "npm:1.58.2"
     "@sand4rt/experimental-ct-angular": "npm:^1.58.0"
     "@taiga-ui/cdk": "npm:^5.2.0"
     "@taiga-ui/core": "npm:^5.2.0"

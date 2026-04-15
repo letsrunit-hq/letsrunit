@@ -77,7 +77,10 @@ async function didSelectionApply(
 
   if (before !== null && after !== null && after !== before) return true;
 
-  return (await getVisibleListbox(root, options)) !== null;
+  const listbox = await getVisibleListbox(root, options);
+  if (!listbox) return true;
+
+  return false;
 }
 
 export async function selectAria({ el }: Loc, value: Value, options?: SetOptions): Promise<boolean> {
