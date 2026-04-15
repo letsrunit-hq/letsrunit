@@ -3,7 +3,7 @@ import type { JournalEntry, Sink } from '../types';
 
 interface SupabaseSinkOptions {
   supabase: SupabaseClient;
-  source: { projectId: string; testId?: string; processId?: string; };
+  source: { projectId: string; runId?: string; processId?: string };
   tableName?: string;
   bucket?: string;
   console?: { error: (...args: any[]) => void; warn: (...args: any[]) => void };
@@ -12,7 +12,7 @@ interface SupabaseSinkOptions {
 export class SupabaseSink implements Sink {
   private readonly supabase: SupabaseClient;
   private readonly projectId: string;
-  private readonly testId?: string;
+  private readonly runId?: string;
   private readonly processId?: string;
   private readonly tableName: string;
   private readonly bucket?: string;
@@ -21,9 +21,9 @@ export class SupabaseSink implements Sink {
 
   constructor(options: SupabaseSinkOptions) {
     this.supabase = options.supabase;
-    this.testId = options.source.testId;
-    this.processId = options.source.processId;
     this.projectId = options.source.projectId;
+    this.runId = options.source.runId;
+    this.processId = options.source.processId;
     this.tableName = options.tableName ?? 'log_entries';
     this.bucket = options.bucket;
     this.console = options.console || console;
@@ -32,14 +32,16 @@ export class SupabaseSink implements Sink {
   async publish(...entries: JournalEntry[]): Promise<void> {
     for (const entry of entries) {
       const artifactList = await this.storeArtifacts(entry.artifacts);
+      const { testId, ...meta } = entry.meta ?? {}
 
       const { error } = await this.supabase.from(this.tableName).insert({
         project_id: this.projectId,
-        test_id: this.testId,
+        run_id: this.runId,
+        test_id: this.runId ? testId : undefined,
         process_id: this.processId,
         type: entry.type,
         message: entry.message,
-        meta: entry.meta ?? {},
+        meta,
         artifacts: artifactList,
         created_at: new Date().toISOString(),
       });
