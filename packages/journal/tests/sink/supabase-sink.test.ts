@@ -13,7 +13,8 @@ function makeEntry(partial: Partial<JournalEntry> = {}): JournalEntry {
 }
 
 describe('SupabaseSink', () => {
-  const runId = 'run-123';
+  const testId = 'test-123';
+  const processId = 'process-456';
   const projectId = 'project-123';
   let consoleMock: { error: ReturnType<typeof vi.fn>; warn: ReturnType<typeof vi.fn> };
   let insertMock: ReturnType<typeof vi.fn>;
@@ -43,7 +44,11 @@ describe('SupabaseSink', () => {
   });
 
   it('inserts a log row', async () => {
-    const sink = new SupabaseSink({ supabase: client, run: { id: runId, projectId }, console: consoleMock as any });
+    const sink = new SupabaseSink({
+      supabase: client,
+      source: { projectId, testId, processId },
+      console: consoleMock as any,
+    });
 
     await sink.publish(makeEntry({ message: 'No files', artifacts: [] }));
 
@@ -51,7 +56,9 @@ describe('SupabaseSink', () => {
     expect(insertMock).toHaveBeenCalledTimes(1);
     expect(insertMock).toBeCalledWith(
       expect.objectContaining({
-        run_id: runId,
+        project_id: projectId,
+        test_id: testId,
+        process_id: processId,
         type: 'info',
         message: 'No files',
         meta: {},
@@ -69,7 +76,7 @@ describe('SupabaseSink', () => {
   it('uploads artifacts to storage if not exists', async () => {
     const sink = new SupabaseSink({
       supabase: client,
-      run: { id: runId, projectId },
+      source: { projectId, testId, processId },
       bucket: 'artifacts',
       console: consoleMock as any,
     });
@@ -104,7 +111,7 @@ describe('SupabaseSink', () => {
 
     const sink = new SupabaseSink({
       supabase: client,
-      run: { id: runId, projectId },
+      source: { projectId, testId, processId },
       bucket: 'artifacts',
       console: consoleMock as any,
     });
@@ -135,7 +142,7 @@ describe('SupabaseSink', () => {
 
     const sink = new SupabaseSink({
       supabase: client,
-      run: { id: runId, projectId },
+      source: { projectId, testId, processId },
       bucket: 'artifacts',
       console: consoleMock as any,
     });
@@ -153,7 +160,11 @@ describe('SupabaseSink', () => {
 
   it('logs insert errors', async () => {
     insertMock.mockResolvedValueOnce({ error: { message: 'insert failed' } });
-    const sink = new SupabaseSink({ supabase: client, run: { id: runId, projectId }, console: consoleMock as any });
+    const sink = new SupabaseSink({
+      supabase: client,
+      source: { projectId, testId, processId },
+      console: consoleMock as any,
+    });
 
     await sink.publish(makeEntry({ message: 'bad insert' }));
 
@@ -164,7 +175,7 @@ describe('SupabaseSink', () => {
     client.storage.createBucket = vi.fn().mockRejectedValue(new Error('bucket fail'));
     const sink = new SupabaseSink({
       supabase: client,
-      run: { id: runId, projectId },
+      source: { projectId, testId, processId },
       bucket: 'artifacts',
       console: consoleMock as any,
     });
@@ -184,7 +195,7 @@ describe('SupabaseSink', () => {
     vi.mocked(fetch).mockRejectedValueOnce(new Error('network fail'));
     const sink = new SupabaseSink({
       supabase: client,
-      run: { id: runId, projectId },
+      source: { projectId, testId, processId },
       bucket: 'artifacts',
       console: consoleMock as any,
     });

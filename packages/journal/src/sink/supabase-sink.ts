@@ -3,7 +3,7 @@ import type { JournalEntry, Sink } from '../types';
 
 interface SupabaseSinkOptions {
   supabase: SupabaseClient;
-  run: { id: string; projectId: string };
+  source: { projectId: string; testId?: string; processId?: string; };
   tableName?: string;
   bucket?: string;
   console?: { error: (...args: any[]) => void; warn: (...args: any[]) => void };
@@ -12,7 +12,8 @@ interface SupabaseSinkOptions {
 export class SupabaseSink implements Sink {
   private readonly supabase: SupabaseClient;
   private readonly projectId: string;
-  private readonly runId: string;
+  private readonly testId?: string;
+  private readonly processId?: string;
   private readonly tableName: string;
   private readonly bucket?: string;
   private readonly console: { error: (...args: any[]) => void; warn: (...args: any[]) => void };
@@ -20,8 +21,9 @@ export class SupabaseSink implements Sink {
 
   constructor(options: SupabaseSinkOptions) {
     this.supabase = options.supabase;
-    this.runId = options.run.id;
-    this.projectId = options.run.projectId;
+    this.testId = options.source.testId;
+    this.processId = options.source.processId;
+    this.projectId = options.source.projectId;
     this.tableName = options.tableName ?? 'log_entries';
     this.bucket = options.bucket;
     this.console = options.console || console;
@@ -32,7 +34,9 @@ export class SupabaseSink implements Sink {
       const artifactList = await this.storeArtifacts(entry.artifacts);
 
       const { error } = await this.supabase.from(this.tableName).insert({
-        run_id: this.runId,
+        project_id: this.projectId,
+        test_id: this.testId,
+        process_id: this.processId,
         type: entry.type,
         message: entry.message,
         meta: entry.meta ?? {},
