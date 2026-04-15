@@ -43,7 +43,7 @@
   "packageManager": "yarn@4.10.3",
   "dependencies": {
     "@letsrunit/utils": "workspace:*",
-    "@playwright/test": "^1.57.0",
+    "@playwright/test": "1.58.2",
     "case": "^1.6.3",
     "diff": "^8.0.3",
     "fast-json-stable-stringify": "^2.1.0",

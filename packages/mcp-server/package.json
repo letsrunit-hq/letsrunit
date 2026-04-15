@@ -55,7 +55,7 @@
     "@letsrunit/store": "workspace:*",
     "@letsrunit/utils": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.26.0",
-    "@playwright/test": "^1.57.0",
+    "@playwright/test": "1.58.2",
     "zod": "^4.3.5"
   },
   "devDependencies": {
