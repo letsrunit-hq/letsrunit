@@ -1,3 +1,10 @@
+## [0.18.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.18.0...v0.18.1) (2026-04-15)
+
+
+### Bug Fixes
+
+* **cucumber:** log unexpected errors when gathering attachments in cucumber reporter ([6387f0a](https://github.com/letsrunit-hq/letsrunit/commit/6387f0adde677d96539e540bbaa1f4086c7f8651))
+
 # [0.18.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.17.1...v0.18.0) (2026-04-13)
 
 
