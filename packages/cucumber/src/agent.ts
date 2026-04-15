@@ -388,11 +388,11 @@ export default class AgentFormatter extends Formatter {
     stepIndex: number,
   ): Promise<FailurePayload> {
     const base = this.createBaseFailurePayload(step);
-    const currentHtml = findAttachment(step, 'text/html');
+    const htmlSnapshot = findAttachment(step, 'text/html');
 
     const withSnapshotWhenNoDiff = (payload: FailurePayload): FailurePayload => {
-      if (!payload.diff_available && currentHtml) {
-        return { ...payload, html_snapshot: currentHtml };
+      if (!payload.diff_available && htmlSnapshot) {
+        return { ...payload, html_snapshot: htmlSnapshot };
       }
       return payload;
     };

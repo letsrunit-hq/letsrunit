@@ -23,7 +23,7 @@ import { existsSync, mkdirSync, statSync } from 'node:fs';
 import { utimes, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { v4 as uuidv4 } from 'uuid';
-import { setConfiguredStoreDirectory } from './store-config';
+import { setConfiguredRunId, setConfiguredStoreDirectory } from './store-config';
 
 const DEFAULT_DIR = '.letsrunit';
 
@@ -262,6 +262,7 @@ function createRecorderContext(directory?: string): RecorderContext {
     }).trim();
   } catch {}
   insertRun(db, runId, gitCommit, Date.now());
+  setConfiguredRunId(runId);
 
   return {
     db,
