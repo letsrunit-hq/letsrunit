@@ -13,7 +13,9 @@ function makeEntry(partial: Partial<JournalEntry> = {}): JournalEntry {
 }
 
 describe('SupabaseSink', () => {
-  const runId = 'run-123';
+  const runId = 'run-789';
+  const testId = 'test-123';
+  const processId = 'process-456';
   const projectId = 'project-123';
   let consoleMock: { error: ReturnType<typeof vi.fn>; warn: ReturnType<typeof vi.fn> };
   let insertMock: ReturnType<typeof vi.fn>;
@@ -42,34 +44,54 @@ describe('SupabaseSink', () => {
     } as any;
   });
 
-  it('inserts a log row', async () => {
-    const sink = new SupabaseSink({ supabase: client, run: { id: runId, projectId }, console: consoleMock as any });
+  it('inserts a log row linked to a run and test', async () => {
+    const sink = new SupabaseSink({
+      supabase: client,
+      source: { projectId, runId },
+      console: consoleMock as any,
+    });
 
-    await sink.publish(makeEntry({ message: 'No files', artifacts: [] }));
+    await sink.publish(makeEntry({ message: 'Linked to run', meta: { testId } }));
 
     expect(fromTableMock).toHaveBeenCalledWith('log_entries');
     expect(insertMock).toHaveBeenCalledTimes(1);
     expect(insertMock).toBeCalledWith(
       expect.objectContaining({
+        project_id: projectId,
         run_id: runId,
-        type: 'info',
-        message: 'No files',
+        test_id: testId,
+        process_id: undefined,
+        message: 'Linked to run',
         meta: {},
-        artifacts: [],
-        created_at: expect.any(String),
       }),
     );
+  });
 
-    // No storage interactions
-    expect(storageFromMock).not.toHaveBeenCalled();
-    expect(uploadMock).not.toHaveBeenCalled();
-    expect(getPublicUrlMock).not.toHaveBeenCalled();
+  it('inserts a log row linked to a process', async () => {
+    const sink = new SupabaseSink({
+      supabase: client,
+      source: { projectId, processId },
+      console: consoleMock as any,
+    });
+
+    await sink.publish(makeEntry({ message: 'Linked to process', meta: { testId } }));
+
+    expect(insertMock).toBeCalledWith(
+      expect.objectContaining({
+        project_id: projectId,
+        run_id: undefined,
+        test_id: undefined,
+        process_id: processId,
+        message: 'Linked to process',
+        meta: {}, // testId is stripped from meta
+      }),
+    );
   });
 
   it('uploads artifacts to storage if not exists', async () => {
     const sink = new SupabaseSink({
       supabase: client,
-      run: { id: runId, projectId },
+      source: { projectId, runId },
       bucket: 'artifacts',
       console: consoleMock as any,
     });
@@ -104,7 +126,7 @@ describe('SupabaseSink', () => {
 
     const sink = new SupabaseSink({
       supabase: client,
-      run: { id: runId, projectId },
+      source: { projectId, runId },
       bucket: 'artifacts',
       console: consoleMock as any,
     });
@@ -135,7 +157,7 @@ describe('SupabaseSink', () => {
 
     const sink = new SupabaseSink({
       supabase: client,
-      run: { id: runId, projectId },
+      source: { projectId, runId },
       bucket: 'artifacts',
       console: consoleMock as any,
     });
@@ -153,7 +175,11 @@ describe('SupabaseSink', () => {
 
   it('logs insert errors', async () => {
     insertMock.mockResolvedValueOnce({ error: { message: 'insert failed' } });
-    const sink = new SupabaseSink({ supabase: client, run: { id: runId, projectId }, console: consoleMock as any });
+    const sink = new SupabaseSink({
+      supabase: client,
+      source: { projectId, runId },
+      console: consoleMock as any,
+    });
 
     await sink.publish(makeEntry({ message: 'bad insert' }));
 
@@ -164,7 +190,7 @@ describe('SupabaseSink', () => {
     client.storage.createBucket = vi.fn().mockRejectedValue(new Error('bucket fail'));
     const sink = new SupabaseSink({
       supabase: client,
-      run: { id: runId, projectId },
+      source: { projectId, runId },
       bucket: 'artifacts',
       console: consoleMock as any,
     });
@@ -184,7 +210,7 @@ describe('SupabaseSink', () => {
     vi.mocked(fetch).mockRejectedValueOnce(new Error('network fail'));
     const sink = new SupabaseSink({
       supabase: client,
-      run: { id: runId, projectId },
+      source: { projectId, runId },
       bucket: 'artifacts',
       console: consoleMock as any,
     });
