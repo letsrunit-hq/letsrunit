@@ -1,3 +1,15 @@
+## [0.18.3](https://github.com/letsrunit-hq/letsrunit/compare/v0.18.2...v0.18.3) (2026-04-16)
+
+
+### Bug Fixes
+
+* **ci:** align Playwright container version with test deps ([ae9e8bf](https://github.com/letsrunit-hq/letsrunit/commit/ae9e8bf8d3409d14d29e9bf11d9fda4645448476))
+* **ci:** pin init integration playwright version ([e6b0890](https://github.com/letsrunit-hq/letsrunit/commit/e6b08907df3f54691721216ca5245fa90da3d8eb))
+* **compat-angular:** replace hanging angular20 suite with working ct baseline ([8db7e27](https://github.com/letsrunit-hq/letsrunit/commit/8db7e271ec40812cbc341cd494bf90523064dad0))
+* **playwright:** add generic composite field handlers for angular compat ([83e0cb4](https://github.com/letsrunit-hq/letsrunit/commit/83e0cb40861a0ddd55edf121d14abffdd8dd93a3))
+* **playwright:** support late listbox binding in aria combobox ([fa5eded](https://github.com/letsrunit-hq/letsrunit/commit/fa5eded6fea01525c90b6c2d07ad9cc860853804))
+* **playwright:** treat closed listbox as successful aria selection ([53ed638](https://github.com/letsrunit-hq/letsrunit/commit/53ed638e4a13eacbe9999c1ce087b56a4142ac9c))
+
 ## [0.18.2](https://github.com/letsrunit-hq/letsrunit/compare/v0.18.1...v0.18.2) (2026-04-15)
 
 
