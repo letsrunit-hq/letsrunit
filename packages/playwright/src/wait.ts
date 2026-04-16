@@ -15,7 +15,7 @@ export async function waitForMeta(page: Page, timeout = 2500) {
 
   await page
     .waitForFunction(
-      /* v8 ignore start */
+      /* v8 ignore start — callback runs in browser context, not Node */
       () => {
         const head = document.head;
         if (!head) return false;
@@ -39,7 +39,7 @@ export async function waitForDomIdle(
   { quiet = 500, timeout = 10_000 }: { quiet?: number; timeout?: number } = {},
 ) {
   await page.waitForFunction(
-    /* v8 ignore start */
+    /* v8 ignore start — callback runs in browser context, not Node */
     (q) =>
       new Promise<boolean>((resolve) => {
         let last = performance.now();
@@ -72,7 +72,7 @@ export async function waitForDomIdle(
 // This helps with libraries that slide months using WAAPI (common in React UI libs).
 export async function waitForAnimationsToFinish(root: Locator) {
   await root.page().waitForFunction(
-    /* v8 ignore start */
+    /* v8 ignore start — callback runs in browser context, not Node */
     (el) => {
       const animations = (el as HTMLElement).getAnimations?.({ subtree: true }) ?? [];
       return animations.every((a) => a.playState !== 'running');
@@ -81,13 +81,20 @@ export async function waitForAnimationsToFinish(root: Locator) {
     await root.elementHandle(),
   );
 
-  /* v8 ignore next */
-  await root.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
+  await root.evaluate(
+    /* v8 ignore next — callback runs in browser context, not Node */
+    () => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))),
+  );
 }
 
 export async function waitForUrlChange(page: Page, prevUrl: string, timeout: number) {
   try {
-    await page.waitForFunction(/* v8 ignore next */ (u) => location.href !== u, prevUrl, { timeout });
+    await page.waitForFunction(
+      /* v8 ignore next — callback runs in browser context, not Node */
+      (u) => location.href !== u,
+      prevUrl,
+      { timeout },
+    );
     return true;
   } catch {
     return false;
@@ -102,7 +109,7 @@ export async function waitUntilEnabled(page: Page, target: Locator, timeout: num
 
   await page
     .waitForFunction(
-      /* v8 ignore start */
+      /* v8 ignore start — callback runs in browser context, not Node */
       (el) => {
         if (!el || !(el as Element).isConnected) return true; // detached → treat as settled
         const aria = (el as HTMLElement).getAttribute('aria-disabled');
@@ -167,7 +174,14 @@ async function elementKind(target: Locator): Promise<'link' | 'button' | 'other'
   if (role === 'link') return 'link';
   if (role === 'button') return 'button';
 
-  const tag = await target.evaluate(/* v8 ignore next */ (el) => el.tagName.toLowerCase(), null, { timeout: PROBE }).catch(() => '');
+  const tag = await target
+    .evaluate(
+      /* v8 ignore next — callback runs in browser context, not Node */
+      (el) => el.tagName.toLowerCase(),
+      null,
+      { timeout: PROBE },
+    )
+    .catch(() => '');
   if (tag === 'a') return 'link';
 
   if (tag === 'button') return 'button';

@@ -1,13 +1,17 @@
 import { chain, isArray, isRange } from '@letsrunit/utils';
 import type { Locator } from '@playwright/test';
 import { pickFieldElement } from '../utils/pick-field-element';
+import { selectAria } from './aria-select';
 import { setCalendarDate } from './calendar';
+import { setCompositeDate } from './composite-date';
+import { setCompositeSelect } from './composite-select';
+import { setCompositeSlider } from './composite-slider';
+import { setCompositeToggle } from './composite-toggle';
 import { setDateGroup } from './date-group';
 import { setDateTextInput } from './date-text-input';
 import { setNativeCheckbox } from './native-checkbox';
 import { setNativeDate } from './native-date';
 import { setNativeInput } from './native-input';
-import { selectAria } from './aria-select';
 import { selectNative } from './native-select';
 import { setOtpValue } from './otp';
 import { setRadioGroup } from './radio-group';
@@ -42,22 +46,27 @@ export async function setFieldValue(el: Locator, value: Value, options?: SetOpti
     setCalendarDate,
     setOtpValue,
     setSliderValue,
+    // generic non-semantic composite controls
+    setCompositeToggle,
+    setCompositeSelect,
+    setCompositeSlider,
+    setCompositeDate,
     // fallback (eg contenteditable or will fail)
     setFallback,
   );
 
-  /* v8 ignore start */
   if ((await el.count()) > 1) {
     el = await pickFieldElement(el);
   }
-  /* v8 ignore stop */
 
   const tag = await el.evaluate((e) => e.tagName.toLowerCase(), options);
-  const type = await el
-    .getAttribute('type', options)
-    .then((s) => s && s.toLowerCase())
-    .catch(/* v8 ignore next */ () => null);
-  const loc = { el, tag, type };
+  const type = (
+    await el.getAttribute('type', options).catch(
+      /* v8 ignore next — attribute might be missing or element might have detached during the check */
+      () => null,
+    )
+  )?.toLowerCase();
+  const loc = { el, tag, type: type || null };
 
   await setValue(loc, value, options);
 }

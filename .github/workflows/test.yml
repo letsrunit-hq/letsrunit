@@ -5,7 +5,7 @@ on:
 
 jobs:
   packages:
-    name: Test ${{ matrix.project }}
+    name: Unit Tests ${{ matrix.project }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -41,7 +41,7 @@ jobs:
         run: yarn test --project ${{ matrix.project }}
 
   compat:
-    name: Test ${{ matrix.workspace }}
+    name: Compat Test ${{ matrix.workspace }}
     runs-on: ubuntu-latest
     container:
       image: mcr.microsoft.com/playwright:v1.59.1-noble
@@ -50,6 +50,7 @@ jobs:
       matrix:
         workspace:
           - "@letsrunit/compat-react"
+          - "@letsrunit/compat-angular"
     steps:
       - uses: actions/checkout@v6
       - name: Enable Corepack

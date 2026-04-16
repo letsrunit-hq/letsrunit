@@ -11,10 +11,13 @@ async function setSingleDate({ el, tag, type }: Loc, value: Date, options?: SetO
       'input[type=date], input[type=datetime-local], input[type=month], input[type=week], input[type=time]',
     );
     if ((await inputs.count()) === 1) {
-      const isVisible = await inputs.evaluate(/* v8 ignore next */ (e) => {
-        const style = window.getComputedStyle(e);
-        return style.display !== 'none' && style.visibility !== 'hidden' && e.getAttribute('type') !== 'hidden';
-      });
+      const isVisible = await inputs.evaluate(
+        /* v8 ignore next — callback runs in browser context, not Node */
+        (e) => {
+          const style = window.getComputedStyle(e);
+          return style.display !== 'none' && style.visibility !== 'hidden' && e.getAttribute('type') !== 'hidden';
+        },
+      );
       if (isVisible) {
         target = inputs;
         targetType = (await target.getAttribute('type', options)) || null;

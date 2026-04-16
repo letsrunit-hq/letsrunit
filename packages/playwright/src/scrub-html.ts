@@ -182,7 +182,7 @@ export async function realScrubHtml(
   const doc = dom.window.document;
 
   if (o.pickMain) pickMain(doc);
-  dropInfraAndSvg(doc, !!o.dropSvg);
+  dropInfraAndSvg(doc, Boolean(o.dropSvg));
   if (o.dropHidden) dropHiddenTrees(doc);
   if (o.stripAttributes) stripAttributesAndSanitize(doc, o.stripAttributes);
   if (o.dropComments) dropHtmlComments(doc);
@@ -199,7 +199,7 @@ export async function realScrubHtml(
 function hasHiddenAncestor(el: Element): boolean {
   let p: Element | null = el.parentElement;
   while (p) {
-    /* v8 ignore next */
+    /* v8 ignore next — JSDOM might not have these attributes/values, but we want to check them if they exist */
     if (p.hasAttribute('hidden') || p.hasAttribute('inert') || p.getAttribute('aria-hidden') === 'true') return true;
 
     const style = p.getAttribute('style') || '';

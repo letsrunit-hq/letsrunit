@@ -495,6 +495,41 @@ describe('setCalendarDate', () => {
     expect(result).toBe(true);
     expect(dayCell.click).toHaveBeenCalled();
   });
+
+  it('handles structural div calendar without table/grid roles', async () => {
+    const dayNodes = createMockLocator({
+      count: vi.fn().mockResolvedValue(35),
+      allInnerTexts: vi
+        .fn()
+        .mockResolvedValue(['Prev', 'Next', ...Array.from({ length: 31 }, (_, i) => String(i + 1)), '1', '2']),
+      allTextContents: vi
+        .fn()
+        .mockResolvedValue(['Prev', 'Next', ...Array.from({ length: 31 }, (_, i) => String(i + 1)), '1', '2']),
+    });
+
+    const el = createMockLocator({
+      innerText: vi.fn().mockResolvedValue('January 2024'),
+      evaluate: vi.fn().mockResolvedValue('DIV'),
+    });
+
+    el.locator.mockImplementation((selector) => {
+      assert.ok(typeof selector === 'string');
+      if (selector === 'table, [role="grid"]') {
+        return createMockLocator({ count: vi.fn().mockResolvedValue(0), all: vi.fn().mockResolvedValue([]) });
+      }
+      if (selector === 'button, [role="button"], [tabindex], div, span') {
+        return dayNodes;
+      }
+      if (selector.includes('aria-label')) {
+        return createMockLocator({ isVisible: vi.fn().mockResolvedValue(false) });
+      }
+      return el;
+    });
+
+    const result = await setCalendarDate({ el, tag: 'div' } as any, new Date('2024-01-15'));
+    expect(result).toBe(true);
+    expect(dayNodes.nth).toHaveBeenCalled();
+  });
 });
 
 describe('getCurrentMonthsAndYears', () => {

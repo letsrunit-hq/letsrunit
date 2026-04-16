@@ -25,35 +25,40 @@ async function getCandidateLocs(el: Locator, options?: SetOptions): Promise<Cand
 
   return Promise.all(
     candidates.map(async (c) => {
-      const info = await c.evaluate(/* v8 ignore start */ (node) => {
-        const e = node as HTMLInputElement | HTMLSelectElement;
-        const attrs: Record<string, string> = {};
-        for (const attr of e.attributes) {
-          attrs[attr.name] = attr.value;
-        }
+      const info = await c.evaluate(
+        /* v8 ignore start — callback runs in browser context, not Node */
+        (node) => {
+          const e = node as HTMLInputElement | HTMLSelectElement;
+          const attrs: Record<string, string> = {};
+          for (const attr of e.attributes) {
+            attrs[attr.name] = attr.value;
+          }
 
-        let options: { value: string; text: string }[] = [];
-        if (e.tagName.toLowerCase() === 'select') {
-          options = Array.from((e as HTMLSelectElement).options).map((o) => ({
-            value: o.value,
-            text: o.text,
-          }));
-        }
+          let options: { value: string; text: string }[] = [];
+          if (e.tagName.toLowerCase() === 'select') {
+            options = Array.from((e as HTMLSelectElement).options).map((o) => ({
+              value: o.value,
+              text: o.text,
+            }));
+          }
 
-        return {
-          tag: e.tagName.toLowerCase(),
-          type: e.getAttribute('type'),
-          name: e.getAttribute('name'),
-          id: e.getAttribute('id'),
-          ariaLabel: e.getAttribute('aria-label'),
-          placeholder: e.getAttribute('placeholder'),
-          min: e.getAttribute('min'),
-          max: e.getAttribute('max'),
-          inputMode: e.getAttribute('inputmode'),
-          attrs,
-          options,
-        }; /* v8 ignore stop */
-      }, options);
+          return {
+            tag: e.tagName.toLowerCase(),
+            type: e.getAttribute('type'),
+            name: e.getAttribute('name'),
+            id: e.getAttribute('id'),
+            ariaLabel: e.getAttribute('aria-label'),
+            placeholder: e.getAttribute('placeholder'),
+            min: e.getAttribute('min'),
+            max: e.getAttribute('max'),
+            inputMode: e.getAttribute('inputmode'),
+            attrs,
+            options,
+          };
+        },
+        /* v8 ignore stop */
+        options,
+      );
       return { el: c, ...info };
     }),
   );
@@ -100,54 +105,79 @@ async function behavioralProbe(candidateLocs: CandidateInfo[], scores: Score[], 
     for (let i = 0; i < candidateLocs.length; i++) {
       const loc = candidateLocs[i];
       if (loc.tag === 'input') {
-        const can_be_day = await loc.el.evaluate(/* v8 ignore start */ (node) => {
-          const e = node as HTMLInputElement;
-          const old = e.value;
-          e.value = '31';
-          const valid = e.checkValidity();
-          e.value = old;
-          return valid; /* v8 ignore stop */
-        }, options);
+        const can_be_day = await loc.el.evaluate(
+          /* v8 ignore start — callback runs in browser context, not Node */
+          (node) => {
+            const e = node as HTMLInputElement;
+            const old = e.value;
+            e.value = '31';
+            const valid = e.checkValidity();
+            e.value = old;
+            return valid;
+          },
+          /* v8 ignore stop */
+          options,
+        );
         if (can_be_day) scores[i].day += 1;
 
-        const cannot_be_day = await loc.el.evaluate(/* v8 ignore start */ (node) => {
-          const e = node as HTMLInputElement;
-          const old = e.value;
-          e.value = '32';
-          const valid = !e.checkValidity();
-          e.value = old;
-          return valid; /* v8 ignore stop */
-        }, options);
+        const cannot_be_day = await loc.el.evaluate(
+          /* v8 ignore start — callback runs in browser context, not Node */
+          (node) => {
+            const e = node as HTMLInputElement;
+            const old = e.value;
+            e.value = '32';
+            const valid = !e.checkValidity();
+            e.value = old;
+            return valid;
+          },
+          /* v8 ignore stop */
+          options,
+        );
         if (cannot_be_day) scores[i].day += 1;
 
-        const can_be_month = await loc.el.evaluate(/* v8 ignore start */ (node) => {
-          const e = node as HTMLInputElement;
-          const old = e.value;
-          e.value = '12';
-          const valid = e.checkValidity();
-          e.value = old;
-          return valid; /* v8 ignore stop */
-        }, options);
+        const can_be_month = await loc.el.evaluate(
+          /* v8 ignore start — callback runs in browser context, not Node */
+          (node) => {
+            const e = node as HTMLInputElement;
+            const old = e.value;
+            e.value = '12';
+            const valid = e.checkValidity();
+            e.value = old;
+            return valid;
+          },
+          /* v8 ignore stop */
+          options,
+        );
         if (can_be_month) scores[i].month += 1;
 
-        const cannot_be_month = await loc.el.evaluate(/* v8 ignore start */ (node) => {
-          const e = node as HTMLInputElement;
-          const old = e.value;
-          e.value = '13';
-          const valid = !e.checkValidity();
-          e.value = old;
-          return valid; /* v8 ignore stop */
-        }, options);
+        const cannot_be_month = await loc.el.evaluate(
+          /* v8 ignore start — callback runs in browser context, not Node */
+          (node) => {
+            const e = node as HTMLInputElement;
+            const old = e.value;
+            e.value = '13';
+            const valid = !e.checkValidity();
+            e.value = old;
+            return valid;
+          },
+          /* v8 ignore stop */
+          options,
+        );
         if (cannot_be_month) scores[i].month += 1;
 
-        const can_be_year = await loc.el.evaluate(/* v8 ignore start */ (node) => {
-          const e = node as HTMLInputElement;
-          const old = e.value;
-          e.value = '2024';
-          const valid = e.checkValidity();
-          e.value = old;
-          return valid; /* v8 ignore stop */
-        }, options);
+        const can_be_year = await loc.el.evaluate(
+          /* v8 ignore start — callback runs in browser context, not Node */
+          (node) => {
+            const e = node as HTMLInputElement;
+            const old = e.value;
+            e.value = '2033';
+            const valid = e.checkValidity();
+            e.value = old;
+            return valid;
+          },
+          /* v8 ignore stop */
+          options,
+        );
         if (can_be_year) scores[i].year += 1;
       }
     }

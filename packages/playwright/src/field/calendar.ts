@@ -41,6 +41,32 @@ async function isCalendarGrid(grid: Locator): Promise<boolean> {
   return last >= 28;
 }
 
+function isDayToken(text: string): boolean {
+  const day = Number(text.trim());
+  return Number.isInteger(day) && day >= 1 && day <= 31;
+}
+
+async function isStructuralCalendar(root: Locator): Promise<boolean> {
+  const candidates = root.locator('button, [role="button"], [tabindex], div, span').filter({ visible: true });
+  const count = await candidates.count();
+  if (count < 28) return false;
+
+  const tokens = (await candidates.allInnerTexts()).map((text) => text.trim()).filter(isDayToken);
+  if (tokens.length < 28 || tokens.length > 120) return false;
+
+  const daySet = new Set(tokens.map(Number));
+  const hasStart = [1, 2, 3, 4, 5, 6, 7].some((day) => daySet.has(day));
+  const hasMiddle = [22, 23, 24, 25, 26, 27, 28].some((day) => daySet.has(day));
+
+  return daySet.size >= 28 && hasStart && hasMiddle;
+}
+
+function dayCellSelector(hasGridCells: boolean): string {
+  return hasGridCells
+    ? 'td, [role="gridcell"]'
+    : 'button, [role="button"], [tabindex], div, span';
+}
+
 export async function getCalendar(
   root: Locator,
   options?: SetOptions,
@@ -57,6 +83,9 @@ export async function getCalendar(
     return { calendar: root, tables: [root] };
   }
   /* v8 ignore stop */
+  if (!container && (await isStructuralCalendar(root))) {
+    return { calendar: root, tables: [root] };
+  }
   if (!container) return null;
 
   // 2. Find all valid calendar grids within the container
@@ -77,7 +106,15 @@ export async function getCalendar(
   // 3. Deduplicate (prevents issues if container == grid)
   const uniqueTables = tables.filter((t, i, self) => self.indexOf(t) === i);
 
-  return uniqueTables.length > 0 ? { calendar: container, tables: uniqueTables } : null;
+  if (uniqueTables.length > 0) {
+    return { calendar: container, tables: uniqueTables };
+  }
+
+  if (await isStructuralCalendar(container)) {
+    return { calendar: container, tables: [container] };
+  }
+
+  return null;
 }
 
 function uniqueMonthYearPairs(pairs: MonthYear[]): MonthYear[] {
@@ -167,10 +204,29 @@ async function navigateToMonth(
   const firstMonthTotal = currentMonths[0].year * 12 + currentMonths[0].month;
   const diff = targetTotal - firstMonthTotal;
 
-  const btn =
-    diff < 0
-      ? root.locator('button[aria-label*="prev"], button[class*="prev"]').filter({ visible: true }).first()
-      : root.locator('button[aria-label*="next"], button[class*="next"]').filter({ visible: true }).first();
+  const prevSelector = [
+    '[aria-label*="prev"]',
+    '[aria-label*="Prev"]',
+    '[aria-label*="previous"]',
+    '[aria-label*="Previous"]',
+    '[class*="prev"]',
+    '[class*="Prev"]',
+    '[title*="prev"]',
+    '[title*="Prev"]',
+    'button:has-text("Previous")',
+    'button:has-text("Prev")',
+  ].join(', ');
+  const nextSelector = [
+    '[aria-label*="next"]',
+    '[aria-label*="Next"]',
+    '[class*="next"]',
+    '[class*="Next"]',
+    '[title*="next"]',
+    '[title*="Next"]',
+    'button:has-text("Next")',
+  ].join(', ');
+
+  const btn = diff < 0 ? root.locator(prevSelector).filter({ visible: true }).first() : root.locator(nextSelector).filter({ visible: true }).first();
 
   if (!(await btn.count())) return false;
 
@@ -184,14 +240,12 @@ async function navigateToMonth(
   const afterMonths = await getCurrentMonthsAndYears(root, target);
   if (afterMonths.some((m) => m.year * 12 + m.month === targetTotal)) return true;
 
-  /* v8 ignore start */
   if ((options?.retry ?? 0) < 3) {
     const retry = (options?.retry ?? 0) + 1;
     return await navigateToMonth(root, target, { ...options, wait: 50 + 50 * retry, retry }); // Retry max 3x
   }
 
   return false;
-  /* v8 ignore stop */
 }
 
 async function setDayByAriaLabel(table: Locator, value: Date, options?: SetOptions): Promise<boolean> {
@@ -239,17 +293,29 @@ async function setDayByAriaLabel(table: Locator, value: Date, options?: SetOptio
 
 async function setDayByByCellText(table: Locator, value: Date, options?: SetOptions): Promise<boolean> {
   const day = value.getDate();
-  const cells = table.locator('td, [role="gridcell"]').filter({ visible: true });
+  const gridCells = table.locator('td, [role="gridcell"]').filter({ visible: true });
+  const hasGridCells = (await gridCells.count()) > 0;
+  const cells = table.locator(dayCellSelector(hasGridCells)).filter({ visible: true });
 
   const allTexts = await cells.allInnerTexts();
   const foundIndices = allTexts.map((text, i) => (text.trim() === String(day) ? i : -1)).filter((i) => i !== -1);
 
   if (foundIndices.length === 0) return false;
 
-  const index = foundIndices.length === 1 || day < 15 ? foundIndices[0] : foundIndices[foundIndices.length - 1];
-  await cells.nth(index).click(options);
+  const ordered =
+    foundIndices.length === 1 || day < 15 ? foundIndices : [...foundIndices].reverse();
 
-  return true;
+  for (const index of ordered) {
+    const cell = cells.nth(index);
+    try {
+      await cell.click(options);
+      return true;
+    } catch {
+      // If this candidate is not interactable, continue to the next matching day node.
+    }
+  }
+
+  return false;
 }
 
 async function setDates(calendar: Locator, tables: Locator[], dates: Date[], options?: SetOptions): Promise<void> {
