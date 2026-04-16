@@ -1,3 +1,15 @@
+# [0.19.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.18.3...v0.19.0) (2026-04-16)
+
+
+### Bug Fixes
+
+* **journal:** refactor SupabaseSink to match the new DB model ([d4b58c0](https://github.com/letsrunit-hq/letsrunit/commit/d4b58c0ee2330acb4814ac6fe983df1b0f226651))
+
+
+### Features
+
+* **journal:** refactor SupabaseSink to match the new DB model ([dd98fc2](https://github.com/letsrunit-hq/letsrunit/commit/dd98fc27b532441b74e59224d40014418fc59ab0))
+
 ## [0.18.3](https://github.com/letsrunit-hq/letsrunit/compare/v0.18.2...v0.18.3) (2026-04-16)
 
 
