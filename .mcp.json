@@ -2,7 +2,10 @@
   "mcpServers": {
     "letsrunit": {
       "command": "node_modules/.bin/tsx",
-      "args": ["packages/mcp-server/src/index.ts"]
+      "args": ["packages/mcp-server/src/index.ts"],
+      "env": {
+        "LETSRUNIT_MCP_RUNTIME_MODE": "standalone"
+      }
     }
   }
 }
