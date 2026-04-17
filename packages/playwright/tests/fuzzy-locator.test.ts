@@ -81,7 +81,7 @@ describe('fuzzyLocator', () => {
       { selector: 'role=button[name="Save"]', options: undefined },
       { selector: 'role=button', options: { hasText: 'Save' } },
       { selector: 'css=button', options: { hasText: 'Save' } },
-      { selector: 'text=Save >> .. >> role=button', options: undefined },
+      { selector: 'text=Save >> xpath=following-sibling::* >> role=button', options: undefined },
       { selector: 'field=Save', options: undefined },
     ]);
 
@@ -90,16 +90,16 @@ describe('fuzzyLocator', () => {
       ['(role=button[name="Save"]) OR (role=button [hasText=Save])', 'css=button [hasText=Save]'],
       [
         '((role=button[name="Save"]) OR (role=button [hasText=Save])) OR (css=button [hasText=Save])',
-        'text=Save >> .. >> role=button',
+        'text=Save >> xpath=following-sibling::* >> role=button',
       ],
       [
-        '(((role=button[name="Save"]) OR (role=button [hasText=Save])) OR (css=button [hasText=Save])) OR (text=Save >> .. >> role=button)',
+        '(((role=button[name="Save"]) OR (role=button [hasText=Save])) OR (css=button [hasText=Save])) OR (text=Save >> xpath=following-sibling::* >> role=button)',
         'field=Save',
       ],
     ]);
 
     expect(ctx.firstCalls).toEqual([
-      '((((role=button[name="Save"]) OR (role=button [hasText=Save])) OR (css=button [hasText=Save])) OR (text=Save >> .. >> role=button)) OR (field=Save)',
+      '((((role=button[name="Save"]) OR (role=button [hasText=Save])) OR (css=button [hasText=Save])) OR (text=Save >> xpath=following-sibling::* >> role=button)) OR (field=Save)',
     ]);
 
     expect(result.__id).toContain('FIRST(');

@@ -65,12 +65,12 @@ function tryTagInsteadOfRole(page: Page, selector: string): Locator | null {
 
 // If a role selector with a name filter fails, try proximity-based fallback while
 // preserving the role and any remainder of the selector.
-// Example: role=switch[name="Adres tonen"i] → text=Adres tonen >> .. >> role=switch
+// Example: role=switch[name="Adres tonen"i] → text=Adres tonen >> xpath=following-sibling::* >> role=switch
 function tryRoleNameProximity(page: Page, selector: string): Locator | null {
   const matchRole = selector.match(/^role=(\w+)\s*\[name="([^"]+)"i?](.*)$/i);
   if (!matchRole) return null;
   const [, role, name, rest] = matchRole;
-  const proximitySelector = `text=${name} >> .. >> role=${role}${rest}`;
+  const proximitySelector = `text=${name} >> xpath=following-sibling::* >> role=${role}${rest}`;
   return page.locator(proximitySelector);
 }
 
