@@ -1,0 +1,166 @@
+import { Locator } from '@playwright/test';
+
+type LocatorMethod = (...args: any[]) => any;
+
+const ACTION_METHODS = new Set([
+  'blur',
+  'check',
+  'clear',
+  'click',
+  'dblclick',
+  'dispatchEvent',
+  'dragTo',
+  'fill',
+  'focus',
+  'hover',
+  'press',
+  'pressSequentially',
+  'scrollIntoViewIfNeeded',
+  'selectOption',
+  'setChecked',
+  'setInputFiles',
+  'tap',
+  'type',
+  'uncheck',
+]);
+
+const LOCATOR_CHAIN_METHODS = new Set([
+  'and',
+  'first',
+  'last',
+  'locator',
+  'nth',
+  'or',
+]);
+
+const NO_WAIT_OPTION_INDEX: Record<string, number> = {
+  dragTo: 1,
+  fill: 1,
+  press: 1,
+  pressSequentially: 1,
+  selectOption: 1,
+  setInputFiles: 1,
+  type: 1,
+};
+
+function buildOrLocator(candidates: Locator[]): Locator {
+  let result = candidates[0];
+  for (const candidate of candidates.slice(1)) {
+    result = result.or(candidate);
+  }
+  return result;
+}
+
+async function firstPresentFallback(candidates: Locator[]): Promise<Locator | null> {
+  for (const candidate of candidates.slice(1)) {
+    try {
+      if ((await candidate.count()) > 0) return candidate;
+    } catch {}
+  }
+  return null;
+}
+
+function withNoWaitTimeout(method: string, args: unknown[]): unknown[] {
+  const next = [...args];
+  const optionIndex = NO_WAIT_OPTION_INDEX[method] ?? 0;
+  const current = next[optionIndex];
+
+  if (current && typeof current === 'object') {
+    next[optionIndex] = { ...(current as Record<string, unknown>), timeout: 0 };
+  } else {
+    next[optionIndex] = { timeout: 0 };
+  }
+  return next;
+}
+
+export function createFallbackLocator(candidates: Locator[]): Locator {
+  const primary = candidates[0];
+  const unsupported = new Set(['filter', 'getByRole', 'getByLabel']);
+
+  const proxy = new Proxy(primary as unknown as object, {
+    get(_target, prop) {
+      if (prop === 'toString') {
+        return () => `FallbackLocator(${candidates.map((candidate) => candidate.toString()).join(' -> ')})`;
+      }
+
+      if (prop === 'all') {
+        return async () => {
+          const all: Locator[] = [];
+          for (const candidate of candidates) {
+            all.push(...(await candidate.all()));
+          }
+          return all;
+        };
+      }
+
+      if (prop === '_expect') {
+        return (expression: string, options: unknown) => {
+          if (expression.includes('to.be.visible') || expression.includes('to.be.attached')) {
+            return (buildOrLocator(candidates) as any)._expect(expression, options);
+          }
+          return (primary as any)._expect(expression, options);
+        };
+      }
+
+      if (typeof prop !== 'string') return (primary as any)[prop];
+
+      if (unsupported.has(prop)) {
+        return () => {
+          throw new Error(`FallbackLocator does not support ${prop}`);
+        };
+      }
+
+      if (LOCATOR_CHAIN_METHODS.has(prop)) {
+        return (...args: any[]) =>
+          createFallbackLocator(
+            candidates.map((candidate) => {
+              const method = (candidate as any)[prop] as LocatorMethod;
+              return method.apply(candidate, args);
+            }),
+          );
+      }
+
+      if (prop === 'count') {
+        return async (...args: any[]) => {
+          const primaryCount = await primary.count(...args);
+          if (primaryCount > 0) return primaryCount;
+          const fallback = await firstPresentFallback(candidates);
+          if (!fallback) return primaryCount;
+          return fallback.count(...args);
+        };
+      }
+
+      const primaryMethod = (primary as any)[prop] as LocatorMethod;
+      if (typeof primaryMethod !== 'function') return primaryMethod;
+
+      if (ACTION_METHODS.has(prop)) {
+        return async (...args: any[]) => {
+          try {
+            return await primaryMethod.apply(primary, args);
+          } catch (error) {
+            const fallback = await firstPresentFallback(candidates);
+            if (!fallback) throw error;
+            const fallbackMethod = (fallback as any)[prop] as LocatorMethod;
+            return fallbackMethod.apply(fallback, withNoWaitTimeout(prop, args));
+          }
+        };
+      }
+
+      return (...args: any[]) => {
+        const result = primaryMethod.apply(primary, args);
+        if (!result || typeof result !== 'object' || typeof (result as Promise<unknown>).catch !== 'function') {
+          return result;
+        }
+
+        return (result as Promise<unknown>).catch(async (error: unknown) => {
+          const fallback = await firstPresentFallback(candidates);
+          if (!fallback) throw error;
+          const fallbackMethod = (fallback as any)[prop] as LocatorMethod;
+          return fallbackMethod.apply(fallback, args);
+        });
+      };
+    },
+  });
+
+  return proxy as Locator;
+}
