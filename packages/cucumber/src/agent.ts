@@ -138,10 +138,12 @@ function stripAnsi(input: string): string {
 
 function simplifyLocator(locator: string): string {
   const raw = locator.trim();
-  const firstLocatorMatch = raw.match(/locator\((['"`])([\s\S]*?)\1\)/);
-  if (!firstLocatorMatch) return raw;
+  const withoutMarker = raw.replace(/\s*\{fuzzy\}\s*$/i, '').trim();
+
+  const firstLocatorMatch = withoutMarker.match(/locator\((['"`])([\s\S]*?)\1\)/);
+  if (!firstLocatorMatch) return withoutMarker;
   const simplified = firstLocatorMatch[2].trim();
-  return simplified || raw;
+  return simplified || withoutMarker;
 }
 
 function extractLocatorRaw(lines: string[]): string | undefined {

@@ -144,6 +144,13 @@ function handleAsyncFallback(prop: string, primaryMethod: LocatorMethod, primary
   };
 }
 
+function formatLocatorChain(candidates: Locator[]): string {
+  const parts = candidates.map((candidate) => candidate.toString());
+  if (parts.length === 0) return '';
+  if (parts.length === 1) return parts[0];
+  return `${parts[0]} {fuzzy}`;
+}
+
 export function createFallbackLocator(candidates: Locator[]): Locator {
   const primary = candidates[0];
   const unsupported = new Set(['filter', 'getByRole', 'getByLabel']);
@@ -154,7 +161,7 @@ export function createFallbackLocator(candidates: Locator[]): Locator {
 
       switch (prop) {
         case 'toString':
-          return () => `FallbackLocator(${candidates.map((candidate) => candidate.toString()).join(' -> ')})`;
+          return () => formatLocatorChain(candidates);
         case 'all':
           return handleAll(candidates);
         case '_expect':

@@ -94,7 +94,7 @@ describe('buildStructuredFailure', () => {
       result: {
         status: 'FAILED',
         message: [
-          "Locator: locator('role=button [name=\"Use Item\"i]').or(locator('role=button').filter({ hasText: 'Use Item' })).first()",
+          "Locator: locator('role=button [name=\"Use Item\"i]') {fuzzy}",
           'Error: element(s) not found',
         ].join('\n'),
       },
@@ -103,9 +103,7 @@ describe('buildStructuredFailure', () => {
 
     const structured = buildStructuredFailure(step as any);
     expect(structured.locator).toBe('role=button [name="Use Item"i]');
-    expect(structured.locator_full).toBe(
-      "locator('role=button [name=\"Use Item\"i]').or(locator('role=button').filter({ hasText: 'Use Item' })).first()",
-    );
+    expect(structured.locator_full).toBe("locator('role=button [name=\"Use Item\"i]') {fuzzy}");
   });
 });
 
@@ -125,7 +123,7 @@ describe('agent formatter payload shape', () => {
               duration: { seconds: 1, nanos: 0 },
               message: [
                 'Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible() failed',
-                "Locator: locator('role=button [name=\"Use Item\"i]').or(locator('role=button')).first()",
+                "Locator: locator('role=button [name=\"Use Item\"i]') {fuzzy}",
                 'Expected: visible',
                 'Timeout: 5000ms',
                 'Error: element(s) not found',
@@ -196,7 +194,7 @@ describe('agent formatter payload shape', () => {
     expect(String(failure?.error)).not.toContain('\u001b[');
     expect(failure?.kind).toBe('assertion');
     expect(failure?.locator).toBe('role=button [name="Use Item"i]');
-    expect(failure?.locator_full).toBe("locator('role=button [name=\"Use Item\"i]').or(locator('role=button')).first()");
+    expect(failure?.locator_full).toBe("locator('role=button [name=\"Use Item\"i]') {fuzzy}");
     expect(failure?.summary).toBe('element(s) not found');
     expect(failure?.html_snapshot).toBe('<html><body><div>snapshot</div></body></html>');
     expect(failure?.error_raw).toBeUndefined();

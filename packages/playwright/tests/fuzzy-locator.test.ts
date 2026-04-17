@@ -235,4 +235,11 @@ describe('fuzzyLocator', () => {
     expect(() => (locator as any).getByRole('button')).toThrow('FallbackLocator does not support getByRole');
     expect(() => (locator as any).getByLabel('name')).toThrow('FallbackLocator does not support getByLabel');
   });
+
+  test('toString returns primary locator with fuzzy marker', async () => {
+    const ctx = createMockContext();
+    const locator = await fuzzyLocator(ctx.page, 'role=button[name="Save"]');
+
+    expect(locator.toString()).toBe('role=button[name="Save"] {fuzzy}');
+  });
 });
