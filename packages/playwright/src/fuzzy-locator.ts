@@ -1,4 +1,5 @@
 import { Locator, Page } from '@playwright/test';
+import { createFallbackLocator } from './fallback-locator';
 
 function debug(...args: unknown[]) {
   if (process.env.LETSRUNIT_DEBUG_FUZZY_LOCATOR === '1') {
@@ -8,10 +9,16 @@ function debug(...args: unknown[]) {
 }
 
 /**
- * Locates an element using Playwright selectors, with lazy fallbacks.
+ * Locates an element using Playwright selectors, with ordered runtime fallbacks.
  */
 export async function fuzzyLocator(page: Page, selector: string): Promise<Locator> {
   debug('input selector:', selector);
+  const candidates = buildFuzzyCandidates(page, selector);
+  debug('enabled fallbacks:', candidates.length > 1 ? String(candidates.length - 1) : '(none)');
+  return createFallbackLocator(candidates);
+}
+
+function buildFuzzyCandidates(page: Page, selector: string): Locator[] {
   const primary = page.locator(selector);
   const candidates: Array<{ name: string; locator: Locator | null }> = [
     { name: 'relaxNameToHasText', locator: tryRelaxNameToHasText(page, selector) },
@@ -21,19 +28,13 @@ export async function fuzzyLocator(page: Page, selector: string): Promise<Locato
     { name: 'asField', locator: tryAsField(page, selector) },
   ];
 
-  let combined = primary;
-  const enabled: string[] = [];
-
+  const all = [primary];
   for (const candidate of candidates) {
     if (!candidate.locator) continue;
-    enabled.push(candidate.name);
-    combined = combined.or(candidate.locator);
+    debug('enabling fallback:', candidate.name, candidate.locator.toString());
+    all.push(candidate.locator);
   }
-  debug('enabled fallbacks:', enabled.length ? enabled.join(', ') : '(none)');
-
-  const result = combined.first();
-  debug('returning locator:', result.toString());
-  return result;
+  return all;
 }
 
 // Preserve the selector but relax [name="..."] to [has-text="..."]
@@ -65,12 +66,12 @@ function tryTagInsteadOfRole(page: Page, selector: string): Locator | null {
 
 // If a role selector with a name filter fails, try proximity-based fallback while
 // preserving the role and any remainder of the selector.
-// Example: role=switch[name="Adres tonen"i] → text=Adres tonen >> .. >> role=switch
+// Example: role=switch[name="Adres tonen"i] → text=Adres tonen >> xpath=following-sibling::* >> role=switch
 function tryRoleNameProximity(page: Page, selector: string): Locator | null {
   const matchRole = selector.match(/^role=(\w+)\s*\[name="([^"]+)"i?](.*)$/i);
   if (!matchRole) return null;
   const [, role, name, rest] = matchRole;
-  const proximitySelector = `text=${name} >> .. >> role=${role}${rest}`;
+  const proximitySelector = `text=${name} >> xpath=following-sibling::* >> role=${role}${rest}`;
   return page.locator(proximitySelector);
 }
 

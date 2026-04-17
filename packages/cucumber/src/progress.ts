@@ -105,15 +105,18 @@ function resolveLastPassedLine({ scenarioId }: { scenarioId: string }): LastPass
   }
 }
 
+function extractPrimaryLocator(raw: string): string {
+  const withoutMarker = raw.replace(/\s*\{fuzzy\}\s*$/i, '').trim();
+
+  const firstLocatorMatch = withoutMarker.match(/locator\((['"`])([\s\S]*?)\1\)/);
+  if (!firstLocatorMatch) return withoutMarker;
+  return firstLocatorMatch[2].trim() || withoutMarker;
+}
+
 function simplifyLocator(locator: string): { locator: string; fuzzy: boolean } {
   const raw = locator.trim();
-  const fuzzy = raw.includes('.or(');
-
-  const firstLocatorMatch = raw.match(/locator\((['"`])([\s\S]*?)\1\)/);
-  if (!firstLocatorMatch) return { locator: raw, fuzzy };
-
-  const simplified = firstLocatorMatch[2].trim();
-  return { locator: simplified || raw, fuzzy };
+  const fuzzy = raw.includes('{fuzzy}');
+  return { locator: extractPrimaryLocator(raw), fuzzy };
 }
 
 function isStackLine(line: string): boolean {

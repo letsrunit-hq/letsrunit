@@ -1,0 +1,6 @@
+[mcp_servers.letsrunit]
+command = "node_modules/.bin/tsx"
+args = ["packages/mcp-server/src/index.ts"]
+
+[mcp_servers.letsrunit.env]
+LETSRUNIT_MCP_RUNTIME_MODE = "standalone"

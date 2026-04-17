@@ -25,15 +25,26 @@ describe('extractFailureDetails', () => {
     expect(details.url).toBeUndefined();
   });
 
-  it('simplifies fuzzy locator chains and marks them as fuzzy', () => {
+  it('detects {fuzzy} marker and keeps primary locator', () => {
     const message = [
-      "Locator: locator('role=button [name=\"Use Item\"i]').or(locator('role=button').filter({ hasText: 'Use Item' })).or(locator('text=Use Item').locator('..').locator('role=button')).first()",
+      "Locator: locator('role=button [name=\"Use Item\"i]') {fuzzy}",
       'Error: element(s) not found',
     ].join('\n');
 
     const details = extractFailureDetails(message);
     expect(details.locator).toBe('role=button [name="Use Item"i]');
     expect(details.locatorFuzzy).toBe(true);
+  });
+
+  it('does not mark fuzzy when marker is absent', () => {
+    const message = [
+      "Locator: locator('role=link[name=\"Bekijk voorbeeld\"]').or(locator('role=link').filter({ hasText: 'Bekijk voorbeeld' })).first()",
+      'Error: element(s) not found',
+    ].join('\n');
+
+    const details = extractFailureDetails(message);
+    expect(details.locator).toBe('role=link[name="Bekijk voorbeeld"]');
+    expect(details.locatorFuzzy).toBe(false);
   });
 
   it('falls back to first useful line for non-Playwright message', () => {
