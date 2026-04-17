@@ -1,6 +1,7 @@
 import { Locator } from '@playwright/test';
 
 type LocatorMethod = (...args: any[]) => any;
+type ProxyProperty = string | symbol;
 
 const ACTION_METHODS = new Set([
   'blur',
@@ -73,36 +74,94 @@ function withNoWaitTimeout(method: string, args: unknown[]): unknown[] {
   return next;
 }
 
+function handleExpect(primary: Locator, candidates: Locator[]) {
+  return (expression: string, options: unknown) => {
+    if (expression.includes('to.be.visible') || expression.includes('to.be.attached')) {
+      return (buildOrLocator(candidates) as any)._expect(expression, options);
+    }
+    return (primary as any)._expect(expression, options);
+  };
+}
+
+function handleAll(candidates: Locator[]) {
+  return async () => {
+    const all: Locator[] = [];
+    for (const candidate of candidates) {
+      all.push(...(await candidate.all()));
+    }
+    return all;
+  };
+}
+
+function handleLocatorChain(prop: string, candidates: Locator[]) {
+  return (...args: any[]) =>
+    createFallbackLocator(
+      candidates.map((candidate) => {
+        const method = (candidate as any)[prop] as LocatorMethod;
+        return method.apply(candidate, args);
+      }),
+    );
+}
+
+function handleCount(primary: Locator, candidates: Locator[]) {
+  return async () => {
+    const primaryCount = await primary.count();
+    if (primaryCount > 0) return primaryCount;
+
+    const fallback = await firstPresentFallback(candidates);
+    if (!fallback) return primaryCount;
+
+    return fallback.count();
+  };
+}
+
+function handleAction(prop: string, primary: Locator, candidates: Locator[], primaryMethod: LocatorMethod) {
+  return async (...args: any[]) => {
+    try {
+      return await primaryMethod.apply(primary, args);
+    } catch (error) {
+      const fallback = await firstPresentFallback(candidates);
+      if (!fallback) throw error;
+      const fallbackMethod = (fallback as any)[prop] as LocatorMethod;
+      return fallbackMethod.apply(fallback, withNoWaitTimeout(prop, args));
+    }
+  };
+}
+
+function handleAsyncFallback(prop: string, primaryMethod: LocatorMethod, primary: Locator, candidates: Locator[]) {
+  return (...args: any[]) => {
+    const result = primaryMethod.apply(primary, args);
+    if (!result || typeof result !== 'object' || typeof (result as Promise<unknown>).catch !== 'function') {
+      return result;
+    }
+
+    return (result as Promise<unknown>).catch(async (error: unknown) => {
+      const fallback = await firstPresentFallback(candidates);
+      if (!fallback) throw error;
+      const fallbackMethod = (fallback as any)[prop] as LocatorMethod;
+      return fallbackMethod.apply(fallback, args);
+    });
+  };
+}
+
 export function createFallbackLocator(candidates: Locator[]): Locator {
   const primary = candidates[0];
   const unsupported = new Set(['filter', 'getByRole', 'getByLabel']);
 
   const proxy = new Proxy(primary as unknown as object, {
-    get(_target, prop) {
-      if (prop === 'toString') {
-        return () => `FallbackLocator(${candidates.map((candidate) => candidate.toString()).join(' -> ')})`;
-      }
-
-      if (prop === 'all') {
-        return async () => {
-          const all: Locator[] = [];
-          for (const candidate of candidates) {
-            all.push(...(await candidate.all()));
-          }
-          return all;
-        };
-      }
-
-      if (prop === '_expect') {
-        return (expression: string, options: unknown) => {
-          if (expression.includes('to.be.visible') || expression.includes('to.be.attached')) {
-            return (buildOrLocator(candidates) as any)._expect(expression, options);
-          }
-          return (primary as any)._expect(expression, options);
-        };
-      }
-
+    get(_target, prop: ProxyProperty) {
       if (typeof prop !== 'string') return (primary as any)[prop];
+
+      switch (prop) {
+        case 'toString':
+          return () => `FallbackLocator(${candidates.map((candidate) => candidate.toString()).join(' -> ')})`;
+        case 'all':
+          return handleAll(candidates);
+        case '_expect':
+          return handleExpect(primary, candidates);
+        case 'count':
+          return handleCount(primary, candidates);
+      }
 
       if (unsupported.has(prop)) {
         return () => {
@@ -111,54 +170,17 @@ export function createFallbackLocator(candidates: Locator[]): Locator {
       }
 
       if (LOCATOR_CHAIN_METHODS.has(prop)) {
-        return (...args: any[]) =>
-          createFallbackLocator(
-            candidates.map((candidate) => {
-              const method = (candidate as any)[prop] as LocatorMethod;
-              return method.apply(candidate, args);
-            }),
-          );
-      }
-
-      if (prop === 'count') {
-        return async (...args: any[]) => {
-          const primaryCount = await primary.count(...args);
-          if (primaryCount > 0) return primaryCount;
-          const fallback = await firstPresentFallback(candidates);
-          if (!fallback) return primaryCount;
-          return fallback.count(...args);
-        };
+        return handleLocatorChain(prop, candidates);
       }
 
       const primaryMethod = (primary as any)[prop] as LocatorMethod;
       if (typeof primaryMethod !== 'function') return primaryMethod;
 
       if (ACTION_METHODS.has(prop)) {
-        return async (...args: any[]) => {
-          try {
-            return await primaryMethod.apply(primary, args);
-          } catch (error) {
-            const fallback = await firstPresentFallback(candidates);
-            if (!fallback) throw error;
-            const fallbackMethod = (fallback as any)[prop] as LocatorMethod;
-            return fallbackMethod.apply(fallback, withNoWaitTimeout(prop, args));
-          }
-        };
+        return handleAction(prop, primary, candidates, primaryMethod);
       }
 
-      return (...args: any[]) => {
-        const result = primaryMethod.apply(primary, args);
-        if (!result || typeof result !== 'object' || typeof (result as Promise<unknown>).catch !== 'function') {
-          return result;
-        }
-
-        return (result as Promise<unknown>).catch(async (error: unknown) => {
-          const fallback = await firstPresentFallback(candidates);
-          if (!fallback) throw error;
-          const fallbackMethod = (fallback as any)[prop] as LocatorMethod;
-          return fallbackMethod.apply(fallback, args);
-        });
-      };
+      return handleAsyncFallback(prop, primaryMethod, primary, candidates);
     },
   });
 
