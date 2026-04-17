@@ -1,3 +1,12 @@
+## [0.19.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.19.0...v0.19.1) (2026-04-17)
+
+
+### Bug Fixes
+
+* **cucumber:** rely on {fuzzy} marker for locator reporting ([a19180b](https://github.com/letsrunit-hq/letsrunit/commit/a19180b6654c74c2554a1dd4e47d5dbe6b818b98))
+* **playwright:** use following-sibling for role-name proximity fallback ([ec4bd97](https://github.com/letsrunit-hq/letsrunit/commit/ec4bd97d343cf7942c2f5593ce08e557263d9a41))
+* **playwright:** use ordered runtime fallback locator ([bfe1fa2](https://github.com/letsrunit-hq/letsrunit/commit/bfe1fa25acb3c196191d5e9ccae31b9e1980dde3))
+
 # [0.19.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.18.3...v0.19.0) (2026-04-16)
 
 
