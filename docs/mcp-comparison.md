@@ -1,8 +1,8 @@
 # MCP comparison
 
-There are multiple MCP servers that allow AI agents to interact with a browser. They differ mainly in abstraction level and purpose. Chrome DevTools MCP focuses on inspection, Playwright MCP on interaction, and letsrunit MCP on executing complete workflows.
+There are multiple MCP servers that allow AI agents to interact with a browser. They differ mainly in abstraction level and purpose. Chrome DevTools MCP focuses on inspection, Playwright MCP on interaction, and Letsrunit MCP on executing complete workflows.
 
-| Aspect             | Chrome DevTools MCP      | Playwright MCP       | letsrunit MCP                   |
+| Aspect             | Chrome DevTools MCP      | Playwright MCP       | Letsrunit MCP                   |
 | ------------------ | ------------------------ | -------------------- | ------------------------------- |
 | Level              | Low                      | Medium               | High                            |
 | Focus              | Debugging and inspection | Browser control      | Scenario execution              |
@@ -28,19 +28,11 @@ Playwright MCP provides structured control over the browser. It allows an agent 
 
 However, the agent is still responsible for managing selectors and flow logic. There is no built-in notion of history, reuse, or regression tracking. Each run is effectively isolated.
 
-### letsrunit MCP
+### Letsrunit MCP
 
-letsrunit MCP operates at the level of scenarios instead of individual actions. Agents execute workflows composed of reusable steps, rather than issuing low-level commands.
+Letsrunit MCP operates at the level of scenarios instead of individual actions. Agents execute workflows composed of reusable steps, rather than issuing low-level commands.
 
-The key difference is that execution is stateful across runs. letsrunit stores artifacts such as HTML snapshots, screenshots, and step results, together with the associated git commit. When a run fails, the agent can compare it with previous successful runs and relate differences to code changes.
+The key difference is that execution is stateful across runs. Letsrunit stores artifacts such as HTML snapshots, screenshots, and step results, together with the associated git commit. When a run fails, the agent can compare it with previous successful runs and relate differences to code changes.
 
 Selector handling is abstracted, which reduces fragility when the UI changes. In addition, integrations like mailbox handling make it possible to cover real end-to-end flows such as authentication, invites, and password resets.
-
-## Positioning
-
-These tools operate at different layers and are complementary.
-
-Chrome DevTools MCP is for debugging. Playwright MCP is for interaction. letsrunit MCP is for validating behavior over time.
-
-If the goal is to inspect or fix a specific issue, DevTools is the right choice. If the goal is to explore or automate a flow, Playwright fits. If the goal is to reliably execute and evaluate workflows, especially across changes, letsrunit is the better fit.
 

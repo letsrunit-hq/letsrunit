@@ -4,7 +4,7 @@ description: Test OTP flows, activation links, and other email-based journeys.
 
 # Email Testing
 
-letsrunit generates a deterministic email address per test scenario and polls a mailbox service until the email arrives.
+Letsrunit generates a deterministic email address per test scenario and polls a mailbox service until the email arrives.
 
 ## Typical scenario
 
@@ -75,7 +75,7 @@ TESTMAIL_NAMESPACE=your_namespace
 MAILBOX_DOMAIN=inbox.testmail.app   # default
 ```
 
-Addresses take the form `<namespace>.<tag>@inbox.testmail.app`. letsrunit generates the tag automatically per test.
+Addresses take the form `<namespace>.<tag>@inbox.testmail.app`. Letsrunit generates the tag automatically per test.
 {% endtab %}
 
 {% tab title="Mailhog (legacy)" %}

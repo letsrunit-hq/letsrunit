@@ -3,12 +3,7 @@ import type { SidebarsConfig } from '@docusaurus/plugin-content-docs';
 const sidebars: SidebarsConfig = {
   docs: [
     'README',
-    'installation',
-    {
-      type: 'category',
-      label: 'AI Agents',
-      items: ['ai-agents/README', 'ai-agents/tdd', 'ai-agents/mcp-comparison'],
-    },
+    'ai-agents',
     'generating-tests',
     {
       type: 'category',
@@ -27,6 +22,7 @@ const sidebars: SidebarsConfig = {
       label: 'CI/CD',
       items: ['ci-cd/github-actions'],
     },
+    'mcp-comparison',
   ],
 };
 

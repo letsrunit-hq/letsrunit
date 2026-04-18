@@ -57,7 +57,7 @@ services:
       - 1025:1025
 ```
 
-Set the letsrunit environment variable alongside your app:
+Set the Letsrunit environment variable alongside your app:
 
 ```yaml
       - name: Run features

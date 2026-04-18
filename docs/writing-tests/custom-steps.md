@@ -1,10 +1,10 @@
 ---
-description: Add your own Given/When/Then steps on top of letsrunit defaults.
+description: Add your own Given/When/Then steps on top of Letsrunit defaults.
 ---
 
 # Custom Steps
 
-letsrunit ships with built-in steps from `@letsrunit/cucumber`, but you can add your own step definitions for project-specific behavior.
+Letsrunit ships with built-in steps from `@letsrunit/cucumber`, but you can add your own step definitions for project-specific behavior.
 
 ## Using custom steps
 
@@ -24,11 +24,11 @@ Then('I should see the signed-in email {string}', async function (email) {
 });
 ```
 
-`this.page` is the Playwright page provided by letsrunit's world setup.
+`this.page` is the Playwright page provided by Letsrunit's world setup.
 
 ### 2. Load your custom steps
 
-In `features/support/world.js`, keep the letsrunit import and add your custom step file:
+In `features/support/world.js`, keep the Letsrunit import and add your custom step file:
 
 ```js
 import { setDefaultTimeout } from '@cucumber/cucumber';
@@ -100,6 +100,6 @@ await scrollToCenter(footer);
 
 ## Tips
 
-* Keep custom steps domain-specific. Reuse built-in letsrunit steps for common actions.
+* Keep custom steps domain-specific. Reuse built-in Letsrunit steps for common actions.
 * Prefer clear, business-readable wording over implementation details.
 * If several scenarios share the same setup, move it to `Background`.

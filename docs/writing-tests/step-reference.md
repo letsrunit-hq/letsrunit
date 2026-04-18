@@ -4,10 +4,6 @@ description: Every available step, organized by category.
 
 # Step Reference
 
-{% hint style="info" %}
-Use `letsrunit explore` or ask your AI agent to generate steps. The full locator syntax is documented in [Locators](locators.md).
-{% endhint %}
-
 ## Navigation
 
 | Step | Description |
@@ -119,3 +115,8 @@ See [Email Testing](email-testing.md) for setup and examples.
 |------|-------------|
 | `When I open the latest email` | Fetch and open the most recent email to the test address |
 | `When I click the link in the email` | Click the first link found in the email body |
+
+## Custom steps
+
+You can add your <a href="custom-steps">own step definitions</a> for project-specific behavior.
+
