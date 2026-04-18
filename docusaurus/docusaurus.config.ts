@@ -3,7 +3,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 import { remarkGitBook, rehypeGitBook } from 'docusaurus-plugin-gitbook';
 
 const config: Config = {
-  title: 'letsrunit',
+  title: 'Letsrunit',
   tagline: 'AI-powered browser testing',
   url: 'https://docs.letsrunit.ai',
   baseUrl: '/',
@@ -32,7 +32,7 @@ const config: Config = {
       'docusaurus-plugin-llms',
       {
         docsDir: '../docs',
-        title: 'letsrunit',
+        title: 'Letsrunit',
         description: 'Browser testing in plain language, built for teams that ship with AI.',
         generateLLMsTxt: true,
         generateLLMsFullTxt: true,
@@ -45,11 +45,10 @@ const config: Config = {
         },
         includeOrder: [
           'README.md',
-          'installation.md',
           'generating-tests.md',
           'running-tests.md',
           'writing-tests/*',
-          'ai-agents/*',
+          'ai-agents/README.md',
           'ci-cd/*',
         ],
       },
@@ -81,7 +80,7 @@ const config: Config = {
       additionalLanguages: ['gherkin'],
     },
     navbar: {
-      title: 'letsrunit',
+      title: 'Letsrunit',
       items: [
         {
           href: 'https://github.com/letsrunit-hq/letsrunit',

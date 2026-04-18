@@ -1,10 +1,10 @@
 ---
-description: How letsrunit identifies elements on the page.
+description: How Letsrunit identifies elements on the page.
 ---
 
 # Locators
 
-letsrunit resolves locators in priority order: accessible names first, then visible text, then raw selectors. Prefer descriptive locators over attribute-based ones. They survive UI changes better.
+Letsrunit resolves locators in priority order: accessible names first, then visible text, then raw selectors. Prefer descriptive locators over attribute-based ones. They survive UI changes better.
 
 ## Locator patterns
 
@@ -71,6 +71,6 @@ Raw selectors are fragile. Prefer `field`, `button`, `link`, or `text` locators 
 
 **Ambiguous locator:** if multiple elements match, the step fails. Narrow the match with `within` or use a more specific pattern.
 
-**Element not visible:** letsrunit waits for elements to be visible before interacting. If the step times out, check whether the element is hidden behind a modal or requires scrolling.
+**Element not visible:** Letsrunit waits for elements to be visible before interacting. If the step times out, check whether the element is hidden behind a modal or requires scrolling.
 
 **Dynamic text:** for text that changes (user names, IDs, timestamps), use a partial match with `text "..."` rather than `button` or `link` which match more exactly.

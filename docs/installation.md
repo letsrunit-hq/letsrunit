@@ -1,5 +1,5 @@
 ---
-description: Set up letsrunit in your project with a single command.
+description: Set up Letsrunit in your project with a single command.
 ---
 
 # Installation
@@ -35,7 +35,7 @@ npx letsrunit init
 {% step %}
 ## Install Cucumber
 
-letsrunit uses [Cucumber.js](https://cucumber.io/) as the test runner. If it's not already installed, the wizard will offer to add `@cucumber/cucumber` to your dev dependencies.
+Letsrunit uses [Cucumber.js](https://cucumber.io/) as the test runner. If it's not already installed, the wizard will offer to add `@cucumber/cucumber` to your dev dependencies.
 
 It also creates two files:
 
@@ -49,7 +49,7 @@ export default {
 };
 ```
 
-**`features/support/world.js`** loads the letsrunit step library:
+**`features/support/world.js`** loads the Letsrunit step library:
 ```js
 import { setDefaultTimeout } from '@cucumber/cucumber';
 import '@letsrunit/cucumber';
@@ -73,7 +73,7 @@ Feature: Example
 {% step %}
 ## Install Playwright browsers
 
-letsrunit drives a real Chromium browser. If Playwright's Chromium binary isn't found, the wizard offers to install it:
+Letsrunit drives a real Chromium browser. If Playwright's Chromium binary isn't found, the wizard offers to install it:
 
 ```bash
 npx playwright install chromium

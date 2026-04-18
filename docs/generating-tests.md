@@ -8,20 +8,18 @@ Generate tests either from an AI agent (through the MCP server) or from the CLI.
 
 ## AI Agent
 
-Use your preferred AI coding agent with the letsrunit MCP server to generate and validate tests directly from chat.
+Use your preferred AI coding agent with the Letsrunit MCP server to generate and validate tests directly from chat.
 
 Typical flow:
 
-- Connect letsrunit MCP tools in your agent.
+- Connect Letsrunit MCP tools in your agent.
 - Ask the agent to generate or refine a scenario for a target URL or flow.
 - Let the agent run the scenario in a real browser and iterate until it passes.
 - Save the passing scenario as a `.feature` regression test.
 
-For setup instructions and supported clients, see [AI Agent Integration](ai-agents/README.md). For a structured red-green workflow, see [Test-Driven Development](ai-agents/tdd.md).
-
 ## CLI
 
-The letsrunit cli can generate Gherkin scenarios from a live page. It will navigate to a URL, use an LLM to understand the page and produce steps, run the scenario to confirm it passes, and write a `.feature` file. There are two commands:
+The Letsrunit CLI can generate Gherkin scenarios from a live page. It will navigate to a URL, use an LLM to understand the page and produce steps, run the scenario to confirm it passes, and write a `.feature` file. There are two commands:
 
 - `explore` is interactive: it discovers multiple user stories and lets you pick which ones to generate.
 - `generate` takes a description and produces a single scenario directly.
@@ -30,7 +28,7 @@ Both commands require an LLM API key. Set either `OPENAI_API_KEY`, `CLAUDE_API_K
 
 ### explore
 
-`explore` navigates a page, discovers testable user stories with AI, and presents an interactive menu. Select a story and letsrunit generates the scenario, runs it, and saves it if it passes.
+`explore` navigates a page, discovers testable user stories with AI, and presents an interactive menu. Select a story and Letsrunit generates the scenario, runs it, and saves it if it passes.
 
 ```bash
 letsrunit explore <url>
@@ -49,7 +47,7 @@ letsrunit explore <url> -o ./features
 letsrunit explore http://localhost:3000/login -o ./features
 ```
 
-letsrunit navigates the page, then shows a numbered menu:
+Letsrunit navigates the page, then shows a numbered menu:
 
 ```
 Login
@@ -61,7 +59,7 @@ What do you want to test? Choose one of the following options:
 4. User stays logged in after refreshing the page
 ```
 
-Press a number to select a story. letsrunit generates the scenario, runs it, and if it passes, writes the `.feature` file to the `-o` directory. The remaining stories are shown again. Press `Ctrl+C` to exit.
+Press a number to select a story. Letsrunit generates the scenario, runs it, and if it passes, writes the `.feature` file to the `-o` directory. The remaining stories are shown again. Press `Ctrl+C` to exit.
 
 ### generate
 
@@ -84,7 +82,7 @@ echo "Log in with email and password, then verify the dashboard loads" \
   | letsrunit generate http://localhost:3000 -o ./features
 ```
 
-letsrunit opens the page, works out the steps, runs the scenario, and writes `./features/login.feature`:
+Letsrunit opens the page, works out the steps, runs the scenario, and writes `./features/login.feature`:
 
 ```gherkin
 Feature: Login

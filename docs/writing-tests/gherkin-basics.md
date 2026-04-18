@@ -4,7 +4,7 @@ description: Feature file format, scenarios, and custom parameter types.
 
 # Gherkin Basics
 
-Gherkin is the plain-English format letsrunit uses for test scenarios. Each `.feature` file describes one feature and one or more scenarios.
+Gherkin is the plain-English format Letsrunit uses for test scenarios. Each `.feature` file describes one feature and one or more scenarios.
 
 ## File structure
 
@@ -78,16 +78,18 @@ Feature: Dashboard
 {% endtab %}
 {% endtabs %}
 
-## Custom parameter types
+## Parameter types
 
-letsrunit extends Cucumber with three parameter types used across the step library:
+Letsrunit extends Cucumber with three parameter types used across the step library:
 
 | Type | Accepts | Example |
 |------|---------|---------|
 | `{locator}` | Any locator expression | `button "Sign in"`, `field "Email"`, `` `#submit` `` |
 | `{value}` | String, number, date expression, generated password, or array | `"hello"`, `42`, `date of tomorrow`, `password of "user-uuid"`, `["A", "B"]` |
-
-`password of "..."` requires the `LETSRUNIT_PASSWORD_SEED` environment variable.
 | `{keys}` | Quoted key or key combination | `"Enter"`, `"Control+A"`, `"Shift+Tab"` |
+
+{% hint style="info" %}
+`password of "..."` requires the `LETSRUNIT_PASSWORD_SEED` environment variable.
+{% endhint %}
 
 See [Locators](locators.md) for the full locator syntax and [Step Reference](step-reference.md) for every available step.

@@ -2,15 +2,10 @@
 
 * [Introduction](README.md)
 
-## Installation
-
-* [Installation](installation.md)
-
 ## AI Agents
 
-* [AI Agent Integration](ai-agents/README.md)
-* [Test-Driven Development](ai-agents/tdd.md)
-* [MCP Comparison](ai-agents/mcp-comparison.md)
+* [AI Agent Integration](ai-agents.md)
+* [MCP Comparison](mcp-comparison.md)
 
 ## Generating Tests
 
@@ -31,3 +26,4 @@
 ## CI/CD
 
 * [GitHub Actions](ci-cd/github-actions.md)
+
