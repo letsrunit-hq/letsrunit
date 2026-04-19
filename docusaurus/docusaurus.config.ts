@@ -80,7 +80,12 @@ const config: Config = {
       additionalLanguages: ['gherkin'],
     },
     navbar: {
-      title: 'Letsrunit',
+      title: '',
+      logo: {
+        alt: 'Letsrunit',
+        src: 'img/logo-light.svg',
+        srcDark: 'img/logo.svg',
+      },
       items: [
         {
           href: 'https://github.com/letsrunit-hq/letsrunit',
@@ -91,7 +96,7 @@ const config: Config = {
     },
     footer: {
       style: 'dark',
-      copyright: `Copyright © ${new Date().getFullYear()} letsrunit-hq`,
+      copyright: `Copyright © ${new Date().getFullYear()} Jasny`,
     },
   } satisfies Preset.ThemeConfig,
 };
