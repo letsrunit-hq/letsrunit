@@ -1,3 +1,10 @@
+## [0.19.2](https://github.com/letsrunit-hq/letsrunit/compare/v0.19.1...v0.19.2) (2026-04-19)
+
+
+### Bug Fixes
+
+* **docs:** include .gitbook assets in pages artifact ([bdeaf68](https://github.com/letsrunit-hq/letsrunit/commit/bdeaf68c3edab376fa90df10e05c7f3f0729ecf9))
+
 ## [0.19.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.19.0...v0.19.1) (2026-04-17)
 
 
