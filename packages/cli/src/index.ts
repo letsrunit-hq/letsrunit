@@ -46,7 +46,7 @@ async function readStdin(): Promise<string> {
   });
 }
 
-program.name('letsrunit').description('Write, run, and analyze E2E tests with AI assistance').version(version);
+program.name('letsrunit').description('Testing for AI-driven development workflows').version(version);
 
 program
   .command('init')
