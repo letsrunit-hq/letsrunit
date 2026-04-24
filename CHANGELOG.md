@@ -1,3 +1,10 @@
+## [0.19.3](https://github.com/letsrunit-hq/letsrunit/compare/v0.19.2...v0.19.3) (2026-04-24)
+
+
+### Bug Fixes
+
+* **ci:** use upload-pages-artifact with hidden files for docs deploy ([ac4cf23](https://github.com/letsrunit-hq/letsrunit/commit/ac4cf23c7a653d86ecb8f5abd17b82218edc5552))
+
 ## [0.19.2](https://github.com/letsrunit-hq/letsrunit/compare/v0.19.1...v0.19.2) (2026-04-19)
 
 
