@@ -13,7 +13,7 @@ AI Agent integration has two parts:
 
 ### Project (recommended)
 
-Install Letsrunit for your project, including the MCP server and skill via
+Install Letsrunit for your project, including the MCP server and skill
 
 ```
 npx letsrunit init
@@ -23,11 +23,11 @@ The init script will automatically detect all the components to install and conf
 
 ### Global
 
-You can install Letsrunit globally for all 
+You can install the Letsrunit MCP server and skill globally for all your projects.
 
 {% tabs %}
 {% tab title="Claude Code" %}
-The letsrunit plugin installs both the MCP server and the skill automatically. Run inside Claude Code:
+The Letsrunit plugin installs both the MCP server and the skill automatically. Run inside Claude Code:
 
 ```
 /plugin marketplace add letsrunit-hq/agent
@@ -126,14 +126,14 @@ For a more structured approach, you can instruct the agent to write scenarios be
 ```markdown
 ## Test-driven development
 
-When implementing a feature or fixing a bug that affects the UI, write the Gherkin scenario before writing any implementation code.
+When implementing a feature or fixing a bug that affects the UI, use letsrunit to write a tests before writing any implementation code.
 
-1. Write a `.feature` file in `/features` describing the expected user interaction and outcome.
-2. Run it with letsrunit to confirm it fails. If it passes, either the feature already exists or the scenario is not testing the right thing.
-3. Implement until the scenario passes.
-4. Do not modify the scenario to fit the implementation. If the test fails, fix the code.
+1. Write a `.feature` file in `/features` with one or more scenarios, describing the expected user interaction and outcome.
+2. Run each scenario with the letsrunit MCP server to confirm it fails. If it passes, either the feature already exists or the scenario is not testing the right thing.
+3. Implement until the scenarios pass. Do not write code beyond what is required be make the scenarios pass.
+4. Do not modify a scenario to fit the implementation. If the test fails, fix the code.
 
-If you cannot write the scenario before implementing, the requirements are not specific enough. Ask for clarification rather than making assumptions in code.
+If you cannot write a scenario before implementing, the requirements are not specific enough. Ask for clarification rather than making assumptions in code.
 ```
 {% endtab %}
 {% endtabs %}
