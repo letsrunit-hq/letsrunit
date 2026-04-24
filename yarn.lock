@@ -12227,9 +12227,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"docusaurus-plugin-gitbook@npm:^1.0.5":
-  version: 1.0.5
-  resolution: "docusaurus-plugin-gitbook@npm:1.0.5"
+"docusaurus-plugin-gitbook@npm:^1.0.6":
+  version: 1.0.6
+  resolution: "docusaurus-plugin-gitbook@npm:1.0.6"
   dependencies:
     "@types/mdast": "npm:^4.0.4"
     mdast-util-mdx-jsx: "npm:^3.2.0"
@@ -12242,7 +12242,7 @@ __metadata:
   peerDependenciesMeta:
     docusaurus-theme-openapi-docs:
       optional: true
-  checksum: 10c0/7a7bbab332668e3ab8354503c813174d7f70efb10898fb0cd8a48c5e48ff46505051252dc81178b623a9500890ba6666bb64a84537f38dac6bf3abc19d5c9677
+  checksum: 10c0/694fbd568126f23ce7ba87f61201e994d4c7e7dbe51fcfa8a4b8fa989ce32108b8c91d04bcc7b68b3a6597272aa3798e01badff5597b953dfb9de9c29ee1e636
   languageName: node
   linkType: hard
 
@@ -15982,7 +15982,7 @@ __metadata:
     "@docusaurus/core": "npm:^3.7.0"
     "@docusaurus/preset-classic": "npm:^3.7.0"
     "@docusaurus/types": "npm:^3.7.0"
-    docusaurus-plugin-gitbook: "npm:^1.0.5"
+    docusaurus-plugin-gitbook: "npm:^1.0.6"
     docusaurus-plugin-llms: "npm:^0.3.0"
     react: "npm:^19.0.0"
     react-dom: "npm:^19.0.0"
