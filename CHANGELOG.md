@@ -1,3 +1,11 @@
+## [0.19.5](https://github.com/letsrunit-hq/letsrunit/compare/v0.19.4...v0.19.5) (2026-04-24)
+
+
+### Bug Fixes
+
+* **ci:** use local tarball overrides in mcp integration ([3dade5e](https://github.com/letsrunit-hq/letsrunit/commit/3dade5eb6c4125cdf5d836d3c7d622da5c668670))
+* **playwright:** preserve locator identity for fallback proxy ([2a8d6c7](https://github.com/letsrunit-hq/letsrunit/commit/2a8d6c732ee17ba5564ee3be560109adf1107c26))
+
 ## [0.19.4](https://github.com/letsrunit-hq/letsrunit/compare/v0.19.3...v0.19.4) (2026-04-24)
 
 
