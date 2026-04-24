@@ -1,6 +1,6 @@
 {
   "name": "@letsrunit/store",
-  "version": "0.19.3",
+  "version": "0.19.4",
   "description": "SQLite-backed artifact store for letsrunit",
   "keywords": [
     "testing",

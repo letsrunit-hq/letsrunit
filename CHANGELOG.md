@@ -1,3 +1,10 @@
+## [0.19.4](https://github.com/letsrunit-hq/letsrunit/compare/v0.19.3...v0.19.4) (2026-04-24)
+
+
+### Bug Fixes
+
+* doc assets not in hidden dir ([756ba78](https://github.com/letsrunit-hq/letsrunit/commit/756ba786c7c0ec5083feb7203b3dc370571e45b9))
+
 ## [0.19.3](https://github.com/letsrunit-hq/letsrunit/compare/v0.19.2...v0.19.3) (2026-04-24)
 
 
