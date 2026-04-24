@@ -1,0 +1,26 @@
+{
+  "name": "mcp-int",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@letsrunit/mcp-server": "file:/tmp/mcp-server.tgz",
+    "@modelcontextprotocol/sdk": "^1.26.0"
+  },
+  "overrides": {
+    "@letsrunit/ai": "file:/tmp/ai.tgz",
+    "@letsrunit/bdd": "file:/tmp/bdd.tgz",
+    "@letsrunit/cli": "file:/tmp/cli.tgz",
+    "@letsrunit/controller": "file:/tmp/controller.tgz",
+    "@letsrunit/cucumber": "file:/tmp/cucumber.tgz",
+    "@letsrunit/executor": "file:/tmp/executor.tgz",
+    "@letsrunit/gherker": "file:/tmp/gherker.tgz",
+    "@letsrunit/gherkin": "file:/tmp/gherkin.tgz",
+    "@letsrunit/journal": "file:/tmp/journal.tgz",
+    "@letsrunit/mailbox": "file:/tmp/mailbox.tgz",
+    "@letsrunit/mcp-server": "file:/tmp/mcp-server.tgz",
+    "@letsrunit/playwright": "file:/tmp/playwright.tgz",
+    "@letsrunit/store": "file:/tmp/store.tgz",
+    "@letsrunit/utils": "file:/tmp/utils.tgz",
+    "letsrunit": "file:/tmp/letsrunit.tgz"
+  }
+}

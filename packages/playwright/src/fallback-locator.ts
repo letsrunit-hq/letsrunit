@@ -154,10 +154,12 @@ function formatLocatorChain(candidates: Locator[]): string {
 export function createFallbackLocator(candidates: Locator[]): Locator {
   const primary = candidates[0];
   const unsupported = new Set(['filter', 'getByRole', 'getByLabel']);
+  const passthroughMetaProperties = new Set(['constructor', '__proto__']);
 
   const proxy = new Proxy(primary as unknown as object, {
     get(_target, prop: ProxyProperty) {
       if (typeof prop !== 'string') return (primary as any)[prop];
+      if (passthroughMetaProperties.has(prop)) return (primary as any)[prop];
 
       switch (prop) {
         case 'toString':

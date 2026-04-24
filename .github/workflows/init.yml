@@ -180,17 +180,7 @@ jobs:
           curl --retry 10 --retry-delay 1 --retry-connrefused -sf http://127.0.0.1:3000/
 
           mkdir -p /tmp/mcp-int
-          cat >/tmp/mcp-int/package.json <<'EOF'
-          {
-            "name": "mcp-int",
-            "private": true,
-            "type": "module",
-            "dependencies": {
-              "@letsrunit/mcp-server": "file:/tmp/mcp-server.tgz",
-              "@modelcontextprotocol/sdk": "^1.26.0"
-            }
-          }
-          EOF
+          cp .github/scripts/mcp/mcp-int.package.json /tmp/mcp-int/package.json
           (cd /tmp/mcp-int && npm install --no-audit --no-fund)
           (cd /tmp/mcp-int && npx playwright install chromium)
           cp .github/scripts/mcp/run-deterministic-flow.mjs /tmp/mcp-int/run-deterministic-flow.mjs

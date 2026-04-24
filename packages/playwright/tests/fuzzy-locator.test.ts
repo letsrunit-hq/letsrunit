@@ -1,5 +1,6 @@
-import { Locator, Page } from '@playwright/test';
+import { expect as pwExpect, Locator, Page } from '@playwright/test';
 import { describe, expect, test, vi } from 'vitest';
+import { createFallbackLocator } from '../src/fallback-locator';
 import { fuzzyLocator } from '../src';
 
 type LocatorCall = {
@@ -31,6 +32,14 @@ type ContextConfig = {
   counts?: Record<string, number>;
   clickErrors?: string[];
   allResults?: Record<string, string[]>;
+};
+
+type ExpectResponse = {
+  matches: boolean;
+  received?: string;
+  timedOut?: boolean;
+  errorMessage?: string;
+  log?: string[];
 };
 
 function locatorId(selector: string, options?: Parameters<Page['locator']>[1]): string {
@@ -106,6 +115,22 @@ function createMockContext(config: ContextConfig = {}) {
     locatorChainCalls,
     orCalls,
     expectCalls,
+  };
+}
+
+function createPlaywrightLocatorStub(response: ExpectResponse): Locator & {
+  _expect: ReturnType<typeof vi.fn>;
+  toString: ReturnType<typeof vi.fn>;
+} {
+  const LocatorCtor = new Function('return function Locator() {}')() as { prototype: object };
+  const locator = Object.create(LocatorCtor.prototype);
+  const expectMock = vi.fn(async () => response);
+  const toStringMock = vi.fn(() => 'stub=locator');
+  locator._expect = expectMock;
+  locator.toString = toStringMock;
+  return locator as Locator & {
+    _expect: ReturnType<typeof vi.fn>;
+    toString: ReturnType<typeof vi.fn>;
   };
 }
 
@@ -241,5 +266,26 @@ describe('fuzzyLocator', () => {
     const locator = await fuzzyLocator(ctx.page, 'role=button[name="Save"]');
 
     expect(locator.toString()).toBe('role=button[name="Save"] {fuzzy}');
+  });
+
+  test('remains compatible with Playwright locator matcher type checks', async () => {
+    const primary = createPlaywrightLocatorStub({ matches: true, received: 'visible' });
+    const locator = createFallbackLocator([primary]);
+    expect((locator as any).constructor.name).toBe('Locator');
+
+    await expect(pwExpect(locator).toBeVisible()).resolves.toBeUndefined();
+    expect(primary._expect).toHaveBeenCalledWith(
+      'to.be.visible',
+      expect.objectContaining({ timeout: expect.any(Number) }),
+    );
+  });
+
+  test('fails with matcher output, not locator-type guard errors', async () => {
+    const primary = createPlaywrightLocatorStub({ matches: false, received: 'hidden' });
+    const locator = createFallbackLocator([primary]);
+
+    await expect(pwExpect(locator).toBeVisible({ timeout: 1 })).rejects.not.toThrow(
+      'toBeVisible can be only used with Locator object',
+    );
   });
 });
