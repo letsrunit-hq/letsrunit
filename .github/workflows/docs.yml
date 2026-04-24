@@ -38,16 +38,9 @@ jobs:
       - name: Build
         run: yarn workspace letsrunit-docs build
 
-      - name: Package Pages artifact (include dotfiles)
-        run: |
-          set -euo pipefail
-          tar --format=posix -cvf /tmp/github-pages.tar -C docusaurus/build .
-          gzip -f /tmp/github-pages.tar
-
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-pages-artifact@v4
         with:
-          name: github-pages
-          path: /tmp/github-pages.tar.gz
+          path: docusaurus/build
           include-hidden-files: true
 
   deploy:
