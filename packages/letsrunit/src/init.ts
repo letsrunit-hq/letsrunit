@@ -11,12 +11,19 @@ import { hasPlaywrightBrowsers, installPlaywrightBrowsers } from './setup/playwr
 const BDD_IMPORT = '@letsrunit/cucumber';
 
 const BANNER = String.raw`
- _      _       _                           _ _
-| | ___| |_ ___| |_ _ __ _   _ _ __ (_) |_
-| |/ _ \ __/ __| __| '__| | | | '_ \| | __|
-| |  __/ |_\__ \ |_| |  | |_| | | | | | |_
-|_|\___|\__|___/\__|_|   \__,_|_| |_|_|\__|
-`;
+        .:::::.                                                                                                         
+     .:::::::::::.          ...                                                                      .-:                
+   .::::::   ::::::         =+=                 .                                                    -+=.    .          
+  .:::           :::        =+=                -+                                                           -+          
+  ::::           ::::       =+=    .-=+==:   -=++===   :==+==:    ==  -==  ==:    .==   -=  :=+=-    :==  -=++===       
+ .:::.   .:::.   .:::.      =+=   =+=:..=+=  :-++-::  =+-...-++   ++.==-=  ++:    :++   =+.--.:=++   -++  :=++-::       
+ .::     :::::     ::.      =+=  -++     =+:  .++     ++-    .    ++-:     ++:    :++   =+=.   .++:  -++   :++          
+ .:::.   .:::    .:::.      =+=  =++=====++-  .++     .=+++=-:    ++=      ++:    :++   =+=     ++-  -++   :++          
+  ::::           ::::       =+=  =+=          .++         .:-++:  ++-      ++-    =++   =+=     ++-  -++   :++          
+  .:::           :::        =+=  .++:    -=:  .++:    -=     =+-  ++-      =+=   ::++   =+=     ++-  -++   :++.     .   
+    ::::::   ::::::         =+=   .=+=-=++-    =++++  :++====+=   ++-      .+++=+- ++   =+=     ++-  -++    =++++  :::  
+     .:::::::::::.           .       .::.       ..:.    ..::.     ..         .:.   ..    .      ..    ..     .::.       
+        .::::..                                                                                                         `;
 
 export interface InitOptions {
   yes?: boolean;
@@ -109,10 +116,10 @@ function stepAddGithubAction(env: Environment): void {
 }
 
 function defaultPlan(env: Environment, options: InitOptions, explicitAgents: AgentId[]): InstallPlan {
-  const installMcp = options.noMcp ? false : !isMcpServerInstalled(env);
-  const installCucumber = !env.hasCucumber;
-  const installPlaywright = !hasPlaywrightBrowsers(env);
-  const addGithubActions = false;
+  const installMcp = !options.noMcp;
+  const installCucumber = true;
+  const installPlaywright = true;
+  const addGithubActions = true;
   const agents = explicitAgents.length > 0 ? explicitAgents : detectAgentIds(env);
   return { installMcp, installCucumber, installPlaywright, addGithubActions, agents };
 }
@@ -132,6 +139,7 @@ async function selectPlan(env: Environment, options: InitOptions, defaults: Inst
     return options.yes ? defaults : { ...defaults, installCucumber: false, installPlaywright: false, addGithubActions: false, agents: [] };
   }
 
+  note('Use ↑/↓ to move, space to toggle, enter to continue.', 'Controls');
   note('`@letsrunit/cli` is always installed and selected.', 'Core Component');
 
   const componentOptions = [
@@ -154,6 +162,7 @@ async function selectPlan(env: Environment, options: InitOptions, defaults: Inst
   const components = await multiselect({
     message: 'Choose what to install/configure for this project',
     options: componentOptions,
+    initialValues: componentOptions.filter((option) => option.selected).map((option) => option.value),
     required: false,
   });
 
@@ -167,6 +176,7 @@ async function selectPlan(env: Environment, options: InitOptions, defaults: Inst
   let selectedAgents: AgentId[] = [];
   if (installMcp) {
     const catalog = getAgentCatalog();
+    note('Use ↑/↓ to move, space to toggle, enter to continue.', 'Agent Controls');
     const picked = await multiselect({
       message: 'AI Agent integration (MCP config + skill)',
       options: catalog.map((agent) => ({
@@ -175,6 +185,7 @@ async function selectPlan(env: Environment, options: InitOptions, defaults: Inst
         selected: defaults.agents.includes(agent.id),
         hint: defaults.agents.includes(agent.id) ? 'detected' : undefined,
       })),
+      initialValues: defaults.agents,
       required: false,
     });
 
