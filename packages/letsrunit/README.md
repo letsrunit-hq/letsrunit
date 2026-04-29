@@ -32,6 +32,10 @@ It can:
 - `--no-mcp`  
   Skip installation of `@letsrunit/mcp-server`.
 
+- `--agents <list>`  
+  Configure MCP + skill for selected agents (comma-separated): `codex,cursor,claude,copilot,gemini,windsurf`.
+  If omitted in non-interactive mode or with `--yes`, agent config is skipped.
+
 ## Generated/updated files
 
 When scaffolding Cucumber support, `init` creates:

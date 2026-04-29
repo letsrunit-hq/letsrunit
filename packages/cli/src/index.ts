@@ -53,8 +53,9 @@ program
   .description('Set up letsrunit in the current project')
   .option('-y, --yes', 'Skip confirmation prompts')
   .option('--no-mcp', 'Do not install @letsrunit/mcp-server')
-  .action(async (opts: { yes?: boolean; mcp?: boolean }) => {
-    await init({ yes: opts.yes, noMcp: opts.mcp === false });
+  .option('--agents <list>', 'Configure MCP + skill for agents (comma-separated)')
+  .action(async (opts: { yes?: boolean; mcp?: boolean; agents?: string }) => {
+    await init({ yes: opts.yes, noMcp: opts.mcp === false, agents: opts.agents });
   });
 
 program

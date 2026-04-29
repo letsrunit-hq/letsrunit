@@ -17,6 +17,16 @@ npx letsrunit init
 
 `init` is interactive: it walks you through each step and asks before making changes. It's safe to re-run at any time.
 
+For AI agent setup, you can choose explicit agents:
+
+```bash
+npx letsrunit init --agents codex,cursor
+```
+
+Supported values: `codex`, `cursor`, `claude`, `copilot`, `gemini`, `windsurf`.
+
+If `--yes` is used without `--agents`, agent configuration is skipped.
+
 ### What does the installer do?
 
 {% stepper %}

@@ -2,6 +2,7 @@ import { confirm, intro, log, note, outro, spinner } from '@clack/prompts';
 import { detectEnvironment, type Environment } from './detect.js';
 import { installCli, isCliInstalled } from './setup/cli.js';
 import { installCucumber, setupCucumber } from './setup/cucumber.js';
+import { parseAgents, setupAgents } from './setup/agents.js';
 import { installGithubAction } from './setup/github-actions.js';
 import { installMcpServer, isMcpServerInstalled } from './setup/mcp.js';
 import { hasPlaywrightBrowsers, installPlaywrightBrowsers } from './setup/playwright.js';
@@ -11,6 +12,7 @@ const BDD_IMPORT = '@letsrunit/cucumber';
 export interface InitOptions {
   yes?: boolean;
   noMcp?: boolean;
+  agents?: string | string[];
 }
 
 async function stepInstallCli(env: Environment): Promise<void> {
@@ -129,9 +131,12 @@ export async function init(options: InitOptions = {}): Promise<void> {
   intro('letsrunit init');
 
   const env = detectEnvironment();
+  const agentValue = Array.isArray(options.agents) ? options.agents.join(',') : options.agents;
+  const agentIds = parseAgents(agentValue);
 
   await stepInstallCli(env);
   await stepInstallMcpServer(env, options);
+  await setupAgents(env, { ...options, agents: agentIds });
 
   const hasCucumber = await stepEnsureCucumber(env, options);
   if (hasCucumber) {
