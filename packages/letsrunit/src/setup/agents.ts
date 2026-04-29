@@ -1,4 +1,4 @@
-import { confirm, log, multiselect } from '@clack/prompts';
+import { log } from '@clack/prompts';
 import type { Environment } from '../detect.js';
 import { claudeStrategy } from './agents/claude.js';
 import { codexStrategy } from './agents/codex.js';
@@ -30,60 +30,34 @@ export function parseAgents(value: string | undefined): AgentId[] {
   return [...new Set(ids)] as AgentId[];
 }
 
-function detectAgents(env: Pick<Environment, 'cwd'>): AgentStrategy[] {
-  return STRATEGIES.filter((strategy) => strategy.detect(env));
+export function getAgentCatalog(): Array<{ id: AgentId; label: string }> {
+  return STRATEGIES.map((strategy) => ({ id: strategy.id, label: strategy.label }));
 }
 
-async function resolveAgentStrategies(
-  env: Pick<Environment, 'cwd' | 'isInteractive'>,
-  options: { agents?: AgentId[]; yes?: boolean },
-): Promise<AgentStrategy[]> {
-  if (options.agents && options.agents.length > 0) {
-    return STRATEGIES.filter((strategy) => options.agents?.includes(strategy.id));
-  }
+export function detectAgentIds(env: Pick<Environment, 'cwd'>): AgentId[] {
+  return STRATEGIES.filter((strategy) => strategy.detect(env)).map((strategy) => strategy.id);
+}
 
-  if (!env.isInteractive || options.yes) {
-    log.info('Skipping AI agent setup: no --agents provided in non-interactive mode or with --yes.');
-    return [];
-  }
-
-  const detected = detectAgents(env);
-  if (detected.length === 0) {
-    const selected = await multiselect({
-      message: 'Which AI agent(s) should be configured for letsrunit MCP + skill?',
-      options: STRATEGIES.map((strategy) => ({ value: strategy.id, label: strategy.label })),
-      required: false,
-    });
-    if (!selected || selected.length === 0) return [];
-    return STRATEGIES.filter((strategy) => (selected as AgentId[]).includes(strategy.id));
-  }
-
-  if (detected.length === 1) {
-    const strategy = detected[0];
-    const proceed = await confirm({ message: `Detected ${strategy.label}. Configure letsrunit for it?`, initialValue: true });
-    return proceed === true ? [strategy] : [];
-  }
-
-  const selected = await multiselect({
-    message: 'Multiple AI agents detected. Select which agent(s) to configure:',
-    options: detected.map((strategy) => ({ value: strategy.id, label: strategy.label, hint: strategy.id })),
-    required: false,
-  });
-
-  if (!selected || selected.length === 0) return [];
-  return detected.filter((strategy) => (selected as AgentId[]).includes(strategy.id));
+function resolveStrategies(ids: AgentId[]): AgentStrategy[] {
+  return STRATEGIES.filter((strategy) => ids.includes(strategy.id));
 }
 
 export async function setupAgents(
-  env: Pick<Environment, 'cwd' | 'isInteractive'>,
-  options: { agents?: AgentId[]; yes?: boolean; noMcp?: boolean },
+  env: Pick<Environment, 'cwd'>,
+  options: { agents?: AgentId[]; noMcp?: boolean },
 ): Promise<void> {
   if (options.noMcp) {
     log.info('Skipped AI agent setup because MCP installation is disabled (--no-mcp).');
     return;
   }
 
-  const strategies = await resolveAgentStrategies(env, options);
+  const agentIds = options.agents ?? [];
+  if (agentIds.length === 0) {
+    log.info('Skipped AI agent setup.');
+    return;
+  }
+
+  const strategies = resolveStrategies(agentIds);
   for (const strategy of strategies) {
     const changedMcp = strategy.configureMcp(env);
     const changedSkill = strategy.installSkill(env);

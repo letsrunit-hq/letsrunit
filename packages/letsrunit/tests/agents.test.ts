@@ -3,7 +3,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { parseAgents, setupAgents } from '../src/setup/agents.js';
-import { ensureCodexToml, ensureJsonMcpConfig, projectInCodexConfig } from '../src/setup/agents/shared.js';
+import { ensureCodexToml, projectInCodexConfig } from '../src/setup/agents/codex.js';
+import { ensureJsonMcpConfig } from '../src/setup/agents/shared.js';
 
 const dirs: string[] = [];
 
