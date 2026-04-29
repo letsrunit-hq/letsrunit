@@ -4,8 +4,10 @@ import { join } from 'node:path';
 import { FALLBACK_SKILL } from './fallback-skill.js';
 
 const MCP_JSON_ENTRY = {
-  command: 'npx',
-  args: ['-y', '@letsrunit/mcp-server@latest'],
+  command: './node_modules/.bin/letsrunit-mcp',
+  env: {
+    LETSRUNIT_MCP_RUNTIME_MODE: 'project',
+  },
 };
 
 export function hasPath(path: string): boolean {
@@ -53,7 +55,7 @@ export function ensureJsonMcpConfig(path: string): 'created' | 'updated' | 'skip
   return existed ? 'updated' : 'created';
 }
 
-const TOML_BLOCK = `[mcp_servers.letsrunit]\ncommand = "npx"\nargs = ["-y", "@letsrunit/mcp-server@latest"]\n`;
+const TOML_BLOCK = `[mcp_servers.letsrunit]\ncommand = "./node_modules/.bin/letsrunit-mcp"\n\n[mcp_servers.letsrunit.env]\nLETSRUNIT_MCP_RUNTIME_MODE = "project"\n`;
 
 export function ensureCodexToml(path: string): 'created' | 'updated' | 'skipped' {
   if (!existsSync(path)) {

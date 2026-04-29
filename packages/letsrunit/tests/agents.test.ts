@@ -50,14 +50,19 @@ describe('MCP config writers', () => {
     const result = ensureJsonMcpConfig(path);
     expect(result).toBe('created');
 
-    const json = JSON.parse(readFileSync(path, 'utf-8')) as { mcpServers: Record<string, unknown> };
-    expect(json.mcpServers.letsrunit).toBeDefined();
+    const json = JSON.parse(readFileSync(path, 'utf-8')) as {
+      mcpServers: Record<string, { command: string; env?: Record<string, string> }>;
+    };
+    expect(json.mcpServers.letsrunit.command).toBe('./node_modules/.bin/letsrunit-mcp');
+    expect(json.mcpServers.letsrunit.env?.LETSRUNIT_MCP_RUNTIME_MODE).toBe('project');
   });
 
   it('creates codex toml block and skips if already configured', () => {
     const dir = makeDir();
     const path = join(dir, 'config.toml');
     expect(ensureCodexToml(path)).toBe('created');
+    expect(readFileSync(path, 'utf-8')).toContain('command = "./node_modules/.bin/letsrunit-mcp"');
+    expect(readFileSync(path, 'utf-8')).toContain('LETSRUNIT_MCP_RUNTIME_MODE = "project"');
     expect(ensureCodexToml(path)).toBe('skipped');
   });
 });
@@ -81,8 +86,11 @@ describe('setupAgents behavior', () => {
     await setupAgents({ cwd, isInteractive: false }, { yes: true, noMcp: false, agents: ['cursor'] });
 
     const configPath = join(cwd, '.cursor', 'mcp.json');
-    const config = JSON.parse(readFileSync(configPath, 'utf-8')) as { mcpServers: Record<string, unknown> };
-    expect(config.mcpServers.letsrunit).toBeDefined();
+    const config = JSON.parse(readFileSync(configPath, 'utf-8')) as {
+      mcpServers: Record<string, { command: string; env?: Record<string, string> }>;
+    };
+    expect(config.mcpServers.letsrunit.command).toBe('./node_modules/.bin/letsrunit-mcp');
+    expect(config.mcpServers.letsrunit.env?.LETSRUNIT_MCP_RUNTIME_MODE).toBe('project');
 
     const skillPath = join(cwd, '.agents', 'skills', 'letsrunit', 'SKILL.md');
     expect(readFileSync(skillPath, 'utf-8')).toBe('demo');
