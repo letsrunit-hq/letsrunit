@@ -10,62 +10,7 @@ Run the init tool inside your project:
 npx letsrunit init
 ```
 
-This will:
-- Install `@letsrunit/cli` as a local devDependency
-- Install `@letsrunit/bdd` and create `cucumber.js` if `@cucumber/cucumber` is detected
-- Create a `features/` directory with an example feature file
-
 Safe to re-run — all steps are idempotent.
-
-## CLI
-
-The CLI is installed locally by `letsrunit init`. Run it via `npx letsrunit` or `yarn letsrunit`.
-
-| Command | Description |
-|---------|-------------|
-| `letsrunit explore <url>` | Open a browser, let the AI explore the site, and optionally save a `.feature` file |
-| `letsrunit generate <url>` | Generate a Gherkin feature from instructions provided on stdin |
-| `letsrunit run <url> <feature>` | Execute a `.feature` file against the given URL |
-
-**Options** (all commands): `-v` / `--verbose`, `-s` / `--silent`, `-o` / `--save <path>`
-
-## MCP Server
-
-The MCP server lets AI coding agents (Claude Code, Cursor, Codex, etc.) launch browsers, run Gherkin steps,
-take screenshots, and inspect pages directly inside your editor.
-
-### Install
-
-**Claude Code** — add the marketplace once, then install the plugin to get both the MCP server and skill:
-
-```
-/plugin marketplace add letsrunit-hq/agent
-/plugin install letsrunit@letsrunit
-```
-
-**Other agents** — add to your MCP config manually:
-
-```json
-{
-  "mcpServers": {
-    "letsrunit": {
-      "command": "npx",
-      "args": ["-y", "@letsrunit/mcp-server"]
-    }
-  }
-}
-```
-
-### Agent Skill
-
-The letsrunit skill gives your agent built-in knowledge of the Gherkin step library, locator syntax,
-and test-writing workflow. Requires the MCP server to be configured first.
-
-The skill is included automatically when using the Claude Code plugin above. For other agents run
-
-```
-npx skills add letsrunit-hq/agent
-```
 
 ## Development
 

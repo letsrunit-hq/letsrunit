@@ -17,22 +17,23 @@ npx letsrunit init
 It can:
 
 - Install `@letsrunit/cli`
-- Install `@letsrunit/mcp-server` (project-local MCP runtime)
-- Install `@cucumber/cucumber` when missing
+- Install `@cucumber/cucumber`
 - Install `@letsrunit/cucumber` and scaffold Cucumber support
-- Create `features/example.feature` when no feature files exist
-- Install Playwright Chromium when missing
-- Optionally add `.github/workflows/letsrunit.yml`
+- Create `features/example.feature`
+- Install Playwright Chromium
+- Add `.github/workflows/letsrunit.yml`
+- Install `@letsrunit/mcp-server` (project-local MCP runtime)
+- Install project scope agent skill
 
 ## Options
 
-- `-y, --yes`  
+- `-y, --yes`
   Skip confirmation prompts and apply defaults.
 
-- `--no-mcp`  
+- `--no-mcp`
   Skip installation of `@letsrunit/mcp-server`.
 
-- `--agents <list>`  
+- `--agents <list>`
   Configure MCP + skill for selected agents (comma-separated): `codex,cursor,claude,copilot,gemini,windsurf`.
   If omitted in non-interactive mode or with `--yes`, agent config is skipped.
 

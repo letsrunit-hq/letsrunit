@@ -12,21 +12,6 @@ import { hasPlaywrightBrowsers, installPlaywrightBrowsers } from './setup/playwr
 
 const BDD_IMPORT = '@letsrunit/cucumber';
 
-const BANNER = String.raw`
-        .:::::.                                                                                                         
-     .:::::::::::.          ...                                                                      .-:                
-   .::::::   ::::::         =+=                 .                                                    -+=.    .          
-  .:::           :::        =+=                -+                                                           -+          
-  ::::           ::::       =+=    .-=+==:   -=++===   :==+==:    ==  -==  ==:    .==   -=  :=+=-    :==  -=++===       
- .:::.   .:::.   .:::.      =+=   =+=:..=+=  :-++-::  =+-...-++   ++.==-=  ++:    :++   =+.--.:=++   -++  :=++-::       
- .::     :::::     ::.      =+=  -++     =+:  .++     ++-    .    ++-:     ++:    :++   =+=.   .++:  -++   :++          
- .:::.   .:::    .:::.      =+=  =++=====++-  .++     .=+++=-:    ++=      ++:    :++   =+=     ++-  -++   :++          
-  ::::           ::::       =+=  =+=          .++         .:-++:  ++-      ++-    =++   =+=     ++-  -++   :++          
-  .:::           :::        =+=  .++:    -=:  .++:    -=     =+-  ++-      =+=   ::++   =+=     ++-  -++   :++.     .   
-    ::::::   ::::::         =+=   .=+=-=++-    =++++  :++====+=   ++-      .+++=+- ++   =+=     ++-  -++    =++++  :::  
-     .:::::::::::.           .       .::.       ..:.    ..::.     ..         .:.   ..    .      ..    ..     .::.       
-        .::::..                                                                                                         `;
-
 export interface InitOptions {
   yes?: boolean;
   noMcp?: boolean;
@@ -34,15 +19,12 @@ export interface InitOptions {
 }
 
 interface InstallPlan {
+  installCli: boolean;
   installMcp: boolean;
   installCucumber: boolean;
   installPlaywright: boolean;
   addGithubActions: boolean;
   agents: AgentId[];
-}
-
-function showBanner(): void {
-  console.log(BANNER);
 }
 
 async function stepInstallCli(env: Environment): Promise<void> {
@@ -126,12 +108,13 @@ function stepAddGithubAction(env: Environment, appTarget: DetectionResult<AppTar
 }
 
 function defaultPlan(env: Environment, options: InitOptions, explicitAgents: AgentId[]): InstallPlan {
+  const installCli = true;
   const installMcp = !options.noMcp;
   const installCucumber = true;
   const installPlaywright = true;
   const addGithubActions = true;
   const agents = explicitAgents.length > 0 ? explicitAgents : detectAgentIds(env);
-  return { installMcp, installCucumber, installPlaywright, addGithubActions, agents };
+  return { installCli, installMcp, installCucumber, installPlaywright, addGithubActions, agents };
 }
 
 async function selectPlan(env: Environment, options: InitOptions, defaults: InstallPlan): Promise<InstallPlan> {
@@ -146,13 +129,15 @@ async function selectPlan(env: Environment, options: InitOptions, defaults: Inst
       note('npx playwright install chromium', 'Run to install browsers');
     }
 
-    return options.yes ? defaults : { ...defaults, installCucumber: false, installPlaywright: false, addGithubActions: false, agents: [] };
+    return options.yes
+      ? defaults
+      : { ...defaults, installCli: false, installCucumber: false, installPlaywright: false, addGithubActions: false, agents: [] };
   }
 
   note('Use ↑/↓ to move, space to toggle, enter to continue.', 'Controls');
-  note('`@letsrunit/cli` is always installed and selected.', 'Core Component');
 
   const componentOptions = [
+    { value: 'cli', label: '@letsrunit/cli', hint: 'test execution CLI', selected: defaults.installCli },
     { value: 'cucumber', label: 'Cucumber', hint: 'test runner integration', selected: defaults.installCucumber },
     { value: 'playwright', label: 'Playwright Chromium', hint: 'browser runtime', selected: defaults.installPlaywright },
     { value: 'gha', label: 'GitHub Actions workflow', hint: 'CI scaffold', selected: defaults.addGithubActions },
@@ -186,7 +171,6 @@ async function selectPlan(env: Environment, options: InitOptions, defaults: Inst
   let selectedAgents: AgentId[] = [];
   if (installMcp) {
     const catalog = getAgentCatalog();
-    note('Use ↑/↓ to move, space to toggle, enter to continue.', 'Agent Controls');
     const picked = await multiselect({
       message: 'AI Agent integration (MCP config + skill)',
       options: catalog.map((agent) => ({
@@ -209,6 +193,7 @@ async function selectPlan(env: Environment, options: InitOptions, defaults: Inst
   }
 
   return {
+    installCli: values.has('cli'),
     installMcp,
     installCucumber: values.has('cucumber'),
     installPlaywright: values.has('playwright'),
@@ -218,16 +203,16 @@ async function selectPlan(env: Environment, options: InitOptions, defaults: Inst
 }
 
 export async function init(options: InitOptions = {}): Promise<void> {
-  intro('letsrunit init');
-  showBanner();
-
+  intro('⚙️  letsrunit.');
+  
   const env = detectEnvironment();
   const appTarget = detectAppTarget(env.cwd);
   const agentValue = Array.isArray(options.agents) ? options.agents.join(',') : options.agents;
   const explicitAgents = parseAgents(agentValue);
   const plan = await selectPlan(env, options, defaultPlan(env, options, explicitAgents));
 
-  await stepInstallCli(env);
+  if (plan.installCli) await stepInstallCli(env);
+  else log.info('Skipped @letsrunit/cli installation.');
 
   if (plan.installMcp) stepInstallMcpServer(env);
   else if (options.noMcp) log.info('Skipped @letsrunit/mcp-server installation (--no-mcp).');
