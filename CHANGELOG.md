@@ -1,3 +1,14 @@
+# [0.20.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.19.5...v0.20.0) (2026-04-30)
+
+
+### Features
+
+* **letsrunit:** add agent-aware init setup for mcp and skills ([994ba1c](https://github.com/letsrunit-hq/letsrunit/commit/994ba1cc103117f162ae3da1323e82dc6f266bd8))
+* **letsrunit:** add modern clack init wizard with agent selection ([00edb4f](https://github.com/letsrunit-hq/letsrunit/commit/00edb4f001d15e200beecd5ef2f63ddd2113a0cd))
+* **letsrunit:** configure agent mcp to use project-local server mode ([4005748](https://github.com/letsrunit-hq/letsrunit/commit/40057489b97af20c0bc053e73e2e3dba8b5e2dc0))
+* **letsrunit:** detect app ports before scaffolding init assets ([c7012d9](https://github.com/letsrunit-hq/letsrunit/commit/c7012d916191ab0ac6c006e0f0c936b2baaae321))
+* **letsrunit:** refresh init banner and improve multiselect defaults ([2b9a1ad](https://github.com/letsrunit-hq/letsrunit/commit/2b9a1adb1ba75f8b7d35e0b772038754b756b1e8))
+
 ## [0.19.5](https://github.com/letsrunit-hq/letsrunit/compare/v0.19.4...v0.19.5) (2026-04-24)
 
 

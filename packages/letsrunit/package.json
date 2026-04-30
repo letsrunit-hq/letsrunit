@@ -1,6 +1,6 @@
 {
   "name": "letsrunit",
-  "version": "0.19.5",
+  "version": "0.20.0",
   "description": "Onboarding tool for letsrunit — run npx letsrunit init to get started",
   "license": "MIT",
   "repository": {

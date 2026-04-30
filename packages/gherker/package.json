@@ -1,6 +1,6 @@
 {
   "name": "@letsrunit/gherker",
-  "version": "0.19.5",
+  "version": "0.20.0",
   "description": "A gherkin microrunner",
   "keywords": [
     "testing",
