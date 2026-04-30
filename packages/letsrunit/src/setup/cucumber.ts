@@ -4,12 +4,13 @@ import { type Environment, execPm } from '../detect.js';
 
 const BDD_IMPORT = '@letsrunit/cucumber';
 
-const CUCUMBER_CONFIG = `import { isAgentEnvironment, resolveDebugWorldParameters } from '@letsrunit/cucumber/config';
+function cucumberConfig(baseUrl: string): string {
+  return `import { isAgentEnvironment, resolveDebugWorldParameters } from '@letsrunit/cucumber/config';
 
 const { failFast, worldParameters } = resolveDebugWorldParameters({
   argv: process.argv,
   baseWorldParameters: {
-    baseURL: 'http://localhost:3000',
+    baseURL: '${baseUrl}',
   },
 });
 
@@ -35,6 +36,7 @@ export default {
   },
 };
 `;
+}
 
 const SUPPORT_FILE = `import { setDefaultTimeout } from '@cucumber/cucumber';
 import '${BDD_IMPORT}';
@@ -88,7 +90,7 @@ function installBdd(env: Pick<Environment, 'packageManager' | 'cwd'>): boolean {
   return true;
 }
 
-function setupCucumberConfig({ cwd }: Pick<Environment, 'cwd'>): CucumberConfigResult {
+function setupCucumberConfig({ cwd }: Pick<Environment, 'cwd'>, baseUrl: string): CucumberConfigResult {
   const supportDir = join(cwd, 'features', 'support');
   const supportPath = join(supportDir, 'world.js');
 
@@ -100,7 +102,7 @@ function setupCucumberConfig({ cwd }: Pick<Environment, 'cwd'>): CucumberConfigR
 
   const configPath = join(cwd, 'cucumber.js');
   if (!existsSync(configPath)) {
-    writeFileSync(configPath, CUCUMBER_CONFIG, 'utf-8');
+    writeFileSync(configPath, cucumberConfig(baseUrl), 'utf-8');
   }
 
   mkdirSync(supportDir, { recursive: true });
@@ -130,9 +132,12 @@ function setupFeaturesDir({ cwd }: Pick<Environment, 'cwd'>): boolean {
   return true;
 }
 
-export function setupCucumber(env: Pick<Environment, 'packageManager' | 'cwd'>): CucumberSetupResult {
+export function setupCucumber(
+  env: Pick<Environment, 'packageManager' | 'cwd'>,
+  options: { baseUrl?: string } = {},
+): CucumberSetupResult {
   const bddInstalled = installBdd(env);
-  const configResult = setupCucumberConfig(env);
+  const configResult = setupCucumberConfig(env, options.baseUrl ?? 'http://localhost:3000');
   const featuresCreated = setupFeaturesDir(env);
   return { bddInstalled, configResult, featuresCreated };
 }

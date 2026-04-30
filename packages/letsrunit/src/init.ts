@@ -5,6 +5,8 @@ import { installCli, isCliInstalled } from './setup/cli.js';
 import { installCucumber, setupCucumber } from './setup/cucumber.js';
 import { detectAgentIds, getAgentCatalog, parseAgents, setupAgents } from './setup/agents.js';
 import { installGithubAction } from './setup/github-actions.js';
+import { recommendedBaseUrl, updateCucumberBaseUrl } from './setup/ci-workflow-plan.js';
+import { detectAppTarget, type DetectionResult, type AppTarget } from './setup/project-app.js';
 import { installMcpServer, isMcpServerInstalled } from './setup/mcp.js';
 import { hasPlaywrightBrowsers, installPlaywrightBrowsers } from './setup/playwright.js';
 
@@ -79,8 +81,8 @@ function stepInstallCucumber(env: Environment): void {
   s.stop('@cucumber/cucumber installed');
 }
 
-function stepSetupCucumber(env: Environment): void {
-  const result = setupCucumber(env);
+function stepSetupCucumber(env: Environment, appTarget: DetectionResult<AppTarget>): void {
+  const result = setupCucumber(env, { baseUrl: appTarget.value.baseUrl });
 
   if (result.bddInstalled) log.success('@letsrunit/cucumber installed');
 
@@ -106,12 +108,20 @@ function stepInstallPlaywright(env: Environment): void {
   s.stop('Playwright Chromium installed');
 }
 
-function stepAddGithubAction(env: Environment): void {
-  const result = installGithubAction(env);
-  if (result === 'created') {
+function stepAddGithubAction(env: Environment, appTarget: DetectionResult<AppTarget>): void {
+  const result = installGithubAction(env, { appTarget });
+  if (result.status === 'created') {
     log.success('.github/workflows/letsrunit.yml created');
   } else {
     log.info('.github/workflows/letsrunit.yml already exists, skipped');
+  }
+
+  const baseUrl = recommendedBaseUrl(result.plan);
+  if (baseUrl !== 'http://localhost:3000') {
+    const update = updateCucumberBaseUrl(env.cwd, baseUrl);
+    if (update === 'updated') {
+      log.success(`cucumber.js baseURL updated to ${baseUrl}`);
+    }
   }
 }
 
@@ -212,6 +222,7 @@ export async function init(options: InitOptions = {}): Promise<void> {
   showBanner();
 
   const env = detectEnvironment();
+  const appTarget = detectAppTarget(env.cwd);
   const agentValue = Array.isArray(options.agents) ? options.agents.join(',') : options.agents;
   const explicitAgents = parseAgents(agentValue);
   const plan = await selectPlan(env, options, defaultPlan(env, options, explicitAgents));
@@ -225,11 +236,11 @@ export async function init(options: InitOptions = {}): Promise<void> {
 
   if (plan.installCucumber) stepInstallCucumber(env);
   if (env.hasCucumber || plan.installCucumber) {
-    stepSetupCucumber(env);
+    stepSetupCucumber(env, appTarget);
   }
 
   if (plan.installPlaywright) stepInstallPlaywright(env);
-  if (plan.addGithubActions) stepAddGithubAction(env);
+  if (plan.addGithubActions) stepAddGithubAction(env, appTarget);
 
   outro('All done! Run npx letsrunit --help to get started.');
 }
