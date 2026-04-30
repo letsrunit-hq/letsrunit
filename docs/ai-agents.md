@@ -21,6 +21,14 @@ npx letsrunit init
 
 The init script will automatically detect all the components to install and configure.
 
+You can also force specific agents:
+
+```bash
+npx letsrunit init --agents codex,cursor
+```
+
+If multiple agents are detected, `init` asks which ones to configure. In non-interactive mode (or with `--yes`), pass `--agents` explicitly to enable agent setup.
+
 ### Global
 
 You can install the Letsrunit MCP server and skill globally for all your projects.
@@ -137,4 +145,3 @@ If you cannot write a scenario before implementing, the requirements are not spe
 ```
 {% endtab %}
 {% endtabs %}
-

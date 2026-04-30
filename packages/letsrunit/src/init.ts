@@ -1,16 +1,48 @@
-import { confirm, intro, log, note, outro, spinner } from '@clack/prompts';
+import { intro, isCancel, log, multiselect, note, outro, spinner } from '@clack/prompts';
+import type { AgentId } from './setup/agents/types.js';
 import { detectEnvironment, type Environment } from './detect.js';
 import { installCli, isCliInstalled } from './setup/cli.js';
 import { installCucumber, setupCucumber } from './setup/cucumber.js';
+import { detectAgentIds, getAgentCatalog, parseAgents, setupAgents } from './setup/agents.js';
 import { installGithubAction } from './setup/github-actions.js';
+import { recommendedBaseUrl, updateCucumberBaseUrl } from './setup/ci-workflow-plan.js';
+import { detectAppTarget, type DetectionResult, type AppTarget } from './setup/project-app.js';
 import { installMcpServer, isMcpServerInstalled } from './setup/mcp.js';
 import { hasPlaywrightBrowsers, installPlaywrightBrowsers } from './setup/playwright.js';
 
 const BDD_IMPORT = '@letsrunit/cucumber';
 
+const BANNER = String.raw`
+        .:::::.                                                                                                         
+     .:::::::::::.          ...                                                                      .-:                
+   .::::::   ::::::         =+=                 .                                                    -+=.    .          
+  .:::           :::        =+=                -+                                                           -+          
+  ::::           ::::       =+=    .-=+==:   -=++===   :==+==:    ==  -==  ==:    .==   -=  :=+=-    :==  -=++===       
+ .:::.   .:::.   .:::.      =+=   =+=:..=+=  :-++-::  =+-...-++   ++.==-=  ++:    :++   =+.--.:=++   -++  :=++-::       
+ .::     :::::     ::.      =+=  -++     =+:  .++     ++-    .    ++-:     ++:    :++   =+=.   .++:  -++   :++          
+ .:::.   .:::    .:::.      =+=  =++=====++-  .++     .=+++=-:    ++=      ++:    :++   =+=     ++-  -++   :++          
+  ::::           ::::       =+=  =+=          .++         .:-++:  ++-      ++-    =++   =+=     ++-  -++   :++          
+  .:::           :::        =+=  .++:    -=:  .++:    -=     =+-  ++-      =+=   ::++   =+=     ++-  -++   :++.     .   
+    ::::::   ::::::         =+=   .=+=-=++-    =++++  :++====+=   ++-      .+++=+- ++   =+=     ++-  -++    =++++  :::  
+     .:::::::::::.           .       .::.       ..:.    ..::.     ..         .:.   ..    .      ..    ..     .::.       
+        .::::..                                                                                                         `;
+
 export interface InitOptions {
   yes?: boolean;
   noMcp?: boolean;
+  agents?: string | string[];
+}
+
+interface InstallPlan {
+  installMcp: boolean;
+  installCucumber: boolean;
+  installPlaywright: boolean;
+  addGithubActions: boolean;
+  agents: AgentId[];
+}
+
+function showBanner(): void {
+  console.log(BANNER);
 }
 
 async function stepInstallCli(env: Environment): Promise<void> {
@@ -25,47 +57,10 @@ async function stepInstallCli(env: Environment): Promise<void> {
   s.stop('@letsrunit/cli installed');
 }
 
-async function stepEnsureCucumber(env: Environment, { yes }: InitOptions): Promise<boolean> {
-  if (env.hasCucumber) return true;
-
-  if (!yes && !env.isInteractive) {
-    log.warn('@cucumber/cucumber not found. Install it to use letsrunit with Cucumber:');
-    note('npm install --save-dev @cucumber/cucumber\nThen run: npx letsrunit init', 'Setup Cucumber');
-    return false;
-  }
-
-  if (!yes) {
-    const install = await confirm({ message: '@cucumber/cucumber not found. Install it now?' });
-    if (install !== true) return false;
-  }
-
-  const s = spinner();
-  s.start('Installing @cucumber/cucumber…');
-  installCucumber(env);
-  s.stop('@cucumber/cucumber installed');
-  return true;
-}
-
-async function stepInstallMcpServer(env: Environment, { yes, noMcp }: InitOptions): Promise<void> {
-  if (noMcp) {
-    log.info('Skipped @letsrunit/mcp-server installation (--no-mcp).');
-    return;
-  }
-
+function stepInstallMcpServer(env: Environment): void {
   if (isMcpServerInstalled(env)) {
     log.success('@letsrunit/mcp-server already installed');
     return;
-  }
-
-  if (!yes && env.isInteractive) {
-    const install = await confirm({
-      message: 'Install @letsrunit/mcp-server for project-local MCP support?',
-      initialValue: true,
-    });
-    if (install !== true) {
-      log.info('Skipped @letsrunit/mcp-server installation.');
-      return;
-    }
   }
 
   const s = spinner();
@@ -74,8 +69,20 @@ async function stepInstallMcpServer(env: Environment, { yes, noMcp }: InitOption
   s.stop('@letsrunit/mcp-server installed');
 }
 
-function stepSetupCucumber(env: Environment): void {
-  const result = setupCucumber(env);
+function stepInstallCucumber(env: Environment): void {
+  if (env.hasCucumber) {
+    log.success('@cucumber/cucumber already installed');
+    return;
+  }
+
+  const s = spinner();
+  s.start('Installing @cucumber/cucumber…');
+  installCucumber(env);
+  s.stop('@cucumber/cucumber installed');
+}
+
+function stepSetupCucumber(env: Environment, appTarget: DetectionResult<AppTarget>): void {
+  const result = setupCucumber(env, { baseUrl: appTarget.value.baseUrl });
 
   if (result.bddInstalled) log.success('@letsrunit/cucumber installed');
 
@@ -89,18 +96,10 @@ function stepSetupCucumber(env: Environment): void {
   if (result.featuresCreated) log.success('features/ directory created with example.feature');
 }
 
-async function stepCheckPlaywrightBrowsers(env: Environment, { yes }: InitOptions): Promise<void> {
-  if (hasPlaywrightBrowsers(env)) return;
-
-  if (!yes && !env.isInteractive) {
-    log.warn('Playwright Chromium browser not found.');
-    note('npx playwright install chromium', 'Run to install browsers');
+function stepInstallPlaywright(env: Environment): void {
+  if (hasPlaywrightBrowsers(env)) {
+    log.success('Playwright Chromium already installed');
     return;
-  }
-
-  if (!yes) {
-    const install = await confirm({ message: 'Playwright Chromium browser not found. Install it now?' });
-    if (install !== true) return;
   }
 
   const s = spinner();
@@ -109,36 +108,139 @@ async function stepCheckPlaywrightBrowsers(env: Environment, { yes }: InitOption
   s.stop('Playwright Chromium installed');
 }
 
-async function stepAddGithubAction(env: Environment, { yes }: InitOptions): Promise<void> {
-  if (!yes && !env.isInteractive) return;
-
-  if (!yes) {
-    const addAction = await confirm({ message: 'Add a GitHub Action to run features on push?' });
-    if (addAction !== true) return;
-  }
-
-  const result = installGithubAction(env);
-  if (result === 'created') {
+function stepAddGithubAction(env: Environment, appTarget: DetectionResult<AppTarget>): void {
+  const result = installGithubAction(env, { appTarget });
+  if (result.status === 'created') {
     log.success('.github/workflows/letsrunit.yml created');
   } else {
     log.info('.github/workflows/letsrunit.yml already exists, skipped');
   }
+
+  const baseUrl = recommendedBaseUrl(result.plan);
+  if (baseUrl !== 'http://localhost:3000') {
+    const update = updateCucumberBaseUrl(env.cwd, baseUrl);
+    if (update === 'updated') {
+      log.success(`cucumber.js baseURL updated to ${baseUrl}`);
+    }
+  }
+}
+
+function defaultPlan(env: Environment, options: InitOptions, explicitAgents: AgentId[]): InstallPlan {
+  const installMcp = !options.noMcp;
+  const installCucumber = true;
+  const installPlaywright = true;
+  const addGithubActions = true;
+  const agents = explicitAgents.length > 0 ? explicitAgents : detectAgentIds(env);
+  return { installMcp, installCucumber, installPlaywright, addGithubActions, agents };
+}
+
+async function selectPlan(env: Environment, options: InitOptions, defaults: InstallPlan): Promise<InstallPlan> {
+  if (options.yes || !env.isInteractive) {
+    if (!options.yes && !env.isInteractive && defaults.installCucumber) {
+      log.warn('@cucumber/cucumber not found. Install it to use letsrunit with Cucumber:');
+      note('npm install --save-dev @cucumber/cucumber\nThen run: npx letsrunit init', 'Setup Cucumber');
+    }
+
+    if (!options.yes && !env.isInteractive && defaults.installPlaywright) {
+      log.warn('Playwright Chromium browser not found.');
+      note('npx playwright install chromium', 'Run to install browsers');
+    }
+
+    return options.yes ? defaults : { ...defaults, installCucumber: false, installPlaywright: false, addGithubActions: false, agents: [] };
+  }
+
+  note('Use ↑/↓ to move, space to toggle, enter to continue.', 'Controls');
+  note('`@letsrunit/cli` is always installed and selected.', 'Core Component');
+
+  const componentOptions = [
+    { value: 'cucumber', label: 'Cucumber', hint: 'test runner integration', selected: defaults.installCucumber },
+    { value: 'playwright', label: 'Playwright Chromium', hint: 'browser runtime', selected: defaults.installPlaywright },
+    { value: 'gha', label: 'GitHub Actions workflow', hint: 'CI scaffold', selected: defaults.addGithubActions },
+  ];
+
+  if (!options.noMcp) {
+    componentOptions.unshift({
+      value: 'mcp',
+      label: 'MCP Server',
+      hint: 'project-local runtime',
+      selected: defaults.installMcp,
+    });
+  } else {
+    log.info('MCP Server disabled by --no-mcp.');
+  }
+
+  const components = await multiselect({
+    message: 'Choose what to install/configure for this project',
+    options: componentOptions,
+    initialValues: componentOptions.filter((option) => option.selected).map((option) => option.value),
+    required: false,
+  });
+
+  if (isCancel(components)) {
+    throw new Error('Initialization canceled.');
+  }
+
+  const values = new Set((components ?? []) as string[]);
+  const installMcp = options.noMcp ? false : values.has('mcp');
+
+  let selectedAgents: AgentId[] = [];
+  if (installMcp) {
+    const catalog = getAgentCatalog();
+    note('Use ↑/↓ to move, space to toggle, enter to continue.', 'Agent Controls');
+    const picked = await multiselect({
+      message: 'AI Agent integration (MCP config + skill)',
+      options: catalog.map((agent) => ({
+        value: agent.id,
+        label: agent.label,
+        selected: defaults.agents.includes(agent.id),
+        hint: defaults.agents.includes(agent.id) ? 'detected' : undefined,
+      })),
+      initialValues: defaults.agents,
+      required: false,
+    });
+
+    if (isCancel(picked)) {
+      throw new Error('Initialization canceled.');
+    }
+
+    selectedAgents = (picked ?? []) as AgentId[];
+  } else {
+    log.info('MCP Server not selected. AI agent integration options skipped.');
+  }
+
+  return {
+    installMcp,
+    installCucumber: values.has('cucumber'),
+    installPlaywright: values.has('playwright'),
+    addGithubActions: values.has('gha'),
+    agents: selectedAgents,
+  };
 }
 
 export async function init(options: InitOptions = {}): Promise<void> {
   intro('letsrunit init');
+  showBanner();
 
   const env = detectEnvironment();
+  const appTarget = detectAppTarget(env.cwd);
+  const agentValue = Array.isArray(options.agents) ? options.agents.join(',') : options.agents;
+  const explicitAgents = parseAgents(agentValue);
+  const plan = await selectPlan(env, options, defaultPlan(env, options, explicitAgents));
 
   await stepInstallCli(env);
-  await stepInstallMcpServer(env, options);
 
-  const hasCucumber = await stepEnsureCucumber(env, options);
-  if (hasCucumber) {
-    stepSetupCucumber(env);
-    await stepCheckPlaywrightBrowsers(env, options);
-    await stepAddGithubAction(env, options);
+  if (plan.installMcp) stepInstallMcpServer(env);
+  else if (options.noMcp) log.info('Skipped @letsrunit/mcp-server installation (--no-mcp).');
+
+  await setupAgents(env, { agents: plan.agents, noMcp: Boolean(options.noMcp) });
+
+  if (plan.installCucumber) stepInstallCucumber(env);
+  if (env.hasCucumber || plan.installCucumber) {
+    stepSetupCucumber(env, appTarget);
   }
+
+  if (plan.installPlaywright) stepInstallPlaywright(env);
+  if (plan.addGithubActions) stepAddGithubAction(env, appTarget);
 
   outro('All done! Run npx letsrunit --help to get started.');
 }
