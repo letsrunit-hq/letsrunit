@@ -1,12 +1,18 @@
 import { formatterHelpers, type IFormatterOptions, Formatter } from '@cucumber/cucumber';
-import { type Envelope, TestStepResultStatus } from '@cucumber/messages';
-import { computeScenarioId, computeStepId, normalizeSteps } from '@letsrunit/gherkin';
+import { type Envelope } from '@cucumber/messages';
 import { findArtifacts, findLastTest, openStore } from '@letsrunit/store';
 import { unifiedHtmlDiff } from '@letsrunit/playwright';
-import { execSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { v4 as uuidv4 } from 'uuid';
+import {
+  extractFailureDetails,
+  normalizeUrl,
+  stripAnsi,
+} from './lib/failure-details';
+import { resolveAllowedCommits } from './lib/git-commits';
+import { toScenarioId } from './lib/scenario-id';
+import { normalizeStatus, toDurationMs } from './lib/status';
 import { getConfiguredStoreDbPath } from './store-config';
 
 type ParsedStep = {
@@ -74,135 +80,13 @@ type ScenarioContext = {
   stepIndexById: Map<string, number>;
 };
 
-function normalizeStatus(status: string | number | undefined): string {
-  if (typeof status === 'string') return status.toLowerCase();
-  if (typeof status === 'number') {
-    const names = TestStepResultStatus as Record<number, string>;
-    const name = names[status];
-    if (typeof name === 'string') return name.toLowerCase();
-  }
-  return 'unknown';
-}
-
-function toDurationMs(duration?: { seconds?: number; nanos?: number }): number | undefined {
-  if (!duration) return undefined;
-  const seconds = duration.seconds ?? 0;
-  const nanos = duration.nanos ?? 0;
-  return seconds * 1000 + Math.floor(nanos / 1_000_000);
-}
-
-function toScenarioId(testSteps: ParsedStep[]): string | null {
-  const scenarioSteps = testSteps.filter((step) => step.text !== undefined);
-  if (scenarioSteps.length === 0) return null;
-
-  const normalized = normalizeSteps(
-    scenarioSteps.map((step) => ({
-      keyword: step.keyword,
-      text: step.text ?? '',
-      docString: step.argument?.docString,
-      dataTable: step.argument?.dataTable,
-    })),
-  );
-  return computeScenarioId(normalized.map((text) => computeStepId(text)));
-}
-
 function findAttachment(step: ParsedStep, mediaType: string): string | undefined {
   return step.attachments?.find((a) => a.mediaType === mediaType)?.body;
-}
-
-function normalizeUrl(url: string): string {
-  try {
-    const parsed = new URL(url);
-    return `${parsed.pathname}${parsed.search}${parsed.hash}` || '/';
-  } catch {
-    return url.trim();
-  }
 }
 
 function extractUrlFromStep(step: ParsedStep): string | undefined {
   const urlRaw = findAttachment(step, 'text/x-letsrunit-url') ?? findAttachment(step, 'text/uri-list');
   if (urlRaw) return normalizeUrl(urlRaw);
-  return undefined;
-}
-
-function isStackLine(line: string): boolean {
-  return /^\s*at\s+/.test(line);
-}
-
-function stripAnsi(input: string): string {
-  // Regex from chalk/strip-ansi to remove ANSI escape sequences
-  const pattern =
-    /[\u001B\u009B][[\]()#;?]*(?:((?:[a-zA-Z\d]*(?:;[a-zA-Z\d]*)*)?\u0007)|(?:\d{1,4}(?:;\d{0,4})*)?[\dA-PR-TZcf-nq-uy=><~])/g;
-  return input.replace(pattern, '');
-}
-
-function simplifyLocator(locator: string): string {
-  const raw = locator.trim();
-  const withoutMarker = raw.replace(/\s*\{fuzzy\}\s*$/i, '').trim();
-
-  const firstLocatorMatch = withoutMarker.match(/locator\((['"`])([\s\S]*?)\1\)/);
-  if (!firstLocatorMatch) return withoutMarker;
-  const simplified = firstLocatorMatch[2].trim();
-  return simplified || withoutMarker;
-}
-
-function extractLocatorRaw(lines: string[]): string | undefined {
-  const line = lines.find((l) => l.trim().startsWith('Locator:'));
-  if (!line) return undefined;
-  const raw = line.replace(/^\s*Locator:\s*/, '').trim();
-  return raw || undefined;
-}
-
-function extractLocator(lines: string[]): string | undefined {
-  const raw = extractLocatorRaw(lines);
-  if (!raw) return undefined;
-  return simplifyLocator(raw);
-}
-
-function extractExpected(lines: string[]): string | undefined {
-  const line = lines.find((l) => l.trim().startsWith('Expected:'));
-  if (!line) return undefined;
-  return line.replace(/^\s*Expected:\s*/, '').trim() || undefined;
-}
-
-function extractActual(lines: string[]): string | undefined {
-  const line = lines.find((l) => l.trim().startsWith('Received:'));
-  if (!line) return undefined;
-  return line.replace(/^\s*Received:\s*/, '').trim() || undefined;
-}
-
-function extractTimeout(lines: string[]): number | undefined {
-  const line = lines.find((l) => l.trim().startsWith('Timeout:'));
-  if (!line) return undefined;
-  const match = line.match(/(\d+)\s*ms/i);
-  if (!match) return undefined;
-  return Number(match[1]);
-}
-
-function extractErrorSummary(lines: string[]): string | undefined {
-  const callLogIdx = lines.findIndex((line) => line.trim().startsWith('Call log:'));
-  const stackIdx = lines.findIndex(isStackLine);
-  let cutOff = lines.length;
-  if (callLogIdx >= 0) cutOff = Math.min(cutOff, callLogIdx);
-  if (stackIdx >= 0) cutOff = Math.min(cutOff, stackIdx);
-
-  const candidates: string[] = [];
-  for (let i = 0; i < cutOff; i += 1) {
-    const match = lines[i].match(/^\s*Error:\s*(.+)\s*$/);
-    if (match) candidates.push(match[1].trim());
-  }
-  if (candidates.length > 0) return candidates[candidates.length - 1];
-
-  return lines
-    .map((line) => line.trim())
-    .find((line) => line.length > 0 && !isStackLine(line) && !line.startsWith('Call log:'));
-}
-
-function extractUrlFromMessage(lines: string[]): string | undefined {
-  for (const line of lines) {
-    const match = line.match(/\bURL:\s*(\S+)/i);
-    if (match) return match[1];
-  }
   return undefined;
 }
 
@@ -216,29 +100,20 @@ function classifyFailureKind(message: string, timeoutMs?: number): FailureStruct
 
 export function buildStructuredFailure(step: ParsedStep): FailureStructured {
   const raw = stripAnsi(step.result.message ?? '');
-  const lines = raw.split('\n');
-  const url = extractUrlFromStep(step) ?? extractUrlFromMessage(lines);
-  const timeout_ms = extractTimeout(lines);
+  const details = extractFailureDetails(raw);
+  const url = extractUrlFromStep(step) ?? details.url;
+  const timeout_ms = details.timeoutMs;
 
   return {
     kind: classifyFailureKind(raw, timeout_ms),
-    summary: extractErrorSummary(lines),
-    locator: extractLocator(lines),
-    locator_full: extractLocatorRaw(lines),
+    summary: details.error,
+    locator: details.locator,
+    locator_full: details.locatorFull,
     url,
-    expected: extractExpected(lines),
-    actual: extractActual(lines),
+    expected: details.expected,
+    actual: details.actual,
     timeout_ms,
   };
-}
-
-function resolveAllowedCommits(): string[] | undefined {
-  try {
-    const output = execSync('git log --format=%H', { encoding: 'utf8' });
-    return output.trim().split('\n').filter(Boolean);
-  } catch {
-    return undefined;
-  }
 }
 
 function emitLine(log: (buffer: string | Uint8Array) => void, payload: Record<string, unknown>): void {

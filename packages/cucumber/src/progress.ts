@@ -1,8 +1,12 @@
 import { formatterHelpers, type IFormatterOptions, ProgressFormatter as Base } from '@cucumber/cucumber';
-import { computeScenarioId, computeStepId, normalizeSteps } from '@letsrunit/gherkin';
 import { findLastPassingBaseline, openStore } from '@letsrunit/store';
-import { execSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
+import {
+  extractFailureDetails as extractFailureDetailsFromMessage,
+  normalizeUrl,
+} from './lib/failure-details';
+import { resolveAllowedCommits } from './lib/git-commits';
+import { toScenarioId } from './lib/scenario-id';
 import { getConfiguredStoreDbPath } from './store-config';
 
 const STATUS_CHARACTER_MAPPING = new Map<string, string>([
@@ -44,30 +48,6 @@ function isFailureStatus(status: string): boolean {
   return status === 'FAILED' || status === 'AMBIGUOUS' || status === 'UNDEFINED';
 }
 
-function toScenarioId(testSteps: ParsedStep[]): string | null {
-  const scenarioSteps = testSteps.filter((step) => step.text !== undefined);
-  if (scenarioSteps.length === 0) return null;
-
-  const normalized = normalizeSteps(
-    scenarioSteps.map((step) => ({
-      keyword: step.keyword,
-      text: step.text ?? '',
-      docString: step.argument?.docString,
-      dataTable: step.argument?.dataTable,
-    })),
-  );
-  return computeScenarioId(normalized.map((text) => computeStepId(text)));
-}
-
-function resolveAllowedCommits(): string[] | undefined {
-  try {
-    const output = execSync('git log --format=%H', { encoding: 'utf8' });
-    return output.trim().split('\n').filter(Boolean);
-  } catch {
-    return undefined;
-  }
-}
-
 function shortCommit(commit: string): string {
   return commit.slice(0, 7);
 }
@@ -105,56 +85,6 @@ function resolveLastPassedLine({ scenarioId }: { scenarioId: string }): LastPass
   }
 }
 
-function extractPrimaryLocator(raw: string): string {
-  const withoutMarker = raw.replace(/\s*\{fuzzy\}\s*$/i, '').trim();
-
-  const firstLocatorMatch = withoutMarker.match(/locator\((['"`])([\s\S]*?)\1\)/);
-  if (!firstLocatorMatch) return withoutMarker;
-  return firstLocatorMatch[2].trim() || withoutMarker;
-}
-
-function simplifyLocator(locator: string): { locator: string; fuzzy: boolean } {
-  const raw = locator.trim();
-  const fuzzy = raw.includes('{fuzzy}');
-  return { locator: extractPrimaryLocator(raw), fuzzy };
-}
-
-function isStackLine(line: string): boolean {
-  return /^\s*at\s+/.test(line);
-}
-
-function extractLocator(lines: string[]): string | undefined {
-  const locatorLine = lines.find((line) => line.trim().startsWith('Locator:'));
-  if (!locatorLine) return undefined;
-  const raw = locatorLine.replace(/^\s*Locator:\s*/, '').trim();
-  return raw ? simplifyLocator(raw).locator : undefined;
-}
-
-function extractLocatorFuzzy(lines: string[]): boolean | undefined {
-  const locatorLine = lines.find((line) => line.trim().startsWith('Locator:'));
-  if (!locatorLine) return undefined;
-  const raw = locatorLine.replace(/^\s*Locator:\s*/, '').trim();
-  if (!raw) return undefined;
-  return simplifyLocator(raw).fuzzy;
-}
-
-function extractUrl(lines: string[]): string | undefined {
-  for (const line of lines) {
-    const match = line.match(/\bURL:\s*(\S+)/i);
-    if (match) return match[1];
-  }
-  return undefined;
-}
-
-function normalizeUrl(url: string): string {
-  try {
-    const parsed = new URL(url);
-    return `${parsed.pathname}${parsed.search}${parsed.hash}` || '/';
-  } catch {
-    return url.trim();
-  }
-}
-
 function extractUrlFromAttachments(attachments?: Array<{ body: string; mediaType: string }>): string | undefined {
   if (!attachments || attachments.length === 0) return undefined;
 
@@ -168,34 +98,13 @@ function extractUrlFromAttachments(attachments?: Array<{ body: string; mediaType
   return undefined;
 }
 
-function extractError(lines: string[]): string | undefined {
-  const callLogIdx = lines.findIndex((line) => line.trim().startsWith('Call log:'));
-  const stackIdx = lines.findIndex(isStackLine);
-  let cutOff = lines.length;
-  if (callLogIdx >= 0) cutOff = Math.min(cutOff, callLogIdx);
-  if (stackIdx >= 0) cutOff = Math.min(cutOff, stackIdx);
-
-  const candidates: string[] = [];
-  for (let i = 0; i < cutOff; i += 1) {
-    const match = lines[i].match(/^\s*Error:\s*(.+)\s*$/);
-    if (match) candidates.push(match[1].trim());
-  }
-
-  if (candidates.length > 0) return candidates[candidates.length - 1];
-
-  return lines
-    .map((line) => line.trim())
-    .find((line) => line.length > 0 && !isStackLine(line) && !line.startsWith('Call log:'));
-}
-
 export function extractFailureDetails(message?: string): FailureDetails {
-  if (!message) return {};
-  const lines = message.split('\n');
+  const details = extractFailureDetailsFromMessage(message);
   return {
-    error: extractError(lines),
-    locator: extractLocator(lines),
-    locatorFuzzy: extractLocatorFuzzy(lines),
-    url: extractUrl(lines),
+    error: details.error,
+    locator: details.locator,
+    locatorFuzzy: details.locatorFuzzy,
+    url: details.url,
   };
 }
 
