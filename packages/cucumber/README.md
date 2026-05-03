@@ -87,7 +87,7 @@ Recorded data per run:
 
 ## `@letsrunit/cucumber/stream` — plugin
 
-A Cucumber plugin that emits the Cucumber message stream as ordered events for remote ingestion.
+A Cucumber plugin that emits the Cucumber message stream as ordered events for remote ingestion over WebSocket.
 
 - Always emits `feature_snapshot` first (v1)
 - Emits incremental events (`test_started`, `step_finished`, `attachment`, `test_finished`, `run_finished`)
@@ -101,7 +101,7 @@ export default {
     plugin: ['@letsrunit/cucumber/stream'],
     pluginOptions: {
       letsrunitStream: {
-        endpoint: 'https://ingest.example.com/events',
+        endpoint: 'wss://ingest.example.com/events',
         token: process.env.LETSRUNIT_STREAM_TOKEN,
       },
     },

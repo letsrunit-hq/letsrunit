@@ -12,55 +12,74 @@ export class NoopTransport implements StreamTransport {
   async close(): Promise<void> {}
 }
 
-export type HttpTransportOptions = {
+export type WebSocketTransportOptions = {
   endpoint: string;
   token?: string;
   headers?: Record<string, string>;
-  batchSize?: number;
 };
 
-export class HttpTransport implements StreamTransport {
+export class WebSocketTransport implements StreamTransport {
   private readonly endpoint: string;
   private readonly token?: string;
   private readonly headers: Record<string, string>;
-  private readonly batchSize: number;
-  private readonly queue: StreamEvent[] = [];
+  private socketPromise: Promise<WebSocket> | null = null;
 
-  constructor(options: HttpTransportOptions) {
+  constructor(options: WebSocketTransportOptions) {
     this.endpoint = options.endpoint;
     this.token = options.token;
     this.headers = options.headers ?? {};
-    this.batchSize = Math.max(1, options.batchSize ?? 20);
   }
 
   async send(events: StreamEvent[]): Promise<void> {
-    this.queue.push(...events);
-    if (this.queue.length >= this.batchSize) {
-      await this.flush();
-    }
+    const socket = await this.ensureSocket();
+    socket.send(JSON.stringify({ events }));
   }
 
-  async flush(): Promise<void> {
-    if (this.queue.length === 0) return;
-
-    const events = this.queue.splice(0, this.queue.length);
-
-    const response = await fetch(this.endpoint, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        ...(this.token ? { authorization: `Bearer ${this.token}` } : {}),
-        ...this.headers,
-      },
-      body: JSON.stringify({ events }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Stream transport failed with status ${response.status}`);
-    }
-  }
+  async flush(): Promise<void> {}
 
   async close(): Promise<void> {
-    await this.flush();
+    if (!this.socketPromise) return;
+
+    const socket = await this.socketPromise;
+    if (socket.readyState === socket.OPEN || socket.readyState === socket.CONNECTING) {
+      socket.close();
+    }
+    this.socketPromise = null;
+  }
+
+  private async ensureSocket(): Promise<WebSocket> {
+    if (!this.socketPromise) {
+      this.socketPromise = this.openSocket();
+    }
+    return this.socketPromise;
+  }
+
+  private openSocket(): Promise<WebSocket> {
+    const WsCtor = globalThis.WebSocket;
+    if (!WsCtor) {
+      throw new Error('WebSocket is not available in this runtime');
+    }
+
+    return new Promise<WebSocket>((resolve, reject) => {
+      const protocols: string[] = [];
+      if (this.token) protocols.push(`bearer.${this.token}`);
+
+      const socket = new WsCtor(this.endpoint, protocols.length ? protocols : undefined);
+
+      socket.addEventListener('open', () => {
+        if (Object.keys(this.headers).length > 0) {
+          socket.send(JSON.stringify({ type: 'stream_headers', headers: this.headers }));
+        }
+        resolve(socket);
+      });
+
+      socket.addEventListener('error', () => {
+        reject(new Error('Failed to open WebSocket stream transport'));
+      });
+
+      socket.addEventListener('close', () => {
+        this.socketPromise = null;
+      });
+    });
   }
 }
