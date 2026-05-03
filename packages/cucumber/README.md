@@ -12,7 +12,7 @@ yarn add @letsrunit/cucumber
 
 Cucumber CLI integration for letsrunit. It wires the `@letsrunit/bdd` step library into a Cucumber test suite and provides a plugin that persists run history and artifacts to the SQLite store.
 
-This package has four entry points.
+This package has five entry points.
 
 ## `@letsrunit/cucumber` — support file
 
@@ -84,6 +84,30 @@ Recorded data per run:
 - Feature, scenario, and step records (deterministic UUIDs stable across re-runs)
 - Run status (`passed` / `failed`) with the failing step and error message
 - All step artifacts linked to their step
+
+## `@letsrunit/cucumber/stream` — plugin
+
+A Cucumber plugin that emits the Cucumber message stream as ordered events for remote ingestion.
+
+- Always emits `feature_snapshot` first (v1)
+- Emits incremental events (`test_started`, `step_finished`, `attachment`, `test_finished`, `run_finished`)
+- Includes `runId`, `sessionId`, monotonic `seq`, and ISO timestamp per event
+- Uses no-op transport unless endpoint config is provided
+
+```js
+// cucumber.js
+export default {
+  default: {
+    plugin: ['@letsrunit/cucumber/stream'],
+    pluginOptions: {
+      letsrunitStream: {
+        endpoint: 'https://ingest.example.com/events',
+        token: process.env.LETSRUNIT_STREAM_TOKEN,
+      },
+    },
+  },
+};
+```
 
 ## `@letsrunit/cucumber/progress` — custom formatter
 

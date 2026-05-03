@@ -35,6 +35,11 @@
         "import": "./dist/store.js",
         "default": "./dist/store.js"
       },
+      "./stream": {
+        "types": "./dist/stream.d.ts",
+        "import": "./dist/stream.js",
+        "default": "./dist/stream.js"
+      },
       "./progress": {
         "types": "./dist/progress.d.ts",
         "import": "./dist/progress.js",
@@ -90,6 +95,11 @@
       "types": "./src/store.ts",
       "import": "./src/store.ts",
       "default": "./src/store.ts"
+    },
+    "./stream": {
+      "types": "./src/stream.ts",
+      "import": "./src/stream.ts",
+      "default": "./src/stream.ts"
     },
     "./progress": {
       "types": "./src/progress.ts",
