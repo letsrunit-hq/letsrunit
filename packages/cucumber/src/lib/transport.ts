@@ -2,14 +2,7 @@ import type { StreamEvent } from './stream-events';
 
 export interface StreamTransport {
   send(events: StreamEvent[]): Promise<void>;
-  flush(): Promise<void>;
   close(): Promise<void>;
-}
-
-export class NoopTransport implements StreamTransport {
-  async send(_events: StreamEvent[]): Promise<void> {}
-  async flush(): Promise<void> {}
-  async close(): Promise<void> {}
 }
 
 export type WebSocketTransportOptions = {
@@ -34,8 +27,6 @@ export class WebSocketTransport implements StreamTransport {
     const socket = await this.ensureSocket();
     socket.send(JSON.stringify({ events }));
   }
-
-  async flush(): Promise<void> {}
 
   async close(): Promise<void> {
     if (!this.socketPromise) return;

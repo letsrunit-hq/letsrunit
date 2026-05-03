@@ -2,7 +2,7 @@ import { AttachmentContentEncoding, type Envelope, TestStepResultStatus } from '
 import { v4 as uuidv4 } from 'uuid';
 import { extractFeatureAst, parsePickle, parseTestCase, type AstStep, type FailureInfo, type FeatureAstMeta, type PickleEntry, type TestCaseEntry } from './lib/cucumber-state';
 import type { AttachmentPayload, FeatureSnapshotPayload, StepFinishedPayload, StreamEvent, StreamEventType, TestFinishedPayload, TestStartedPayload } from './lib/stream-events';
-import { NoopTransport, type StreamTransport, WebSocketTransport } from './lib/transport';
+import { type StreamTransport, WebSocketTransport } from './lib/transport';
 
 type OnMessage = (key: 'message', handler: (value: Envelope) => void) => void;
 
@@ -29,13 +29,20 @@ type StreamContext = {
 
 function resolveTransport(options?: StreamPluginOptions): StreamTransport {
   if (options?.transport) return options.transport;
-  if (options?.enabled === false) return new NoopTransport();
-  if (!options?.endpoint) return new NoopTransport();
+  if (!options?.endpoint) {
+    throw new Error('Missing stream endpoint');
+  }
 
   return new WebSocketTransport({
     endpoint: options.endpoint,
     token: options.token,
   });
+}
+
+function shouldStart(options?: StreamPluginOptions): boolean {
+  if (options?.enabled === false) return false;
+  if (options?.transport) return true;
+  return typeof options?.endpoint === 'string' && options.endpoint.length > 0;
 }
 
 function statusFromFailure(failure?: FailureInfo, willBeRetried?: boolean): 'passed' | 'failed' | 'running' {
@@ -212,7 +219,6 @@ async function handleTestCaseFinished(envelope: Envelope, context: StreamContext
 async function handleRunFinished(envelope: Envelope, context: StreamContext): Promise<boolean> {
   if (!envelope.testRunFinished) return false;
   await emit(context, 'run_finished', { finishedAt: Date.now() });
-  await context.transport.flush();
   await context.transport.close();
   return true;
 }
@@ -253,6 +259,7 @@ export default {
   optionsKey: 'letsrunitStream' as const,
   coordinator({ on, options, operation }: { on: OnMessage; options?: StreamPluginOptions; operation: string }) {
     if (operation !== 'runCucumber') return;
+    if (!shouldStart(options)) return;
     startStreamRecorder({ on, options });
   },
 };

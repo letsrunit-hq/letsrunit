@@ -11,7 +11,6 @@ class CaptureTransport implements StreamTransport {
     this.events.push(...events);
   }
 
-  async flush(): Promise<void> {}
   async close(): Promise<void> {}
 }
 
