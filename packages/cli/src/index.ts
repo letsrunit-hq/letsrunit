@@ -54,7 +54,7 @@ program
   .option('--with-cli', 'Install @letsrunit/cli')
   .option('--with-mcp', 'Install @letsrunit/mcp-server')
   .option('--with-cucumber', 'Install @cucumber/cucumber and scaffold Cucumber support')
-  .option('--with-playwright', 'Install Playwright Chromium')
+  .option('--with-playwright', 'Install @playwright/test and Playwright Chromium')
   .option('--with-github-actions', 'Add .github/workflows/letsrunit.yml')
   .option('--agents <list>', `Configure MCP + skill for agents: ${AGENT_IDS.join(', ')}`)
   .action(

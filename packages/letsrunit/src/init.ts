@@ -15,7 +15,7 @@ import { installGithubAction } from './setup/github-actions.js';
 import { recommendedBaseUrl, updateCucumberBaseUrl } from './setup/ci-workflow-plan.js';
 import { detectAppTarget, type DetectionResult, type AppTarget } from './setup/project-app.js';
 import { installMcpServer, isMcpServerInstalled } from './setup/mcp.js';
-import { hasPlaywrightBrowsers, installPlaywrightBrowsers } from './setup/playwright.js';
+import { hasPlaywrightBrowsers, installPlaywright, installPlaywrightBrowsers, isPlaywrightInstalled } from './setup/playwright.js';
 
 const BDD_IMPORT = '@letsrunit/cucumber';
 
@@ -109,6 +109,15 @@ function stepSetupCucumber(env: Environment, appTarget: DetectionResult<AppTarge
 }
 
 function stepInstallPlaywright(env: Environment): void {
+  if (!isPlaywrightInstalled(env)) {
+    const install = spinner();
+    install.start('Installing @playwright/test…');
+    installPlaywright(env);
+    install.stop('@playwright/test installed');
+  } else {
+    log.success('@playwright/test already installed');
+  }
+
   if (hasPlaywrightBrowsers(env)) {
     log.success('Playwright Chromium already installed');
     return;

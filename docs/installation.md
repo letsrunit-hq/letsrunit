@@ -93,7 +93,7 @@ Feature: Example
 {% step %}
 ## Install Playwright browsers
 
-Letsrunit drives a real Chromium browser. Pass `--with-playwright` to install it:
+Letsrunit drives a real Chromium browser. Pass `--with-playwright` to install `@playwright/test` and Chromium:
 
 ```bash
 npx playwright install chromium

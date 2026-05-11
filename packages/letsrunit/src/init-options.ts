@@ -64,7 +64,7 @@ export function formatInitHelp(command = 'letsrunit init'): string {
     '  --with-cli              Install @letsrunit/cli',
     '  --with-mcp              Install @letsrunit/mcp-server',
     '  --with-cucumber         Install @cucumber/cucumber and scaffold Cucumber support',
-    '  --with-playwright       Install Playwright Chromium',
+    '  --with-playwright       Install @playwright/test and Playwright Chromium',
     '  --with-github-actions   Add .github/workflows/letsrunit.yml',
     `  --agents <list>         Configure MCP + skill for agents (${AGENT_IDS.join(', ')})`,
     '  -h, --help              Show this help',

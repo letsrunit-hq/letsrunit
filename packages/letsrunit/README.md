@@ -21,7 +21,7 @@ It can:
 - Install `@cucumber/cucumber` when missing
 - Install `@letsrunit/cucumber` and scaffold Cucumber support
 - Create `features/example.feature` when no feature files exist
-- Install Playwright Chromium when missing
+- Install `@playwright/test` and Playwright Chromium when missing
 - Optionally add `.github/workflows/letsrunit.yml`
 
 ## Options
@@ -36,7 +36,7 @@ It can:
   Install `@cucumber/cucumber` and scaffold Cucumber support.
 
 - `--with-playwright`  
-  Install the Playwright Chromium browser.
+  Install `@playwright/test` and the Playwright Chromium browser.
 
 - `--with-github-actions`  
   Add `.github/workflows/letsrunit.yml`.

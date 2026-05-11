@@ -56,8 +56,6 @@ function main() {
     letsrunit: 'file:./letsrunit.tgz',
     '@letsrunit/ai': 'file:./ai.tgz',
     '@letsrunit/bdd': 'file:./bdd.tgz',
-    '@letsrunit/cucumber': 'file:./cucumber.tgz',
-    '@letsrunit/cli': 'file:./cli.tgz',
     '@letsrunit/controller': 'file:./controller.tgz',
     '@letsrunit/executor': 'file:./executor.tgz',
     '@letsrunit/gherker': 'file:./gherker.tgz',
@@ -81,8 +79,12 @@ function main() {
     pkg.packageManager = 'yarn@1.22.22';
     pkg.resolutions = localOverrides;
   } else if (pm === 'pnpm') {
+    pkg.packageManager = 'pnpm@10.22.0';
     pkg.pnpm = { overrides: localOverrides };
   } else if (pm === 'npm' || pm === 'bun') {
+    if (pm === 'bun') {
+      pkg.packageManager = 'bun@1.2.15';
+    }
     pkg.overrides = localOverrides;
   } else {
     throw new Error(`Unsupported package manager: ${pm}`);

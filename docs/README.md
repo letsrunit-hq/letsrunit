@@ -29,8 +29,7 @@ Run this in your project root. In an interactive terminal, `init` opens a prompt
 
 * Letsrunit CLI
 * Cucumber wiring and support files
-* Playwright Chromium browser
+* `@playwright/test` and Playwright Chromium browser
 * GitHub Actions workflow
 * MCP server
 * AI agent skill
-
