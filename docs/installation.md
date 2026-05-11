@@ -15,17 +15,27 @@ description: Set up Letsrunit in your project with a single command.
 npx letsrunit init
 ```
 
-`init` is interactive: it walks you through each step and asks before making changes. It's safe to re-run at any time.
+`init` is safe to re-run at any time.
+
+In an interactive terminal, that command opens a prompt with no preselected components. Choose the pieces you want to install.
+
+In non-interactive environments, pass the components explicitly:
+
+```bash
+npx letsrunit init --with-cli --with-cucumber --with-playwright
+```
 
 For AI agent setup, you can choose explicit agents:
 
 ```bash
-npx letsrunit init --agents codex,cursor
+npx letsrunit init --with-mcp --agents codex,cursor
 ```
 
 Supported values: `codex`, `cursor`, `claude`, `copilot`, `gemini`, `windsurf`.
 
-If `--yes` is used without `--agents`, agent configuration is skipped.
+If you pass `--agents`, `init` configures the selected agent integrations and installs `@letsrunit/mcp-server`.
+
+If you run `npx letsrunit init` without any `--with-*` flags or `--agents` in a non-interactive terminal, it prints help and exits without changing the project.
 
 ### What does the installer do?
 
@@ -33,19 +43,19 @@ If `--yes` is used without `--agents`, agent configuration is skipped.
 {% step %}
 ## Install the CLI
 
-`@letsrunit/cli` is added to your project's dev dependencies. It provides the `letsrunit` binary for `explore`, `generate`, and `run`.
+Pass `--with-cli` to add `@letsrunit/cli` to your project's dev dependencies. It provides the `letsrunit` binary for `explore`, `generate`, and `run`.
 {% endstep %}
 
 {% step %}
 ## Install the MCP server
 
-`@letsrunit/mcp-server` is added to your dev dependencies so AI agents can use a project-local MCP server (and load your project support files safely). You can skip this step with `--no-mcp`.
+Pass `--with-mcp` to add `@letsrunit/mcp-server` to your dev dependencies so AI agents can use a project-local MCP server and load your project support files safely.
 {% endstep %}
 
 {% step %}
 ## Install Cucumber
 
-Letsrunit uses [Cucumber.js](https://cucumber.io/) as the test runner. If it's not already installed, the wizard will offer to add `@cucumber/cucumber` to your dev dependencies.
+Letsrunit uses [Cucumber.js](https://cucumber.io/) as the test runner. Pass `--with-cucumber` to add `@cucumber/cucumber` and scaffold the Letsrunit Cucumber files.
 
 It also creates two files:
 
@@ -83,7 +93,7 @@ Feature: Example
 {% step %}
 ## Install Playwright browsers
 
-Letsrunit drives a real Chromium browser. If Playwright's Chromium binary isn't found, the wizard offers to install it:
+Letsrunit drives a real Chromium browser. Pass `--with-playwright` to install `@playwright/test` and Chromium:
 
 ```bash
 npx playwright install chromium
@@ -93,10 +103,10 @@ npx playwright install chromium
 {% step %}
 ## Add a GitHub Action (optional)
 
-The final step offers to scaffold a `.github/workflows/letsrunit.yml` that runs your features on every push and pull request. See [CI/CD](ci-cd/github-actions.md) for the full workflow.
+Pass `--with-github-actions` to scaffold a `.github/workflows/letsrunit.yml` that runs your features on every push and pull request. See [CI/CD](ci-cd/github-actions.md) for the full workflow.
 {% endstep %}
 {% endstepper %}
 
 {% hint style="info" %}
-Run `npx letsrunit init` again at any time to add steps you skipped the first time.
+Run `npx letsrunit init` again at any time to add more components.
 {% endhint %}

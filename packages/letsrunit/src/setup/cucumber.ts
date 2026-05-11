@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { type Environment, execPm } from '../detect.js';
+import { resolveInstallSpec } from './local-package.js';
 
 const BDD_IMPORT = '@letsrunit/cucumber';
 
@@ -80,11 +81,13 @@ function installBdd(env: Pick<Environment, 'packageManager' | 'cwd'>): boolean {
 
   if (alreadyInstalled) return false;
 
+  const spec = resolveInstallSpec(env, '@letsrunit/cucumber', 'cucumber.tgz');
+
   execPm(env, {
-    npm: 'install --save-dev @letsrunit/cucumber',
-    yarn: 'add --dev @letsrunit/cucumber',
-    pnpm: 'add -D @letsrunit/cucumber',
-    bun: 'add -d @letsrunit/cucumber',
+    npm: `install --save-dev ${spec}`,
+    yarn: `add --dev ${spec}`,
+    pnpm: `--allow-build=re2 add -D ${spec}`,
+    bun: `add -d ${spec}`,
   });
 
   return true;

@@ -6,7 +6,7 @@ description: Run your feature files on every push with GitHub Actions.
 
 The workflow itself is straightforward. The part that requires actual thought is getting your app running inside GitHub Actions so Playwright can reach it.
 
-`npx letsrunit init` scaffolds a workflow file with `npm start` as a starting point. In most cases you'll need to adapt it: the app needs a database, environment variables, a build step, or all of the above. The patterns below cover the most common setups.
+`npx letsrunit init --with-github-actions` scaffolds a workflow file with `npm start` as a starting point. In most cases you'll need to adapt it: the app needs a database, environment variables, a build step, or all of the above. The patterns below cover the most common setups.
 
 ### Base workflow
 

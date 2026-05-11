@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { type Environment, execPm } from '../detect.js';
+import { resolveInstallSpec } from './local-package.js';
 
 export function isCliInstalled({ cwd }: Pick<Environment, 'cwd'>): boolean {
   const pkgPath = join(cwd, 'package.json');
@@ -15,10 +16,11 @@ export function isCliInstalled({ cwd }: Pick<Environment, 'cwd'>): boolean {
 }
 
 export function installCli(env: Pick<Environment, 'packageManager' | 'cwd'>): void {
+  const spec = resolveInstallSpec(env, '@letsrunit/cli', 'cli.tgz');
   execPm(env, {
-    npm: 'install --save-dev @letsrunit/cli',
-    yarn: 'add --dev @letsrunit/cli',
-    pnpm: 'add -D @letsrunit/cli',
-    bun: 'add -d @letsrunit/cli',
+    npm: `install --save-dev ${spec}`,
+    yarn: `add --dev ${spec}`,
+    pnpm: `--allow-build=re2 add -D ${spec}`,
+    bun: `add -d ${spec}`,
   });
 }
