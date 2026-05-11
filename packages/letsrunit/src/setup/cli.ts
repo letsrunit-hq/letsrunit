@@ -18,7 +18,7 @@ export function installCli(env: Pick<Environment, 'packageManager' | 'cwd'>): vo
   execPm(env, {
     npm: 'install --save-dev @letsrunit/cli',
     yarn: 'add --dev @letsrunit/cli',
-    pnpm: 'add -D @letsrunit/cli',
+    pnpm: '--allow-build=re2 add -D @letsrunit/cli',
     bun: 'add -d @letsrunit/cli',
   });
 }
