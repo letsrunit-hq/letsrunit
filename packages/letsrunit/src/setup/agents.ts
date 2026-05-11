@@ -44,13 +44,8 @@ function resolveStrategies(ids: AgentId[]): AgentStrategy[] {
 
 export async function setupAgents(
   env: Pick<Environment, 'cwd'>,
-  options: { agents?: AgentId[]; noMcp?: boolean },
+  options: { agents?: AgentId[] },
 ): Promise<void> {
-  if (options.noMcp) {
-    log.info('Skipped AI agent setup because MCP installation is disabled (--no-mcp).');
-    return;
-  }
-
   const agentIds = options.agents ?? [];
   if (agentIds.length === 0) {
     log.info('Skipped AI agent setup.');

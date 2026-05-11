@@ -4,7 +4,7 @@ import { CliSink, Journal } from '@letsrunit/journal';
 import { getMailbox } from '@letsrunit/mailbox';
 import { asFilename, randomUUID } from '@letsrunit/utils';
 import { Command } from 'commander';
-import { init } from 'letsrunit';
+import { formatInitHelp, init, shouldShowInitHelp } from 'letsrunit';
 import { readFileSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import { dirname, join } from 'node:path';
@@ -51,12 +51,38 @@ program.name('letsrunit').description('Testing for AI-driven development workflo
 program
   .command('init')
   .description('Set up letsrunit in the current project')
-  .option('-y, --yes', 'Skip confirmation prompts')
-  .option('--no-mcp', 'Do not install @letsrunit/mcp-server')
+  .option('--with-cli', 'Install @letsrunit/cli')
+  .option('--with-mcp', 'Install @letsrunit/mcp-server')
+  .option('--with-cucumber', 'Install @cucumber/cucumber and scaffold Cucumber support')
+  .option('--with-playwright', 'Install Playwright Chromium')
+  .option('--with-github-actions', 'Add .github/workflows/letsrunit.yml')
   .option('--agents <list>', 'Configure MCP + skill for agents (comma-separated)')
-  .action(async (opts: { yes?: boolean; mcp?: boolean; agents?: string }) => {
-    await init({ yes: opts.yes, noMcp: opts.mcp === false, agents: opts.agents });
-  });
+  .action(
+    async (opts: {
+      withCli?: boolean;
+      withMcp?: boolean;
+      withCucumber?: boolean;
+      withPlaywright?: boolean;
+      withGithubActions?: boolean;
+      agents?: string;
+    }) => {
+      const initOptions = {
+        withCli: opts.withCli,
+        withMcp: opts.withMcp,
+        withCucumber: opts.withCucumber,
+        withPlaywright: opts.withPlaywright,
+        withGithubActions: opts.withGithubActions,
+        agents: opts.agents,
+      };
+
+      if (shouldShowInitHelp(Boolean(process.stdout.isTTY && process.stdin.isTTY), initOptions)) {
+        console.log(formatInitHelp());
+        return;
+      }
+
+      await init(initOptions);
+    },
+  );
 
 program
   .command('explore')

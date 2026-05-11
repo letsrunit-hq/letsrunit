@@ -74,7 +74,7 @@ describe('setupAgents behavior', () => {
     mkdirSync(join(cwd, 'agent', 'skills', 'letsrunit'), { recursive: true });
     writeFileSync(join(cwd, 'agent', 'skills', 'letsrunit', 'SKILL.md'), 'demo', 'utf-8');
 
-    await setupAgents({ cwd, isInteractive: false }, { yes: false, noMcp: false, agents: [] });
+    await setupAgents({ cwd, isInteractive: false }, { agents: [] });
 
     expect(() => readFileSync(join(cwd, '.mcp.json'), 'utf-8')).toThrow();
   });
@@ -84,7 +84,7 @@ describe('setupAgents behavior', () => {
     mkdirSync(join(cwd, 'agent', 'skills', 'letsrunit'), { recursive: true });
     writeFileSync(join(cwd, 'agent', 'skills', 'letsrunit', 'SKILL.md'), 'demo', 'utf-8');
 
-    await setupAgents({ cwd, isInteractive: false }, { yes: true, noMcp: false, agents: ['cursor'] });
+    await setupAgents({ cwd, isInteractive: false }, { agents: ['cursor'] });
 
     const configPath = join(cwd, '.cursor', 'mcp.json');
     const config = JSON.parse(readFileSync(configPath, 'utf-8')) as {

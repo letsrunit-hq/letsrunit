@@ -23,15 +23,14 @@ layout:
 npx letsrunit init
 ```
 
-Run this in your project root. `init` is interactive and sets up what you need.
+Run this in your project root. In an interactive terminal, `init` opens a prompt so you can choose what to set up. In non-interactive environments, pass explicit flags such as `--with-cucumber` or `--with-github-actions`.
 
 #### What `init` sets up
 
 * Letsrunit CLI
 * Cucumber wiring and support files
 * Playwright Chromium browser
-* GitHub Actions workflow (optional)
-* MCP server (optional)
-* AI agent skill (optional)
-
+* GitHub Actions workflow
+* MCP server
+* AI agent skill
 

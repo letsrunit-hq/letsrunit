@@ -15,19 +15,15 @@ AI Agent integration has two parts:
 
 Install Letsrunit for your project, including the MCP server and skill
 
+```bash
+npx letsrunit init --with-mcp --agents codex
 ```
-npx letsrunit init
-```
-
-The init script will automatically detect all the components to install and configure.
-
-You can also force specific agents:
 
 ```bash
-npx letsrunit init --agents codex,cursor
+npx letsrunit init --with-mcp --agents codex,cursor
 ```
 
-If multiple agents are detected, `init` asks which ones to configure. In non-interactive mode (or with `--yes`), pass `--agents` explicitly to enable agent setup.
+If you run `npx letsrunit init` with no flags in an interactive terminal, the MCP option opens a second prompt where you can choose agents. In non-interactive mode, pass `--agents` explicitly.
 
 ### Global
 

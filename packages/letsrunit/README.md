@@ -12,7 +12,7 @@ npx letsrunit init
 
 ## What `init` does
 
-`init` is interactive by default and safe to rerun.
+`init` is safe to rerun.
 
 It can:
 
@@ -26,15 +26,28 @@ It can:
 
 ## Options
 
-- `-y, --yes`  
-  Skip confirmation prompts and apply defaults.
+- `--with-cli`  
+  Install `@letsrunit/cli`.
 
-- `--no-mcp`  
-  Skip installation of `@letsrunit/mcp-server`.
+- `--with-mcp`  
+  Install `@letsrunit/mcp-server`.
+
+- `--with-cucumber`  
+  Install `@cucumber/cucumber` and scaffold Cucumber support.
+
+- `--with-playwright`  
+  Install the Playwright Chromium browser.
+
+- `--with-github-actions`  
+  Add `.github/workflows/letsrunit.yml`.
 
 - `--agents <list>`  
   Configure MCP + skill for selected agents (comma-separated): `codex,cursor,claude,copilot,gemini,windsurf`.
-  If omitted in non-interactive mode or with `--yes`, agent config is skipped.
+  Passing `--agents` also installs `@letsrunit/mcp-server`.
+
+Run `npx letsrunit init` with no options in an interactive terminal to choose components in a prompt.
+
+In non-interactive mode, running `npx letsrunit init` without any `--with-*` flags or `--agents` prints help and exits.
 
 ## Generated/updated files
 
