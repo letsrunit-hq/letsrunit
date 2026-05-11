@@ -16,12 +16,32 @@ describe('init option selection', () => {
 
   it('treats agent setup as an mcp install request', () => {
     expect(resolveInitPlanOptions({ agents: 'codex,cursor' })).toEqual({
-      installCli: false,
+      installCli: true,
       installMcp: true,
       installCucumber: false,
       installPlaywright: false,
       addGithubActions: false,
       configureAgents: true,
+    });
+  });
+
+  it('treats component selections as a cli install request', () => {
+    expect(resolveInitPlanOptions({ withCucumber: true })).toEqual({
+      installCli: true,
+      installMcp: false,
+      installCucumber: true,
+      installPlaywright: false,
+      addGithubActions: false,
+      configureAgents: false,
+    });
+
+    expect(resolveInitPlanOptions({ withGithubActions: true })).toEqual({
+      installCli: true,
+      installMcp: false,
+      installCucumber: false,
+      installPlaywright: false,
+      addGithubActions: true,
+      configureAgents: false,
     });
   });
 

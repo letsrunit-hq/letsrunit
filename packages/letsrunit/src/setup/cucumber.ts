@@ -83,7 +83,7 @@ function installBdd(env: Pick<Environment, 'packageManager' | 'cwd'>): boolean {
   execPm(env, {
     npm: 'install --save-dev @letsrunit/cucumber',
     yarn: 'add --dev @letsrunit/cucumber',
-    pnpm: 'add -D @letsrunit/cucumber',
+    pnpm: '--allow-build=re2 add -D @letsrunit/cucumber',
     bun: 'add -d @letsrunit/cucumber',
   });
 

@@ -40,12 +40,18 @@ export function shouldShowInitHelp(isInteractive: boolean, options: InitOptions)
 
 export function resolveInitPlanOptions(options: InitOptions): InitPlanOptions {
   const configureAgents = hasAgentSelection(options.agents);
+  const installMcp = Boolean(options.withMcp) || configureAgents;
+  const installCucumber = Boolean(options.withCucumber);
+  const installPlaywright = Boolean(options.withPlaywright);
+  const addGithubActions = Boolean(options.withGithubActions);
+  const installCli = Boolean(options.withCli) || installMcp || installCucumber || installPlaywright || addGithubActions;
+
   return {
-    installCli: Boolean(options.withCli),
-    installMcp: Boolean(options.withMcp) || configureAgents,
-    installCucumber: Boolean(options.withCucumber),
-    installPlaywright: Boolean(options.withPlaywright),
-    addGithubActions: Boolean(options.withGithubActions),
+    installCli,
+    installMcp,
+    installCucumber,
+    installPlaywright,
+    addGithubActions,
     configureAgents,
   };
 }

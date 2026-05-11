@@ -43,6 +43,16 @@ interface InstallPlan {
   agents: AgentId[];
 }
 
+function normalizePlan(plan: InstallPlan): InstallPlan {
+  const hasSelectedWork =
+    plan.installCli || plan.installMcp || plan.installCucumber || plan.installPlaywright || plan.addGithubActions || plan.agents.length > 0;
+
+  return {
+    ...plan,
+    installCli: hasSelectedWork,
+  };
+}
+
 function showBanner(): void {
   console.log(BANNER);
 }
@@ -129,14 +139,14 @@ function stepAddGithubAction(env: Environment, appTarget: DetectionResult<AppTar
 
 function optionPlan(options: InitOptions, explicitAgents: AgentId[]): InstallPlan {
   const resolved = resolveInitPlanOptions(options);
-  return {
+  return normalizePlan({
     installCli: resolved.installCli,
     installMcp: resolved.installMcp,
     installCucumber: resolved.installCucumber,
     installPlaywright: resolved.installPlaywright,
     addGithubActions: resolved.addGithubActions,
     agents: explicitAgents,
-  };
+  });
 }
 
 async function selectPlan(env: Environment, options: InitOptions, detectedAgents: AgentId[]): Promise<InstallPlan | null> {
@@ -153,6 +163,7 @@ async function selectPlan(env: Environment, options: InitOptions, detectedAgents
   }
 
   note('Use ↑/↓ to move, space to toggle, enter to continue.', 'Controls');
+  note('`@letsrunit/cli` is installed automatically when you select any component or agent setup.', 'Core Component');
 
   const componentOptions = [
     { value: 'cli', label: 'CLI', hint: '@letsrunit/cli', selected: false },
@@ -201,14 +212,14 @@ async function selectPlan(env: Environment, options: InitOptions, detectedAgents
     log.info('MCP Server not selected. AI agent integration options skipped.');
   }
 
-  return {
+  return normalizePlan({
     installCli: values.has('cli'),
     installMcp,
     installCucumber: values.has('cucumber'),
     installPlaywright: values.has('playwright'),
     addGithubActions: values.has('gha'),
     agents: selectedAgents,
-  };
+  });
 }
 
 export async function init(options: InitOptions = {}): Promise<void> {

@@ -120,7 +120,7 @@ jobs:
 
       - name: Run init
         working-directory: /tmp/test-${{ matrix.pm }}
-        run: npx -y file:./letsrunit.tgz init --with-cucumber
+        run: npx -y file:./letsrunit.tgz init --with-cli --with-cucumber --with-playwright
 
       - name: Run Cucumber (with web server)
         working-directory: /tmp/test-${{ matrix.pm }}

@@ -74,12 +74,7 @@ function main() {
     version: '1.0.0',
     private: true,
     type: 'module',
-    dependencies: {
-      '@letsrunit/cli': 'file:./cli.tgz',
-      '@letsrunit/cucumber': 'file:./cucumber.tgz',
-      '@cucumber/cucumber': '*',
-      playwright: PLAYWRIGHT_VERSION,
-    },
+    dependencies: {},
   };
 
   if (pm === 'yarn') {
