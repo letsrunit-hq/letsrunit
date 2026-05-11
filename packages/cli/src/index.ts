@@ -4,7 +4,7 @@ import { CliSink, Journal } from '@letsrunit/journal';
 import { getMailbox } from '@letsrunit/mailbox';
 import { asFilename, randomUUID } from '@letsrunit/utils';
 import { Command } from 'commander';
-import { formatInitHelp, init, shouldShowInitHelp } from 'letsrunit';
+import { AGENT_IDS, formatInitHelp, init, shouldShowInitHelp } from 'letsrunit';
 import { readFileSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import { dirname, join } from 'node:path';
@@ -56,7 +56,7 @@ program
   .option('--with-cucumber', 'Install @cucumber/cucumber and scaffold Cucumber support')
   .option('--with-playwright', 'Install Playwright Chromium')
   .option('--with-github-actions', 'Add .github/workflows/letsrunit.yml')
-  .option('--agents <list>', 'Configure MCP + skill for agents (comma-separated)')
+  .option('--agents <list>', `Configure MCP + skill for agents: ${AGENT_IDS.join(', ')}`)
   .action(
     async (opts: {
       withCli?: boolean;
