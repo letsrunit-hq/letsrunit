@@ -1,3 +1,19 @@
+# [0.21.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.20.0...v0.21.0) (2026-05-11)
+
+
+### Bug Fixes
+
+* make init install selected dependencies correctly ([5666e3f](https://github.com/letsrunit-hq/letsrunit/commit/5666e3f1bf86b3fcc5d1beff1c8f713a5d8e2390))
+* make init integration pass on pnpm ([9b197fa](https://github.com/letsrunit-hq/letsrunit/commit/9b197fad5c2091b2ea3439abe95b3e111b54c218))
+* show supported agents in init help ([798aa0d](https://github.com/letsrunit-hq/letsrunit/commit/798aa0da2958812a68c307b0c3a3a5e2b2778955))
+* support init dependencies in ci containers ([98b6fc3](https://github.com/letsrunit-hq/letsrunit/commit/98b6fc3a3b5068e5d15f3f996385bdc1d7f3427f))
+* use explicit init flags in integration workflow ([a52d192](https://github.com/letsrunit-hq/letsrunit/commit/a52d192eb07cfcb7ffe823c108014fee031a6b58))
+
+
+### Features
+
+* make init component selection explicit ([6038c1b](https://github.com/letsrunit-hq/letsrunit/commit/6038c1b1c1e3e36dd2eb249ea3237dfb7623d3be))
+
 # [0.20.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.19.5...v0.20.0) (2026-04-30)
 
 
