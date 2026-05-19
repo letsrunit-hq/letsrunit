@@ -6,6 +6,8 @@ description: Add your own Given/When/Then steps on top of Letsrunit defaults.
 
 Letsrunit ships with built-in steps from `@letsrunit/cucumber`, but you can add your own step definitions for project-specific behavior.
 
+## Using custom steps
+
 Create a file such as `features/support/custom-steps.js`. Cucumber loads files in `features/support/**/*.js` automatically, so you do not need to register the file anywhere.
 
 ```js
