@@ -20,10 +20,10 @@ layout:
 ## Quick start
 
 ```bash
-npx letsrunit init
+npx letsrunit@latest init
 ```
 
-Run this in your project root. In an interactive terminal, `init` opens a prompt so you can choose what to set up. In non-interactive environments, pass explicit flags such as `--with-cucumber` or `--with-github-actions`.
+Run this in your project root. In an interactive terminal, `init` opens a prompt so you can choose what to set up. In non-interactive environments, pass explicit flags such as `--with-cucumber` or `--with-github-actions`. For all options use `--help`.
 
 #### What `init` sets up
 
