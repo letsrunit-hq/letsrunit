@@ -6,9 +6,7 @@ description: Add your own Given/When/Then steps on top of Letsrunit defaults.
 
 Letsrunit ships with built-in steps from `@letsrunit/cucumber`, but you can add your own step definitions for project-specific behavior.
 
-## Create a custom step file
-
-Create `features/support/custom-steps.js`:
+Create a file such as `features/support/custom-steps.js`. Cucumber loads files in `features/support/**/*.js` automatically, so you do not need to register the file anywhere.
 
 ```js
 import { Then, When } from '@letsrunit/cucumber';
@@ -24,20 +22,7 @@ Then('I should see the signed-in email {string}', async function (email) {
 
 `this.page` is the Playwright page provided by Letsrunit's world setup.
 
-## Keep `world.js` minimal
-
-Leave `features/support/world.js` as the Letsrunit scaffold:
-
-```js
-import { setDefaultTimeout } from '@cucumber/cucumber';
-import '@letsrunit/cucumber';
-
-setDefaultTimeout(30_000);
-```
-
-You do not need to import `./custom-steps.js` from `world.js`. Letsrunit's generated `cucumber.js` already tells Cucumber to load every file in `features/support/**/*.js`, so `custom-steps.js` is picked up automatically.
-
-## Use the step in your feature
+Use the step in your feature:
 
 ```gherkin
 Scenario: Open account menu
