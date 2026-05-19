@@ -16,10 +16,10 @@ AI Agent integration has two parts:
 Install Letsrunit for your project, including the MCP server and skill
 
 ```bash
-npx letsrunit init
+npx letsrunit@latest init
 ```
 
-If you run `npx letsrunit init` with no flags in an interactive terminal, the MCP option opens a second prompt where you can choose agents. For non-interactive mode find all available options with `--help`.
+If you run `init` with no flags in an interactive terminal, the MCP option opens a second prompt where you can choose agents. For non-interactive mode find all available options with `--help`.
 
 ### Global
 
