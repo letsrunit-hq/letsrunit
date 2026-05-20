@@ -1,6 +1,6 @@
 import { formatterHelpers, type IFormatterOptions, ProgressFormatter as Base } from '@cucumber/cucumber';
-import { normalizeSteps } from '@letsrunit/gherkin';
-import { computeScenarioId, computeStepId, findLastPassingBaseline, openStore } from '@letsrunit/store';
+import { computeScenarioId, computeStepId, normalizeSteps } from '@letsrunit/gherkin';
+import { findLastPassingBaseline, openStore } from '@letsrunit/store';
 import { execSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { getConfiguredStoreDbPath } from './store-config';

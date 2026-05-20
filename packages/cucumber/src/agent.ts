@@ -1,7 +1,7 @@
 import { formatterHelpers, type IFormatterOptions, Formatter } from '@cucumber/cucumber';
 import { type Envelope, TestStepResultStatus } from '@cucumber/messages';
-import { normalizeSteps } from '@letsrunit/gherkin';
-import { findArtifacts, findLastTest, openStore, computeScenarioId, computeStepId } from '@letsrunit/store';
+import { computeScenarioId, computeStepId, normalizeSteps } from '@letsrunit/gherkin';
+import { findArtifacts, findLastTest, openStore } from '@letsrunit/store';
 import { unifiedHtmlDiff } from '@letsrunit/playwright';
 import { execSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';

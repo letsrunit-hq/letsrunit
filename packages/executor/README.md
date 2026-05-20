@@ -42,6 +42,14 @@ Executes a given Gherkin feature on a target URL with full reporting.
 
 Uses AI to refine and improve a user-provided test suggestion.
 
+### `explain(options)`
+
+Imported from the dedicated subpath so runtime consumers that do not need local sqlite storage do not pull it into their main bundle.
+
+```ts
+import explain from '@letsrunit/executor/explain';
+```
+
 ## Testing
 
 Run tests for this package:
