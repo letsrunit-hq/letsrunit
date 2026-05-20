@@ -1,5 +1,4 @@
 import { AttachmentContentEncoding, type Envelope, TestStepResultStatus } from '@cucumber/messages';
-import { normalizeSteps } from '@letsrunit/gherkin';
 import {
   computeExampleRowId,
   computeFeatureId,
@@ -7,6 +6,9 @@ import {
   computeRuleId,
   computeScenarioId,
   computeStepId,
+  normalizeSteps,
+} from '@letsrunit/gherkin';
+import {
   finaliseTest,
   insertArtifact,
   insertRun,

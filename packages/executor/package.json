@@ -28,6 +28,11 @@
         "types": "./dist/index.d.ts",
         "import": "./dist/index.js",
         "default": "./dist/index.js"
+      },
+      "./explain": {
+        "types": "./dist/explain.d.ts",
+        "import": "./dist/explain.js",
+        "default": "./dist/explain.js"
       }
     }
   },
@@ -62,6 +67,11 @@
       "types": "./src/index.ts",
       "import": "./src/index.ts",
       "default": "./src/index.ts"
+    },
+    "./explain": {
+      "types": "./src/explain.ts",
+      "import": "./src/explain.ts",
+      "default": "./src/explain.ts"
     }
   }
 }

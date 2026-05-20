@@ -1,7 +1,6 @@
 import type { Database } from 'node-sqlite3-wasm';
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
-  computeStepId,
   finaliseTest,
   findArtifacts,
   findLastPassingBaseline,
@@ -24,7 +23,7 @@ beforeEach(() => {
 });
 
 function id(label: string): string {
-  return computeStepId(`id:${label}`);
+  return Buffer.from(`id:${label}`, 'utf8').toString('hex').padEnd(64, '0').slice(0, 64);
 }
 
 function seed() {

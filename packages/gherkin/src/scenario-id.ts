@@ -1,4 +1,4 @@
-import { computeScenarioId, computeStepId } from '@letsrunit/store';
+import { computeScenarioId, computeStepId } from './ids';
 import { parseFeature } from './feature';
 
 export function scenarioIdFromGherkin(input: string): string {

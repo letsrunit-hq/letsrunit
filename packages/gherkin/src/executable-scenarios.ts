@@ -1,6 +1,6 @@
 import { generateMessages } from '@cucumber/gherkin';
 import { IdGenerator, SourceMediaType, type Envelope } from '@cucumber/messages';
-import { computeScenarioId, computeStepId } from '@letsrunit/store';
+import { computeScenarioId, computeStepId } from './ids';
 import { normalizeSteps, type StepInput } from './normalize-steps';
 
 const newId = IdGenerator.uuid();

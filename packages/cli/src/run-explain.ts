@@ -1,4 +1,4 @@
-import { explain as explainRun, type ExplainResult } from '@letsrunit/executor';
+import explainRun, { type ExplainResult } from '@letsrunit/executor/explain';
 
 export async function runExplain(opts: { db?: string; artifacts?: string }) {
   const result: ExplainResult = await explainRun({ dbPath: opts.db, artifactsDir: opts.artifacts });
