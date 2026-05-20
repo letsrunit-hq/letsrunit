@@ -1,33 +1,22 @@
-import metascraper, { type MetascraperOptions } from 'metascraper';
-import metascraperDescription from 'metascraper-description';
-import metascraperImage from 'metascraper-image';
-import metascraperLang from 'metascraper-lang';
-import metascraperLogo from 'metascraper-logo';
-import metascraperLogoFavicon from 'metascraper-logo-favicon';
-import metascraperTitle from 'metascraper-title';
-import metascraperUrl from 'metascraper-url';
+import type { Page } from '@playwright/test';
+import { extractPageMetadata } from './page-metadata';
+import { screenshot as takeScreenshot } from './screenshot';
 import type { PageInfo, Snapshot } from './types';
+import { isPage } from './utils/type-check';
 
-const scrape = metascraper([
-  metascraperTitle(),
-  metascraperDescription(),
-  metascraperImage(),
-  metascraperLogo(),
-  metascraperLogoFavicon(),
-  metascraperLang(),
-  metascraperUrl(),
-]);
+type PageLike = Page | Partial<Snapshot> & { url: string; html: string };
 
-export async function extractPageInfo(options: MetascraperOptions & Partial<Snapshot>): Promise<PageInfo> {
-  const meta = await scrape(options);
+export async function extractPageInfo(page: PageLike): Promise<PageInfo> {
+  const snapshot = isPage(page)
+    ? {
+        url: page.url(),
+        html: await page.content(),
+        screenshot: await takeScreenshot(page),
+      }
+    : page;
 
   return {
-    url: meta.url || options.url,
-    name: meta.title || undefined,
-    description: meta.description || undefined,
-    image: meta.image || undefined,
-    favicon: meta.logo || undefined,
-    lang: meta.lang || undefined,
-    screenshot: options.screenshot,
+    ...extractPageMetadata(snapshot),
+    screenshot: snapshot.screenshot,
   };
 }
