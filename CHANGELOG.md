@@ -1,3 +1,11 @@
+## [0.21.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.21.0...v0.21.1) (2026-05-20)
+
+
+### Bug Fixes
+
+* decouple sqlite from gherkin and executor ([b081a3e](https://github.com/letsrunit-hq/letsrunit/commit/b081a3e14f2404fcdc99796fcb3f534a3aee8b98))
+* remove metascraper dependencies ([961f449](https://github.com/letsrunit-hq/letsrunit/commit/961f4497142e8c305663b5bbe8bf8b1023a8eec0))
+
 # [0.21.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.20.0...v0.21.0) (2026-05-11)
 
 
