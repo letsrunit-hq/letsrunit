@@ -41,7 +41,7 @@ jobs:
           yarn workspace @letsrunit/store pack --out /tmp/store.tgz
           yarn workspace @letsrunit/utils pack --out /tmp/utils.tgz
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: tarballs
           path: |
