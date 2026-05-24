@@ -1,18 +1,26 @@
 import type { Locator } from '@playwright/test';
 import { describe, expect, it, vi } from 'vitest';
+import { createFallbackLocator } from '../../src/fallback-locator';
 import { pickFieldElement } from '../../src/utils/pick-field-element';
 
 describe('pickFieldElement', () => {
   const createMockLocator = (elements: any[]) => {
+    const singleLocatorFor = (el: any) =>
+      ({
+        count: vi.fn(async () => 1),
+        first: vi.fn().mockReturnThis(),
+        nth: vi.fn().mockReturnThis(),
+        evaluate: vi.fn(async (fn: any) => fn(el)),
+        getAttribute: vi.fn(async (name: string) => el.getAttribute(name)),
+        fill: vi.fn(async () => {}),
+      }) as unknown as Locator;
+
     return {
       count: vi.fn(async () => elements.length),
+      first: vi.fn(() => singleLocatorFor(elements[0])),
       nth: vi.fn((index) => {
         const el = elements[index];
-        return {
-          evaluate: vi.fn(async (fn: any) => fn(el)),
-          getAttribute: vi.fn(async (name: string) => el.getAttribute(name)),
-          fill: vi.fn(async () => {}),
-        } as unknown as Locator;
+        return singleLocatorFor(el);
       }),
       evaluateAll: vi.fn(async (fn: any) => fn(elements)),
       evaluate: vi.fn(async (fn: any) => {
@@ -49,9 +57,8 @@ describe('pickFieldElement', () => {
 
     const multiLocator = createMockLocator([inputMock, divMock]);
 
-    // Should pick inputMock because offset doesn't matter anymore, only type/aria-hidden
     const result = await pickFieldElement(multiLocator);
-    await result.evaluate(() => {});
+    expect(await result.evaluate((node) => node.tagName)).toBe('INPUT');
   });
 
   it('picks role="group" when no primary controls are found', async () => {
@@ -72,7 +79,7 @@ describe('pickFieldElement', () => {
 
     const multiLocator = createMockLocator([groupMock, divMock]);
     const result = await pickFieldElement(multiLocator);
-    await result.evaluate(() => {});
+    expect(await result.evaluate((node) => node.getAttribute('role'))).toBe('group');
   });
 
   it('picks the parent element when one contains others', async () => {
@@ -94,12 +101,11 @@ describe('pickFieldElement', () => {
     };
 
     const multiLocator = createMockLocator([childMock, parentMock]);
-    // It should pick parent because child is aria-hidden and parent contains child
     const result = await pickFieldElement(multiLocator);
-    await result.evaluate(() => {});
+    expect(await result.evaluate((node) => node.tagName)).toBe('DIV');
   });
 
-  it('fails with multiple elements if no rule matches', async () => {
+  it('falls back to the first element if no rule matches', async () => {
     const div1 = {
       tagName: 'DIV',
       getAttribute: () => null,
@@ -119,9 +125,7 @@ describe('pickFieldElement', () => {
 
     const multiLocator = createMockLocator([div1, div2]);
     const result = await pickFieldElement(multiLocator);
-    await expect(result.evaluate(() => {})).rejects.toThrow(
-      'strict mode violation: locator resolved to 2 elements',
-    );
+    expect(await result.evaluate((node) => node.tagName)).toBe('DIV');
   });
 
   it('excludes input[type=hidden] from primary candidates', async () => {
@@ -141,9 +145,8 @@ describe('pickFieldElement', () => {
     };
 
     const multiLocator = createMockLocator([hiddenInputMock, visibleInputMock]);
-    // Should pick visibleInputMock because hiddenInputMock is type="hidden"
     const result = await pickFieldElement(multiLocator);
-    await result.evaluate(() => {});
+    expect(await result.evaluate((node) => node.getAttribute('type'))).toBe('text');
   });
 
   it('excludes elements with aria-hidden="true" from primary candidates', async () => {
@@ -163,8 +166,22 @@ describe('pickFieldElement', () => {
     };
 
     const multiLocator = createMockLocator([ariaHiddenInputMock, visibleInputMock]);
-    // Should pick visibleInputMock because ariaHiddenInputMock has aria-hidden="true"
     const result = await pickFieldElement(multiLocator);
-    await result.evaluate(() => {});
+    expect(await result.evaluate((node) => node.getAttribute('aria-hidden'))).toBeNull();
+  });
+
+  it('resolves a fallback locator to the first present concrete candidate', async () => {
+    const missingPrimary = createMockLocator([]);
+    const presentFallback = createMockLocator([
+      {
+        tagName: 'INPUT',
+        getAttribute: (name: string) => (name === 'type' ? 'text' : null),
+      },
+    ]);
+
+    const locator = createFallbackLocator([missingPrimary as unknown as Locator, presentFallback as unknown as Locator]);
+    const result = await pickFieldElement(locator);
+
+    expect(await result.evaluate((node) => node.tagName)).toBe('INPUT');
   });
 });

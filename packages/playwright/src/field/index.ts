@@ -55,9 +55,7 @@ export async function setFieldValue(el: Locator, value: Value, options?: SetOpti
     setFallback,
   );
 
-  if ((await el.count()) > 1) {
-    el = await pickFieldElement(el);
-  }
+  el = await pickFieldElement(el);
 
   const tag = await el.evaluate((e) => e.tagName.toLowerCase(), options);
   const type = (

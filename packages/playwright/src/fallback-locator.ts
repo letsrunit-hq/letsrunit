@@ -2,6 +2,7 @@ import { Locator } from '@playwright/test';
 
 type LocatorMethod = (...args: any[]) => any;
 type ProxyProperty = string | symbol;
+export const FALLBACK_LOCATOR_CANDIDATES = Symbol('letsrunit.playwright.fallback-locator-candidates');
 
 const ACTION_METHODS = new Set([
   'blur',
@@ -158,6 +159,7 @@ export function createFallbackLocator(candidates: Locator[]): Locator {
 
   const proxy = new Proxy(primary as unknown as object, {
     get(_target, prop: ProxyProperty) {
+      if (prop === FALLBACK_LOCATOR_CANDIDATES) return candidates;
       if (typeof prop !== 'string') return (primary as any)[prop];
       if (passthroughMetaProperties.has(prop)) return (primary as any)[prop];
 
@@ -194,4 +196,8 @@ export function createFallbackLocator(candidates: Locator[]): Locator {
   });
 
   return proxy as Locator;
+}
+
+export function getFallbackLocatorCandidates(locator: Locator): Locator[] | null {
+  return ((locator as any)[FALLBACK_LOCATOR_CANDIDATES] as Locator[] | undefined) ?? null;
 }

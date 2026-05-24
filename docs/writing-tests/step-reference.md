@@ -22,12 +22,19 @@ Given I'm on page "/login"
 | Step                                                      | Description |
 |-----------------------------------------------------------|-------------|
 | `Then the page {contains\|does not contain} {selector}`   | Assert an element is (or is not) visible |
+| `Then {selector} is {visible\|hidden}`                    | Assert a specific element is visible or hidden |
 | `Then {selector} {contains\|does not contain} {selector}` | Assert a child element is (or is not) inside a parent |
+| `Then {selector} has focus`                               | Assert an element has focus |
+| `Then {selector} does not have focus`                     | Assert an element does not have focus |
 | `Then I should be on page {url}`                          | Assert the current path (supports `:param` wildcards) |
 
 ```gherkin
 Then The page contains text "Welcome"
 Then The page does not contain button "Sign in"
+Then button "Save" is visible
+Then text "Loading" is hidden
+Then field "Email" has focus
+Then button "Submit" does not have focus
 Then I should be on page "/dashboard"
 Then I should be on page "/users/:id/profile"
 ```
@@ -119,4 +126,3 @@ See [Email Testing](email-testing.md) for setup and examples.
 ## Custom steps
 
 You can add your <a href="custom-steps">own step definitions</a> for project-specific behavior.
-

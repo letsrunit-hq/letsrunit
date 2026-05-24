@@ -1,8 +1,24 @@
 import type { Locator } from '@playwright/test';
+import { getFallbackLocatorCandidates } from '../fallback-locator';
+
+async function resolveConcreteFieldLocator(elements: Locator): Promise<Locator> {
+  const fallbackCandidates = getFallbackLocatorCandidates(elements);
+  if (!fallbackCandidates) return elements;
+
+  for (const candidate of fallbackCandidates) {
+    try {
+      if ((await candidate.count()) > 0) return candidate;
+    } catch {}
+  }
+
+  return elements;
+}
 
 export async function pickFieldElement(elements: Locator): Promise<Locator> {
+  elements = await resolveConcreteFieldLocator(elements);
+
   const count = await elements.count();
-  if (count === 1) return elements;
+  if (count <= 1) return elements.first();
 
   const candidates: { el: Locator; tag: string; role: string | null; isVisible: boolean }[] = [];
 
@@ -43,6 +59,5 @@ export async function pickFieldElement(elements: Locator): Promise<Locator> {
     return elements.nth(isParent);
   }
 
-  // Return both elements and let the error (on evaluate) occur.
-  return elements;
+  return elements.first();
 }
