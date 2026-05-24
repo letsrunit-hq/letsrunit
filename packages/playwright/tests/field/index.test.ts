@@ -1,5 +1,6 @@
 import type { Locator } from '@playwright/test';
 import { describe, expect, it, vi } from 'vitest';
+import { createFallbackLocator } from '../../src/fallback-locator';
 import { setFieldValue } from '../../src/field/index';
 
 function makeEmptyLocator() {
@@ -28,6 +29,7 @@ function makeMockEl(tag: string, type: string | null): Locator {
   const emptyLoc = makeEmptyLocator();
   const el: any = {
     count: vi.fn().mockResolvedValue(1),
+    first: vi.fn().mockReturnThis(),
     evaluate: vi.fn().mockResolvedValue(tag),
     getAttribute: vi.fn().mockImplementation(async (attr: string) => {
       if (attr === 'type') return type;
@@ -67,5 +69,17 @@ describe('setFieldValue', () => {
     const el = makeMockEl('div', null);
     await setFieldValue(el, { from: 1, to: 5 });
     expect((el as any).fill).toHaveBeenCalledWith('1 - 5', undefined);
+  });
+
+  it('normalizes a fallback locator before handler probing', async () => {
+    const missingPrimary = makeMockEl('div', null);
+    (missingPrimary as any).count = vi.fn().mockResolvedValue(0);
+
+    const input = makeMockEl('input', 'text');
+    const locator = createFallbackLocator([missingPrimary, input]);
+
+    await setFieldValue(locator, 'hello');
+
+    expect((input as any).fill).toHaveBeenCalledWith('hello', undefined);
   });
 });
