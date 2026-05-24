@@ -50,6 +50,7 @@ next-env.d.ts
 .env*.local
 .playwright-mcp/
 .claude
+.codex/
 
 # Build outputs
 dist/
