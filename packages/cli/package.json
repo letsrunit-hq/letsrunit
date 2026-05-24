@@ -1,6 +1,6 @@
 {
   "name": "@letsrunit/cli",
-  "version": "0.21.1",
+  "version": "0.22.0",
   "description": "Command line interface for letsrunit",
   "keywords": [
     "testing",

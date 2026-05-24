@@ -1,3 +1,15 @@
+# [0.22.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.21.1...v0.22.0) (2026-05-24)
+
+
+### Bug Fixes
+
+* normalize fallback field locators before setting values ([506c80b](https://github.com/letsrunit-hq/letsrunit/commit/506c80b60199c90ca69fb1acd3ced67c3883a6f7))
+
+
+### Features
+
+* **bdd:** add visibility and focus assertions ([772ca6e](https://github.com/letsrunit-hq/letsrunit/commit/772ca6eb78b1160ce471f8d6649025059ec24311))
+
 ## [0.21.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.21.0...v0.21.1) (2026-05-20)
 
 
