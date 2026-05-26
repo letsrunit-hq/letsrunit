@@ -2,7 +2,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { ensureLetsrunitIgnored, writeLetsrunitEnv } from '../src/setup/cli-ai.js';
+import { ensureLetsrunitIgnored, formatManualCliAiSetupInstructions, writeLetsrunitEnv } from '../src/setup/cli-ai.js';
 
 const dirs: string[] = [];
 
@@ -84,5 +84,18 @@ describe('writeLetsrunitEnv', () => {
     expect(readFileSync(path, 'utf-8')).toContain('LETSRUNIT_AI_PROVIDER=anthropic\n');
     expect(readFileSync(path, 'utf-8')).toContain('LETSRUNIT_MODEL_LARGE=claude-opus-4-6\n');
     expect(readFileSync(path, 'utf-8')).toContain('OPENAI_API_KEY=sk-existing\n');
+  });
+});
+
+describe('formatManualCliAiSetupInstructions', () => {
+  it('prints the env vars needed for manual CLI AI setup', () => {
+    const instructions = formatManualCliAiSetupInstructions();
+
+    expect(instructions).toContain('.letsrunit/.env');
+    expect(instructions).toContain('LETSRUNIT_AI_PROVIDER=openai');
+    expect(instructions).toContain('LETSRUNIT_MODEL_LARGE=gpt-5.5');
+    expect(instructions).toContain('OPENAI_API_KEY=sk-...');
+    expect(instructions).toContain('ANTHROPIC_API_KEY');
+    expect(instructions).toContain('GOOGLE_GENERATIVE_AI_API_KEY');
   });
 });

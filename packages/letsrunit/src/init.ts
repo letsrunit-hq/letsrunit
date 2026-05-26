@@ -11,6 +11,7 @@ import {
 import { installCli, isCliInstalled } from './setup/cli.js';
 import {
   ensureLetsrunitIgnored,
+  formatManualCliAiSetupInstructions,
   type AiProvider,
   type ModelTier,
   providerPreset,
@@ -208,7 +209,6 @@ async function selectModel(provider: AiProvider, tier: ModelTier): Promise<strin
 async function selectCliAiConfig(): Promise<CliAiConfig | null> {
   const configure = await askBoolean('Configure CLI AI provider and models now?', true);
   if (!configure) {
-    note('Set provider, models, and API key later in .letsrunit/.env.', 'Manual AI setup');
     return null;
   }
 
@@ -317,6 +317,7 @@ export async function init(options: InitOptions = {}): Promise<void> {
 
   if (plan.installCli) await stepInstallCli(env);
   if (plan.configureCliAi) stepConfigureCliAi(env, plan.configureCliAi);
+  else if (plan.installCli) note(formatManualCliAiSetupInstructions(), 'Manual CLI AI setup');
 
   if (plan.installMcp) stepInstallMcpServer(env);
 

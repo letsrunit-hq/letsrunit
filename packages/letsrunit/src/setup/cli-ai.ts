@@ -76,6 +76,22 @@ export function providerPreset(provider: AiProvider): ProviderPreset {
   return preset;
 }
 
+export function formatManualCliAiSetupInstructions(): string {
+  const openai = providerPreset('openai');
+  return [
+    'Create .letsrunit/.env to configure AI for CLI commands:',
+    '',
+    'LETSRUNIT_AI_PROVIDER=openai',
+    `LETSRUNIT_MODEL_LARGE=${openai.defaults.large}`,
+    `LETSRUNIT_MODEL_MEDIUM=${openai.defaults.medium}`,
+    `LETSRUNIT_MODEL_SMALL=${openai.defaults.small}`,
+    'OPENAI_API_KEY=sk-...',
+    '',
+    'For Claude, use LETSRUNIT_AI_PROVIDER=anthropic and ANTHROPIC_API_KEY.',
+    'For Gemini, use LETSRUNIT_AI_PROVIDER=google and GOOGLE_GENERATIVE_AI_API_KEY.',
+  ].join('\n');
+}
+
 export function ensureLetsrunitIgnored(cwd: string): 'created' | 'updated' | 'skipped' {
   const path = join(cwd, '.gitignore');
   const entry = '.letsrunit';
