@@ -26,11 +26,11 @@ function hasAgentSelection(agents: InitOptions['agents']): boolean {
 export function hasExplicitInitSelections(options: InitOptions): boolean {
   return Boolean(
     options.withCli ||
-      options.withMcp ||
-      options.withCucumber ||
-      options.withPlaywright ||
-      options.withGithubActions ||
-      hasAgentSelection(options.agents),
+    options.withMcp ||
+    options.withCucumber ||
+    options.withPlaywright ||
+    options.withGithubActions ||
+    hasAgentSelection(options.agents),
   );
 }
 
@@ -44,7 +44,7 @@ export function resolveInitPlanOptions(options: InitOptions): InitPlanOptions {
   const installCucumber = Boolean(options.withCucumber);
   const installPlaywright = Boolean(options.withPlaywright);
   const addGithubActions = Boolean(options.withGithubActions);
-  const installCli = Boolean(options.withCli) || installMcp || installCucumber || installPlaywright || addGithubActions;
+  const installCli = Boolean(options.withCli);
 
   return {
     installCli,

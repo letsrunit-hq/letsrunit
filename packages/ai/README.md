@@ -21,11 +21,11 @@ The primary function for interacting with LLMs. It supports both text generation
 - **`system`**: The system prompt. Can be a string or a template object `{ template: string; vars: object }` (rendered using Mustache).
 - **`prompt`**: The user prompt (string) or an array of `ModelMessage`.
 - **`opts`**:
-    - `model`: `'large' | 'medium' | 'small'` (defaults to `medium`).
-    - `reasoningEffort`: `'minimal' | 'low' | 'medium'` (defaults to `low`).
-    - `schema`: A Zod schema. If provided, `generate` returns a typed object.
-    - `tools`: A set of AI SDK tools (cannot be used with `schema`).
-    - `abortSignal`: An `AbortSignal` to cancel the request.
+  - `model`: `'large' | 'medium' | 'small'` (defaults to `medium`).
+  - `reasoningEffort`: `'minimal' | 'low' | 'medium'` (defaults to `low`).
+  - `schema`: A Zod schema. If provided, `generate` returns a typed object.
+  - `tools`: A set of AI SDK tools (cannot be used with `schema`).
+  - `abortSignal`: An `AbortSignal` to cancel the request.
 
 ### `translate<T>(input, lang, options)`
 
@@ -34,14 +34,20 @@ Translates text or JSON objects from English to a target language.
 - **`input`**: A string or a JSON-serializable value.
 - **`lang`**: Target language code (e.g., `'nl'`, `'fr'`).
 - **`options`**:
-    - `cache`: An optional `cache-manager` instance to cache translations.
-    - `prompt`: An optional custom translation prompt.
-    - `reasoningEffort`: LLM reasoning effort level.
+  - `cache`: An optional `cache-manager` instance to cache translations.
+  - `prompt`: An optional custom translation prompt.
+  - `reasoningEffort`: LLM reasoning effort level.
 
 ## Environment Variables
 
 - `OPENAI_API_KEY`
+- `ANTHROPIC_API_KEY`
+- `GOOGLE_GENERATIVE_AI_API_KEY`
 - `TOGETHER_AI_API_KEY`
+- `LETSRUNIT_AI_PROVIDER` (`openai`, `anthropic`, or `google`; defaults to `openai`)
+- `LETSRUNIT_MODEL_LARGE`
+- `LETSRUNIT_MODEL_MEDIUM`
+- `LETSRUNIT_MODEL_SMALL`
 
 ### LangSmith tracing (optional)
 

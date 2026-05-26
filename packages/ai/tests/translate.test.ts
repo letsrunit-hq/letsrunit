@@ -8,6 +8,8 @@ let restore: (() => void) | undefined;
 
 beforeEach(() => {
   generateTextMock.mockReset();
+  delete process.env.LETSRUNIT_AI_PROVIDER;
+  delete process.env.LETSRUNIT_MODEL_SMALL;
   restore = mockAi(generateTextMock as any);
 });
 
@@ -43,7 +45,7 @@ describe('translate', () => {
       providerOptions: { openai: { reasoningEffort: 'low' } },
     });
     const passed = (generateTextMock.mock.calls[0][0] as any).model;
-    expect(passed?.modelId).toBe('gpt-5-nano');
+    expect(passed?.modelId).toBe('gpt-5.4-nano');
 
     expect(result).toBe('Bonjour le monde');
   });

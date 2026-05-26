@@ -17,6 +17,7 @@ npx letsrunit init
 It can:
 
 - Install `@letsrunit/cli`
+- Configure CLI AI settings in `.letsrunit/.env` during interactive setup
 - Install `@letsrunit/mcp-server` (project-local MCP runtime)
 - Install `@cucumber/cucumber` when missing
 - Install `@letsrunit/cucumber` and scaffold Cucumber support
@@ -28,6 +29,7 @@ It can:
 
 - `--with-cli`  
   Install `@letsrunit/cli`.
+  In interactive mode, CLI setup can also configure AI provider, model tiers, and API key in `.letsrunit/.env`.
 
 - `--with-mcp`  
   Install `@letsrunit/mcp-server`.
@@ -46,8 +48,10 @@ It can:
   Passing `--agents` also installs `@letsrunit/mcp-server`.
 
 Run `npx letsrunit init` with no options in an interactive terminal to choose components in a prompt.
+The prompt walks through Playwright Chromium, Cucumber, CLI, AI agents, and GitHub Actions one step at a time.
 
 In non-interactive mode, running `npx letsrunit init` without any `--with-*` flags or `--agents` prints help and exits.
+Passing `--with-cli` non-interactively installs only the CLI; AI settings remain manual.
 
 ## Generated/updated files
 

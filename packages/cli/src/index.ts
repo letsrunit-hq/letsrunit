@@ -11,6 +11,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runExplain } from './run-explain';
 import { runExplore } from './run-explore';
+import { loadLetsrunitEnv } from './letsrunit-env';
 import { resolveTarget } from './target';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -92,6 +93,7 @@ program
   .option('-s, --silent', 'Only output errors', false)
   .option('-o, --save <path>', 'Path to save .feature file', '')
   .action(async (opts: { target?: string; verbose: boolean; silent: boolean; save: string }) => {
+    loadLetsrunitEnv();
     const journal = createJournal({ ...opts, artifactPath: opts.save });
     const target = await resolveTarget(opts.target);
 
@@ -111,6 +113,7 @@ program
   .option('-s, --silent', 'Only output errors', false)
   .option('-o, --save <path>', 'Path to save .feature file', '')
   .action(async (opts: { target?: string; verbose: boolean; silent: boolean; save: string }) => {
+    loadLetsrunitEnv();
     const instructions = (await readStdin()).trim();
 
     if (!instructions) {
@@ -141,6 +144,7 @@ program
   .option('-s, --silent', 'Only output errors', false)
   .option('-o, --save <path>', 'Path to save .feature file', '')
   .action(async (opts: { target?: string; verbose: boolean; silent: boolean; save: string }) => {
+    loadLetsrunitEnv();
     const journal = createJournal({ ...opts, artifactPath: opts.save });
 
     const suggestion = {
@@ -173,6 +177,7 @@ program
   .option('--db <path>', 'Path to letsrunit SQLite DB')
   .option('--artifacts <path>', 'Path to letsrunit artifacts directory')
   .action(async (opts: { db?: string; artifacts?: string }) => {
+    loadLetsrunitEnv();
     await runExplain(opts);
   });
 
@@ -183,6 +188,7 @@ program
   .option('-v, --verbose', 'Enable verbose logging', false)
   .option('-s, --silent', 'Only output errors', false)
   .action(async (target: string, featureFile: string, opts: { verbose: boolean; silent: boolean }) => {
+    loadLetsrunitEnv();
     const feature = await fs.readFile(featureFile, 'utf-8');
     await run(target, feature, { headless: false, journal: createJournal(opts) });
   });

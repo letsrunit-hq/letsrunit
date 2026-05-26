@@ -1,4 +1,4 @@
-import { intro, isCancel, log, multiselect, note, outro, spinner } from '@clack/prompts';
+import { confirm, intro, isCancel, log, multiselect, note, outro, password, select, spinner } from '@clack/prompts';
 import type { AgentId } from './setup/agents/types.js';
 import { detectEnvironment, type Environment } from './detect.js';
 import {
@@ -9,13 +9,26 @@ import {
   shouldShowInitHelp,
 } from './init-options.js';
 import { installCli, isCliInstalled } from './setup/cli.js';
+import {
+  ensureLetsrunitIgnored,
+  type AiProvider,
+  type ModelTier,
+  providerPreset,
+  PROVIDER_PRESETS,
+  writeLetsrunitEnv,
+} from './setup/cli-ai.js';
 import { installCucumber, setupCucumber } from './setup/cucumber.js';
 import { detectAgentIds, getAgentCatalog, parseAgents, setupAgents } from './setup/agents.js';
 import { installGithubAction } from './setup/github-actions.js';
 import { recommendedBaseUrl, updateCucumberBaseUrl } from './setup/ci-workflow-plan.js';
 import { detectAppTarget, type DetectionResult, type AppTarget } from './setup/project-app.js';
 import { installMcpServer, isMcpServerInstalled } from './setup/mcp.js';
-import { hasPlaywrightBrowsers, installPlaywright, installPlaywrightBrowsers, isPlaywrightInstalled } from './setup/playwright.js';
+import {
+  hasPlaywrightBrowsers,
+  installPlaywright,
+  installPlaywrightBrowsers,
+  isPlaywrightInstalled,
+} from './setup/playwright.js';
 
 const BDD_IMPORT = '@letsrunit/cucumber';
 
@@ -36,6 +49,7 @@ const BANNER = String.raw`
 
 interface InstallPlan {
   installCli: boolean;
+  configureCliAi: CliAiConfig | null;
   installMcp: boolean;
   installCucumber: boolean;
   installPlaywright: boolean;
@@ -43,14 +57,10 @@ interface InstallPlan {
   agents: AgentId[];
 }
 
-function normalizePlan(plan: InstallPlan): InstallPlan {
-  const hasSelectedWork =
-    plan.installCli || plan.installMcp || plan.installCucumber || plan.installPlaywright || plan.addGithubActions || plan.agents.length > 0;
-
-  return {
-    ...plan,
-    installCli: hasSelectedWork,
-  };
+interface CliAiConfig {
+  provider: AiProvider;
+  models: Record<ModelTier, string>;
+  apiKey?: string;
 }
 
 function showBanner(): void {
@@ -67,6 +77,20 @@ async function stepInstallCli(env: Environment): Promise<void> {
   s.start('Installing @letsrunit/cli…');
   installCli(env);
   s.stop('@letsrunit/cli installed');
+}
+
+function stepConfigureCliAi(env: Environment, config: CliAiConfig): void {
+  const preset = providerPreset(config.provider);
+  const result = writeLetsrunitEnv(env.cwd, {
+    LETSRUNIT_AI_PROVIDER: config.provider,
+    LETSRUNIT_MODEL_LARGE: config.models.large,
+    LETSRUNIT_MODEL_MEDIUM: config.models.medium,
+    LETSRUNIT_MODEL_SMALL: config.models.small,
+    [preset.keyName]: config.apiKey,
+  });
+
+  if (result === 'skipped') log.info('.letsrunit/.env already up to date');
+  else log.success(`.letsrunit/.env ${result}`);
 }
 
 function stepInstallMcpServer(env: Environment): void {
@@ -148,17 +172,76 @@ function stepAddGithubAction(env: Environment, appTarget: DetectionResult<AppTar
 
 function optionPlan(options: InitOptions, explicitAgents: AgentId[]): InstallPlan {
   const resolved = resolveInitPlanOptions(options);
-  return normalizePlan({
+  return {
     installCli: resolved.installCli,
+    configureCliAi: null,
     installMcp: resolved.installMcp,
     installCucumber: resolved.installCucumber,
     installPlaywright: resolved.installPlaywright,
     addGithubActions: resolved.addGithubActions,
     agents: explicitAgents,
-  });
+  };
 }
 
-async function selectPlan(env: Environment, options: InitOptions, detectedAgents: AgentId[]): Promise<InstallPlan | null> {
+function assertNotCanceled<T>(value: T | symbol, message = 'Initialization canceled.'): T {
+  if (isCancel(value)) {
+    throw new Error(message);
+  }
+  return value;
+}
+
+async function askBoolean(message: string, initialValue: boolean): Promise<boolean> {
+  return assertNotCanceled(await confirm({ message, initialValue }));
+}
+
+async function selectModel(provider: AiProvider, tier: ModelTier): Promise<string> {
+  const preset = providerPreset(provider);
+  return assertNotCanceled(
+    await select({
+      message: `Choose ${tier} model`,
+      options: preset.models[tier].map((model) => ({ value: model, label: model })),
+      initialValue: preset.defaults[tier],
+    }),
+  );
+}
+
+async function selectCliAiConfig(): Promise<CliAiConfig | null> {
+  const configure = await askBoolean('Configure CLI AI provider and models now?', true);
+  if (!configure) {
+    note('Set provider, models, and API key later in .letsrunit/.env.', 'Manual AI setup');
+    return null;
+  }
+
+  const provider = assertNotCanceled(
+    await select({
+      message: 'Choose AI provider',
+      options: PROVIDER_PRESETS.map((preset) => ({ value: preset.provider, label: preset.label })),
+      initialValue: 'openai' as AiProvider,
+    }),
+  );
+  const preset = providerPreset(provider);
+  const large = await selectModel(provider, 'large');
+  const medium = await selectModel(provider, 'medium');
+  const small = await selectModel(provider, 'small');
+  const apiKey = assertNotCanceled(
+    await password({
+      message: `${preset.keyName} (optional, leave blank to set manually)`,
+      mask: '*',
+    }),
+  ).trim();
+
+  return {
+    provider,
+    models: { large, medium, small },
+    ...(apiKey ? { apiKey } : {}),
+  };
+}
+
+async function selectPlan(
+  env: Environment,
+  options: InitOptions,
+  detectedAgents: AgentId[],
+): Promise<InstallPlan | null> {
   const agentValue = Array.isArray(options.agents) ? options.agents.join(',') : options.agents;
   const explicitAgents = parseAgents(agentValue);
 
@@ -171,64 +254,45 @@ async function selectPlan(env: Environment, options: InitOptions, detectedAgents
     return null;
   }
 
-  note('Use ↑/↓ to move, space to toggle, enter to continue.', 'Controls');
-  note('`@letsrunit/cli` is installed automatically when you select any component or agent setup.', 'Core Component');
+  note(
+    'Letsrunit can install the browser runtime, Cucumber support, CLI tools, AI agent integration, and CI workflow for this project.',
+    'Setup',
+  );
 
-  const componentOptions = [
-    { value: 'cli', label: 'CLI', hint: '@letsrunit/cli', selected: false },
-    { value: 'mcp', label: 'MCP Server', hint: 'project-local runtime', selected: false },
-    { value: 'cucumber', label: 'Cucumber', hint: 'test runner integration', selected: false },
-    { value: 'playwright', label: 'Playwright Chromium', hint: 'browser runtime', selected: false },
-    { value: 'gha', label: 'GitHub Actions workflow', hint: 'CI scaffold', selected: false },
-  ];
+  const installPlaywright = await askBoolean('Set up browser runtime (Playwright Chromium)?', true);
+  const installCucumber = await askBoolean('Install and scaffold Cucumber support?', true);
+  const installCli = await askBoolean('Install the letsrunit CLI?', false);
+  const configureCliAi = installCli ? await selectCliAiConfig() : null;
 
-  const components = await multiselect({
-    message: 'Choose what to install/configure for this project',
-    options: componentOptions,
-    initialValues: [],
-    required: false,
-  });
-
-  if (isCancel(components)) {
-    throw new Error('Initialization canceled.');
-  }
-
-  const values = new Set((components ?? []) as string[]);
-  const installMcp = values.has('mcp');
-
-  let selectedAgents: AgentId[] = [];
-  if (installMcp) {
-    const catalog = getAgentCatalog();
-    note('Use ↑/↓ to move, space to toggle, enter to continue.', 'Agent Controls');
-    const picked = await multiselect({
-      message: 'AI Agent integration (MCP config + skill)',
-      options: catalog.map((agent) => ({
+  note('Use ↑/↓ to move, space to toggle, enter to continue.', 'Agent Controls');
+  const selectedAgents = assertNotCanceled(
+    await multiselect({
+      message: 'Configure AI agents (MCP package + per-agent setup)',
+      options: getAgentCatalog().map((agent) => ({
         value: agent.id,
         label: agent.label,
-        selected: false,
         hint: detectedAgents.includes(agent.id) ? 'detected' : undefined,
       })),
-      initialValues: [],
+      initialValues: detectedAgents,
       required: false,
-    });
+    }),
+  ) as AgentId[];
 
-    if (isCancel(picked)) {
-      throw new Error('Initialization canceled.');
-    }
-
-    selectedAgents = (picked ?? []) as AgentId[];
-  } else {
-    log.info('MCP Server not selected. AI agent integration options skipped.');
+  if (selectedAgents.length > 0) {
+    note('Some agents may require user-level MCP config when project-scope MCP is not supported.', 'Agent setup');
   }
 
-  return normalizePlan({
-    installCli: values.has('cli'),
-    installMcp,
-    installCucumber: values.has('cucumber'),
-    installPlaywright: values.has('playwright'),
-    addGithubActions: values.has('gha'),
+  const addGithubActions = await askBoolean('Add a GitHub Actions workflow?', false);
+
+  return {
+    installCli,
+    configureCliAi,
+    installMcp: selectedAgents.length > 0,
+    installCucumber,
+    installPlaywright,
+    addGithubActions,
     agents: selectedAgents,
-  });
+  };
 }
 
 export async function init(options: InitOptions = {}): Promise<void> {
@@ -241,19 +305,22 @@ export async function init(options: InitOptions = {}): Promise<void> {
   showBanner();
 
   const appTarget = detectAppTarget(env.cwd);
+  const ignoreResult = ensureLetsrunitIgnored(env.cwd);
+  if (ignoreResult !== 'skipped') log.success(`.gitignore ${ignoreResult}`);
 
-  if (plan.installCli) await stepInstallCli(env);
-
-  if (plan.installMcp) stepInstallMcpServer(env);
-
-  await setupAgents(env, { agents: plan.agents });
+  if (plan.installPlaywright) stepInstallPlaywright(env);
 
   if (plan.installCucumber) stepInstallCucumber(env);
   if (env.hasCucumber || plan.installCucumber) {
     stepSetupCucumber(env, appTarget);
   }
 
-  if (plan.installPlaywright) stepInstallPlaywright(env);
+  if (plan.installCli) await stepInstallCli(env);
+  if (plan.configureCliAi) stepConfigureCliAi(env, plan.configureCliAi);
+
+  if (plan.installMcp) stepInstallMcpServer(env);
+
+  await setupAgents(env, { agents: plan.agents });
   if (plan.addGithubActions) stepAddGithubAction(env, appTarget);
 
   outro('All done! Run npx letsrunit --help to get started.');

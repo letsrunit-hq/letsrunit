@@ -9,6 +9,10 @@ let restore: (() => void) | undefined;
 beforeEach(() => {
   generateTextMock.mockReset();
   generateObjectMock.mockReset();
+  delete process.env.LETSRUNIT_AI_PROVIDER;
+  delete process.env.LETSRUNIT_MODEL_LARGE;
+  delete process.env.LETSRUNIT_MODEL_MEDIUM;
+  delete process.env.LETSRUNIT_MODEL_SMALL;
 
   restore = mockAi(generateTextMock as any, generateObjectMock as any);
 });
@@ -31,7 +35,7 @@ describe('generate', () => {
     });
 
     const passed = (generateTextMock.mock.calls[0][0] as any).model;
-    expect(passed?.modelId).toBe('gpt-5-mini');
+    expect(passed?.modelId).toBe('gpt-5.4-mini');
     expect(result).toBe('generated text');
   });
 
@@ -47,8 +51,22 @@ describe('generate', () => {
       providerOptions: { openai: { reasoningEffort: 'low' } },
     });
     const passed = (generateTextMock.mock.calls[0][0] as any).model;
-    expect(passed?.modelId).toBe('gpt-5');
+    expect(passed?.modelId).toBe('gpt-5.5');
     expect(result).toBe('large model output');
+  });
+
+  it('omits OpenAI provider options for non-OpenAI providers', async () => {
+    process.env.LETSRUNIT_AI_PROVIDER = 'anthropic';
+    process.env.LETSRUNIT_MODEL_MEDIUM = 'claude-sonnet-4-6';
+    generateTextMock.mockResolvedValue({ text: 'generated text' });
+
+    await generate('system message', 'prompt text');
+
+    expect(generateTextMock).toHaveBeenCalledWith({
+      model: expect.anything(),
+      system: 'system message',
+      prompt: 'prompt text',
+    });
   });
 
   it('passes schema to generateObject and returns parsed object', async () => {

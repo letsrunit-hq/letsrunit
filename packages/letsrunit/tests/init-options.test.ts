@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { formatInitHelp, hasExplicitInitSelections, resolveInitPlanOptions, shouldShowInitHelp } from '../src/init-options.js';
+import {
+  formatInitHelp,
+  hasExplicitInitSelections,
+  resolveInitPlanOptions,
+  shouldShowInitHelp,
+} from '../src/init-options.js';
 
 describe('init option selection', () => {
   it('requires explicit selections in non-interactive mode', () => {
@@ -16,7 +21,7 @@ describe('init option selection', () => {
 
   it('treats agent setup as an mcp install request', () => {
     expect(resolveInitPlanOptions({ agents: 'codex,cursor' })).toEqual({
-      installCli: true,
+      installCli: false,
       installMcp: true,
       installCucumber: false,
       installPlaywright: false,
@@ -25,9 +30,9 @@ describe('init option selection', () => {
     });
   });
 
-  it('treats component selections as a cli install request', () => {
+  it('does not treat component selections as a cli install request', () => {
     expect(resolveInitPlanOptions({ withCucumber: true })).toEqual({
-      installCli: true,
+      installCli: false,
       installMcp: false,
       installCucumber: true,
       installPlaywright: false,
@@ -36,7 +41,7 @@ describe('init option selection', () => {
     });
 
     expect(resolveInitPlanOptions({ withGithubActions: true })).toEqual({
-      installCli: true,
+      installCli: false,
       installMcp: false,
       installCucumber: false,
       installPlaywright: false,
