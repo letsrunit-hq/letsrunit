@@ -33,7 +33,7 @@ export default defineConfig({
         'packages/journal/src/index.ts',
         'packages/journal/src/sink/index.ts',
         'packages/journal/src/sink/no-sink.ts',
-        'packages/letsrunit/src/index.ts',
+        'packages/init/src/index.ts',
         'packages/mailbox/src/index.ts',
         'packages/mcp-server/src/tools/index.ts',
         'packages/playwright/src/index.ts',

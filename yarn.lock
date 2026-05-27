@@ -15646,9 +15646,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"letsrunit@workspace:packages/letsrunit":
+"letsrunit@workspace:packages/init":
   version: 0.0.0-use.local
-  resolution: "letsrunit@workspace:packages/letsrunit"
+  resolution: "letsrunit@workspace:packages/init"
   dependencies:
     "@clack/prompts": "npm:^0.10.0"
     "@types/node": "npm:^25.0.9"

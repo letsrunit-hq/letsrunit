@@ -5,7 +5,7 @@ execution environments.
 
 Shared logic is divided into specialised, scoped packages (`@letsrunit/*`):
 
-- [`letsrunit`](./packages/letsrunit): Onboarding tool — run `npx letsrunit init` to set up a project.
+- [`letsrunit`](./packages/init): Onboarding tool — run `npx letsrunit init` to set up a project.
 - [`@letsrunit/ai`](./packages/ai): Interactions with LLMs, including prompt engineering and result parsing.
 - [`@letsrunit/bdd`](./packages/bdd): Reusable BDD step definitions for browser automation.
 - [`@letsrunit/cli`](./packages/cli): Command-line interface for running tests locally.
@@ -78,4 +78,3 @@ Merging to `main` triggers **semantic-release**, which bumps versions, publishes
 | `feat:`                           | minor release (0.x.0) |
 | `feat!:` or `BREAKING CHANGE:`    | major release (x.0.0) |
 | `chore:`, `docs:`, `ci:`, `test:` | no release            |
-

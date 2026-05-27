@@ -6,7 +6,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/letsrunit-hq/letsrunit.git",
-    "directory": "packages/letsrunit"
+    "directory": "packages/init"
   },
   "bugs": "https://github.com/letsrunit-hq/letsrunit/issues",
   "homepage": "https://github.com/letsrunit-hq/letsrunit#readme",
