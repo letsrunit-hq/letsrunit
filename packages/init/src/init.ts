@@ -65,8 +65,8 @@ const SETUP_EXPLANATIONS = {
     'Letsrunit adds @cucumber/cucumber, a cucumber.js config, and a support file that registers the built-in browser steps from @letsrunit/cucumber.',
   ].join('\n'),
   cli: [
-    'The letsrunit CLI provides terminal commands for generating, exploring, running, and explaining tests.',
-    'Install it if you want project-local `letsrunit` commands in addition to running Cucumber directly.',
+    'The letsrunit CLI provides terminal commands for generating tests and explaining tests failures. It requires an AI API key to work.',
+    'Install it if you\'re not using an AI coding agent (such as Claude or Codex), but want to use AI to generate and debug tests from the terminal.',
   ].join('\n'),
   agents: [
     'Agent integration configures MCP so AI coding agents can inspect your project, load your support files, and run letsrunit steps.',
