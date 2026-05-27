@@ -55,6 +55,29 @@ import {
 
 const BDD_IMPORT = '@letsrunit/cucumber';
 
+const SETUP_EXPLANATIONS = {
+  playwright: [
+    'Playwright is the browser automation engine letsrunit uses to click, type, inspect pages, and capture artifacts.',
+    'This installs @playwright/test and a Chromium browser so tests can run against your app.',
+  ].join('\n'),
+  cucumber: [
+    'Cucumber is the test runner for .feature files written in Gherkin, such as "Given I am on the homepage".',
+    'Letsrunit adds @cucumber/cucumber, a cucumber.js config, and a support file that registers the built-in browser steps from @letsrunit/cucumber.',
+  ].join('\n'),
+  cli: [
+    'The letsrunit CLI provides terminal commands for generating, exploring, running, and explaining tests.',
+    'Install it if you want project-local `letsrunit` commands in addition to running Cucumber directly.',
+  ].join('\n'),
+  agents: [
+    'Agent integration configures MCP so AI coding agents can inspect your project, load your support files, and run letsrunit steps.',
+    'Use this if you want tools such as Codex, Cursor, Claude Code, Copilot, Gemini, or Windsurf to drive tests from the project.',
+  ].join('\n'),
+  githubActions: [
+    'GitHub Actions runs the feature suite in CI on pushes and pull requests.',
+    'Letsrunit generates a workflow that installs dependencies, starts your app, waits for the configured base URL, and runs Cucumber.',
+  ].join('\n'),
+} as const;
+
 const BANNER = String.raw`
         .:::::.                                                                                                         
      .:::::::::::.          ...                                                                      .-:                
@@ -238,6 +261,10 @@ function assertNotCanceled<T>(value: T | symbol, message = 'Initialization cance
 
 async function askBoolean(message: string, initialValue: boolean): Promise<boolean> {
   return assertNotCanceled(await confirm({ message, initialValue }));
+}
+
+function explainSetupComponent(component: keyof typeof SETUP_EXPLANATIONS, title: string): void {
+  note(SETUP_EXPLANATIONS[component], title);
 }
 
 async function askText(message: string, initialValue: string): Promise<string> {
@@ -480,11 +507,17 @@ async function selectPlan(
     'Setup',
   );
 
+  explainSetupComponent('playwright', 'Playwright');
   const installPlaywright = await askBoolean('Set up browser runtime (Playwright Chromium)?', true);
+
+  explainSetupComponent('cucumber', 'Cucumber');
   const installCucumber = await askBoolean('Install and scaffold Cucumber support?', true);
+
+  explainSetupComponent('cli', 'CLI');
   const installCli = await askBoolean('Install the letsrunit CLI?', false);
   const configureCliAi = installCli ? await selectCliAiConfig() : null;
 
+  explainSetupComponent('agents', 'AI agents');
   note('Use ↑/↓ to move, space to toggle, enter to continue.', 'Agent Controls');
   const selectedAgents = assertNotCanceled(
     await multiselect({
@@ -503,6 +536,7 @@ async function selectPlan(
     note('Some agents may require user-level MCP config when project-scope MCP is not supported.', 'Agent setup');
   }
 
+  explainSetupComponent('githubActions', 'GitHub Actions');
   const addGithubActions = await askBoolean('Add a GitHub Actions workflow?', false);
 
   return {
