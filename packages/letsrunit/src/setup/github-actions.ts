@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Environment } from '../detect.js';
-import { buildCiWorkflowPlan, type CiWorkflowPlan } from './ci-workflow-plan.js';
+import { buildCiWorkflowPlan, type CiWorkflowPlan, type CiWorkflowPlanOverrides } from './ci-workflow-plan.js';
 import type { DetectionResult, AppTarget } from './project-app.js';
 
 export interface GithubActionsResult {
@@ -28,17 +28,16 @@ function renderServiceBlock(plan: CiWorkflowPlan): string {
   return `${plan.serviceYamlLines.join('\n')}\n`;
 }
 
-function renderDbSteps(plan: CiWorkflowPlan): string {
-  if (plan.dbSetupSteps.length === 0) return '';
-  return `${plan.dbSetupSteps.join('\n')}\n`;
+function renderSetupSteps(plan: CiWorkflowPlan): string {
+  if (plan.setupSteps.length === 0) return '';
+  return `${plan.setupSteps.join('\n')}\n`;
 }
 
 function workflowYaml(plan: CiWorkflowPlan): string {
-  const setupSteps = plan.setupNodeBlock.join('\n');
   const serviceBlock = renderServiceBlock(plan);
   const todoComments = renderTodoComments(plan);
   const buildStep = renderBuildStep(plan);
-  const dbSteps = renderDbSteps(plan);
+  const setupSteps = renderSetupSteps(plan);
   const waitUrl = `${plan.baseUrl.value.replace(/\/$/, '')}/`;
 
   return `name: Features
@@ -51,17 +50,17 @@ jobs:
   features:
     runs-on: ubuntu-latest
 ${serviceBlock}    env:
-      BASE_URL: ${plan.baseUrl.value}
+${plan.envYamlLines.join('\n')}
     steps:
       - uses: actions/checkout@v4
-${setupSteps}
+${plan.setupNodeBlock.join('\n')}
       - name: Install dependencies
         run: ${plan.installCommand}
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
       - name: Install wait-on
         run: npm i -g wait-on
-${buildStep}${dbSteps}${todoComments}      - name: Start app
+${buildStep}${setupSteps}${todoComments}      - name: Start app
         run: ${plan.startCommand.value} &
       - name: Wait for app
         run: wait-on ${waitUrl}
@@ -72,11 +71,11 @@ ${buildStep}${dbSteps}${todoComments}      - name: Start app
 
 export function installGithubAction(
   env: Pick<Environment, 'packageManager' | 'nodeVersion' | 'cwd'>,
-  options: { appTarget?: DetectionResult<AppTarget> } = {},
+  options: { appTarget?: DetectionResult<AppTarget>; overrides?: CiWorkflowPlanOverrides } = {},
 ): GithubActionsResult {
   const workflowDir = join(env.cwd, '.github', 'workflows');
   const workflowPath = join(workflowDir, 'letsrunit.yml');
-  const plan = buildCiWorkflowPlan(env, { appTarget: options.appTarget });
+  const plan = buildCiWorkflowPlan(env, { appTarget: options.appTarget, overrides: options.overrides });
 
   if (existsSync(workflowPath)) return { status: 'skipped', plan };
 

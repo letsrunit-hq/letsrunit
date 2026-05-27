@@ -1,4 +1,18 @@
-import { confirm, intro, isCancel, log, multiselect, note, outro, password, select, spinner } from '@clack/prompts';
+import {
+  confirm,
+  intro,
+  isCancel,
+  log,
+  multiselect,
+  note,
+  outro,
+  password,
+  select,
+  spinner,
+  text,
+} from '@clack/prompts';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import type { AgentId } from './setup/agents/types.js';
 import { detectEnvironment, type Environment } from './detect.js';
 import {
@@ -21,7 +35,15 @@ import {
 import { installCucumber, setupCucumber } from './setup/cucumber.js';
 import { detectAgentIds, getAgentCatalog, parseAgents, setupAgents } from './setup/agents.js';
 import { installGithubAction } from './setup/github-actions.js';
-import { recommendedBaseUrl, updateCucumberBaseUrl } from './setup/ci-workflow-plan.js';
+import {
+  buildCiWorkflowPlan,
+  dbDefaults,
+  type CiDbService,
+  type CiMailConfig,
+  type CiMailService,
+  type CiWorkflowPlanOverrides,
+  type SupabaseMode,
+} from './setup/ci-workflow-plan.js';
 import { detectAppTarget, type DetectionResult, type AppTarget } from './setup/project-app.js';
 import { installMcpServer, isMcpServerInstalled } from './setup/mcp.js';
 import {
@@ -62,6 +84,11 @@ interface CliAiConfig {
   provider: AiProvider;
   models: Record<ModelTier, string>;
   apiKey?: string;
+}
+
+interface MailSetup {
+  config: CiMailConfig;
+  env: Record<string, string | undefined>;
 }
 
 function showBanner(): void {
@@ -118,8 +145,9 @@ function stepInstallCucumber(env: Environment): void {
   s.stop('@cucumber/cucumber installed');
 }
 
-function stepSetupCucumber(env: Environment, appTarget: DetectionResult<AppTarget>): void {
-  const result = setupCucumber(env, { baseUrl: appTarget.value.baseUrl });
+function stepSetupCucumber(env: Environment, baseUrl: string): void {
+  const hadCucumberConfig = existsSync(join(env.cwd, 'cucumber.js'));
+  const result = setupCucumber(env, { baseUrl });
 
   if (result.bddInstalled) log.success('@letsrunit/cucumber installed');
 
@@ -128,6 +156,13 @@ function stepSetupCucumber(env: Environment, appTarget: DetectionResult<AppTarge
   } else if (result.configResult === 'needs-manual-update') {
     log.warn('features/support/world.js exists but does not import @letsrunit/cucumber.');
     note(`Add "import '${BDD_IMPORT}';" to features/support/world.js`, 'Action required');
+  }
+
+  if (hadCucumberConfig) {
+    note(
+      'cucumber.js already exists, so init did not modify it. Add `process.env.LETSRUNIT_BASE_URL` as the baseURL fallback manually if needed.',
+      'Cucumber config',
+    );
   }
 
   if (result.featuresCreated) log.success('features/ directory created with example.feature');
@@ -154,20 +189,30 @@ function stepInstallPlaywright(env: Environment): void {
   s.stop('Playwright Chromium installed');
 }
 
-function stepAddGithubAction(env: Environment, appTarget: DetectionResult<AppTarget>): void {
-  const result = installGithubAction(env, { appTarget });
+function stepWriteRuntimeEnv(env: Environment, values: Record<string, string | undefined>): void {
+  const result = writeLetsrunitEnv(env.cwd, values);
+  if (result === 'skipped') log.info('.letsrunit/.env already up to date');
+  else log.success(`.letsrunit/.env ${result}`);
+}
+
+function stepAddGithubAction(
+  env: Environment,
+  appTarget: DetectionResult<AppTarget>,
+  overrides?: CiWorkflowPlanOverrides,
+): void {
+  const result = installGithubAction(env, { appTarget, overrides });
   if (result.status === 'created') {
     log.success('.github/workflows/letsrunit.yml created');
   } else {
     log.info('.github/workflows/letsrunit.yml already exists, skipped');
-  }
-
-  const baseUrl = recommendedBaseUrl(result.plan);
-  if (baseUrl !== 'http://localhost:3000') {
-    const update = updateCucumberBaseUrl(env.cwd, baseUrl);
-    if (update === 'updated') {
-      log.success(`cucumber.js baseURL updated to ${baseUrl}`);
-    }
+    note(
+      [
+        `Detected base URL: ${result.plan.baseUrl.value}`,
+        `Detected start command: ${result.plan.startCommand.value}`,
+        `Detected DB service: ${result.plan.db.value.service}`,
+      ].join('\n'),
+      'GitHub Actions guidance',
+    );
   }
 }
 
@@ -193,6 +238,11 @@ function assertNotCanceled<T>(value: T | symbol, message = 'Initialization cance
 
 async function askBoolean(message: string, initialValue: boolean): Promise<boolean> {
   return assertNotCanceled(await confirm({ message, initialValue }));
+}
+
+async function askText(message: string, initialValue: string): Promise<string> {
+  const value = assertNotCanceled(await text({ message, initialValue }));
+  return value.trim() || initialValue;
 }
 
 async function selectModel(provider: AiProvider, tier: ModelTier): Promise<string> {
@@ -234,6 +284,177 @@ async function selectCliAiConfig(): Promise<CliAiConfig | null> {
     provider,
     models: { large, medium, small },
     ...(apiKey ? { apiKey } : {}),
+  };
+}
+
+function currentMailSetup(): MailSetup {
+  const service = process.env.LETSRUNIT_MAILBOX_SERVICE;
+  if (service === 'mailpit') {
+    const baseUrl = process.env.LETSRUNIT_MAILPIT_BASE_URL ?? 'http://localhost:8025';
+    return {
+      config: { service, mailpitBaseUrl: baseUrl },
+      env: { LETSRUNIT_MAILBOX_SERVICE: service, LETSRUNIT_MAILPIT_BASE_URL: baseUrl },
+    };
+  }
+  if (service === 'mailhog') {
+    const baseUrl = process.env.LETSRUNIT_MAILHOG_BASE_URL ?? 'http://localhost:8025';
+    return {
+      config: { service, mailhogBaseUrl: baseUrl },
+      env: { LETSRUNIT_MAILBOX_SERVICE: service, LETSRUNIT_MAILHOG_BASE_URL: baseUrl },
+    };
+  }
+  if (service === 'testmail') {
+    return {
+      config: { service, testmailDomain: process.env.LETSRUNIT_MAILBOX_DOMAIN ?? 'inbox.testmail.app' },
+      env: {
+        LETSRUNIT_MAILBOX_SERVICE: service,
+        LETSRUNIT_TESTMAIL_API_KEY: process.env.LETSRUNIT_TESTMAIL_API_KEY,
+        LETSRUNIT_TESTMAIL_NAMESPACE: process.env.LETSRUNIT_TESTMAIL_NAMESPACE,
+        LETSRUNIT_MAILBOX_DOMAIN: process.env.LETSRUNIT_MAILBOX_DOMAIN ?? 'inbox.testmail.app',
+      },
+    };
+  }
+  return { config: { service: 'none' }, env: { LETSRUNIT_MAILBOX_SERVICE: 'none' } };
+}
+
+async function selectBaseUrl(env: Environment, detected: DetectionResult<AppTarget>): Promise<string> {
+  if (!env.isInteractive) return detected.value.baseUrl;
+  return await askText('Base URL for letsrunit tests', detected.value.baseUrl);
+}
+
+async function selectMailSetup(env: Environment): Promise<MailSetup> {
+  const current = currentMailSetup();
+  if (!env.isInteractive) return current;
+
+  const service = assertNotCanceled(
+    await select({
+      message: 'Configure mailbox service for email testing',
+      options: [
+        { value: 'none' as CiMailService, label: 'None' },
+        { value: 'mailpit' as CiMailService, label: 'Mailpit' },
+        { value: 'testmail' as CiMailService, label: 'Testmail' },
+        { value: 'mailhog' as CiMailService, label: 'MailHog' },
+      ],
+      initialValue: current.config.service,
+    }),
+  );
+
+  if (service === 'mailpit') {
+    const baseUrl = await askText('Mailpit web/API base URL', current.config.mailpitBaseUrl ?? 'http://localhost:8025');
+    return {
+      config: { service, mailpitBaseUrl: baseUrl },
+      env: { LETSRUNIT_MAILBOX_SERVICE: service, LETSRUNIT_MAILPIT_BASE_URL: baseUrl },
+    };
+  }
+
+  if (service === 'mailhog') {
+    const baseUrl = await askText('MailHog web/API base URL', current.config.mailhogBaseUrl ?? 'http://localhost:8025');
+    return {
+      config: { service, mailhogBaseUrl: baseUrl },
+      env: { LETSRUNIT_MAILBOX_SERVICE: service, LETSRUNIT_MAILHOG_BASE_URL: baseUrl },
+    };
+  }
+
+  if (service === 'testmail') {
+    const apiKey = assertNotCanceled(
+      await password({
+        message: 'LETSRUNIT_TESTMAIL_API_KEY (optional, leave blank to set manually)',
+        mask: '*',
+      }),
+    ).trim();
+    const namespace = await askText(
+      'LETSRUNIT_TESTMAIL_NAMESPACE',
+      process.env.LETSRUNIT_TESTMAIL_NAMESPACE ?? 'your_namespace',
+    );
+    const domain = await askText('LETSRUNIT_MAILBOX_DOMAIN', current.config.testmailDomain ?? 'inbox.testmail.app');
+    return {
+      config: { service, testmailDomain: domain },
+      env: {
+        LETSRUNIT_MAILBOX_SERVICE: service,
+        LETSRUNIT_TESTMAIL_API_KEY: apiKey || undefined,
+        LETSRUNIT_TESTMAIL_NAMESPACE: namespace,
+        LETSRUNIT_MAILBOX_DOMAIN: domain,
+      },
+    };
+  }
+
+  return { config: { service: 'none' }, env: { LETSRUNIT_MAILBOX_SERVICE: 'none' } };
+}
+
+async function selectOptionalCommand(message: string, current: string | null): Promise<string | null> {
+  const value = await askText(message, current ?? '');
+  return value || null;
+}
+
+async function selectDbService(defaultService: CiDbService): Promise<CiDbService> {
+  return assertNotCanceled(
+    await select({
+      message: 'Database service for GitHub Actions',
+      options: [
+        { value: 'none' as CiDbService, label: 'None' },
+        { value: 'postgres' as CiDbService, label: 'Postgres' },
+        { value: 'supabase' as CiDbService, label: 'Supabase' },
+        { value: 'mysql' as CiDbService, label: 'MySQL' },
+        { value: 'mongodb' as CiDbService, label: 'MongoDB' },
+      ],
+      initialValue: defaultService,
+    }),
+  );
+}
+
+async function selectSupabaseMode(defaultMode: SupabaseMode): Promise<SupabaseMode> {
+  return assertNotCanceled(
+    await select({
+      message: 'Supabase mode for GitHub Actions',
+      options: [
+        { value: 'local' as SupabaseMode, label: 'Local Supabase in CI' },
+        { value: 'hosted' as SupabaseMode, label: 'Hosted Supabase via secrets' },
+      ],
+      initialValue: defaultMode,
+    }),
+  );
+}
+
+async function selectCiWorkflowOverrides(
+  env: Environment,
+  appTarget: DetectionResult<AppTarget>,
+  baseUrl: string,
+  mail: MailSetup,
+): Promise<CiWorkflowPlanOverrides | undefined> {
+  if (!env.isInteractive) return { baseUrl: { value: baseUrl, confidence: 'high', evidence: ['.letsrunit/.env'] } };
+
+  const detected = buildCiWorkflowPlan(env, {
+    appTarget,
+    overrides: { mail: { value: mail.config, confidence: 'high', evidence: ['init mail setup'] } },
+  });
+  const buildCommand = await selectOptionalCommand('Build command for GitHub Actions', detected.buildCommand.value);
+  const startCommand = await askText('Start command for GitHub Actions', detected.startCommand.value);
+  const ciBaseUrl = await askText('Base URL GitHub Actions should wait for', baseUrl);
+  const service = await selectDbService(detected.db.value.service);
+  const defaults =
+    detected.db.value.service === service
+      ? { ...dbDefaults(service), ...detected.db.value, service }
+      : dbDefaults(service);
+  const name = service === 'none' ? defaults.name : await askText('Database name', defaults.name);
+  const user = service === 'none' ? defaults.user : await askText('Database user', defaults.user);
+  const dbPassword = service === 'none' ? defaults.password : await askText('Database password', defaults.password);
+  const supabaseMode =
+    service === 'supabase' ? await selectSupabaseMode(defaults.supabaseMode ?? 'local') : defaults.supabaseMode;
+  const migrationCommand = await selectOptionalCommand('Migration command (optional)', detected.migrationCommand.value);
+  const seedCommand = await selectOptionalCommand('Seed command (optional)', detected.seedCommand.value);
+
+  return {
+    buildCommand: { value: buildCommand, confidence: 'high', evidence: ['interactive confirmation'] },
+    startCommand: { value: startCommand, confidence: 'high', evidence: ['interactive confirmation'] },
+    baseUrl: { value: ciBaseUrl, confidence: 'high', evidence: ['interactive confirmation'] },
+    db: {
+      value: { service, name, user, password: dbPassword, supabaseMode },
+      confidence: 'high',
+      evidence: ['interactive confirmation'],
+    },
+    migrationCommand: { value: migrationCommand, confidence: 'high', evidence: ['interactive confirmation'] },
+    seedCommand: { value: seedCommand, confidence: 'high', evidence: ['interactive confirmation'] },
+    mail: { value: mail.config, confidence: 'high', evidence: ['init mail setup'] },
   };
 }
 
@@ -310,9 +531,12 @@ export async function init(options: InitOptions = {}): Promise<void> {
 
   if (plan.installPlaywright) stepInstallPlaywright(env);
 
+  const baseUrl = await selectBaseUrl(env, appTarget);
+  stepWriteRuntimeEnv(env, { LETSRUNIT_BASE_URL: baseUrl });
+
   if (plan.installCucumber) stepInstallCucumber(env);
   if (env.hasCucumber || plan.installCucumber) {
-    stepSetupCucumber(env, appTarget);
+    stepSetupCucumber(env, baseUrl);
   }
 
   if (plan.installCli) await stepInstallCli(env);
@@ -322,7 +546,18 @@ export async function init(options: InitOptions = {}): Promise<void> {
   if (plan.installMcp) stepInstallMcpServer(env);
 
   await setupAgents(env, { agents: plan.agents });
-  if (plan.addGithubActions) stepAddGithubAction(env, appTarget);
+  const mailSetup = await selectMailSetup(env);
+  stepWriteRuntimeEnv(env, mailSetup.env);
+  if (mailSetup.config.service === 'mailpit') {
+    note('Configure your app SMTP settings for Mailpit manually; app env names vary by project.', 'Mail setup');
+  } else if (mailSetup.config.service === 'mailhog') {
+    note('Configure your app SMTP settings for MailHog manually; app env names vary by project.', 'Mail setup');
+  }
+
+  if (plan.addGithubActions) {
+    const ciOverrides = await selectCiWorkflowOverrides(env, appTarget, baseUrl, mailSetup);
+    stepAddGithubAction(env, appTarget, ciOverrides);
+  }
 
   outro('All done! Run npx letsrunit --help to get started.');
 }

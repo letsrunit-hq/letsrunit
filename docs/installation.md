@@ -60,15 +60,19 @@ Letsrunit uses [Cucumber.js](https://cucumber.io/) as the test runner. Pass `--w
 
 It also creates two files:
 
-**`cucumber.js`** tells Cucumber where your app is running:
+**`cucumber.js`** tells Cucumber where your app is running. New configs load `.letsrunit/.env` and use `LETSRUNIT_BASE_URL` when it is set:
 
 ```js
-export default {
-  // ...
-  worldParameters: {
-    baseURL: 'http://localhost:3000',
+import { isAgentEnvironment, loadLetsrunitEnv, resolveDebugWorldParameters } from '@letsrunit/cucumber/config';
+
+loadLetsrunitEnv();
+
+const { worldParameters } = resolveDebugWorldParameters({
+  argv: process.argv,
+  baseWorldParameters: {
+    baseURL: process.env.LETSRUNIT_BASE_URL ?? 'http://localhost:3000',
   },
-};
+});
 ```
 
 **`features/support/world.js`** loads the Letsrunit step library:
@@ -102,7 +106,7 @@ Feature: Example
 
 Pass `--with-cli` to add `@letsrunit/cli` to your project's dev dependencies. It provides the `letsrunit` binary for `explore`, `generate`, and `run`.
 
-In interactive mode, selecting the CLI also offers to configure AI settings in `.letsrunit/.env`. You can skip that step and configure it manually later.
+In interactive mode, `init` writes letsrunit runtime settings such as `LETSRUNIT_BASE_URL` and mailbox settings to `.letsrunit/.env`. Selecting the CLI also offers to configure AI settings in that file.
 {% endstep %}
 
 {% step %}

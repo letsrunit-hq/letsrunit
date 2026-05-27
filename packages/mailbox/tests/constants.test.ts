@@ -14,10 +14,10 @@ describe('constants', () => {
   });
 
   it('uses test fallback values when NODE_ENV=test and env vars are unset', async () => {
-    delete process.env.TESTMAIL_API_KEY;
-    delete process.env.TESTMAIL_NAMESPACE;
-    delete process.env.MAILBOX_SERVICE;
-    delete process.env.MAILBOX_DOMAIN;
+    delete process.env.LETSRUNIT_TESTMAIL_API_KEY;
+    delete process.env.LETSRUNIT_TESTMAIL_NAMESPACE;
+    delete process.env.LETSRUNIT_MAILBOX_SERVICE;
+    delete process.env.LETSRUNIT_MAILBOX_DOMAIN;
     process.env.NODE_ENV = 'test';
 
     const c = await importFreshConstants();
@@ -29,10 +29,10 @@ describe('constants', () => {
 
   it('prefers explicit env vars and computes mailbox domain for testmail service', async () => {
     process.env.NODE_ENV = 'production';
-    process.env.TESTMAIL_API_KEY = 'k';
-    process.env.TESTMAIL_NAMESPACE = 'ns';
-    process.env.MAILBOX_SERVICE = 'testmail';
-    delete process.env.MAILBOX_DOMAIN;
+    process.env.LETSRUNIT_TESTMAIL_API_KEY = 'k';
+    process.env.LETSRUNIT_TESTMAIL_NAMESPACE = 'ns';
+    process.env.LETSRUNIT_MAILBOX_SERVICE = 'testmail';
+    delete process.env.LETSRUNIT_MAILBOX_DOMAIN;
 
     const c = await importFreshConstants();
     expect(c.TESTMAIL_API_KEY).toBe('k');
@@ -42,8 +42,8 @@ describe('constants', () => {
   });
 
   it('uses explicit mailbox domain override when provided', async () => {
-    process.env.MAILBOX_SERVICE = 'mailhog';
-    process.env.MAILBOX_DOMAIN = 'mail.custom.local';
+    process.env.LETSRUNIT_MAILBOX_SERVICE = 'mailhog';
+    process.env.LETSRUNIT_MAILBOX_DOMAIN = 'mail.custom.local';
 
     const c = await importFreshConstants();
     expect(c.MAILBOX_DOMAIN).toBe('mail.custom.local');

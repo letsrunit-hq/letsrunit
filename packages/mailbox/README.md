@@ -20,7 +20,7 @@ Generates a deterministic email address based on a seed (UUID).
 
 - **`seed`**: A UUID used to ensure the email is unique but reproducible.
 - **`name`**: Optional sub-address name.
-- **`domain`**: Optional domain. Defaults to the configured `MAILBOX_DOMAIN`.
+- **`domain`**: Optional domain. Defaults to the configured `LETSRUNIT_MAILBOX_DOMAIN`.
 
 ### `receiveMail(emailAddress, options)`
 
@@ -28,8 +28,8 @@ Retrieves emails sent to a specific address.
 
 - **`emailAddress`**: The address to check.
 - **`options`**:
-    - `timeout`: How long to wait for emails.
-    - `until`: A predicate function to stop polling when an email is found.
+  - `timeout`: How long to wait for emails.
+  - `until`: A predicate function to stop polling when an email is found.
 
 ### `toEml(email)`
 
@@ -41,19 +41,25 @@ Convert a string in `.eml` from to an `Email` object.
 
 ## Supported Services
 
-The package automatically selects the service based on the `MAILBOX_SERVICE` environment variable.
+The package automatically selects the service based on the `LETSRUNIT_MAILBOX_SERVICE` environment variable.
 
 ### [Mailpit](https://mailpit.axllent.org/)
+
 Recommended for local development. It provides a fast, lightweight way to capture and view emails.
-- **Environment Variables**: `MAILPIT_BASE_URL` (defaults to `http://localhost:8025`).
+
+- **Environment Variables**: `LETSRUNIT_MAILPIT_BASE_URL` (defaults to `http://localhost:8025`).
 
 ### [Testmail.app](https://testmail.app/)
+
 Recommended for production/GCP. It provides infinite private email addresses and a powerful GraphQL API.
-- **Environment Variables**: `TESTMAIL_API_KEY`, `TESTMAIL_NAMESPACE`, `MAILBOX_DOMAIN` (optional, defaults to `inbox.testmail.app`).
+
+- **Environment Variables**: `LETSRUNIT_TESTMAIL_API_KEY`, `LETSRUNIT_TESTMAIL_NAMESPACE`, `LETSRUNIT_MAILBOX_DOMAIN` (optional, defaults to `inbox.testmail.app`).
 
 ### [Mailhog](https://github.com/mailhog/MailHog)
+
 Supported for legacy environments.
-- **Environment Variables**: `MAILHOG_BASE_URL` (defaults to `http://localhost:8025`).
+
+- **Environment Variables**: `LETSRUNIT_MAILHOG_BASE_URL` (defaults to `http://localhost:8025`).
 
 ## Testing
 

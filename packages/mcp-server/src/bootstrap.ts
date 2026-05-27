@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import { loadLetsrunitEnv } from '@letsrunit/utils';
 import { realpathSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
@@ -46,9 +47,7 @@ export function resolveRuntimeModeOverride(): McpRuntimeMode | null {
   if (runtimeMode === 'project' || runtimeMode === 'standalone') {
     return runtimeMode;
   }
-  throw new Error(
-    `Invalid LETSRUNIT_MCP_RUNTIME_MODE: ${runtimeMode}. Expected "project" or "standalone".`,
-  );
+  throw new Error(`Invalid LETSRUNIT_MCP_RUNTIME_MODE: ${runtimeMode}. Expected "project" or "standalone".`);
 }
 
 export function decideHandoff(
@@ -86,6 +85,7 @@ function runProjectLocalServer(projectEntrypointPath: string): never {
 
 export function bootstrapProjectServer(): McpRuntimeMode {
   const projectRoot = resolveProjectRoot();
+  loadLetsrunitEnv(projectRoot);
   const runtimeModeOverride = resolveRuntimeModeOverride();
 
   const currentEntryPath = toRealpath(fileURLToPath(import.meta.url));

@@ -9,9 +9,9 @@ import { readFileSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { loadLetsrunitEnv } from '@letsrunit/utils';
 import { runExplain } from './run-explain';
 import { runExplore } from './run-explore';
-import { loadLetsrunitEnv } from './letsrunit-env';
 import { resolveTarget } from './target';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));

@@ -17,6 +17,7 @@ npx letsrunit init
 It can:
 
 - Install `@letsrunit/cli`
+- Configure letsrunit runtime settings in `.letsrunit/.env`, including `LETSRUNIT_BASE_URL` and mailbox settings
 - Configure CLI AI settings in `.letsrunit/.env` during interactive setup
 - Install `@letsrunit/mcp-server` (project-local MCP runtime)
 - Install `@cucumber/cucumber` when missing
@@ -48,7 +49,7 @@ It can:
   Passing `--agents` also installs `@letsrunit/mcp-server`.
 
 Run `npx letsrunit init` with no options in an interactive terminal to choose components in a prompt.
-The prompt walks through Playwright Chromium, Cucumber, CLI, AI agents, and GitHub Actions one step at a time.
+The prompt walks through Playwright Chromium, base URL, Cucumber, CLI, AI agents, mailbox setup, and GitHub Actions one step at a time.
 
 In non-interactive mode, running `npx letsrunit init` without any `--with-*` flags or `--agents` prints help and exits.
 Passing `--with-cli` non-interactively installs only the CLI; AI settings remain manual.
@@ -62,6 +63,7 @@ When scaffolding Cucumber support, `init` creates:
 - `features/example.feature` (if no feature files exist)
 
 If `features/support/world.js` already exists and does not import `@letsrunit/cucumber`, `init` does not overwrite it and prints a manual action note.
+If `cucumber.js` already exists, `init` does not patch it. Add `process.env.LETSRUNIT_BASE_URL` manually if you want it to read `.letsrunit/.env`.
 
 ## Why install `@letsrunit/mcp-server` locally
 

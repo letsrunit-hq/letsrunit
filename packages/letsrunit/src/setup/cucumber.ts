@@ -6,12 +6,14 @@ import { resolveInstallSpec } from './local-package.js';
 const BDD_IMPORT = '@letsrunit/cucumber';
 
 function cucumberConfig(baseUrl: string): string {
-  return `import { isAgentEnvironment, resolveDebugWorldParameters } from '@letsrunit/cucumber/config';
+  return `import { isAgentEnvironment, loadLetsrunitEnv, resolveDebugWorldParameters } from '@letsrunit/cucumber/config';
+
+loadLetsrunitEnv();
 
 const { failFast, worldParameters } = resolveDebugWorldParameters({
   argv: process.argv,
   baseWorldParameters: {
-    baseURL: '${baseUrl}',
+    baseURL: process.env.LETSRUNIT_BASE_URL ?? '${baseUrl}',
   },
 });
 
