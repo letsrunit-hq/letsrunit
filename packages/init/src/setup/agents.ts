@@ -9,7 +9,14 @@ import type { AgentId, AgentStrategy } from './agents/types.js';
 import { AGENT_IDS } from './agents/types.js';
 import { windsurfStrategy } from './agents/windsurf.js';
 
-const STRATEGIES: AgentStrategy[] = [codexStrategy, cursorStrategy, claudeStrategy, copilotStrategy, geminiStrategy, windsurfStrategy];
+const STRATEGIES: AgentStrategy[] = [
+  codexStrategy,
+  cursorStrategy,
+  claudeStrategy,
+  copilotStrategy,
+  geminiStrategy,
+  windsurfStrategy,
+];
 
 function isAgentId(value: string): value is AgentId {
   return (AGENT_IDS as readonly string[]).includes(value);
@@ -42,10 +49,7 @@ function resolveStrategies(ids: AgentId[]): AgentStrategy[] {
   return STRATEGIES.filter((strategy) => ids.includes(strategy.id));
 }
 
-export async function setupAgents(
-  env: Pick<Environment, 'cwd'>,
-  options: { agents?: AgentId[] },
-): Promise<void> {
+export async function setupAgents(env: Pick<Environment, 'cwd'>, options: { agents?: AgentId[] }): Promise<void> {
   const agentIds = options.agents ?? [];
   if (agentIds.length === 0) {
     log.info('Skipped AI agent setup.');
@@ -55,7 +59,7 @@ export async function setupAgents(
   const strategies = resolveStrategies(agentIds);
   for (const strategy of strategies) {
     const changedMcp = strategy.configureMcp(env);
-    const changedSkill = strategy.installSkill(env);
+    const changedSkill = await strategy.installSkill(env);
     if (changedMcp === 'skipped') log.info(`${strategy.label}: MCP config already up to date.`);
     else log.success(`${strategy.label}: MCP config ${changedMcp}.`);
 

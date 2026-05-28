@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { AgentStrategy } from './types.js';
-import { ensureSkillFile, homePath } from './shared.js';
+import { ensureSkillDirectory, homePath } from './shared.js';
 
 const TOML_BLOCK = `[mcp_servers.letsrunit]\ncommand = "./node_modules/.bin/letsrunit-mcp"\n\n[mcp_servers.letsrunit.env]\nLETSRUNIT_MCP_RUNTIME_MODE = "project"\n`;
 
@@ -48,5 +48,5 @@ export const codexStrategy: AgentStrategy = {
     }
     return ensureCodexToml(localConfig);
   },
-  installSkill: ({ cwd }) => ensureSkillFile(cwd),
+  installSkill: ({ cwd }) => ensureSkillDirectory(cwd),
 };

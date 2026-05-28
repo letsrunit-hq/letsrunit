@@ -1,10 +1,10 @@
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { parseAgents, setupAgents } from '../src/setup/agents.js';
 import { ensureCodexToml, projectInCodexConfig } from '../src/setup/agents/codex.js';
-import { ensureJsonMcpConfig } from '../src/setup/agents/shared.js';
+import { ensureJsonMcpConfig, ensureSkillDirectory } from '../src/setup/agents/shared.js';
 
 const dirs: string[] = [];
 
@@ -15,10 +15,52 @@ function makeDir(): string {
 }
 
 afterEach(() => {
+  vi.unstubAllGlobals();
   for (const dir of dirs.splice(0)) {
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+function mockSkillDownload(): void {
+  const rootUrl = 'https://api.github.com/repos/letsrunit-hq/agents/contents/skills/letsrunit';
+  const docsUrl = 'https://api.github.com/repos/letsrunit-hq/agents/contents/skills/letsrunit/docs';
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (input: string | URL | Request) => {
+      const url = String(input);
+      if (url === rootUrl) {
+        return new Response(
+          JSON.stringify([
+            {
+              type: 'file',
+              path: 'skills/letsrunit/SKILL.md',
+              download_url: 'https://raw.githubusercontent.com/letsrunit-hq/agents/main/skills/letsrunit/SKILL.md',
+            },
+            {
+              type: 'dir',
+              path: 'skills/letsrunit/docs',
+            },
+          ]),
+        );
+      }
+      if (url === docsUrl) {
+        return new Response(
+          JSON.stringify([
+            {
+              type: 'file',
+              path: 'skills/letsrunit/docs/workflow.md',
+              download_url:
+                'https://raw.githubusercontent.com/letsrunit-hq/agents/main/skills/letsrunit/docs/workflow.md',
+            },
+          ]),
+        );
+      }
+      if (url.endsWith('/SKILL.md')) return new Response('real skill');
+      if (url.endsWith('/workflow.md')) return new Response('real workflow');
+      return new Response('not found', { status: 404 });
+    }),
+  );
+}
 
 describe('parseAgents', () => {
   it('parses comma separated list', () => {
@@ -81,8 +123,7 @@ describe('setupAgents behavior', () => {
 
   it('configures selected agents explicitly', async () => {
     const cwd = makeDir();
-    mkdirSync(join(cwd, 'agent', 'skills', 'letsrunit'), { recursive: true });
-    writeFileSync(join(cwd, 'agent', 'skills', 'letsrunit', 'SKILL.md'), 'demo', 'utf-8');
+    mockSkillDownload();
 
     await setupAgents({ cwd, isInteractive: false }, { agents: ['cursor'] });
 
@@ -94,6 +135,21 @@ describe('setupAgents behavior', () => {
     expect(config.mcpServers.letsrunit.env?.LETSRUNIT_MCP_RUNTIME_MODE).toBe('project');
 
     const skillPath = join(cwd, '.agents', 'skills', 'letsrunit', 'SKILL.md');
-    expect(readFileSync(skillPath, 'utf-8')).toBe('demo');
+    expect(readFileSync(skillPath, 'utf-8')).toBe('real skill');
+    expect(readFileSync(join(cwd, '.agents', 'skills', 'letsrunit', 'docs', 'workflow.md'), 'utf-8')).toBe(
+      'real workflow',
+    );
+  });
+
+  it('installs the full letsrunit skill directory from the agent repository', async () => {
+    const cwd = makeDir();
+    mockSkillDownload();
+
+    expect(await ensureSkillDirectory(cwd)).toBe('installed');
+    expect(readFileSync(join(cwd, '.agents', 'skills', 'letsrunit', 'SKILL.md'), 'utf-8')).toBe('real skill');
+    expect(readFileSync(join(cwd, '.agents', 'skills', 'letsrunit', 'docs', 'workflow.md'), 'utf-8')).toBe(
+      'real workflow',
+    );
+    expect(await ensureSkillDirectory(cwd)).toBe('skipped');
   });
 });

@@ -9,5 +9,5 @@ export interface AgentStrategy {
   label: string;
   detect(env: Pick<Environment, 'cwd'>): boolean;
   configureMcp(env: Pick<Environment, 'cwd'>): 'created' | 'updated' | 'skipped';
-  installSkill(env: Pick<Environment, 'cwd'>): 'installed' | 'skipped';
+  installSkill(env: Pick<Environment, 'cwd'>): Promise<'installed' | 'skipped'>;
 }
