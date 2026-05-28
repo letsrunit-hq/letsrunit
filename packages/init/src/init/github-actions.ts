@@ -24,7 +24,7 @@ function assertNotCanceled<T>(value: T | symbol): T {
 
 async function askText(message: string, initialValue: string): Promise<string> {
   const value = assertNotCanceled(await text({ message, initialValue }));
-  return value.trim() || initialValue;
+  return typeof value === 'string' ? value.trim() || initialValue : initialValue;
 }
 
 async function selectOptionalCommand(message: string, current: string | null): Promise<string | null> {
@@ -100,8 +100,12 @@ async function selectCiWorkflowOverrides(context: GithubActionsContext): Promise
   const dbPassword = service === 'none' ? defaults.password : await askText('Database password', defaults.password);
   const supabaseMode =
     service === 'supabase' ? await selectSupabaseMode(defaults.supabaseMode ?? 'local') : defaults.supabaseMode;
-  const migrationCommand = await selectOptionalCommand('Migration command (optional)', detected.migrationCommand.value);
-  const seedCommand = await selectOptionalCommand('Seed command (optional)', detected.seedCommand.value);
+  const migrationCommand =
+    service === 'none'
+      ? null
+      : await selectOptionalCommand('Migration command (optional)', detected.migrationCommand.value);
+  const seedCommand =
+    service === 'none' ? null : await selectOptionalCommand('Seed command (optional)', detected.seedCommand.value);
 
   return {
     buildCommand: { value: buildCommand, confidence: 'high', evidence: ['interactive confirmation'] },
