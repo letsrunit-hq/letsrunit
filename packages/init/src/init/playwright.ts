@@ -21,14 +21,14 @@ function assertNotCanceled<T>(value: T | symbol): T {
 }
 
 async function shouldSetupPlaywright(context: PlaywrightContext): Promise<boolean> {
-  if (hasExplicitInitSelections(context.options)) return Boolean(context.options.withPlaywright);
-
   const hasPackage = isPlaywrightInstalled(context.env);
   const hasBrowsers = hasPlaywrightBrowsers(context.env);
   if (hasPackage && hasBrowsers) {
     log.success('Playwright runtime already installed');
     return false;
   }
+
+  if (hasExplicitInitSelections(context.options)) return Boolean(context.options.withPlaywright);
 
   note(PLAYWRIGHT_EXPLANATION, 'Playwright');
   const message = hasPackage

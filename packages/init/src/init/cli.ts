@@ -24,6 +24,11 @@ function assertNotCanceled<T>(value: T | symbol): T {
 }
 
 async function shouldSetupCli(context: CliContext): Promise<boolean> {
+  if (isCliInstalled(context.env)) {
+    log.success('@letsrunit/cli already installed');
+    return false;
+  }
+
   if (hasExplicitInitSelections(context.options)) return Boolean(context.options.withCli);
 
   note(CLI_EXPLANATION, 'CLI');
@@ -76,10 +81,6 @@ async function selectCliAiConfig(): Promise<CliAiConfig | null> {
 
 async function applyCliInstall(context: CliContext): Promise<void> {
   const env = context.env;
-  if (isCliInstalled(env)) {
-    log.success('@letsrunit/cli already installed');
-    return;
-  }
 
   const s = spinner();
   s.start('Installing @letsrunit/cli…');

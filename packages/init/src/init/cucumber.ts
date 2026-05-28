@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { confirm, isCancel, log, note, spinner } from '@clack/prompts';
 import { hasExplicitInitSelections } from '../init-options.js';
@@ -23,7 +23,18 @@ async function shouldSetupCucumber(context: CucumberContext): Promise<boolean> {
   if (hasExplicitInitSelections(context.options)) return Boolean(context.options.withCucumber);
 
   note(CUCUMBER_EXPLANATION, 'Cucumber');
-  return assertNotCanceled(await confirm({ message: 'Install and scaffold Cucumber support?', initialValue: true }));
+  const message = context.env.hasCucumber ? 'Scaffold Cucumber support?' : 'Install and scaffold Cucumber support?';
+  return assertNotCanceled(await confirm({ message, initialValue: true }));
+}
+
+function hasLetsrunitSupport(cwd: string): boolean {
+  const supportPath = join(cwd, 'features', 'support', 'world.js');
+  if (!existsSync(supportPath)) return false;
+  return readFileSync(supportPath, 'utf-8').includes(BDD_IMPORT);
+}
+
+function isCucumberConfigured(context: CucumberContext): boolean {
+  return context.env.hasCucumber && hasLetsrunitSupport(context.env.cwd);
 }
 
 function applyCucumberInstall(context: CucumberContext): void {
@@ -64,7 +75,19 @@ function applyCucumberSetup(context: CucumberContext): void {
 }
 
 export async function setupCucumber(context: CucumberContext): Promise<void> {
+  if (isCucumberConfigured(context)) {
+    log.success('Cucumber support already configured');
+    return;
+  }
+
   const requested = await shouldSetupCucumber(context);
-  if (requested) applyCucumberInstall(context);
-  if (context.env.hasCucumber || requested) applyCucumberSetup(context);
+  if (requested) {
+    applyCucumberInstall(context);
+    applyCucumberSetup(context);
+    return;
+  }
+
+  if (hasExplicitInitSelections(context.options) && context.env.hasCucumber) {
+    applyCucumberSetup(context);
+  }
 }

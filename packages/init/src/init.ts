@@ -64,5 +64,5 @@ export async function init(options: InitOptions = {}): Promise<void> {
   await setupMail(context);
   await setupGithubActions(context);
 
-  outro('All done! Run npx letsrunit --help to get started.');
+  outro('All done! Read the docs: https://docs.letsrunit.ai');
 }
