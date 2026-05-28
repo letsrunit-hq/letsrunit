@@ -23,29 +23,37 @@ function assertNotCanceled<T>(value: T | symbol): T {
 async function shouldSetupPlaywright(context: PlaywrightContext): Promise<boolean> {
   if (hasExplicitInitSelections(context.options)) return Boolean(context.options.withPlaywright);
 
+  const hasPackage = isPlaywrightInstalled(context.env);
+  const hasBrowsers = hasPlaywrightBrowsers(context.env);
+  if (hasPackage && hasBrowsers) {
+    log.success('Playwright runtime already installed');
+    return false;
+  }
+
   note(PLAYWRIGHT_EXPLANATION, 'Playwright');
-  return assertNotCanceled(
-    await confirm({ message: 'Set up browser runtime (Playwright Chromium)?', initialValue: true }),
-  );
+  const message = hasPackage
+    ? 'Install Playwright Chromium browser?'
+    : hasBrowsers
+      ? 'Install @playwright/test?'
+      : 'Set up browser runtime (Playwright Chromium)?';
+  return assertNotCanceled(await confirm({ message, initialValue: true }));
 }
 
 export async function setupPlaywright(context: PlaywrightContext): Promise<void> {
+  const env = context.env;
   if (!(await shouldSetupPlaywright(context))) return;
 
-  const env = context.env;
-  if (!isPlaywrightInstalled(env)) {
+  const hasPackage = isPlaywrightInstalled(env);
+  const hasBrowsers = hasPlaywrightBrowsers(env);
+
+  if (!hasPackage) {
     const install = spinner();
     install.start('Installing @playwright/test…');
     installPlaywright(env);
     install.stop('@playwright/test installed');
-  } else {
-    log.success('@playwright/test already installed');
   }
 
-  if (hasPlaywrightBrowsers(env)) {
-    log.success('Playwright Chromium already installed');
-    return;
-  }
+  if (hasBrowsers) return;
 
   const s = spinner();
   s.start('Installing Playwright Chromium…');
