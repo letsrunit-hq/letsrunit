@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { confirm, isCancel, log, note, spinner } from '@clack/prompts';
 import { hasExplicitInitSelections } from '../init-options.js';
-import { installCucumber, setupCucumber } from '../setup/cucumber.js';
+import { installCucumber, setupCucumber as scaffoldCucumber } from '../setup/cucumber.js';
 import type { InitContext } from './context.js';
 
 const BDD_IMPORT = '@letsrunit/cucumber';
@@ -42,7 +42,7 @@ function applyCucumberInstall(context: CucumberContext): void {
 function applyCucumberSetup(context: CucumberContext): void {
   const env = context.env;
   const hadCucumberConfig = existsSync(join(env.cwd, 'cucumber.js'));
-  const result = setupCucumber(env, { baseUrl: context.baseUrl ?? DEFAULT_BASE_URL });
+  const result = scaffoldCucumber(env, { baseUrl: context.baseUrl ?? DEFAULT_BASE_URL });
 
   if (result.bddInstalled) log.success('@letsrunit/cucumber installed');
 
