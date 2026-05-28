@@ -11,7 +11,7 @@ When a scenario passes, it produces a `.feature` file that gets committed and ru
 **Claude Code** — install the plugin to get both the MCP server and the skill:
 
 ```
-/plugin marketplace add letsrunit-hq/agent
+/plugin marketplace add letsrunit-hq/agents
 /plugin install letsrunit@letsrunit
 ```
 
@@ -65,18 +65,18 @@ When you edit existing support files during a long-running agent session, call `
 
 ## Tools
 
-| Tool | Description |
-|------|-------------|
-| `letsrunit_session_start` | Launch a new browser session. Set `baseURL` to enable relative paths like `Given I'm on the homepage`. |
-| `letsrunit_run` | Execute Gherkin steps or a complete feature. Accepts a single step, multiple steps, a Scenario, or a full Feature. |
-| `letsrunit_list_steps` | List available step definitions for a session. Optionally filter by `Given`, `When`, or `Then`. |
-| `letsrunit_snapshot` | Get the current page HTML, scrubbed for LLM consumption. Scope to a DOM subtree with `selector`. |
-| `letsrunit_screenshot` | Take a screenshot. Optionally crop to a selector or highlight elements before capturing. |
-| `letsrunit_debug` | Evaluate JavaScript on the current page via `page.evaluate()`. Use for debugging, not test logic. |
-| `letsrunit_reload` | Rebuild and reload built-in + project support step definitions after step-file changes. Available in project runtime mode. |
-| `letsrunit_diagnostics` | Return runtime diagnostics (`cwd`, `LETSRUNIT_PROJECT_CWD`, detected cucumber config, resolved support entries). Available only when `LETSRUNIT_MCP_DIAGNOSTICS=enabled`. |
-| `letsrunit_session_close` | Close a browser session and release its resources. |
-| `letsrunit_list_sessions` | List all active browser sessions. |
+| Tool                      | Description                                                                                                                                                               |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `letsrunit_session_start` | Launch a new browser session. Set `baseURL` to enable relative paths like `Given I'm on the homepage`.                                                                    |
+| `letsrunit_run`           | Execute Gherkin steps or a complete feature. Accepts a single step, multiple steps, a Scenario, or a full Feature.                                                        |
+| `letsrunit_list_steps`    | List available step definitions for a session. Optionally filter by `Given`, `When`, or `Then`.                                                                           |
+| `letsrunit_snapshot`      | Get the current page HTML, scrubbed for LLM consumption. Scope to a DOM subtree with `selector`.                                                                          |
+| `letsrunit_screenshot`    | Take a screenshot. Optionally crop to a selector or highlight elements before capturing.                                                                                  |
+| `letsrunit_debug`         | Evaluate JavaScript on the current page via `page.evaluate()`. Use for debugging, not test logic.                                                                         |
+| `letsrunit_reload`        | Rebuild and reload built-in + project support step definitions after step-file changes. Available in project runtime mode.                                                |
+| `letsrunit_diagnostics`   | Return runtime diagnostics (`cwd`, `LETSRUNIT_PROJECT_CWD`, detected cucumber config, resolved support entries). Available only when `LETSRUNIT_MCP_DIAGNOSTICS=enabled`. |
+| `letsrunit_session_close` | Close a browser session and release its resources.                                                                                                                        |
+| `letsrunit_list_sessions` | List all active browser sessions.                                                                                                                                         |
 
 ## Skill
 
@@ -85,5 +85,5 @@ The MCP server exposes the tools, but the skill teaches the agent how to use the
 The skill is included automatically in the Claude Code plugin above. For other agents, load it from:
 
 ```
-https://github.com/letsrunit-hq/agent/blob/main/skills/letsrunit/SKILL.md
+https://github.com/letsrunit-hq/agents/blob/main/skills/letsrunit/SKILL.md
 ```
