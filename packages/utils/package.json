@@ -1,6 +1,6 @@
 {
   "name": "@letsrunit/utils",
-  "version": "0.22.0",
+  "version": "0.23.0",
   "description": "Utility functions for letsrunit",
   "keywords": [
     "testing",

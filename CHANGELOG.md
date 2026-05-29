@@ -1,3 +1,24 @@
+# [0.23.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.22.0...v0.23.0) (2026-05-29)
+
+
+### Bug Fixes
+
+* avoid recursive cucumber init setup ([658bc5f](https://github.com/letsrunit-hq/letsrunit/commit/658bc5f6108d8e7f9b5b71137cbd90cfd2b4fd97))
+* better messages for init ([118c20a](https://github.com/letsrunit-hq/letsrunit/commit/118c20ac1a9230385b62b703d7020a6afd392f77))
+* explain init setup choices ([3bd543a](https://github.com/letsrunit-hq/letsrunit/commit/3bd543a234381f2f32faabba03480c1191bca479))
+* install letsrunit skill from agents repo ([80f7056](https://github.com/letsrunit-hq/letsrunit/commit/80f7056c77262f092b7aa86ff65e635abb315661))
+* show cli ai setup instructions ([80d8ae5](https://github.com/letsrunit-hq/letsrunit/commit/80d8ae52577116ff947fef16551eb76a6ce51304))
+* skip db commands for no ci database ([8f1adc5](https://github.com/letsrunit-hq/letsrunit/commit/8f1adc554ed2d8959fafd0f965b0f32b4fdfe45d))
+* skip installed init prompts ([5825901](https://github.com/letsrunit-hq/letsrunit/commit/5825901c409d33190c0e6c311494a16853252a36))
+* skip playwright init prompt when installed ([3000417](https://github.com/letsrunit-hq/letsrunit/commit/3000417be2e67740b55481233161bbda7afee503))
+* stabilize playwright and mcp integration ([6122da7](https://github.com/letsrunit-hq/letsrunit/commit/6122da7ad63077f31293290f9eebd94d4a68de3e))
+
+
+### Features
+
+* guide init setup flow ([a3e05eb](https://github.com/letsrunit-hq/letsrunit/commit/a3e05eb5a314038581f4b5c8fb012f11177fc031))
+* improve init runtime settings ([b4c0aad](https://github.com/letsrunit-hq/letsrunit/commit/b4c0aad7b785282faf1c20d5901f79262dd4b9e7))
+
 # [0.22.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.21.1...v0.22.0) (2026-05-24)
 
 
