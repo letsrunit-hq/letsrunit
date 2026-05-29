@@ -1,3 +1,5 @@
+export { loadLetsrunitEnv } from '@letsrunit/utils';
+
 export type DebugWorldParametersInput = {
   argv?: string[];
   baseWorldParameters?: Record<string, unknown>;

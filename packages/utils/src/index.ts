@@ -5,6 +5,7 @@ export * from './date';
 export * from './hash';
 export * from './html';
 export * from './join';
+export * from './letsrunit-env';
 export * from './memoize';
 export * from './object';
 export * from './sleep';

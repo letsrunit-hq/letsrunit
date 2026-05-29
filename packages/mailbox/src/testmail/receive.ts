@@ -4,7 +4,7 @@ import { TESTMAIL_API_KEY, TESTMAIL_GRAPHQL_URL } from '../constants';
 import type { Email, ReceiveOptions } from '../types';
 
 export async function receiveMail(emailAddress: string, options: ReceiveOptions = {}): Promise<Email[]> {
-  if (!TESTMAIL_API_KEY) throw new Error('TESTMAIL_API_KEY environment var not set');
+  if (!TESTMAIL_API_KEY) throw new Error('LETSRUNIT_TESTMAIL_API_KEY environment var not set');
 
   const match = emailAddress.match(/^(?<namespace>[^.@]+)\.(?<tag>[^@]+)@/);
   if (!match) throw new Error('Email address is not a valid testmail address');

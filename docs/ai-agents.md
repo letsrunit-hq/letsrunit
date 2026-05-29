@@ -30,9 +30,10 @@ You can install the Letsrunit MCP server and skill globally for all your project
 The Letsrunit plugin installs both the MCP server and the skill automatically. Run inside Claude Code:
 
 ```
-/plugin marketplace add letsrunit-hq/agent
+/plugin marketplace add letsrunit-hq/agents
 /plugin install letsrunit@letsrunit
 ```
+
 {% endtab %}
 
 {% tab title="Codex CLI" %}
@@ -48,7 +49,7 @@ args = ["-y", "@letsrunit/mcp-server@latest"]
 Install the skill into your repo.
 
 ```bash
-npx skills add letsrunit-hq/agent
+npx skills add letsrunit-hq/agents
 ```
 
 Codex loads it when you ask it to write or run browser tests.
@@ -71,7 +72,7 @@ Add `.cursor/mcp.json` to your project root:
 Install the skill via the Cursor UI: open **Settings → Rules**, click **Add Rule**, select **Remote Rule (GitHub)**, and enter:
 
 ```
-https://github.com/letsrunit-hq/agent
+https://github.com/letsrunit-hq/agents
 ```
 
 Cursor loads it automatically when you ask it to write or run browser tests.
@@ -94,8 +95,9 @@ Add the MCP server in your agent's config format. The standard JSON:
 Then load the skill into your agent's system context:
 
 ```
-npx skills add letsrunit-hq/agent
+npx skills add letsrunit-hq/agents
 ```
+
 {% endtab %}
 {% endtabs %}
 
@@ -113,12 +115,14 @@ The agent must write a browser test before marking the test as completed.
 Use letsrunit to verify any task that changes UI behaviour. A task is not complete until the relevant flow has been tested in a real browser and passes.
 
 When a scenario passes:
+
 - Save it as a `.feature` file under `/features`
 - Include it in the commit
 - These files run in CI as regression tests for future changes
 
 Only keep scenarios that cover flows that could plausibly break from an unrelated change. Skip trivial or redundant ones.
 ```
+
 {% endtab %}
 {% tab title="TDD" %}
 For a more structured approach, you can instruct the agent to write scenarios before implementing.
@@ -135,5 +139,6 @@ When implementing a feature or fixing a bug that affects the UI, use letsrunit t
 
 If you cannot write a scenario before implementing, the requirements are not specific enough. Ask for clarification rather than making assumptions in code.
 ```
+
 {% endtab %}
 {% endtabs %}

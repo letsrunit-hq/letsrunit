@@ -24,13 +24,17 @@ function main() {
   const packageSpec = args.package ?? 'file:/tmp/mcp-server.tgz';
   const workdir = mkdtempSync(join(tmpdir(), 'mcp-npx-tools-list-'));
   const runnerPath = join(workdir, 'run-mcp.sh');
+  const packageJsonPath = join(workdir, 'package.json');
   const serverStderrPath = join(workdir, 'mcp-server.stderr');
+
+  setupTempProject(workdir, packageJsonPath, packageSpec);
 
   writeFileSync(
     runnerPath,
     `#!/usr/bin/env bash
 set -euo pipefail
-exec npx -y ${JSON.stringify(packageSpec)} 2>${JSON.stringify(serverStderrPath)}
+cd ${JSON.stringify(workdir)}
+exec npx letsrunit-mcp 2>${JSON.stringify(serverStderrPath)}
 `,
     'utf8',
   );
@@ -67,6 +71,27 @@ exec npx -y ${JSON.stringify(packageSpec)} 2>${JSON.stringify(serverStderrPath)}
     }
   } finally {
     rmSync(workdir, { recursive: true, force: true });
+  }
+}
+
+function setupTempProject(workdir, packageJsonPath, packageSpec) {
+  const templatePath = '.github/scripts/mcp/mcp-int.package.json';
+  const template = JSON.parse(readFileSync(templatePath, 'utf8'));
+  template.dependencies['@letsrunit/mcp-server'] = packageSpec;
+  template.overrides['@letsrunit/mcp-server'] = packageSpec;
+  writeFileSync(packageJsonPath, JSON.stringify(template, null, 2));
+
+  const install = spawnSync('npm', ['install', '--no-audit', '--no-fund'], {
+    cwd: workdir,
+    encoding: 'utf8',
+  });
+
+  if (install.status !== 0) {
+    throw new Error(
+      [`npm install failed with status ${install.status ?? 'unknown'}`, install.stderr?.trim(), install.stdout?.trim()]
+        .filter(Boolean)
+        .join('\n'),
+    );
   }
 }
 

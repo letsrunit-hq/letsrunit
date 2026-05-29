@@ -8,7 +8,7 @@ describe('testmail.receive env and error branches', () => {
     vi.unmock('graphql-request');
   });
 
-  it('throws when TESTMAIL_API_KEY is missing', async () => {
+  it('throws when LETSRUNIT_TESTMAIL_API_KEY is missing', async () => {
     vi.doMock('../../src/constants', () => ({
       TESTMAIL_API_KEY: null,
       TESTMAIL_GRAPHQL_URL: 'https://api.testmail.app/api/graphql',
@@ -19,7 +19,7 @@ describe('testmail.receive env and error branches', () => {
 
     const { receiveMail } = await import('../../src/testmail/receive');
     await expect(receiveMail('ns.tag@inbox.testmail.app')).rejects.toThrow(
-      'TESTMAIL_API_KEY environment var not set',
+      'LETSRUNIT_TESTMAIL_API_KEY environment var not set',
     );
   });
 

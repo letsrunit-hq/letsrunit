@@ -186,7 +186,6 @@ jobs:
           mkdir -p /tmp/mcp-int
           cp .github/scripts/mcp/mcp-int.package.json /tmp/mcp-int/package.json
           (cd /tmp/mcp-int && npm install --no-audit --no-fund)
-          (cd /tmp/mcp-int && npx playwright install chromium)
           cp .github/scripts/mcp/run-deterministic-flow.mjs /tmp/mcp-int/run-deterministic-flow.mjs
           node /tmp/mcp-int/run-deterministic-flow.mjs \
             --server /tmp/mcp-int/node_modules/@letsrunit/mcp-server/dist/index.js \

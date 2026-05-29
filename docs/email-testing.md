@@ -35,8 +35,8 @@ docker run -d -p 8025:8025 -p 1025:1025 axllent/mailpit
 #### Environment variables
 
 ```bash
-MAILBOX_SERVICE=mailpit
-MAILPIT_BASE_URL=http://localhost:8025   # default
+LETSRUNIT_MAILBOX_SERVICE=mailpit
+LETSRUNIT_MAILPIT_BASE_URL=http://localhost:8025   # default
 ```
 
 Configure your app to send mail via `localhost:1025` (Mailpit's SMTP port). In CI this is the same configuration. The service container listens on the same port.
@@ -46,6 +46,7 @@ Configure your app to send mail via `localhost:1025` (Mailpit's SMTP port). In C
 {% tab title="Supabase" %}
 
 Supabase local development includes **Mailpit**. Configure the SMTP settings in `supabase/config.toml` to make Mailpit available on localhost:
+
 ```toml
 [inbucket]
 enabled = true
@@ -58,9 +59,10 @@ _The configuration group is called `inbucket` for legacy reasons. Recent version
 #### Environment variables
 
 ```bash
-MAILBOX_SERVICE=mailpit
-MAILPIT_BASE_URL=http://localhost:54325
+LETSRUNIT_MAILBOX_SERVICE=mailpit
+LETSRUNIT_MAILPIT_BASE_URL=http://localhost:54325
 ```
+
 {% endtab %}
 
 {% tab title="Testmail.app" %}
@@ -69,10 +71,10 @@ MAILPIT_BASE_URL=http://localhost:54325
 #### Environment variables
 
 ```bash
-MAILBOX_SERVICE=testmail
-TESTMAIL_API_KEY=your_api_key
-TESTMAIL_NAMESPACE=your_namespace
-MAILBOX_DOMAIN=inbox.testmail.app   # default
+LETSRUNIT_MAILBOX_SERVICE=testmail
+LETSRUNIT_TESTMAIL_API_KEY=your_api_key
+LETSRUNIT_TESTMAIL_NAMESPACE=your_namespace
+LETSRUNIT_MAILBOX_DOMAIN=inbox.testmail.app   # default
 ```
 
 Addresses take the form `<namespace>.<tag>@inbox.testmail.app`. Letsrunit generates the tag automatically per test.
@@ -84,12 +86,13 @@ Addresses take the form `<namespace>.<tag>@inbox.testmail.app`. Letsrunit genera
 #### Environment variables
 
 ```bash
-MAILBOX_SERVICE=mailhog
-MAILHOG_BASE_URL=http://localhost:8025   # default
+LETSRUNIT_MAILBOX_SERVICE=mailhog
+LETSRUNIT_MAILHOG_BASE_URL=http://localhost:8025   # default
 ```
+
 {% endtab %}
 {% endtabs %}
 
 {% hint style="info" %}
-The `MAILBOX_SERVICE` variable selects the backend. If it's not set, the mailbox steps will fail with a configuration error.
+The `LETSRUNIT_MAILBOX_SERVICE` variable selects the backend. `npx letsrunit init` writes these settings to `.letsrunit/.env`.
 {% endhint %}

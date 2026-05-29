@@ -3,7 +3,7 @@ import { ModelMessage, ToolSet } from 'ai';
 import { wrapAISDK } from 'langsmith/experimental/vercel';
 import Mustache from 'mustache';
 import * as z from 'zod';
-import { getModel } from './models';
+import { resolveModel } from './models';
 
 Mustache.escape = (text: string) => text;
 
@@ -41,16 +41,21 @@ export async function generate<T extends z.Schema | undefined = undefined>(
     system = Mustache.render(system.template, system.vars).trim();
   }
 
+  const resolved = resolveModel(opts.model);
   const arg = {
-    model: getModel(opts.model),
+    model: resolved.model,
     system,
     prompt,
-    providerOptions: {
-      openai: {
-        reasoningEffort: opts.reasoningEffort ?? 'low',
-      },
-    },
-    abortSignal: opts.abortSignal,
+    ...(resolved.provider === 'openai'
+      ? {
+          providerOptions: {
+            openai: {
+              reasoningEffort: opts.reasoningEffort ?? 'low',
+            },
+          },
+        }
+      : {}),
+    ...(opts.abortSignal ? { abortSignal: opts.abortSignal } : {}),
   };
 
   if (opts.schema) {

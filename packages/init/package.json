@@ -1,0 +1,40 @@
+{
+  "name": "letsrunit",
+  "version": "0.22.0",
+  "description": "Onboarding tool for letsrunit — run npx letsrunit init to get started",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/letsrunit-hq/letsrunit.git",
+    "directory": "packages/init"
+  },
+  "bugs": "https://github.com/letsrunit-hq/letsrunit/issues",
+  "homepage": "https://github.com/letsrunit-hq/letsrunit#readme",
+  "type": "module",
+  "bin": "./dist/bin.js",
+  "main": "./src/index.ts",
+  "publishConfig": {
+    "main": "./dist/index.js",
+    "bin": {
+      "letsrunit": "./dist/bin.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "../../node_modules/.bin/tsup"
+  },
+  "packageManager": "yarn@4.10.3",
+  "dependencies": {
+    "@clack/prompts": "^0.10.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.9",
+    "typescript": "^5.9.3"
+  }
+}

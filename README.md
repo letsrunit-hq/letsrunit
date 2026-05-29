@@ -1,71 +1,66 @@
 ![letsrunit](https://cdn.jsdelivr.net/gh/letsrunit-hq/letsrunit@main/docs/.gitbook/assets/logo-light.svg)
 
-letsrunit is a browser testing tool that describes what your app should do in plain language rather than code. Tests are written in Gherkin, run by Cucumber.js, and integrate into any CI pipeline as standard files. You can write them by hand, generate them from a live URL, or let your AI coding agent produce them as part of its normal workflow.
+letsrunit helps developers and AI coding agents verify web apps in a real browser using plain-language Gherkin tests. Tests are regular `.feature` files, run with Cucumber, and can keep running in CI after the agent session ends.
 
-## Getting Started
+## Quick Start
 
-Run the init tool inside your project:
+Run init in your project:
 
 ```bash
 npx letsrunit init
 ```
 
-This will:
-- Install `@letsrunit/cli` as a local devDependency
-- Install `@letsrunit/bdd` and create `cucumber.js` if `@cucumber/cucumber` is detected
-- Create a `features/` directory with an example feature file
+Init detects your app and guides you through the setup. It can configure browser automation, Cucumber support, AI agent integration, mailbox testing, shared runtime settings, and a GitHub Actions workflow.
 
-Safe to re-run — all steps are idempotent.
+## Example
 
-## CLI
+```gherkin
+Feature: Checkout
 
-The CLI is installed locally by `letsrunit init`. Run it via `npx letsrunit` or `yarn letsrunit`.
-
-| Command | Description |
-|---------|-------------|
-| `letsrunit explore <url>` | Open a browser, let the AI explore the site, and optionally save a `.feature` file |
-| `letsrunit generate <url>` | Generate a Gherkin feature from instructions provided on stdin |
-| `letsrunit run <url> <feature>` | Execute a `.feature` file against the given URL |
-
-**Options** (all commands): `-v` / `--verbose`, `-s` / `--silent`, `-o` / `--save <path>`
-
-## MCP Server
-
-The MCP server lets AI coding agents (Claude Code, Cursor, Codex, etc.) launch browsers, run Gherkin steps,
-take screenshots, and inspect pages directly inside your editor.
-
-### Install
-
-**Claude Code** — add the marketplace once, then install the plugin to get both the MCP server and skill:
-
-```
-/plugin marketplace add letsrunit-hq/agent
-/plugin install letsrunit@letsrunit
+  Scenario: Customer can start checkout
+    Given I'm on the homepage
+    When I click "Shop"
+    And I click "Checkout"
+    Then I should see "Payment"
 ```
 
-**Other agents** — add to your MCP config manually:
+## What Init Can Configure
 
-```json
-{
-  "mcpServers": {
-    "letsrunit": {
-      "command": "npx",
-      "args": ["-y", "@letsrunit/mcp-server"]
-    }
-  }
-}
+- `.letsrunit/.env` with letsrunit runtime settings such as `LETSRUNIT_BASE_URL`
+- Cucumber config and support files for built-in browser steps
+- Playwright and Chromium for browser execution
+- MCP config and the letsrunit skill for AI coding agents
+- Mailbox runtime settings for email-based tests
+- GitHub Actions workflow generation for running features in CI
+
+Safe to re-run: init keeps existing files and skips or reports work that is already configured.
+
+## Running Tests
+
+Generated Cucumber projects run with:
+
+```bash
+npx cucumber-js
 ```
 
-### Agent Skill
+If init creates a GitHub Actions workflow, CI starts your app, waits for `LETSRUNIT_BASE_URL`, and then runs the feature suite.
 
-The letsrunit skill gives your agent built-in knowledge of the Gherkin step library, locator syntax,
-and test-writing workflow. Requires the MCP server to be configured first.
+## AI Agents
 
-The skill is included automatically when using the Claude Code plugin above. For other agents run
+For AI agents, run `npx letsrunit init` and select the agents you use. Init configures MCP and installs the letsrunit skill so agents know how to write, run, and debug browser tests.
 
-```
-npx skills add letsrunit-hq/agent
-```
+Manual setup and agent-specific details live in [docs/ai-agents.md](docs/ai-agents.md).
+
+## Packages
+
+| Package                                      | Purpose                                           |
+| -------------------------------------------- | ------------------------------------------------- |
+| [letsrunit](packages/init)                   | Init tool for project setup                       |
+| [@letsrunit/cli](packages/cli)               | CLI for generating, running, and explaining tests |
+| [@letsrunit/cucumber](packages/cucumber)     | Cucumber integration, formatter, and store plugin |
+| [@letsrunit/bdd](packages/bdd)               | Built-in Gherkin step definitions                 |
+| [@letsrunit/mcp-server](packages/mcp-server) | MCP server for AI coding agents                   |
+| [@letsrunit/mailbox](packages/mailbox)       | Email mailbox helpers for tests                   |
 
 ## Development
 

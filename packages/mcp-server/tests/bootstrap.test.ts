@@ -1,9 +1,15 @@
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { decideHandoff, resolveRuntimeModeOverride } from '../src/bootstrap';
+import { bootstrapProjectServer, decideHandoff, resolveRuntimeModeOverride } from '../src/bootstrap';
+
+const dirs: string[] = [];
 
 describe('decideHandoff', () => {
   afterEach(() => {
     vi.unstubAllEnvs();
+    for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true });
   });
 
   it('uses standalone mode when project mcp server is not available', () => {
@@ -43,5 +49,20 @@ describe('decideHandoff', () => {
     expect(() => resolveRuntimeModeOverride()).toThrow(
       'Invalid LETSRUNIT_MCP_RUNTIME_MODE: bad-value. Expected "project" or "standalone".',
     );
+  });
+
+  it('loads .letsrunit/.env before resolving project runtime settings', () => {
+    const cwd = mkdtempSync(join(tmpdir(), 'letsrunit-mcp-bootstrap-'));
+    dirs.push(cwd);
+    mkdirSync(join(cwd, '.letsrunit'));
+    writeFileSync(
+      join(cwd, '.letsrunit', '.env'),
+      ['LETSRUNIT_MCP_RUNTIME_MODE=standalone', 'LETSRUNIT_MAILBOX_SERVICE=testmail'].join('\n'),
+      'utf-8',
+    );
+    vi.stubEnv('LETSRUNIT_PROJECT_CWD', cwd);
+
+    expect(bootstrapProjectServer()).toBe('standalone');
+    expect(process.env.LETSRUNIT_MAILBOX_SERVICE).toBe('testmail');
   });
 });
