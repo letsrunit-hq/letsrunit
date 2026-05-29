@@ -38,6 +38,7 @@ export interface CiWorkflowPlan {
   packageManager: PackageManager;
   installCommand: string;
   runCucumberCommand: string;
+  playwrightVersion: DetectionResult<string | null>;
   setupNodeBlock: string[];
   startCommand: DetectionResult<string>;
   buildCommand: DetectionResult<string | null>;
@@ -173,6 +174,34 @@ function hasAnyDep(pkg: PackageJson, names: string[]): boolean {
     if (name in deps || name in devDeps) return true;
   }
   return false;
+}
+
+function extractConcreteVersion(spec: string | undefined): string | null {
+  if (!spec) return null;
+  const match = spec.match(/\d+\.\d+\.\d+/);
+  return match?.[0] ?? null;
+}
+
+function inferPlaywrightVersion(pkg: PackageJson): DetectionResult<string | null> {
+  const deps = pkg.dependencies ?? {};
+  const devDeps = pkg.devDependencies ?? {};
+  const candidates = [
+    ['@playwright/test', devDeps['@playwright/test'] ?? deps['@playwright/test']],
+    ['playwright', devDeps.playwright ?? deps.playwright],
+    [
+      '@playwright/experimental-ct-react',
+      devDeps['@playwright/experimental-ct-react'] ?? deps['@playwright/experimental-ct-react'],
+    ],
+  ] as const;
+
+  for (const [name, spec] of candidates) {
+    const version = extractConcreteVersion(spec);
+    if (version) {
+      return { value: version, confidence: 'high', evidence: [`${name}@${spec}`] };
+    }
+  }
+
+  return { value: null, confidence: 'low', evidence: ['no Playwright version detected'] };
 }
 
 function inferScriptCommand(
@@ -431,6 +460,7 @@ export function buildCiWorkflowPlan(
   };
   const startCommand = options.overrides?.startCommand ?? inferStartCommand(env.packageManager, pkg);
   const buildCommand = options.overrides?.buildCommand ?? inferBuildCommand(env.packageManager, pkg);
+  const playwrightVersion = inferPlaywrightVersion(pkg);
   const db = options.overrides?.db ?? inferDb(env.cwd, pkg);
   const migrationCommand =
     options.overrides?.migrationCommand ??
@@ -473,6 +503,7 @@ export function buildCiWorkflowPlan(
     packageManager: env.packageManager,
     installCommand: setup.install,
     runCucumberCommand: 'npx cucumber-js',
+    playwrightVersion,
     setupNodeBlock: setup.setupNode,
     startCommand,
     buildCommand,

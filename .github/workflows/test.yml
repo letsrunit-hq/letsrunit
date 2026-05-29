@@ -1,7 +1,7 @@
 name: Unit Tests
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   packages:
@@ -11,17 +11,17 @@ jobs:
       fail-fast: false
       matrix:
         project:
-          - "@letsrunit/playwright"
-          - "@letsrunit/bdd"
-          - "@letsrunit/executor"
-          - "@letsrunit/gherker"
-          - "@letsrunit/controller"
-          - "@letsrunit/gherkin"
-          - "@letsrunit/mailbox"
-          - "@letsrunit/journal"
-          - "@letsrunit/utils"
-          - "@letsrunit/ai"
-          - "@letsrunit/mcp-server"
+          - '@letsrunit/playwright'
+          - '@letsrunit/bdd'
+          - '@letsrunit/executor'
+          - '@letsrunit/gherker'
+          - '@letsrunit/controller'
+          - '@letsrunit/gherkin'
+          - '@letsrunit/mailbox'
+          - '@letsrunit/journal'
+          - '@letsrunit/utils'
+          - '@letsrunit/ai'
+          - '@letsrunit/mcp-server'
     steps:
       - uses: actions/checkout@v6
       - name: Enable Corepack
@@ -29,7 +29,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: "yarn"
+          cache: 'yarn'
 
       - name: Install dependencies
         run: yarn install --immutable
@@ -44,13 +44,15 @@ jobs:
     name: Compat Test ${{ matrix.workspace }}
     runs-on: ubuntu-latest
     container:
-      image: mcr.microsoft.com/playwright:v1.59.1-noble
+      image: mcr.microsoft.com/playwright:v1.58.2-noble
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
     strategy:
       fail-fast: false
       matrix:
         workspace:
-          - "@letsrunit/compat-react"
-          - "@letsrunit/compat-angular"
+          - '@letsrunit/compat-react'
+          - '@letsrunit/compat-angular'
     steps:
       - uses: actions/checkout@v6
       - name: Enable Corepack
@@ -58,16 +60,13 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: "yarn"
+          cache: 'yarn'
 
       - name: Install dependencies
         run: yarn install --immutable
 
       - name: Build packages
         run: yarn build:packages
-
-      - name: Install Playwright Browsers
-        run: yarn workspace ${{ matrix.workspace }} playwright install chromium
 
       - name: Run Tests
         run: yarn workspace ${{ matrix.workspace }} test

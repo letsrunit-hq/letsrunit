@@ -24,7 +24,11 @@ describe('installGithubAction', () => {
       JSON.stringify({ scripts: { start: 'node server.js', build: 'vite build' } }, null, 2),
       'utf-8',
     );
-    writeFileSync(join(cwd, 'cucumber.js'), "export default { worldParameters: { baseURL: 'http://localhost:3000' } };", 'utf-8');
+    writeFileSync(
+      join(cwd, 'cucumber.js'),
+      "export default { worldParameters: { baseURL: 'http://localhost:3000' } };",
+      'utf-8',
+    );
 
     const first = installGithubAction({ cwd, packageManager: 'npm', nodeVersion: 22 });
     const second = installGithubAction({ cwd, packageManager: 'npm', nodeVersion: 22 });
@@ -49,5 +53,28 @@ describe('installGithubAction', () => {
     const workflow = readFileSync(join(cwd, '.github', 'workflows', 'letsrunit.yml'), 'utf-8');
     expect(workflow).toContain('TODO: verify start command');
     expect(workflow).toContain('TODO: verify application port and baseURL.');
+  });
+
+  it('uses the Playwright container when a concrete Playwright version is installed', () => {
+    const cwd = makeDir();
+    writeFileSync(
+      join(cwd, 'package.json'),
+      JSON.stringify(
+        {
+          scripts: { start: 'node server.js', build: 'vite build' },
+          devDependencies: { '@playwright/test': '^1.58.2' },
+        },
+        null,
+        2,
+      ),
+      'utf-8',
+    );
+
+    installGithubAction({ cwd, packageManager: 'npm', nodeVersion: 22 });
+
+    const workflow = readFileSync(join(cwd, '.github', 'workflows', 'letsrunit.yml'), 'utf-8');
+    expect(workflow).toContain('image: mcr.microsoft.com/playwright:v1.58.2-noble');
+    expect(workflow).toContain('PLAYWRIGHT_BROWSERS_PATH: /ms-playwright');
+    expect(workflow).not.toContain('Install Playwright browsers');
   });
 });

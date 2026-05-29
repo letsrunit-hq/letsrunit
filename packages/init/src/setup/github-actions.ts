@@ -33,12 +33,29 @@ function renderSetupSteps(plan: CiWorkflowPlan): string {
   return `${plan.setupSteps.join('\n')}\n`;
 }
 
+function renderContainerBlock(plan: CiWorkflowPlan): string {
+  const version = plan.playwrightVersion.value;
+  if (!version) return '';
+  return `    container:
+      image: mcr.microsoft.com/playwright:v${version}-noble
+`;
+}
+
 function workflowYaml(plan: CiWorkflowPlan): string {
+  const containerBlock = renderContainerBlock(plan);
   const serviceBlock = renderServiceBlock(plan);
   const todoComments = renderTodoComments(plan);
   const buildStep = renderBuildStep(plan);
   const setupSteps = renderSetupSteps(plan);
   const waitUrl = `${plan.baseUrl.value.replace(/\/$/, '')}/`;
+  const browserEnvLines = plan.playwrightVersion.value
+    ? ['      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright', ...plan.envYamlLines]
+    : plan.envYamlLines;
+  const browserStep = plan.playwrightVersion.value
+    ? ''
+    : `      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+`;
 
   return `name: Features
 on:
@@ -49,16 +66,14 @@ on:
 jobs:
   features:
     runs-on: ubuntu-latest
-${serviceBlock}    env:
-${plan.envYamlLines.join('\n')}
+${containerBlock}${serviceBlock}    env:
+${browserEnvLines.join('\n')}
     steps:
       - uses: actions/checkout@v4
 ${plan.setupNodeBlock.join('\n')}
       - name: Install dependencies
         run: ${plan.installCommand}
-      - name: Install Playwright browsers
-        run: npx playwright install chromium --with-deps
-      - name: Install wait-on
+${browserStep}      - name: Install wait-on
         run: npm i -g wait-on
 ${buildStep}${setupSteps}${todoComments}      - name: Start app
         run: ${plan.startCommand.value} &

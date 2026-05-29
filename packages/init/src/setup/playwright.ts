@@ -22,10 +22,11 @@ export function hasPlaywrightBrowsers({ cwd }: Pick<Environment, 'cwd'>): boolea
     return false;
   }
   try {
-    const execPath = execSync(
-      `node -e "console.log(require('playwright-core').chromium.executablePath())"`,
-      { cwd, stdio: 'pipe', encoding: 'utf-8' },
-    ).trim();
+    const execPath = execSync(`node -e "console.log(require('playwright-core').chromium.executablePath())"`, {
+      cwd,
+      stdio: 'pipe',
+      encoding: 'utf-8',
+    }).trim();
     return existsSync(execPath);
   } catch {
     return false;
@@ -36,10 +37,10 @@ export function installPlaywright(env: Pick<Environment, 'packageManager' | 'cwd
   const spec = `@playwright/test@${PLAYWRIGHT_TEST_VERSION}`;
 
   execPm(env, {
-    npm: `install --save-dev ${spec}`,
-    yarn: `add --dev ${spec}`,
-    pnpm: `add -D ${spec}`,
-    bun: `add -d ${spec}`,
+    npm: `install --save-dev --save-exact ${spec}`,
+    yarn: `add --dev --exact ${spec}`,
+    pnpm: `add -D --save-exact ${spec}`,
+    bun: `add -d --exact ${spec}`,
   });
 }
 
