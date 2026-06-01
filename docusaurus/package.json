@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "@docusaurus/types": "^3.7.0",
-    "docusaurus-plugin-llms": "^0.3.0",
+    "docusaurus-plugin-llms": "patch:docusaurus-plugin-llms@npm%3A0.3.0#~/.yarn/patches/docusaurus-plugin-llms-npm-0.3.0-786b628f58.patch",
     "typescript": "^5.7.0"
   },
   "engines": {
