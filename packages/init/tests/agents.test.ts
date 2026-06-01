@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { parseAgents, setupAgents } from '../src/setup/agents.js';
-import { ensureCodexToml, projectInCodexConfig } from '../src/setup/agents/codex.js';
+import { ensureCodexToml } from '../src/setup/agents/codex.js';
 import { ensureJsonMcpConfig, ensureSkillDirectory } from '../src/setup/agents/shared.js';
 
 const dirs: string[] = [];
@@ -76,16 +76,6 @@ describe('parseAgents', () => {
   });
 });
 
-describe('codex project detection', () => {
-  it('detects project in config toml', () => {
-    const dir = makeDir();
-    const path = join(dir, 'config.toml');
-    const cwd = '/tmp/example';
-    writeFileSync(path, `[projects."${cwd}"]\ntrust_level = "trusted"\n`, 'utf-8');
-    expect(projectInCodexConfig(path, cwd)).toBe(true);
-  });
-});
-
 describe('MCP config writers', () => {
   it('creates json mcp config', () => {
     const dir = makeDir();
@@ -125,7 +115,7 @@ describe('setupAgents behavior', () => {
     const cwd = makeDir();
     mockSkillDownload();
 
-    await setupAgents({ cwd, isInteractive: false }, { agents: ['cursor'] });
+    await setupAgents({ cwd, isInteractive: false }, { agents: ['cursor', 'codex'] });
 
     const configPath = join(cwd, '.cursor', 'mcp.json');
     const config = JSON.parse(readFileSync(configPath, 'utf-8')) as {
@@ -139,6 +129,11 @@ describe('setupAgents behavior', () => {
     expect(readFileSync(join(cwd, '.agents', 'skills', 'letsrunit', 'docs', 'workflow.md'), 'utf-8')).toBe(
       'real workflow',
     );
+
+    const codexConfigPath = join(cwd, '.codex', 'config.toml');
+    const codexConfig = readFileSync(codexConfigPath, 'utf-8');
+    expect(codexConfig).toContain('command = "./node_modules/.bin/letsrunit-mcp"');
+    expect(codexConfig).toContain('LETSRUNIT_MCP_RUNTIME_MODE = "project"');
   });
 
   it('installs the full letsrunit skill directory from the agent repository', async () => {

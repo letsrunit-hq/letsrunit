@@ -28,13 +28,10 @@ When a scenario passes, it produces a `.feature` file that gets committed and ru
 }
 ```
 
-**Codex CLI** — add to `~/.codex/config.toml`:
+**Codex CLI** — add the server:
 
-```toml
-[[mcp_servers]]
-name = "letsrunit"
-command = "npx"
-args = ["-y", "@letsrunit/mcp-server@latest"]
+```bash
+codex mcp add letsrunit -- npx -y @letsrunit/mcp-server@latest
 ```
 
 **Other agents** — standard MCP JSON config:

@@ -33,7 +33,7 @@ npx letsrunit init --agents codex,cursor
 
 Supported values: `codex`, `cursor`, `claude`, `copilot`, `gemini`, `windsurf`.
 
-If you pass `--agents`, `init` configures the selected agent integrations and installs `@letsrunit/mcp-server`.
+If you pass `--agents`, `init` configures the selected agent integrations in your project and installs `@letsrunit/mcp-server`.
 
 If you run `npx letsrunit init` without any `--with-*` flags or `--agents` in a non-interactive terminal, it prints help and exits without changing the project.
 
