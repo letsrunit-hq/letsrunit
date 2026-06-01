@@ -1,3 +1,13 @@
+## [0.23.2](https://github.com/letsrunit-hq/letsrunit/compare/v0.23.1...v0.23.2) (2026-06-01)
+
+
+### Bug Fixes
+
+* avoid duplicate playwright installs ([0586a81](https://github.com/letsrunit-hq/letsrunit/commit/0586a81e27110ca063d9c1eb13f8d5f693d98331))
+* correct mcp server handoff detection ([23be8be](https://github.com/letsrunit-hq/letsrunit/commit/23be8be171e945a3330f9c96b9697fd7bd4542e2))
+* keep codex MCP setup project-local ([a8f7a8a](https://github.com/letsrunit-hq/letsrunit/commit/a8f7a8a315986cd53025ab03d2bf793c7a1ebc13))
+* repair dependabot automerge workflow ([6c3c806](https://github.com/letsrunit-hq/letsrunit/commit/6c3c80689f82280f72302e83418364eb7653bc64))
+
 ## [0.23.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.23.0...v0.23.1) (2026-06-01)
 
 
