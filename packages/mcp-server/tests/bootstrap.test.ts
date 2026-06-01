@@ -26,6 +26,15 @@ describe('decideHandoff', () => {
     expect(result).toEqual({ shouldHandoff: false, runtimeMode: 'project' });
   });
 
+  it('uses project mode without handoff when current executable matches project entrypoint', () => {
+    const result = decideHandoff(
+      '/repo/packages/mcp-server/src/index.ts',
+      '/repo/packages/mcp-server/src/index.ts',
+      null,
+    );
+    expect(result).toEqual({ shouldHandoff: false, runtimeMode: 'project' });
+  });
+
   it('hands off to project-local server when available and different from current package', () => {
     const result = decideHandoff(
       '/npx-cache/@letsrunit/mcp-server/package.json',
