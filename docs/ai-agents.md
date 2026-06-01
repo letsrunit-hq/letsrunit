@@ -37,13 +37,10 @@ The Letsrunit plugin installs both the MCP server and the skill automatically. R
 {% endtab %}
 
 {% tab title="Codex CLI" %}
-Add the MCP server to `~/.codex/config.toml`:
+Add the MCP server:
 
-```toml
-[[mcp_servers]]
-name = "letsrunit"
-command = "npx"
-args = ["-y", "@letsrunit/mcp-server@latest"]
+```bash
+codex mcp add letsrunit -- npx -y @letsrunit/mcp-server@latest
 ```
 
 Install the skill into your repo.

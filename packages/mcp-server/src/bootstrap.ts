@@ -3,7 +3,6 @@ import { loadLetsrunitEnv } from '@letsrunit/utils';
 import { realpathSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 export type McpRuntimeMode = 'project' | 'standalone';
 
@@ -83,12 +82,12 @@ function runProjectLocalServer(projectEntrypointPath: string): never {
   process.exit(result.status ?? 1);
 }
 
-export function bootstrapProjectServer(): McpRuntimeMode {
+export function bootstrapProjectServer(currentEntrypointPath?: string | null): McpRuntimeMode {
   const projectRoot = resolveProjectRoot();
   loadLetsrunitEnv(projectRoot);
   const runtimeModeOverride = resolveRuntimeModeOverride();
 
-  const currentEntryPath = toRealpath(fileURLToPath(import.meta.url));
+  const currentEntryPath = toRealpath(currentEntrypointPath ?? process.argv[1] ?? null);
   const projectEntryPath = toRealpath(resolveFromProject('@letsrunit/mcp-server', projectRoot));
 
   const decision = decideHandoff(currentEntryPath, projectEntryPath, runtimeModeOverride);

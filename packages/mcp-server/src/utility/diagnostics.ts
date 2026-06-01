@@ -3,7 +3,6 @@ import { registry } from '@letsrunit/bdd';
 import { realpathSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { decideHandoff, resolveRuntimeModeOverride } from '../bootstrap';
 import {
   expandPathPatterns,
@@ -100,7 +99,7 @@ export async function collectDiagnostics(cwd?: string): Promise<Diagnostics> {
   const serverBddPath = toRealpath(resolveFrom('@letsrunit/bdd', import.meta.url));
   const projectBddPath = toRealpath(resolveFrom('@letsrunit/bdd', resolve(projectRoot, 'package.json')));
   const projectMcpEntryPath = resolveFrom('@letsrunit/mcp-server', resolve(projectRoot, 'package.json'));
-  const currentEntrypointPath = toRealpath(fileURLToPath(import.meta.url));
+  const currentEntrypointPath = toRealpath(process.argv[1] ?? null);
   const projectEntrypointPath = toRealpath(projectMcpEntryPath);
   const handoffDecision = decideHandoff(
     currentEntrypointPath,

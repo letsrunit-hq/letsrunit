@@ -68,14 +68,15 @@
     "@letsrunit/playwright": "workspace:*",
     "@letsrunit/store": "workspace:*",
     "@letsrunit/utils": "workspace:*",
-    "@playwright/test": "1.58.2",
     "uuid": "^13.0.0"
   },
   "peerDependencies": {
-    "@cucumber/cucumber": "^12.0.0"
+    "@cucumber/cucumber": "^12.0.0",
+    "@playwright/test": "^1.58.2"
   },
   "devDependencies": {
-    "@cucumber/cucumber": "^12.7.0"
+    "@cucumber/cucumber": "^12.7.0",
+    "@playwright/test": "1.58.2"
   },
   "module": "./src/index.ts",
   "types": "./src/index.ts",
