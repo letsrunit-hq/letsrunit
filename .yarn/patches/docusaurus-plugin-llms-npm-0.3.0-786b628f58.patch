@@ -1,0 +1,41 @@
+diff --git a/lib/index.js b/lib/index.js
+index d38989bab77573d0f3a16ac7aef012d57f7cb999..a1ecfdd2c32089f50d954765b5fca297e18e3589 100644
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -176,7 +176,7 @@ function docusaurusPluginLLMs(context, options = {}) {
+     // Validate options before processing
+     validatePluginOptions(options);
+     // Set default options
+-    const { generateLLMsTxt = true, generateLLMsFullTxt = true, docsDir = 'docs', ignoreFiles = [], title, description, llmsTxtFilename = 'llms.txt', llmsFullTxtFilename = 'llms-full.txt', includeBlog = false, pathTransformation, includeOrder = [], includeUnmatchedLast = true, customLLMFiles = [], excludeImports = false, removeDuplicateHeadings = false, generateMarkdownFiles = false, keepFrontMatter = [], rootContent, fullRootContent, logLevel = 'normal', } = options;
++    const { generateLLMsTxt = true, generateLLMsFullTxt = true, docsDir = 'docs', ignoreFiles = [], title, description, llmsTxtFilename = 'llms.txt', llmsFullTxtFilename = 'llms-full.txt', includeBlog = false, pathTransformation, includeOrder = [], includeUnmatchedLast = true, customLLMFiles = [], excludeImports = false, removeDuplicateHeadings = false, generateMarkdownFiles = false, keepFrontMatter = [], preserveDirectoryStructure = true, rootContent, fullRootContent, logLevel = 'normal', } = options;
+     // Initialize logging level
+     const logLevelMap = {
+         quiet: utils_1.LogLevel.QUIET,
+@@ -217,6 +217,7 @@ function docusaurusPluginLLMs(context, options = {}) {
+             removeDuplicateHeadings,
+             generateMarkdownFiles,
+             keepFrontMatter,
++            preserveDirectoryStructure,
+             rootContent,
+             fullRootContent,
+         }
+diff --git a/src/index.ts b/src/index.ts
+index b2ab4402497bcb131b8e6a424e61b6dcfa4bac64..f39e0d131fb5349890b709eabe82c290cd98f9ac 100644
+--- a/src/index.ts
++++ b/src/index.ts
+@@ -223,6 +223,7 @@ export default function docusaurusPluginLLMs(
+     removeDuplicateHeadings = false,
+     generateMarkdownFiles = false,
+     keepFrontMatter = [],
++    preserveDirectoryStructure = true,
+     rootContent,
+     fullRootContent,
+     logLevel = 'normal',
+@@ -275,6 +276,7 @@ export default function docusaurusPluginLLMs(
+       removeDuplicateHeadings,
+       generateMarkdownFiles,
+       keepFrontMatter,
++      preserveDirectoryStructure,
+       rootContent,
+       fullRootContent,
+     }

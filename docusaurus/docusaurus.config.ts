@@ -66,6 +66,8 @@ const config: Config = {
         description: 'Browser testing in plain language, built for teams that ship with AI.',
         generateLLMsTxt: true,
         generateLLMsFullTxt: true,
+        generateMarkdownFiles: true,
+        preserveDirectoryStructure: false,
         excludeImports: true,
         removeDuplicateHeadings: true,
         ignoreFiles: ['SUMMARY.md'],
