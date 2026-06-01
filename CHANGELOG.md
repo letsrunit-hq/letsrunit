@@ -1,3 +1,11 @@
+## [0.23.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.23.0...v0.23.1) (2026-06-01)
+
+
+### Bug Fixes
+
+* **docs:** add custom llms root content ([483d630](https://github.com/letsrunit-hq/letsrunit/commit/483d6301a000f76edc6d40770ea231442df39c88))
+* **docs:** generate markdown companion pages ([dcf5b3d](https://github.com/letsrunit-hq/letsrunit/commit/dcf5b3d465c31f66f532205af4a7c232b36529f2))
+
 # [0.23.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.22.0...v0.23.0) (2026-05-29)
 
 
