@@ -8,12 +8,10 @@ Letsrunit ships with built-in steps from `@letsrunit/cucumber`, but you can add 
 
 ## Using custom steps
 
-### 1. Create a custom step file
-
-Create `features/support/custom-steps.js`:
+Create a file such as `features/support/custom-steps.js`. Cucumber loads files in `features/support/**/*.js` automatically, so you do not need to register the file anywhere.
 
 ```js
-import { Then, When } from '@cucumber/cucumber';
+import { Then, When } from '@letsrunit/cucumber';
 
 When('I open the profile menu', async function () {
   await this.page.getByRole('button', { name: 'Profile' }).click();
@@ -26,19 +24,7 @@ Then('I should see the signed-in email {string}', async function (email) {
 
 `this.page` is the Playwright page provided by Letsrunit's world setup.
 
-### 2. Load your custom steps
-
-In `features/support/world.js`, keep the Letsrunit import and add your custom step file:
-
-```js
-import { setDefaultTimeout } from '@cucumber/cucumber';
-import '@letsrunit/cucumber';
-import './custom-steps.js';
-
-setDefaultTimeout(30_000);
-```
-
-### 3. Use the step in your feature
+Use the step in your feature:
 
 ```gherkin
 Scenario: Open account menu
