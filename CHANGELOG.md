@@ -1,3 +1,10 @@
+## [0.23.3](https://github.com/letsrunit-hq/letsrunit/compare/v0.23.2...v0.23.3) (2026-06-02)
+
+
+### Bug Fixes
+
+* pin cucumber init dependency ([70f3b14](https://github.com/letsrunit-hq/letsrunit/commit/70f3b1407fe4aeee6ca9ee046e11f820e5c86b5f))
+
 ## [0.23.2](https://github.com/letsrunit-hq/letsrunit/compare/v0.23.1...v0.23.2) (2026-06-01)
 
 
