@@ -10,6 +10,14 @@ npm install @letsrunit/ai
 yarn add @letsrunit/ai
 ```
 
+Install `langsmith` as well if you want LangSmith tracing:
+
+```bash
+npm install langsmith
+# or
+yarn add langsmith
+```
+
 Provides AI-driven capabilities for the `letsrunit` platform, leveraging the [AI SDK](https://sdk.vercel.ai/). It serves as a unified interface for generating text or structured objects using LLMs.
 
 ## Exported Functions
@@ -51,10 +59,13 @@ Translates text or JSON objects from English to a target language.
 
 ### LangSmith tracing (optional)
 
+LangSmith tracing is loaded lazily. If you configure any of the variables below, `langsmith@>=0.6.0` must also be installed.
+
 - `LANGSMITH_TRACING`
 - `LANGSMITH_WORKSPACE_ID`
 - `LANGSMITH_API_KEY`
 - `LANGSMITH_ENDPOINT`
+- `LANGSMITH_PROJECT`
 
 ## Testing
 

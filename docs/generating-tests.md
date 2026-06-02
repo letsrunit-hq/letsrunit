@@ -116,7 +116,7 @@ Log in with email and password, then verify the dashboard loads
 
 ### LangSmith tracing
 
-To inspect LLM calls made during `explore` or `generate`, enable LangSmith tracing:
+To inspect LLM calls made during `explore` or `generate`, install `langsmith@>=0.6.0` and enable LangSmith tracing:
 
 | Variable | Description |
 |----------|-------------|
