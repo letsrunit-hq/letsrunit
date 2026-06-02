@@ -100,7 +100,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         if: matrix.pm == 'bun'
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: tarballs
           path: /tmp
@@ -162,7 +162,7 @@ jobs:
         with:
           node-version: 24
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: tarballs
           path: /tmp
