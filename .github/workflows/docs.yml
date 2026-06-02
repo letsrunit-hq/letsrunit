@@ -38,7 +38,7 @@ jobs:
       - name: Build
         run: yarn workspace letsrunit-docs build
 
-      - uses: actions/upload-pages-artifact@v4
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: docusaurus/build
           include-hidden-files: true
