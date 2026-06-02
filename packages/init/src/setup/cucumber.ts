@@ -4,6 +4,7 @@ import { type Environment, execPm } from '../detect.js';
 import { resolveInstallSpec } from './local-package.js';
 
 const BDD_IMPORT = '@letsrunit/cucumber';
+const CUCUMBER_SPEC = '@cucumber/cucumber@^12.7.0';
 
 function cucumberConfig(baseUrl: string): string {
   return `import { isAgentEnvironment, loadLetsrunitEnv, resolveDebugWorldParameters } from '@letsrunit/cucumber/config';
@@ -62,10 +63,10 @@ export interface CucumberSetupResult {
 
 export function installCucumber(env: Pick<Environment, 'packageManager' | 'cwd'>): void {
   execPm(env, {
-    npm: 'install --save-dev @cucumber/cucumber',
-    yarn: 'add --dev @cucumber/cucumber',
-    pnpm: 'add -D @cucumber/cucumber',
-    bun: 'add -d @cucumber/cucumber',
+    npm: `install --save-dev ${CUCUMBER_SPEC}`,
+    yarn: `add --dev ${CUCUMBER_SPEC}`,
+    pnpm: `add -D ${CUCUMBER_SPEC}`,
+    bun: `add -d ${CUCUMBER_SPEC}`,
   });
 }
 
