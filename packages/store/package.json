@@ -49,7 +49,7 @@
     "build": "../../node_modules/.bin/tsup",
     "typecheck": "tsc --noEmit"
   },
-  "packageManager": "yarn@4.10.3",
+  "packageManager": "yarn@4.12.0",
   "dependencies": {
     "node-sqlite3-wasm": "^0.8.55",
     "uuid": "^13.0.0"
