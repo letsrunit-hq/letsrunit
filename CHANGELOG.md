@@ -1,3 +1,10 @@
+## [0.23.4](https://github.com/letsrunit-hq/letsrunit/compare/v0.23.3...v0.23.4) (2026-06-02)
+
+
+### Bug Fixes
+
+* make langsmith tracing optional ([38612f0](https://github.com/letsrunit-hq/letsrunit/commit/38612f0078173dc0da0bd6fce87a772a9b5f630d))
+
 ## [0.23.3](https://github.com/letsrunit-hq/letsrunit/compare/v0.23.2...v0.23.3) (2026-06-02)
 
 

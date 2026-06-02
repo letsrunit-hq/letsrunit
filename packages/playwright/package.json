@@ -1,6 +1,6 @@
 {
   "name": "@letsrunit/playwright",
-  "version": "0.23.3",
+  "version": "0.23.4",
   "description": "Playwright extensions and utilities for letsrunit",
   "keywords": [
     "testing",
