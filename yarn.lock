@@ -4913,7 +4913,7 @@ __metadata:
     "@maskito/core": "npm:^5.2.2"
     "@maskito/kit": "npm:^5.2.2"
     "@maskito/phone": "npm:^5.2.2"
-    "@ng-web-apis/common": "npm:^5.2.0"
+    "@ng-web-apis/common": "npm:^5.3.0"
     "@ng-web-apis/intersection-observer": "npm:^5.2.0"
     "@ng-web-apis/mutation-observer": "npm:^5.2.0"
     "@ng-web-apis/platform": "npm:^5.2.0"
@@ -5490,17 +5490,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ng-web-apis/common@npm:^5.2.0":
-  version: 5.2.0
-  resolution: "@ng-web-apis/common@npm:5.2.0"
+"@ng-web-apis/common@npm:^5.3.0":
+  version: 5.3.0
+  resolution: "@ng-web-apis/common@npm:5.3.0"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
     "@angular/common": ">=19.0.0"
     "@angular/core": ">=19.0.0"
-    "@types/dom-speech-recognition": ^0.0.8
+    "@types/dom-speech-recognition": ^0.0.10
     rxjs: ">=7.0.0"
-  checksum: 10c0/f8263117b7db79f19f4e8617665de51ca766cccf9662eeb67b2cc3b14ab9955507e8791204f26e2834ea99e77e9fb20d7f5106f3e1ba869f7a86090ac6a7fe7b
+  checksum: 10c0/62353d4822354b9ce3b6189cc56a40d15332c3dbddbd55288058107ef7d5795e796f8be9692310fda5a647421199550dc383b943c744c1bf2e26613dacfbc498
   languageName: node
   linkType: hard
 
