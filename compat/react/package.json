@@ -24,7 +24,7 @@
     "@radix-ui/react-switch": "^1.2.6",
     "@types/react": "^19.2.9",
     "@types/react-dom": "^19.2.3",
-    "antd": "^6.2.1",
+    "antd": "6.2.1",
     "primereact": "^10.9.7",
     "react": "^19.2.3",
     "react-day-picker": "^9.14.0",
