@@ -1,3 +1,10 @@
+## [0.23.5](https://github.com/letsrunit-hq/letsrunit/compare/v0.23.4...v0.23.5) (2026-06-11)
+
+
+### Bug Fixes
+
+* harden generated playwright CI workflow ([039bf52](https://github.com/letsrunit-hq/letsrunit/commit/039bf525419635e6f18e649614f4e78b8c8e9115))
+
 ## [0.23.4](https://github.com/letsrunit-hq/letsrunit/compare/v0.23.3...v0.23.4) (2026-06-02)
 
 
