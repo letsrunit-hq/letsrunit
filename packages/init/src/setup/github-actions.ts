@@ -41,15 +41,42 @@ function renderContainerBlock(plan: CiWorkflowPlan): string {
 `;
 }
 
+function renderPreferIpv4LocalhostStep(plan: CiWorkflowPlan): string {
+  if (!plan.playwrightVersion.value) return '';
+  return `      - name: Prefer IPv4 localhost
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          hosts = Path("/etc/hosts")
+          lines = hosts.read_text().splitlines()
+          filtered = [line for line in lines if not line.startswith("::1") or "localhost" not in line]
+          if not any(line.startswith("127.0.0.1") and "localhost" in line for line in filtered):
+              filtered.insert(0, "127.0.0.1 localhost")
+          hosts.write_text("\\n".join(filtered) + "\\n")
+          PY
+`;
+}
+
+function renderRunAndTestStep(plan: CiWorkflowPlan, waitUrl: string): string {
+  return `      - name: Run and test
+        run: |
+          ${plan.startCommand.value} &
+          wait-on --timeout 30000 http-get://${waitUrl.replace(/^https?:\/\//, '')}
+          ${plan.runCucumberCommand}
+`;
+}
+
 function workflowYaml(plan: CiWorkflowPlan): string {
   const containerBlock = renderContainerBlock(plan);
   const serviceBlock = renderServiceBlock(plan);
   const todoComments = renderTodoComments(plan);
   const buildStep = renderBuildStep(plan);
   const setupSteps = renderSetupSteps(plan);
+  const preferIpv4LocalhostStep = renderPreferIpv4LocalhostStep(plan);
   const waitUrl = `${plan.baseUrl.value.replace(/\/$/, '')}/`;
   const browserEnvLines = plan.playwrightVersion.value
-    ? ['      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright', ...plan.envYamlLines]
+    ? ['      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright', '      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1', ...plan.envYamlLines]
     : plan.envYamlLines;
   const browserStep = plan.playwrightVersion.value
     ? ''
@@ -75,12 +102,7 @@ ${plan.setupNodeBlock.join('\n')}
         run: ${plan.installCommand}
 ${browserStep}      - name: Install wait-on
         run: npm i -g wait-on
-${buildStep}${setupSteps}${todoComments}      - name: Start app
-        run: ${plan.startCommand.value} &
-      - name: Wait for app
-        run: wait-on ${waitUrl}
-      - name: Run features
-        run: ${plan.runCucumberCommand}
+${buildStep}${setupSteps}${todoComments}${preferIpv4LocalhostStep}${renderRunAndTestStep(plan, waitUrl)}
 `;
 }
 
