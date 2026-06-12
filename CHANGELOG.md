@@ -1,3 +1,10 @@
+## [0.23.6](https://github.com/letsrunit-hq/letsrunit/compare/v0.23.5...v0.23.6) (2026-06-12)
+
+
+### Bug Fixes
+
+* update agents submodule reference ([d36a4c7](https://github.com/letsrunit-hq/letsrunit/commit/d36a4c7c0e6f5b46b2559cd5c2821d3a0e33a508))
+
 ## [0.23.5](https://github.com/letsrunit-hq/letsrunit/compare/v0.23.4...v0.23.5) (2026-06-11)
 
 
