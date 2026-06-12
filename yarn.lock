@@ -5156,7 +5156,7 @@ __metadata:
     "@radix-ui/react-select": "npm:^2.2.6"
     "@radix-ui/react-slider": "npm:^1.3.6"
     "@radix-ui/react-switch": "npm:^1.2.6"
-    "@types/react": "npm:^19.2.9"
+    "@types/react": "npm:^19.2.17"
     "@types/react-dom": "npm:^19.2.3"
     antd: "npm:6.2.1"
     primereact: "npm:^10.9.7"
@@ -9217,12 +9217,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:^19.2.9":
-  version: 19.2.9
-  resolution: "@types/react@npm:19.2.9"
+"@types/react@npm:^19.2.17":
+  version: 19.2.17
+  resolution: "@types/react@npm:19.2.17"
   dependencies:
     csstype: "npm:^3.2.2"
-  checksum: 10c0/91c6839edd10ebdab4cd686d2a744e6ae078ed5831a36d48284ae92df0463c89bda1084ffdd2e6445f0716236c2c6ae0828b82f70720727632331695f4581d2a
+  checksum: 10c0/bc2c4af96b3e480604424de70d5ebda90c5f4b485df471858c0bc2d7d70364b606ec3c4d8579f94f01aa0c6c0591f56bcf14cba5689f5eea4b74250ccdc3a232
   languageName: node
   linkType: hard
 
