@@ -1,3 +1,10 @@
+## [0.23.7](https://github.com/letsrunit-hq/letsrunit/compare/v0.23.6...v0.23.7) (2026-06-15)
+
+
+### Bug Fixes
+
+* repair dependabot automerge workflow ([f1fae54](https://github.com/letsrunit-hq/letsrunit/commit/f1fae5445d550949906fd5c45abbce8b00370e85))
+
 ## [0.23.6](https://github.com/letsrunit-hq/letsrunit/compare/v0.23.5...v0.23.6) (2026-06-12)
 
 
