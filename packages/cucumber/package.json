@@ -68,7 +68,7 @@
     "@letsrunit/playwright": "workspace:*",
     "@letsrunit/store": "workspace:*",
     "@letsrunit/utils": "workspace:*",
-    "uuid": "^13.0.0"
+    "uuid": "^14.0.0"
   },
   "peerDependencies": {
     "@cucumber/cucumber": "^12.0.0",
