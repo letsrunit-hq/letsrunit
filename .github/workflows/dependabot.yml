@@ -1,8 +1,9 @@
-name: "Dependabot Automerge"
+name: 'Dependabot Automerge'
 on:
   workflow_run:
     workflows:
-      - CI
+      - Unit Tests
+      - Init Integration Test
     types:
       - completed
 
@@ -12,8 +13,11 @@ jobs:
     if: |
       github.event.workflow_run.event == 'pull_request' &&
       github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.actor.login == 'dependabot[bot]'
-    permissions: 
+      (
+        github.event.workflow_run.actor.login == 'dependabot[bot]' ||
+        github.event.workflow_run.actor.login == 'app/dependabot'
+      )
+    permissions:
       pull-requests: write
       contents: write
     steps:
@@ -22,6 +26,8 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const allowedAuthors = new Set(['dependabot[bot]', 'app/dependabot']);
+            const watchedWorkflows = ['Unit Tests', 'Init Integration Test'];
             const prs = context.payload.workflow_run.pull_requests;
             if (!prs?.length) {
               core.setFailed('No pull request found for workflow_run');
@@ -36,8 +42,31 @@ jobs:
               pull_number,
             });
 
-            if (pr.data.user.login !== 'dependabot[bot]') {
+            if (!allowedAuthors.has(pr.data.user.login)) {
               core.info(`Skipped: PR author is ${pr.data.user.login}`);
+              return;
+            }
+
+            const workflowRuns = await github.paginate(
+              github.rest.actions.listWorkflowRunsForRepo,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                event: 'pull_request',
+                head_sha: pr.data.head.sha,
+                per_page: 100,
+              },
+            );
+
+            const successfulWorkflows = new Set(
+              workflowRuns
+                .filter((run) => run.status === 'completed' && run.conclusion === 'success')
+                .map((run) => run.name),
+            );
+
+            const missingWorkflows = watchedWorkflows.filter((name) => !successfulWorkflows.has(name));
+            if (missingWorkflows.length > 0) {
+              core.info(`Skipped: waiting for successful workflows: ${missingWorkflows.join(', ')}`);
               return;
             }
 
