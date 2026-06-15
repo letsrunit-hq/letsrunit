@@ -2,6 +2,9 @@ import nodeWasm from 'node-sqlite3-wasm';
 const { Database } = nodeWasm;
 export type Database = InstanceType<typeof nodeWasm.Database>;
 
+const BUSY_TIMEOUT_MS = 5_000;
+const RETRY_DELAYS_MS = [10, 25, 50, 100, 250] as const;
+
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS runs (
   id          BLOB PRIMARY KEY,
@@ -53,10 +56,35 @@ CREATE TABLE IF NOT EXISTS artifacts (
 );
 `;
 
+function isLockedError(error: unknown): boolean {
+  return error instanceof Error && error.message.includes('database is locked');
+}
+
+function sleepSync(delayMs: number): void {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, delayMs);
+}
+
+export function runWithRetry<T>(operation: () => T): T {
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return operation();
+    } catch (error) {
+      if (!isLockedError(error) || attempt >= RETRY_DELAYS_MS.length) {
+        throw error;
+      }
+
+      sleepSync(RETRY_DELAYS_MS[attempt]);
+    }
+  }
+}
+
 export function openStore(path = '.letsrunit/letsrunit.db'): Database {
   const db = new Database(path);
-  db.run('PRAGMA journal_mode = WAL');
-  db.run('PRAGMA foreign_keys = ON');
-  db.exec(SCHEMA);
+  runWithRetry(() => {
+    db.run(`PRAGMA busy_timeout = ${BUSY_TIMEOUT_MS}`);
+    db.run('PRAGMA journal_mode = WAL');
+    db.run('PRAGMA foreign_keys = ON');
+    db.exec(SCHEMA);
+  });
   return db;
 }
