@@ -5369,7 +5369,7 @@ __metadata:
     "@ng-web-apis/common": "npm:^5.3.0"
     "@ng-web-apis/intersection-observer": "npm:^5.2.0"
     "@ng-web-apis/mutation-observer": "npm:^5.2.0"
-    "@ng-web-apis/platform": "npm:^5.2.0"
+    "@ng-web-apis/platform": "npm:^5.3.0"
     "@ng-web-apis/resize-observer": "npm:^5.2.0"
     "@ng-web-apis/screen-orientation": "npm:^5.2.0"
     "@playwright/test": "npm:1.58.2"
@@ -5993,12 +5993,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ng-web-apis/platform@npm:^5.2.0":
-  version: 5.2.0
-  resolution: "@ng-web-apis/platform@npm:5.2.0"
+"@ng-web-apis/platform@npm:^5.3.0":
+  version: 5.3.0
+  resolution: "@ng-web-apis/platform@npm:5.3.0"
   dependencies:
     tslib: "npm:^2.3.0"
-  checksum: 10c0/a5249aafe702290af29823b66bd72945fb8a7db2b5d6a1d107fb397103bb95a69f5c3ef51d4f4beb45f80c95653545a17f594f434df0f1e1183a5d460a47cae8
+  checksum: 10c0/1dc0140a96ee6ca2835ba12985b69b41a85cdb9840ada566554377880dc960c51519f1673291f5509d531623b68223e9cba7ce5715850fd580077b50b79aa2af
   languageName: node
   linkType: hard
 
