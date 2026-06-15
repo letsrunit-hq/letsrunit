@@ -2,7 +2,7 @@ import { intro, log, outro } from '@clack/prompts';
 import { detectEnvironment } from './detect.js';
 import { formatInitHelp, shouldShowInitHelp, type InitOptions } from './init-options.js';
 import { detectAgentIds } from './setup/agents.js';
-import { detectAppTarget } from './setup/project-app.js';
+import { detectAppTarget, ensureLetsrunitIgnoredInVite } from './setup/project-app.js';
 import { ensureLetsrunitIgnored } from './setup/cli-ai.js';
 import { setupAgentIntegration } from './init/agents.js';
 import { setupBaseUrl } from './init/base-url.js';
@@ -55,6 +55,8 @@ export async function init(options: InitOptions = {}): Promise<void> {
 
   const ignoreResult = ensureLetsrunitIgnored(context.env.cwd);
   if (ignoreResult !== 'skipped') log.success(`.gitignore ${ignoreResult}`);
+  const viteIgnoreResult = ensureLetsrunitIgnoredInVite(context.env.cwd);
+  if (viteIgnoreResult === 'updated') log.success('vite config updated');
 
   await setupPlaywright(context);
   await setupBaseUrl(context);

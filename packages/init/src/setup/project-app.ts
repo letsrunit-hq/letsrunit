@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 export type DetectionConfidence = 'high' | 'medium' | 'low';
@@ -29,11 +29,22 @@ interface FrameworkMatch {
 }
 
 const DEFAULT_PORT = 3000;
+const LETSRUNIT_VITE_IGNORE = '**/.letsrunit/**';
 
 const FRAMEWORK_RULES: Array<{ name: string; defaultPort: number; deps: string[]; scriptPatterns?: RegExp[] }> = [
   { name: 'nextjs', defaultPort: 3000, deps: ['next'], scriptPatterns: [/\bnext\s+(?:dev|start)\b/] },
-  { name: 'vite', defaultPort: 5173, deps: ['vite', '@vitejs/plugin-react', '@vitejs/plugin-vue'], scriptPatterns: [/\bvite\b/] },
-  { name: 'angular', defaultPort: 4200, deps: ['@angular/core', '@angular/cli'], scriptPatterns: [/\bng\s+(?:serve|dev)\b/] },
+  {
+    name: 'vite',
+    defaultPort: 5173,
+    deps: ['vite', '@vitejs/plugin-react', '@vitejs/plugin-vue'],
+    scriptPatterns: [/\bvite\b/],
+  },
+  {
+    name: 'angular',
+    defaultPort: 4200,
+    deps: ['@angular/core', '@angular/cli'],
+    scriptPatterns: [/\bng\s+(?:serve|dev)\b/],
+  },
   { name: 'nuxt', defaultPort: 3000, deps: ['nuxt'], scriptPatterns: [/\bnuxt\s+(?:dev|start)\b/] },
   { name: 'sveltekit', defaultPort: 5173, deps: ['@sveltejs/kit'] },
   { name: 'astro', defaultPort: 4321, deps: ['astro'], scriptPatterns: [/\bastro\s+dev\b/] },
@@ -49,6 +60,77 @@ function readText(path: string): string {
   } catch {
     return '';
   }
+}
+
+function insertIgnoredIntoArray(text: string): string | null {
+  const pattern = /ignored\s*:\s*\[([^\]]*)\]/;
+  if (!pattern.test(text)) return null;
+
+  return text.replace(pattern, (_match, content: string) => {
+    const trimmed = content.trim();
+    const prefix = trimmed ? `${trimmed}, ` : '';
+    return `ignored: [${prefix}'${LETSRUNIT_VITE_IGNORE}']`;
+  });
+}
+
+function insertIgnoredIntoWatch(text: string): string | null {
+  const pattern = /^([ \t]*)watch\s*:\s*\{/m;
+  if (!pattern.test(text)) return null;
+
+  return text.replace(pattern, `$1watch: {\n$1  ignored: ['${LETSRUNIT_VITE_IGNORE}'],`);
+}
+
+function insertWatchIntoServer(text: string): string | null {
+  const pattern = /^([ \t]*)server\s*:\s*\{/m;
+  if (!pattern.test(text)) return null;
+
+  return text.replace(pattern, `$1server: {\n$1  watch: {\n$1    ignored: ['${LETSRUNIT_VITE_IGNORE}'],\n$1  },`);
+}
+
+function insertServerIntoConfig(text: string): string | null {
+  const defineConfigPattern = /(defineConfig\s*\(\s*\{)(\s*\n)?/;
+  if (defineConfigPattern.test(text)) {
+    return text.replace(
+      defineConfigPattern,
+      `$1\n  server: {\n    watch: {\n      ignored: ['${LETSRUNIT_VITE_IGNORE}'],\n    },\n  },\n`,
+    );
+  }
+
+  const exportDefaultPattern = /(export\s+default\s+\{)(\s*\n)?/;
+  if (!exportDefaultPattern.test(text)) return null;
+
+  return text.replace(
+    exportDefaultPattern,
+    `$1\n  server: {\n    watch: {\n      ignored: ['${LETSRUNIT_VITE_IGNORE}'],\n    },\n  },\n`,
+  );
+}
+
+function selectViteConfig(cwd: string): string | null {
+  const tsPath = join(cwd, 'vite.config.ts');
+  if (existsSync(tsPath)) return tsPath;
+
+  const jsPath = join(cwd, 'vite.config.js');
+  if (existsSync(jsPath)) return jsPath;
+
+  return null;
+}
+
+export function ensureLetsrunitIgnoredInVite(cwd: string): 'updated' | 'skipped' | 'missing' {
+  const path = selectViteConfig(cwd);
+  if (!path) return 'missing';
+
+  const text = readText(path);
+  if (text.includes(LETSRUNIT_VITE_IGNORE)) return 'skipped';
+
+  const next =
+    insertIgnoredIntoArray(text) ??
+    insertIgnoredIntoWatch(text) ??
+    insertWatchIntoServer(text) ??
+    insertServerIntoConfig(text);
+  if (!next || next === text) return 'skipped';
+
+  writeFileSync(path, next, 'utf-8');
+  return 'updated';
 }
 
 function readPackageJson(cwd: string): PackageJson {
@@ -113,7 +195,14 @@ function extractPortByRegex(text: string, regex: RegExp): number | null {
 }
 
 function detectPortFromViteConfig(cwd: string): DetectionResult<number> | null {
-  const files = ['vite.config.ts', 'vite.config.js', 'vite.config.mts', 'vite.config.mjs', 'vite.config.cts', 'vite.config.cjs'];
+  const files = [
+    'vite.config.ts',
+    'vite.config.js',
+    'vite.config.mts',
+    'vite.config.mjs',
+    'vite.config.cts',
+    'vite.config.cjs',
+  ];
   for (const file of files) {
     const path = join(cwd, file);
     if (!existsSync(path)) continue;
@@ -139,7 +228,9 @@ function detectPortFromAngularConfig(cwd: string): DetectionResult<number> | nul
         projects?: Record<string, any>;
       };
       const projects = config.projects ?? {};
-      const names = [config.defaultProject, ...Object.keys(projects)].filter((v, i, a) => Boolean(v) && a.indexOf(v) === i) as string[];
+      const names = [config.defaultProject, ...Object.keys(projects)].filter(
+        (v, i, a) => Boolean(v) && a.indexOf(v) === i,
+      ) as string[];
 
       for (const name of names) {
         const project = projects[name] as any;
@@ -147,7 +238,11 @@ function detectPortFromAngularConfig(cwd: string): DetectionResult<number> | nul
         const serve = architect?.serve;
         const port = serve?.options?.port;
         if (Number.isFinite(port)) {
-          return { value: Number(port), confidence: 'high', evidence: [`${file}#projects.${name}.architect.serve.options.port`] };
+          return {
+            value: Number(port),
+            confidence: 'high',
+            evidence: [`${file}#projects.${name}.architect.serve.options.port`],
+          };
         }
 
         const configurations = serve?.configurations ?? {};

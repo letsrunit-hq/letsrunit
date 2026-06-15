@@ -32,6 +32,7 @@ export default {
   pluginOptions: {
     letsrunitStore: {
       directory: '.letsrunit',
+      enabled: process.env.CI !== 'true',
     },
   },
   worldParameters,

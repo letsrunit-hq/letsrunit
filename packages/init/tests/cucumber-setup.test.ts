@@ -26,6 +26,7 @@ describe('setupCucumber', () => {
     const config = readFileSync(join(cwd, 'cucumber.js'), 'utf-8');
     expect(config).toContain('loadLetsrunitEnv();');
     expect(config).toContain("baseURL: process.env.LETSRUNIT_BASE_URL ?? 'http://localhost:4100'");
+    expect(config).toContain("enabled: process.env.CI !== 'true'");
   });
 
   it('does not patch an existing cucumber.js', () => {

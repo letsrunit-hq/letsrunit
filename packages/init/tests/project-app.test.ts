@@ -1,8 +1,8 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { detectAppTarget } from '../src/setup/project-app.js';
+import { detectAppTarget, ensureLetsrunitIgnoredInVite } from '../src/setup/project-app.js';
 
 const dirs: string[] = [];
 
@@ -20,11 +20,7 @@ describe('detectAppTarget', () => {
   it('detects vite port from vite.config.ts', () => {
     const cwd = makeDir();
     writeFileSync(join(cwd, 'package.json'), JSON.stringify({ devDependencies: { vite: '^7.0.0' } }), 'utf-8');
-    writeFileSync(
-      join(cwd, 'vite.config.ts'),
-      "export default { server: { port: 6123 } };\n",
-      'utf-8',
-    );
+    writeFileSync(join(cwd, 'vite.config.ts'), 'export default { server: { port: 6123 } };\n', 'utf-8');
 
     const result = detectAppTarget(cwd);
     expect(result.value.framework).toBe('vite');
@@ -65,7 +61,11 @@ describe('detectAppTarget', () => {
   it('detects nuxt devServer port from nuxt.config.ts', () => {
     const cwd = makeDir();
     writeFileSync(join(cwd, 'package.json'), JSON.stringify({ dependencies: { nuxt: '^4.0.0' } }), 'utf-8');
-    writeFileSync(join(cwd, 'nuxt.config.ts'), "export default defineNuxtConfig({ devServer: { port: 3456 } });", 'utf-8');
+    writeFileSync(
+      join(cwd, 'nuxt.config.ts'),
+      'export default defineNuxtConfig({ devServer: { port: 3456 } });',
+      'utf-8',
+    );
 
     const result = detectAppTarget(cwd);
     expect(result.value.framework).toBe('nuxt');
@@ -75,7 +75,7 @@ describe('detectAppTarget', () => {
   it('detects astro port from astro.config.mjs', () => {
     const cwd = makeDir();
     writeFileSync(join(cwd, 'package.json'), JSON.stringify({ dependencies: { astro: '^5.0.0' } }), 'utf-8');
-    writeFileSync(join(cwd, 'astro.config.mjs'), "export default { server: { port: 4567 } };", 'utf-8');
+    writeFileSync(join(cwd, 'astro.config.mjs'), 'export default { server: { port: 4567 } };', 'utf-8');
 
     const result = detectAppTarget(cwd);
     expect(result.value.framework).toBe('astro');
@@ -104,5 +104,52 @@ describe('detectAppTarget', () => {
     const result = detectAppTarget(cwd);
     expect(result.value.framework).toBe('nextjs');
     expect(result.value.port).toBe(3000);
+  });
+});
+
+describe('ensureLetsrunitIgnoredInVite', () => {
+  it('updates vite.config.ts to ignore .letsrunit', () => {
+    const cwd = makeDir();
+    writeFileSync(
+      join(cwd, 'vite.config.ts'),
+      ["import { defineConfig } from 'vite';", '', 'export default defineConfig({', '  plugins: [],', '});', ''].join(
+        '\n',
+      ),
+      'utf-8',
+    );
+
+    expect(ensureLetsrunitIgnoredInVite(cwd)).toBe('updated');
+    expect(readFileSync(join(cwd, 'vite.config.ts'), 'utf-8')).toContain("ignored: ['**/.letsrunit/**']");
+  });
+
+  it('falls back to vite.config.js when vite.config.ts does not exist', () => {
+    const cwd = makeDir();
+    writeFileSync(join(cwd, 'vite.config.js'), 'export default { server: { port: 6123 } };\n', 'utf-8');
+
+    expect(ensureLetsrunitIgnoredInVite(cwd)).toBe('updated');
+    expect(readFileSync(join(cwd, 'vite.config.js'), 'utf-8')).toContain("ignored: ['**/.letsrunit/**']");
+  });
+
+  it('adds letsrunit to an existing ignored array', () => {
+    const cwd = makeDir();
+    writeFileSync(
+      join(cwd, 'vite.config.ts'),
+      "export default { server: { watch: { ignored: ['**/tmp/**'] } } };\n",
+      'utf-8',
+    );
+
+    expect(ensureLetsrunitIgnoredInVite(cwd)).toBe('updated');
+    expect(readFileSync(join(cwd, 'vite.config.ts'), 'utf-8')).toContain("ignored: ['**/tmp/**', '**/.letsrunit/**']");
+  });
+
+  it('skips when vite config already ignores .letsrunit', () => {
+    const cwd = makeDir();
+    writeFileSync(
+      join(cwd, 'vite.config.ts'),
+      "export default { server: { watch: { ignored: ['**/.letsrunit/**'] } } };\n",
+      'utf-8',
+    );
+
+    expect(ensureLetsrunitIgnoredInVite(cwd)).toBe('skipped');
   });
 });

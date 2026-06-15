@@ -18,6 +18,8 @@ It can:
 
 - Install `@letsrunit/cli`
 - Configure letsrunit runtime settings in `.letsrunit/.env`, including `LETSRUNIT_BASE_URL` and mailbox settings
+- Add `.letsrunit` to `.gitignore`
+- Update `vite.config.ts` or `vite.config.js` to ignore `.letsrunit`
 - Configure CLI AI settings in `.letsrunit/.env` during interactive setup
 - Install `@letsrunit/mcp-server` (project-local MCP runtime)
 - Install `@cucumber/cucumber` when missing

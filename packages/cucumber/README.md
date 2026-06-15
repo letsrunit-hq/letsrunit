@@ -49,11 +49,7 @@ const { failFast, worldParameters } = resolveDebugWorldParameters({
   },
 });
 
-const format = [
-  isAgentEnvironment(process.env)
-    ? '@letsrunit/cucumber/agent'
-    : '@letsrunit/cucumber/progress',
-];
+const format = [isAgentEnvironment(process.env) ? '@letsrunit/cucumber/agent' : '@letsrunit/cucumber/progress'];
 
 export default {
   format,
@@ -66,9 +62,7 @@ Pass extra env var keys for other agents:
 
 ```js
 const format = [
-  isAgentEnvironment(process.env, ['FOO_AGENT'])
-    ? '@letsrunit/cucumber/agent'
-    : '@letsrunit/cucumber/progress',
+  isAgentEnvironment(process.env, ['FOO_AGENT']) ? '@letsrunit/cucumber/agent' : '@letsrunit/cucumber/progress',
 ];
 ```
 
@@ -82,9 +76,10 @@ cucumber-js --fail-fast --world-parameters '{"headless":false}'
 
 A Cucumber plugin that listens to the message stream and writes structured run data to `.letsrunit/letsrunit.db` (via `@letsrunit/store`). It also saves all step attachments (screenshots, HTML) as content-addressed files under `.letsrunit/artifacts/`.
 
-`pluginOptions.letsrunitStore.directory` is the root letsrunit directory (for example `.letsrunit`), not the artifacts directory.
+`pluginOptions.letsrunitStore.directory` is the root letsrunit directory (for example `.letsrunit`), not the artifacts directory. `pluginOptions.letsrunitStore.enabled` defaults to `true`; set it to `false` to disable store recording for a run.
 
 Recorded data per run:
+
 - Session with the current git commit
 - Feature, scenario, and step records (deterministic UUIDs stable across re-runs)
 - Run status (`passed` / `failed`) with the failing step and error message
@@ -108,6 +103,7 @@ export default {
     pluginOptions: {
       letsrunitStore: {
         directory: '.letsrunit',
+        enabled: process.env.CI !== 'true',
       },
     },
     // ...
@@ -136,6 +132,7 @@ export default {
     pluginOptions: {
       letsrunitStore: {
         directory: '.letsrunit',
+        enabled: process.env.CI !== 'true',
       },
     },
   },
