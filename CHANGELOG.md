@@ -1,3 +1,10 @@
+## [0.24.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.24.0...v0.24.1) (2026-06-15)
+
+
+### Bug Fixes
+
+* **store:** retry sqlite lock contention ([65ef595](https://github.com/letsrunit-hq/letsrunit/commit/65ef595c156e941e23b83226cb74195cbe580fc6))
+
 # [0.24.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.23.7...v0.24.0) (2026-06-15)
 
 
