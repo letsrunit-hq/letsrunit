@@ -1,9 +1,15 @@
-import type { Database } from './db';
+import { runWithRetry, type Database } from './db';
 
 import { toIdBlob } from './ids';
 
+function runStatement(db: Database, sql: string, params: Array<string | number | null | Uint8Array>): void {
+  runWithRetry(() => {
+    db.run(sql, params);
+  });
+}
+
 export function insertRun(db: Database, id: string, gitCommit: string | null, startedAt: number): void {
-  db.run('INSERT OR IGNORE INTO runs (id, started_at, git_commit) VALUES (?, ?, ?)', [
+  runStatement(db, 'INSERT OR IGNORE INTO runs (id, started_at, git_commit) VALUES (?, ?, ?)', [
     toIdBlob(id),
     startedAt,
     gitCommit,
@@ -11,7 +17,7 @@ export function insertRun(db: Database, id: string, gitCommit: string | null, st
 }
 
 export function upsertFeature(db: Database, id: string, path: string, name: string): void {
-  db.run('INSERT OR REPLACE INTO features (id, path, name) VALUES (?, ?, ?)', [toIdBlob(id), path, name]);
+  runStatement(db, 'INSERT OR REPLACE INTO features (id, path, name) VALUES (?, ?, ?)', [toIdBlob(id), path, name]);
 }
 
 interface ScenarioRefs {
@@ -29,7 +35,8 @@ export function upsertScenario(
   name: string,
   refs: ScenarioRefs = {},
 ): void {
-  db.run(
+  runStatement(
+    db,
     `INSERT OR REPLACE INTO scenarios (
       id, feature, "index", name, rule, outline, example_row, example_index
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -47,11 +54,11 @@ export function upsertScenario(
 }
 
 export function upsertStep(db: Database, id: string, text: string): void {
-  db.run('INSERT OR REPLACE INTO steps (id, text) VALUES (?, ?)', [toIdBlob(id), text]);
+  runStatement(db, 'INSERT OR REPLACE INTO steps (id, text) VALUES (?, ?)', [toIdBlob(id), text]);
 }
 
 export function upsertScenarioStep(db: Database, scenarioId: string, index: number, stepId: string): void {
-  db.run('INSERT OR REPLACE INTO scenario_steps (scenario, "index", step) VALUES (?, ?, ?)', [
+  runStatement(db, 'INSERT OR REPLACE INTO scenario_steps (scenario, "index", step) VALUES (?, ?, ?)', [
     toIdBlob(scenarioId),
     index,
     toIdBlob(stepId),
@@ -59,7 +66,7 @@ export function upsertScenarioStep(db: Database, scenarioId: string, index: numb
 }
 
 export function insertTest(db: Database, id: string, runId: string, scenarioId: string, startedAt: number): void {
-  db.run('INSERT INTO tests (id, run, scenario, started_at) VALUES (?, ?, ?, ?)', [
+  runStatement(db, 'INSERT INTO tests (id, run, scenario, started_at) VALUES (?, ?, ?, ?)', [
     toIdBlob(id),
     toIdBlob(runId),
     toIdBlob(scenarioId),
@@ -68,7 +75,7 @@ export function insertTest(db: Database, id: string, runId: string, scenarioId: 
 }
 
 export function finaliseTest(db: Database, id: string, status: string, failedStepIndex?: number, error?: string): void {
-  db.run('UPDATE tests SET status = ?, failed_step_index = ?, error = ? WHERE id = ?', [
+  runStatement(db, 'UPDATE tests SET status = ?, failed_step_index = ?, error = ? WHERE id = ?', [
     status,
     failedStepIndex ?? null,
     error ?? null,
@@ -77,7 +84,7 @@ export function finaliseTest(db: Database, id: string, status: string, failedSte
 }
 
 export function insertArtifact(db: Database, id: string, testId: string, stepIndex: number, filename: string): void {
-  db.run('INSERT INTO artifacts (id, test, step_index, filename) VALUES (?, ?, ?, ?)', [
+  runStatement(db, 'INSERT INTO artifacts (id, test, step_index, filename) VALUES (?, ?, ?, ?)', [
     toIdBlob(id),
     toIdBlob(testId),
     stepIndex,

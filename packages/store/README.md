@@ -30,7 +30,7 @@ The store maintains seven tables:
 
 ### `openStore(path?)`
 
-Opens (or creates) the SQLite database at the given path. Defaults to `.letsrunit/letsrunit.db`. Enables WAL mode and foreign key enforcement, and runs the schema migration.
+Opens (or creates) the SQLite database at the given path. Defaults to `.letsrunit/letsrunit.db`. Enables SQLite busy-timeout handling, WAL mode, foreign key enforcement, and runs the schema migration with retry handling for transient lock contention.
 
 ```ts
 import { openStore } from '@letsrunit/store';
