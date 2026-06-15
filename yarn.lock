@@ -5409,7 +5409,7 @@ __metadata:
     "@ng-web-apis/mutation-observer": "npm:^5.2.0"
     "@ng-web-apis/platform": "npm:^5.3.0"
     "@ng-web-apis/resize-observer": "npm:^5.2.0"
-    "@ng-web-apis/screen-orientation": "npm:^5.2.0"
+    "@ng-web-apis/screen-orientation": "npm:^5.3.0"
     "@playwright/test": "npm:1.58.2"
     "@sand4rt/experimental-ct-angular": "npm:^1.58.0"
     "@taiga-ui/cdk": "npm:^5.2.0"
@@ -6052,16 +6052,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ng-web-apis/screen-orientation@npm:^5.2.0":
-  version: 5.2.0
-  resolution: "@ng-web-apis/screen-orientation@npm:5.2.0"
+"@ng-web-apis/screen-orientation@npm:^5.3.0":
+  version: 5.3.0
+  resolution: "@ng-web-apis/screen-orientation@npm:5.3.0"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
     "@angular/core": ">=19.0.0"
-    "@ng-web-apis/common": ^5.2.0
+    "@ng-web-apis/common": ^5.3.0
     rxjs: ">=7.0.0"
-  checksum: 10c0/416c6b38fe99e86d676413274f860eea7ee24db1c10ae694695fb0da5513eb3c82ea0ebe33dbf1ea1c07cd6a0575b8d7d56a7623623df70796490cab225fc906
+  checksum: 10c0/fd8b7edea1b14d18cd1700f304012c47007298b95c24e12cacf848f855719f062eb6f940ed2060849613ffc52987c3dad8e135858a3b5e11a7aa8a58ec4f8c4c
   languageName: node
   linkType: hard
 
