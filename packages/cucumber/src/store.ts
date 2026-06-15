@@ -25,7 +25,7 @@ import { existsSync, mkdirSync, statSync } from 'node:fs';
 import { utimes, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { v4 as uuidv4 } from 'uuid';
-import { setConfiguredRunId, setConfiguredStoreDirectory } from './store-config';
+import { clearConfiguredStoreDirectory, setConfiguredRunId, setConfiguredStoreDirectory } from './store-config';
 
 const DEFAULT_DIR = '.letsrunit';
 
@@ -548,6 +548,7 @@ function startStoreRecorder({ on, directory }: { on: OnMessage; directory?: stri
 
 type StorePluginOptions = {
   directory?: string;
+  enabled?: boolean;
 };
 
 export default {
@@ -563,6 +564,11 @@ export default {
     operation: 'loadSources' | 'loadSupport' | 'runCucumber';
   }) {
     if (operation !== 'runCucumber') return;
+    if (options?.enabled === false) {
+      clearConfiguredStoreDirectory();
+      return;
+    }
+
     setConfiguredStoreDirectory(options?.directory);
     startStoreRecorder({ on, directory: options?.directory });
   },

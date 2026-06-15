@@ -3,6 +3,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { getConfiguredStoreDbPath, setConfiguredStoreDirectory } from '../src/store-config';
 
 vi.mock('node:child_process', () => ({
   execSync: vi.fn(),
@@ -56,5 +57,18 @@ describe('store plugin git metadata', () => {
     const db = openStore(join(directory, 'letsrunit.db'));
     const run = db.get('SELECT git_commit FROM runs LIMIT 1') as { git_commit: string | null } | undefined;
     expect(run?.git_commit).toBe('abc123');
+  });
+
+  it('skips recorder setup when disabled', () => {
+    setConfiguredStoreDirectory('stale-dir');
+
+    storePlugin.coordinator({
+      on: () => {},
+      operation: 'runCucumber',
+      options: { directory, enabled: false },
+    });
+
+    expect(execSync).not.toHaveBeenCalled();
+    expect(getConfiguredStoreDbPath()).toBeUndefined();
   });
 });
