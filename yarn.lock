@@ -5419,7 +5419,7 @@ __metadata:
     "@taiga-ui/i18n": "npm:5.2.0"
     "@taiga-ui/kit": "npm:^5.2.0"
     "@taiga-ui/polymorpheus": "npm:^5.0.0"
-    "@taiga-ui/styles": "npm:5.2.0"
+    "@taiga-ui/styles": "npm:5.10.0"
     ng-zorro-antd: "npm:^20.4.4"
     primeng: "npm:^20.0.0"
     rxjs: "npm:^7.8.0"
@@ -8994,12 +8994,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@taiga-ui/styles@npm:5.2.0":
-  version: 5.2.0
-  resolution: "@taiga-ui/styles@npm:5.2.0"
+"@taiga-ui/styles@npm:5.10.0":
+  version: 5.10.0
+  resolution: "@taiga-ui/styles@npm:5.10.0"
   peerDependencies:
-    "@taiga-ui/design-tokens": ~0.293.0
-  checksum: 10c0/e97428a39cd964439f893eb7b86fc253a494c3296af59c2b4ac034680d09cc13741e651f819fec8ed21efe705c164bc4b851151be2e452d81a27528b866c1ca2
+    "@taiga-ui/design-tokens": ~0.303.0
+  checksum: 10c0/d641aa0a56e8d349cd64b5157fa5cd2b562b411384fc8895b1fa02df63c22815b1ed9228e02e1c631e9f7e26a9c9390920ab2fc8fb33595f2679c81c13bf7c0d
   languageName: node
   linkType: hard
 
