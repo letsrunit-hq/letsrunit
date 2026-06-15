@@ -1,3 +1,11 @@
+# [0.24.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.23.7...v0.24.0) (2026-06-15)
+
+
+### Features
+
+* **cucumber:** add store plugin enabled option ([a11aa16](https://github.com/letsrunit-hq/letsrunit/commit/a11aa16e0e3e312b9709ee337ae52d28a8d9dfeb))
+* **init:** ignore .letsrunit in vite config ([c717bb1](https://github.com/letsrunit-hq/letsrunit/commit/c717bb1a2c4959748e398a1f3720981c7e72e551))
+
 ## [0.23.7](https://github.com/letsrunit-hq/letsrunit/compare/v0.23.6...v0.23.7) (2026-06-15)
 
 
