@@ -5607,7 +5607,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@letsrunit/store@workspace:packages/store"
   dependencies:
-    node-sqlite3-wasm: "npm:^0.8.55"
+    node-sqlite3-wasm: "npm:^0.8.58"
     uuid: "npm:^14.0.0"
   languageName: unknown
   linkType: soft
@@ -18051,10 +18051,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-sqlite3-wasm@npm:^0.8.55":
-  version: 0.8.57
-  resolution: "node-sqlite3-wasm@npm:0.8.57"
-  checksum: 10c0/b2550572e65827c284ad9d96a248b255763f65a756bcd27b58c9efb2b0ab0b87125bbf21cef7559aef3be1831089e5d5f49e5c5fb510b6a4277f494ae95980cb
+"node-sqlite3-wasm@npm:^0.8.58":
+  version: 0.8.58
+  resolution: "node-sqlite3-wasm@npm:0.8.58"
+  checksum: 10c0/33021d722cbb7b3ede89b980b57efd81f77f4ba382fd1fdc92c4a80bc6c18daf2aa014bc0d9f5a824de239a05445d91705464f850399470df5fba461a839184d
   languageName: node
   linkType: hard
 
