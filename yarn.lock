@@ -5336,7 +5336,7 @@ __metadata:
     "@ai-sdk/togetherai": "npm:^1.0.31"
     "@letsrunit/utils": "workspace:*"
     "@types/mustache": "npm:^4.2.6"
-    "@types/node": "npm:^25.0.9"
+    "@types/node": "npm:^25.9.3"
     ai: "npm:^5.0.121"
     cache-manager: "npm:^7.2.8"
     iso-639-1: "npm:^3.1.5"
@@ -5468,7 +5468,7 @@ __metadata:
     "@letsrunit/utils": "workspace:*"
     "@playwright/test": "npm:1.58.2"
     "@types/jsdom": "npm:^27.0.0"
-    "@types/node": "npm:^25.0.9"
+    "@types/node": "npm:^25.9.3"
     jsdom: "npm:^27.4.0"
     typescript: "npm:^5.9.3"
     zod: "npm:^4.3.5"
@@ -5508,7 +5508,7 @@ __metadata:
     "@letsrunit/playwright": "workspace:*"
     "@letsrunit/store": "workspace:*"
     "@letsrunit/utils": "workspace:*"
-    "@types/node": "npm:^25.0.9"
+    "@types/node": "npm:^25.9.3"
     typescript: "npm:^5.9.3"
     zod: "npm:^4.3.5"
   languageName: unknown
@@ -5522,7 +5522,7 @@ __metadata:
     "@cucumber/gherkin": "npm:^37.0.1"
     "@cucumber/messages": "npm:^31.2.0"
     "@letsrunit/gherkin": "workspace:*"
-    "@types/node": "npm:^25.0.9"
+    "@types/node": "npm:^25.9.3"
   languageName: unknown
   linkType: soft
 
@@ -5544,7 +5544,7 @@ __metadata:
   dependencies:
     "@letsrunit/utils": "workspace:*"
     "@supabase/supabase-js": "npm:^2.91.0"
-    "@types/node": "npm:^25.0.9"
+    "@types/node": "npm:^25.9.3"
     ansi-escapes: "npm:^7.2.0"
     typescript: "npm:^5.9.3"
     yaml: "npm:^2.8.2"
@@ -5575,7 +5575,7 @@ __metadata:
     "@letsrunit/utils": "workspace:*"
     "@modelcontextprotocol/sdk": "npm:^1.26.0"
     "@playwright/test": "npm:1.58.2"
-    "@types/node": "npm:^25.0.9"
+    "@types/node": "npm:^25.9.3"
     typescript: "npm:^5.9.3"
     zod: "npm:^4.3.5"
   bin:
@@ -9390,12 +9390,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^25.0.9":
-  version: 25.0.9
-  resolution: "@types/node@npm:25.0.9"
+"@types/node@npm:^25.9.3":
+  version: 25.9.3
+  resolution: "@types/node@npm:25.9.3"
   dependencies:
-    undici-types: "npm:~7.16.0"
-  checksum: 10c0/a757efafe303d9c8833eb53c2e9a0981cd5ac725cdc04c5612a71db86468c938778d4fa328be4231b68fffc68258638764df7b9c69e86cf55f0bb67105eb056f
+    undici-types: "npm:>=7.24.0 <7.24.7"
+  checksum: 10c0/72d3aece9d42c2c641bcd3f3cb2dc2828b4bd384dfcbd910c404b8859a68bd69d50c4769ce7defd4ff5e049768e23e615f09407ea2cbbb5f44b90d75a7c6b8ca
   languageName: node
   linkType: hard
 
@@ -16081,7 +16081,7 @@ __metadata:
   resolution: "letsrunit@workspace:packages/init"
   dependencies:
     "@clack/prompts": "npm:^0.10.0"
-    "@types/node": "npm:^25.0.9"
+    "@types/node": "npm:^25.9.3"
     typescript: "npm:^5.9.3"
   bin:
     letsrunit: ./dist/bin.js
@@ -22998,17 +22998,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"undici-types@npm:>=7.24.0 <7.24.7":
+  version: 7.24.6
+  resolution: "undici-types@npm:7.24.6"
+  checksum: 10c0/d9cd8befb643ac904615c280a095ba4240531f6bb4a5e75a22a7483630ca8d3f1016d2ab6ace6ceda1f63b3a2db2fe037fafe121d6917a0187573aa548ff78ca
+  languageName: node
+  linkType: hard
+
 "undici-types@npm:~7.14.0":
   version: 7.14.0
   resolution: "undici-types@npm:7.14.0"
   checksum: 10c0/e7f3214b45d788f03c51ceb33817be99c65dae203863aa9386b3ccc47201a245a7955fc721fb581da9c888b6ebad59fa3f53405214afec04c455a479908f0f14
-  languageName: node
-  linkType: hard
-
-"undici-types@npm:~7.16.0":
-  version: 7.16.0
-  resolution: "undici-types@npm:7.16.0"
-  checksum: 10c0/3033e2f2b5c9f1504bdc5934646cb54e37ecaca0f9249c983f7b1fc2e87c6d18399ebb05dc7fd5419e02b2e915f734d872a65da2e3eeed1813951c427d33cc9a
   languageName: node
   linkType: hard
 
