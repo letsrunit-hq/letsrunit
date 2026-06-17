@@ -22,7 +22,7 @@ export function isRange(value: unknown): value is Range;
 export function isRange<T extends Scalar>(value: unknown, isT: Predicate<T>): value is Range<T>;
 export function isRange<T extends Scalar>(value: unknown, isT?: Predicate<T>): value is Range<T> {
   if (!isRecord(value) || !('from' in value) || !('to' in value)) return false;
-  return !isT || (isT(value.from) && isT(value.to));
+  return !isT || (isT(value['from']) && isT(value['to']));
 }
 
 export function isArray<T>(value: unknown): value is unknown[];

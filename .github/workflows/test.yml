@@ -44,7 +44,7 @@ jobs:
     name: Compat Test ${{ matrix.workspace }}
     runs-on: ubuntu-latest
     container:
-      image: mcr.microsoft.com/playwright:v1.58.2-noble
+      image: mcr.microsoft.com/playwright:v1.61.0-noble
     env:
       PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
     strategy:

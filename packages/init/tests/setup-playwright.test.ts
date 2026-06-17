@@ -15,10 +15,10 @@ describe('installPlaywright', () => {
     expect(execPm).toHaveBeenCalledWith(
       { cwd: '/tmp/project', packageManager: 'npm' },
       {
-        npm: 'install --save-dev --save-exact @playwright/test@1.58.2',
-        yarn: 'add --dev --exact @playwright/test@1.58.2',
-        pnpm: 'add -D --save-exact @playwright/test@1.58.2',
-        bun: 'add -d --exact @playwright/test@1.58.2',
+        npm: 'install --save-dev --save-exact @playwright/test@1.61.0',
+        yarn: 'add --dev --exact @playwright/test@1.61.0',
+        pnpm: 'add -D --save-exact @playwright/test@1.61.0',
+        bun: 'add -d --exact @playwright/test@1.61.0',
       },
     );
   });

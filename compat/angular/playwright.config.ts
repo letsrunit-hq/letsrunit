@@ -7,6 +7,7 @@ export default defineConfig({
   timeout: 30_000,
 
   use: {
+    baseURL: 'http://127.0.0.1:3101',
     ctPort: 3101,
     viewport: { width: 1280, height: 800 },
     ctViteConfig: { resolve: { conditions: ['style'] }, esbuild: { target: 'es2022' } },

@@ -18,7 +18,7 @@ const TAR_FILES = [
   'utils.tgz',
 ];
 
-const PLAYWRIGHT_VERSION = '1.58.2';
+const PLAYWRIGHT_VERSION = '1.61.0';
 
 function parseArgs() {
   const args = process.argv.slice(2);
