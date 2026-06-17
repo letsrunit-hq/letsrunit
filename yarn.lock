@@ -5403,7 +5403,7 @@ __metadata:
     "@maskito/angular": "npm:^5.2.2"
     "@maskito/core": "npm:^5.2.2"
     "@maskito/kit": "npm:^5.2.2"
-    "@maskito/phone": "npm:^5.2.2"
+    "@maskito/phone": "npm:^5.3.1"
     "@ng-web-apis/common": "npm:^5.3.0"
     "@ng-web-apis/intersection-observer": "npm:^5.2.0"
     "@ng-web-apis/mutation-observer": "npm:^5.2.0"
@@ -5651,14 +5651,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@maskito/phone@npm:^5.2.2":
-  version: 5.2.2
-  resolution: "@maskito/phone@npm:5.2.2"
+"@maskito/phone@npm:^5.3.1":
+  version: 5.3.1
+  resolution: "@maskito/phone@npm:5.3.1"
   peerDependencies:
-    "@maskito/core": ^5.2.2
-    "@maskito/kit": ^5.2.2
+    "@maskito/core": ^5.3.1
+    "@maskito/kit": ^5.3.1
     libphonenumber-js: ">=1.0.0"
-  checksum: 10c0/8cd4b626a10ed0f090de00b17e0cea73789e4937bb24a9989973bc898b088e48685260e51904a2522a55769187a0eaa525956f84447bc22aaa7dbf62318ae000
+  checksum: 10c0/f0b7ec88b30e1658e9689d44bb7bf653d729e60ee8bf7cc6099487610f26f2016b7982e522743fde86c49027922060b9bf5cee7698cc74aaf4c32b5b9f6cd99f
   languageName: node
   linkType: hard
 
