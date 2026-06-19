@@ -27,6 +27,21 @@ async function getComboboxRoot(el: Loc['el'], options?: SetOptions) {
   return null;
 }
 
+async function getComboboxTrigger(el: Loc['el']): Promise<Loc['el'] | null> {
+  const trigger = el
+    .locator(
+      [
+        '.mat-mdc-select-trigger',
+        '[aria-haspopup="listbox"]',
+        'button[aria-haspopup]',
+        '[role="button"]',
+      ].join(', '),
+    )
+    .first();
+  if ((await trigger.count()) > 0) return trigger;
+  return null;
+}
+
 async function getControlledListbox(el: Loc['el'], options?: SetOptions) {
   const ids: string[] = [];
   for (const attr of ['aria-controls', 'aria-owns']) {
@@ -53,10 +68,49 @@ async function getVisibleListbox(el: Loc['el'], options?: SetOptions) {
   return null;
 }
 
+async function getRootValueText(root: Loc['el'], options?: SetOptions): Promise<string | null> {
+  const valueNode = root
+    .locator(
+      [
+        '.mat-mdc-select-value',
+        '.mat-mdc-select-value-text',
+        '[class*="select-value"]',
+        '[class*="select-trigger"]',
+      ].join(', '),
+    )
+    .first();
+  if ((await valueNode.count()) > 0) {
+    const valueText = await valueNode.textContent(options).catch(() => null);
+    if (valueText !== null) return valueText.replace(/\s+/g, ' ').trim();
+  }
+
+  const ariaValueText = await root.getAttribute('aria-valuetext', options).catch(() => null);
+  if (ariaValueText) return ariaValueText.trim();
+
+  return root
+    .evaluate((node) => {
+      if (node instanceof HTMLInputElement || node instanceof HTMLTextAreaElement) {
+        return node.value;
+      }
+      return node.textContent?.replace(/\s+/g, ' ').trim() ?? '';
+    }, options)
+    .catch(() => null);
+}
+
+async function openCombobox(root: Loc['el'], options?: SetOptions): Promise<void> {
+  const trigger = await getComboboxTrigger(root);
+  if (trigger) {
+    await trigger.click(options);
+    return;
+  }
+  await root.click(options);
+}
+
 async function didSelectionApply(
   root: Loc['el'],
   option: Loc['el'],
   before: string | null,
+  optionLabel: string | null,
   options?: SetOptions,
 ): Promise<boolean> {
   const ariaSelected = await option.getAttribute('aria-selected', options).catch(() => null);
@@ -66,19 +120,20 @@ async function didSelectionApply(
   const activeDescendant = await root.getAttribute('aria-activedescendant', options).catch(() => null);
   if (optionId && activeDescendant === optionId) return true;
 
-  const after = await root
-    .evaluate((node) => {
-      if (node instanceof HTMLInputElement || node instanceof HTMLTextAreaElement) {
-        return node.value;
-      }
-      return node.textContent?.trim() ?? '';
-    }, options)
-    .catch(() => null);
+  const after = await getRootValueText(root, options);
 
   if (before !== null && after !== null && after !== before) return true;
 
   const listbox = await getVisibleListbox(root, options);
   if (!listbox) return true;
+
+  if (optionLabel) {
+    const selectedOption = listbox.getByRole('option', { name: caseInsensitiveExact(optionLabel) }).first();
+    if ((await selectedOption.count()) > 0) {
+      const selected = await selectedOption.getAttribute('aria-selected', options).catch(() => null);
+      if (selected === 'true') return true;
+    }
+  }
 
   return false;
 }
@@ -96,7 +151,7 @@ export async function selectAria({ el }: Loc, value: Value, options?: SetOptions
     () => null,
   );
   if (ariaExpanded !== 'true') {
-    await root.click(options);
+    await openCombobox(root, options);
     listbox = listbox ?? (await getControlledListbox(root, options));
   }
 
@@ -104,14 +159,7 @@ export async function selectAria({ el }: Loc, value: Value, options?: SetOptions
   if (!listbox) return false;
 
   const stringValue = String(value);
-  const before = await root
-    .evaluate((node) => {
-      if (node instanceof HTMLInputElement || node instanceof HTMLTextAreaElement) {
-        return node.value;
-      }
-      return node.textContent?.trim() ?? '';
-    }, options)
-    .catch(() => null);
+  const before = await getRootValueText(root, options);
 
   // 1. By value attribute
   const byValue = listbox.locator(
@@ -121,16 +169,18 @@ export async function selectAria({ el }: Loc, value: Value, options?: SetOptions
   );
   if ((await byValue.count()) >= 1) {
     const option = byValue.first();
+    const optionLabel = (await option.textContent(options).catch(() => null))?.replace(/\s+/g, ' ').trim() || null;
     await option.click(options);
-    return await didSelectionApply(root, option, before, options);
+    return await didSelectionApply(root, option, before, optionLabel, options);
   }
 
   // 2. By accessible name (case-insensitive)
   const byName = listbox.getByRole('option', { name: caseInsensitiveExact(stringValue) });
   if ((await byName.count()) >= 1) {
     const option = byName.first();
+    const optionLabel = (await option.textContent(options).catch(() => null))?.replace(/\s+/g, ' ').trim() || null;
     await option.click(options);
-    return await didSelectionApply(root, option, before, options);
+    return await didSelectionApply(root, option, before, optionLabel, options);
   }
 
   return false;
