@@ -1,3 +1,12 @@
+## [0.24.2](https://github.com/letsrunit-hq/letsrunit/compare/v0.24.1...v0.24.2) (2026-06-22)
+
+
+### Bug Fixes
+
+* align playwright 1.61 with angular compat fork ([5c2200e](https://github.com/letsrunit-hq/letsrunit/commit/5c2200e76eb1c3965ef0ff43dcd69c1eb055e060))
+* harden playwright select fallback handling ([328b7fa](https://github.com/letsrunit-hq/letsrunit/commit/328b7fa80a5cefa23aaf07506dbc2feeb48d465e))
+* restore wrapper field handling after angular upgrade ([dcf208c](https://github.com/letsrunit-hq/letsrunit/commit/dcf208c7299ba01bd131dd3662597939d2958779))
+
 ## [0.24.1](https://github.com/letsrunit-hq/letsrunit/compare/v0.24.0...v0.24.1) (2026-06-15)
 
 
