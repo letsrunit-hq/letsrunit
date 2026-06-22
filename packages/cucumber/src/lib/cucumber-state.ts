@@ -1,6 +1,11 @@
 import type { Envelope } from '@cucumber/messages';
-import { normalizeSteps } from '@letsrunit/gherkin';
-import { computeExampleRowId, computeOutlineId, computeScenarioId, computeStepId } from '@letsrunit/store';
+import {
+  computeExampleRowId,
+  computeOutlineId,
+  computeScenarioId,
+  computeStepId,
+  normalizeSteps,
+} from '@letsrunit/gherkin';
 
 export type AstStep = { keyword: string };
 

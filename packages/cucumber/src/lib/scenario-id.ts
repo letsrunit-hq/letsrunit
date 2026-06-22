@@ -1,5 +1,4 @@
-import { normalizeSteps } from '@letsrunit/gherkin';
-import { computeScenarioId, computeStepId } from '@letsrunit/store';
+import { computeScenarioId, computeStepId, normalizeSteps } from '@letsrunit/gherkin';
 
 type ScenarioStep = {
   keyword: string;
