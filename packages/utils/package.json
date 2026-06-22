@@ -52,6 +52,6 @@
   "dependencies": {
     "fast-json-stable-stringify": "^2.1.0",
     "lru-cache": "^11.2.4",
-    "uuid": "^14.0.0"
+    "uuid": "^14.0.1"
   }
 }
