@@ -126,6 +126,7 @@ function createPlaywrightLocatorStub(response: ExpectResponse): Locator & {
   const locator = Object.create(LocatorCtor.prototype);
   const expectMock = vi.fn(async () => response);
   const toStringMock = vi.fn(() => 'stub=locator');
+  locator._apiName = 'Locator';
   locator._expect = expectMock;
   locator.toString = toStringMock;
   return locator as Locator & {
@@ -272,6 +273,7 @@ describe('fuzzyLocator', () => {
     const primary = createPlaywrightLocatorStub({ matches: true, received: 'visible' });
     const locator = createFallbackLocator([primary]);
     expect((locator as any).constructor.name).toBe('Locator');
+    expect((locator as any)._apiName).toBe('Locator');
 
     await expect(pwExpect(locator).toBeVisible()).resolves.toBeUndefined();
     expect(primary._expect).toHaveBeenCalledWith(

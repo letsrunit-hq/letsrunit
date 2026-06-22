@@ -22,7 +22,7 @@ async function readToggleState(target: Loc['el'], options?: SetOptions): Promise
     () => null,
   );
   if (ariaChecked === 'true') return true;
-  if (ariaChecked === 'false') return false;
+  if (ariaChecked === 'false' || ariaChecked === null) return false;
   return null;
 }
 
