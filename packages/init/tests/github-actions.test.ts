@@ -64,7 +64,7 @@ describe('installGithubAction', () => {
       JSON.stringify(
         {
           scripts: { start: 'node server.js', build: 'vite build' },
-          devDependencies: { '@playwright/test': '^1.58.2' },
+          devDependencies: { '@playwright/test': '^1.61.0' },
         },
         null,
         2,
@@ -75,7 +75,7 @@ describe('installGithubAction', () => {
     installGithubAction({ cwd, packageManager: 'npm', nodeVersion: 22 });
 
     const workflow = readFileSync(join(cwd, '.github', 'workflows', 'letsrunit.yml'), 'utf-8');
-    expect(workflow).toContain('image: mcr.microsoft.com/playwright:v1.58.2-noble');
+    expect(workflow).toContain('image: mcr.microsoft.com/playwright:v1.61.0-noble');
     expect(workflow).toContain('PLAYWRIGHT_BROWSERS_PATH: /ms-playwright');
     expect(workflow).toContain('PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1');
     expect(workflow).toContain('name: Prefer IPv4 localhost');

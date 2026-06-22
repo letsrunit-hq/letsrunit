@@ -49,7 +49,7 @@ function writeInstalledPlaywright(cwd: string): void {
   writeFileSync(chromiumPath, '', 'utf-8');
   writeFileSync(
     join(cwd, 'package.json'),
-    JSON.stringify({ devDependencies: { '@playwright/test': '1.58.2' } }),
+    JSON.stringify({ devDependencies: { '@playwright/test': '1.61.0' } }),
     'utf-8',
   );
   mkdirSync(join(cwd, 'node_modules', 'playwright-core'), { recursive: true });

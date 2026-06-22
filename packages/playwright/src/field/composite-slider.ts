@@ -61,6 +61,24 @@ async function readValue(el: Locator, handle: Locator, options?: SetOptions): Pr
   return getValueFromContext(el, options);
 }
 
+async function waitForChangedValue(
+  el: Locator,
+  handle: Locator,
+  previous: number,
+  options?: SetOptions,
+): Promise<number | null> {
+  const timeout = Math.max(0, options?.timeout ?? 1000);
+  const deadline = Date.now() + timeout;
+
+  while (Date.now() <= deadline) {
+    const current = await readValue(el, handle, options);
+    if (current !== null && Math.abs(current - previous) >= 0.001) return current;
+    await el.page().waitForTimeout(25);
+  }
+
+  return readValue(el, handle, options);
+}
+
 export async function setCompositeSlider({ el }: Loc, value: Value, options?: SetOptions): Promise<boolean> {
   if (typeof value !== 'number') return false;
 
@@ -74,14 +92,34 @@ export async function setCompositeSlider({ el }: Loc, value: Value, options?: Se
   await handle.focus(options);
   const page = el.page();
   const key = value > initial ? 'ArrowRight' : 'ArrowLeft';
-  const maxPresses = Math.max(1, Math.min(200, Math.abs(Math.round(value - initial)) * 2));
+  await page.keyboard.press(key);
 
-  for (let i = 0; i < maxPresses; i++) {
+  const probe = await waitForChangedValue(el, handle, initial, options);
+  if (probe === null) return false;
+  if (Math.abs(probe - value) < 0.001) return true;
+
+  const step = Math.abs(probe - initial);
+  if (step < 0.001) return false;
+
+  const remaining = Math.abs(value - probe);
+  const plannedPresses = Math.max(0, Math.round(remaining / step));
+
+  for (let i = 0; i < plannedPresses; i++) {
     await page.keyboard.press(key);
-    const current = await readValue(el, handle, options);
-    if (current !== null && Math.abs(current - value) < 0.001) return true;
   }
 
-  const finalValue = await readValue(el, handle, options);
+  let finalValue = await waitForChangedValue(el, handle, probe, options);
+  if (finalValue !== null && Math.abs(finalValue - value) < 0.001) return true;
+
+  for (let i = 0; i < 5; i++) {
+    const current = finalValue ?? (await readValue(el, handle, options));
+    if (current === null) return false;
+    if (Math.abs(current - value) < 0.001) return true;
+
+    const correctionKey = value > current ? 'ArrowRight' : 'ArrowLeft';
+    await page.keyboard.press(correctionKey);
+    finalValue = await waitForChangedValue(el, handle, current, options);
+  }
+
   return finalValue !== null && Math.abs(finalValue - value) < 0.001;
 }

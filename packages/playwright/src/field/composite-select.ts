@@ -96,6 +96,15 @@ async function getRootText(el: Locator, options?: SetOptions): Promise<string> {
   );
 }
 
+async function tryClick(locator: Locator, options?: SetOptions): Promise<boolean> {
+  try {
+    await locator.click({ ...options, force: true });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function setCompositeSelect({ el }: Loc, value: Value, options?: SetOptions): Promise<boolean> {
   if (typeof value !== 'string' && typeof value !== 'number') return false;
   if (!(await looksLikeCompositeSelect(el, options))) return false;
@@ -114,7 +123,7 @@ export async function setCompositeSelect({ el }: Loc, value: Value, options?: Se
   const popup = popups.nth(Math.max(0, count - 1));
   const option = await getOptionFromPopup(popup, stringValue, options);
   if (option) {
-    await option.click({ ...options, force: true });
+    await tryClick(option, options);
   }
 
   const after = await getRootText(el, options);
@@ -155,7 +164,8 @@ export async function setCompositeSelect({ el }: Loc, value: Value, options?: Se
     }
     if ((await candidate.count()) === 0) continue;
 
-    await candidate.click({ ...options, force: true });
+    const clicked = await tryClick(candidate, options);
+    if (!clicked) continue;
 
     const numeric = await getContextNumericValue(el, options);
     if (numeric !== null && Math.abs(numeric - targetNum) < 0.001) return true;

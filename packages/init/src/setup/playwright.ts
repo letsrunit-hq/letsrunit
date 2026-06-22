@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { type Environment, execPm } from '../detect.js';
 
-const PLAYWRIGHT_TEST_VERSION = '1.58.2';
+const PLAYWRIGHT_TEST_VERSION = '1.61.0';
 
 export function isPlaywrightInstalled({ cwd }: Pick<Environment, 'cwd'>): boolean {
   const pkgPath = join(cwd, 'package.json');

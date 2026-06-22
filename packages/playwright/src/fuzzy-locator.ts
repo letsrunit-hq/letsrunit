@@ -2,7 +2,7 @@ import { Locator, Page } from '@playwright/test';
 import { createFallbackLocator } from './fallback-locator';
 
 function debug(...args: unknown[]) {
-  if (process.env.LETSRUNIT_DEBUG_FUZZY_LOCATOR === '1') {
+  if (process.env['LETSRUNIT_DEBUG_FUZZY_LOCATOR'] === '1') {
     // eslint-disable-next-line no-console
     console.log('[fuzzyLocator]', ...args);
   }

@@ -20,6 +20,7 @@ describe('selectAria', () => {
         if (attr === 'aria-selected') return Promise.resolve('true');
         return Promise.resolve(null);
       }),
+      textContent: vi.fn().mockResolvedValue(name),
       _value: value,
       _name: name,
     }));
@@ -27,7 +28,7 @@ describe('selectAria', () => {
     const makeOptionLocator = (found: typeof optionLocators) => {
       const first = found[0] ?? null;
       return {
-      count: vi.fn().mockResolvedValue(found.length),
+        count: vi.fn().mockResolvedValue(found.length),
         first: vi.fn().mockReturnValue(first),
       };
     };

@@ -30,6 +30,19 @@ async function readToggleState(target: Locator, options?: SetOptions): Promise<b
   return null;
 }
 
+async function waitForToggleState(target: Locator, desired: boolean, options?: SetOptions): Promise<boolean> {
+  const timeout = Math.max(0, options?.timeout ?? 1000);
+  const deadline = Date.now() + timeout;
+
+  while (Date.now() <= deadline) {
+    const state = await readToggleState(target, options);
+    if (state === desired) return true;
+    await target.page().waitForTimeout(25);
+  }
+
+  return (await readToggleState(target, options)) === desired;
+}
+
 export async function setCompositeToggle({ el }: Loc, value: Value, options?: SetOptions): Promise<boolean> {
   if (typeof value !== 'boolean' && value !== null) return false;
 
@@ -44,6 +57,5 @@ export async function setCompositeToggle({ el }: Loc, value: Value, options?: Se
     await target.click(options);
   }
 
-  const next = await readToggleState(target, options);
-  return next === desired;
+  return waitForToggleState(target, desired, options);
 }
