@@ -524,17 +524,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/platform-browser-dynamic@npm:22.0.1":
-  version: 22.0.1
-  resolution: "@angular/platform-browser-dynamic@npm:22.0.1"
+"@angular/platform-browser-dynamic@npm:22.0.2":
+  version: 22.0.2
+  resolution: "@angular/platform-browser-dynamic@npm:22.0.2"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
-    "@angular/common": 22.0.1
-    "@angular/compiler": 22.0.1
-    "@angular/core": 22.0.1
-    "@angular/platform-browser": 22.0.1
-  checksum: 10c0/0ddd56ac9878ab71307384740addf081e50f947c4e6dfa8c302d4bfcff4101d284195d9eafc5c5a8a3d820618a0422e7fa54eaf518c9b3e46987685195402ba9
+    "@angular/common": 22.0.2
+    "@angular/compiler": 22.0.2
+    "@angular/core": 22.0.2
+    "@angular/platform-browser": 22.0.2
+  checksum: 10c0/f99e8555bcea326fdb81ca6a2cd7eeefd5eec2d5c0be0cdc984d694e1a237f22e6e336d9bc183d0c2c720f1d7e29729b119f80c1ec5bb5d14492da27f36acea9
   languageName: node
   linkType: hard
 
@@ -5428,7 +5428,7 @@ __metadata:
     "@angular/forms": "npm:22.0.1"
     "@angular/material": "npm:22.0.1"
     "@angular/platform-browser": "npm:22.0.1"
-    "@angular/platform-browser-dynamic": "npm:22.0.1"
+    "@angular/platform-browser-dynamic": "npm:22.0.2"
     "@angular/router": "npm:22.0.2"
     "@letsrunit/playwright": "workspace:*"
     "@maskito/angular": "npm:5.3.1"
