@@ -1,8 +1,6 @@
 import { AttachmentContentEncoding, type Envelope, TestStepResultStatus } from '@cucumber/messages';
 import {
-  computeExampleRowId,
   computeFeatureId,
-  computeOutlineId,
   computeRuleId,
   computeScenarioId,
   computeStepId,
@@ -25,33 +23,21 @@ import { existsSync, mkdirSync, statSync } from 'node:fs';
 import { utimes, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { v4 as uuidv4 } from 'uuid';
+import {
+  extractFeatureAst,
+  parsePickle,
+  parseTestCase,
+  type AstStep,
+  type FailureInfo,
+  type FeatureAstMeta,
+  type PickleEntry as ParsedPickleEntry,
+  type TestCaseEntry,
+} from './lib/cucumber-state';
 import { clearConfiguredStoreDirectory, setConfiguredRunId, setConfiguredStoreDirectory } from './store-config';
 
 const DEFAULT_DIR = '.letsrunit';
 
-type AstStep = {
-  keyword: string;
-};
-
-type ScenarioAstMeta = {
-  ruleKey?: string;
-  isOutline: boolean;
-  outlineStepIds?: string[];
-};
-
-type ExampleRowMeta = {
-  values: string[];
-  index: number;
-};
-
-type FeatureAstMeta = {
-  uri: string;
-  name: string;
-  scenarioByAstId: Map<string, ScenarioAstMeta>;
-  exampleRowByAstId: Map<string, ExampleRowMeta>;
-};
-
-type PickleEntry = {
+type PickleEntry = ParsedPickleEntry & {
   pickleId: string;
   uri: string;
   name: string;
@@ -71,35 +57,11 @@ type FeatureBucket = {
   pickles: PickleEntry[];
 };
 
-type TestCaseEntry = {
-  scenarioId: string;
-  stepIndexByTestStepId: Map<string, number>;
-};
-
 type TestEntry = {
   testId: string;
   scenarioId: string;
   stepIndexByTestStepId: Map<string, number>;
 };
-
-type FailureInfo = {
-  failedStepIndex: number;
-  error: string | undefined;
-};
-
-interface GherkinScenarioNode {
-  id: string;
-  steps?: ReadonlyArray<{
-    id: string;
-    keyword: string;
-    text: string;
-    docString?: { content: string };
-    dataTable?: { rows: ReadonlyArray<{ cells: ReadonlyArray<{ value: string }> }> };
-  }>;
-  examples?: ReadonlyArray<{
-    tableBody?: ReadonlyArray<{ id: string; cells?: ReadonlyArray<{ value: string }> }>;
-  }>;
-}
 
 type OnMessage = (key: 'message', handler: (value: Envelope) => void) => void;
 
@@ -143,18 +105,6 @@ async function hashBytes(bytes: Uint8Array): Promise<string> {
   const buffer = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
   const digest = await crypto.subtle.digest('SHA-256', buffer);
   return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('');
-}
-
-function normalizeScenarioTemplateStepIds(scenario: GherkinScenarioNode): string[] {
-  const normalized = normalizeSteps(
-    (scenario.steps ?? []).map((step) => ({
-      keyword: step.keyword,
-      text: step.text,
-      docString: step.docString,
-      dataTable: step.dataTable,
-    })),
-  );
-  return normalized.map((text) => computeStepId(text));
 }
 
 function getFeatureBucket(featureBuckets: Map<string, FeatureBucket>, uri: string, name: string): FeatureBucket {
@@ -210,42 +160,6 @@ function ensureFeaturePersisted(db: ReturnType<typeof openStore>, bucket: Featur
   bucket.persisted = true;
 }
 
-function normalizeRowValues(row?: { cells?: ReadonlyArray<{ value: string }> }): string[] {
-  if (!row?.cells?.length) return [];
-  return row.cells.map((cell) => cell.value.trim());
-}
-
-function registerScenarioAst(
-  scenario: GherkinScenarioNode,
-  scenarioByAstId: Map<string, ScenarioAstMeta>,
-  exampleRowByAstId: Map<string, ExampleRowMeta>,
-  astStepMap: Map<string, AstStep>,
-  ruleKey?: string,
-): void {
-  const isOutline = (scenario.examples?.length ?? 0) > 0;
-  const outlineStepIds = isOutline ? normalizeScenarioTemplateStepIds(scenario) : undefined;
-
-  scenarioByAstId.set(scenario.id, {
-    ruleKey,
-    isOutline,
-    outlineStepIds,
-  });
-
-  for (const step of scenario.steps ?? []) {
-    astStepMap.set(step.id, { keyword: step.keyword.trim() });
-  }
-
-  let rowIndex = 0;
-  for (const examples of scenario.examples ?? []) {
-    for (const row of examples.tableBody ?? []) {
-      exampleRowByAstId.set(row.id, {
-        values: normalizeRowValues(row),
-        index: rowIndex++,
-      });
-    }
-  }
-}
-
 function createRecorderContext(directory?: string): RecorderContext {
   const runDir = directory ?? DEFAULT_DIR;
   const artifactDir = join(runDir, 'artifacts');
@@ -281,112 +195,21 @@ function createRecorderContext(directory?: string): RecorderContext {
 }
 
 function handleGherkinDocument(envelope: Envelope, context: RecorderContext): boolean {
-  const doc = envelope.gherkinDocument;
-  if (!doc) return false;
+  const featureAst = extractFeatureAst(envelope, context.astStepMap);
+  if (!featureAst) return false;
 
-  const uri = doc.uri ?? '';
-  const feature = doc.feature;
-  if (!feature) return true;
-
-  const scenarioByAstId = new Map<string, ScenarioAstMeta>();
-  const exampleRowByAstId = new Map<string, ExampleRowMeta>();
-  let ruleIndex = 0;
-
-  for (const child of feature.children ?? []) {
-    if (child.background) {
-      for (const step of child.background.steps ?? []) {
-        context.astStepMap.set(step.id, { keyword: step.keyword.trim() });
-      }
-    }
-
-    if (child.scenario) {
-      registerScenarioAst(child.scenario, scenarioByAstId, exampleRowByAstId, context.astStepMap);
-    }
-
-    if (child.rule) {
-      const currentRuleIndex = ruleIndex++;
-
-      for (const ruleChild of child.rule.children ?? []) {
-        if (ruleChild.background) {
-          for (const step of ruleChild.background.steps ?? []) {
-            context.astStepMap.set(step.id, { keyword: step.keyword.trim() });
-          }
-        }
-
-        if (ruleChild.scenario) {
-          registerScenarioAst(
-            ruleChild.scenario,
-            scenarioByAstId,
-            exampleRowByAstId,
-            context.astStepMap,
-            `${uri}::${currentRuleIndex}`,
-          );
-        }
-      }
-    }
-  }
-
-  context.featureAstByUri.set(uri, {
-    uri,
-    name: feature.name ?? '',
-    scenarioByAstId,
-    exampleRowByAstId,
-  });
-
-  getFeatureBucket(context.featureBuckets, uri, feature.name ?? '');
+  context.featureAstByUri.set(featureAst.uri, featureAst);
+  getFeatureBucket(context.featureBuckets, featureAst.uri, featureAst.name);
   return true;
 }
 
 function handlePickle(envelope: Envelope, context: RecorderContext): boolean {
-  const pickle = envelope.pickle;
-  if (!pickle) return false;
+  const parsed = parsePickle(envelope, context.featureAstByUri, context.astStepMap);
+  if (!parsed) return false;
 
-  const featureMeta = context.featureAstByUri.get(pickle.uri);
-  const bucket = getFeatureBucket(context.featureBuckets, pickle.uri, featureMeta?.name ?? '');
-
-  const normalizedPickleSteps = normalizeSteps(
-    pickle.steps.map((pickleStep) => ({
-      keyword: context.astStepMap.get(pickleStep.astNodeIds[0] ?? '')?.keyword ?? 'Given',
-      text: pickleStep.text,
-      docString: pickleStep.argument?.docString ? { content: pickleStep.argument.docString.content } : undefined,
-      dataTable: pickleStep.argument?.dataTable,
-    })),
-  );
-
-  const steps = normalizedPickleSteps.map((text) => ({ id: computeStepId(text), text }));
-  const scenarioId = computeScenarioId(steps.map((s) => s.id));
-  const scenarioAstId = pickle.astNodeIds.find((id) => featureMeta?.scenarioByAstId.has(id));
-  const scenarioMeta = scenarioAstId ? featureMeta?.scenarioByAstId.get(scenarioAstId) : undefined;
-
-  let outline: string | undefined;
-  let exampleRow: string | undefined;
-  let exampleIndex: number | undefined;
-
-  if (scenarioMeta?.isOutline) {
-    outline = computeOutlineId(scenarioMeta.outlineStepIds ?? []);
-    const rowAstId = pickle.astNodeIds.find((id) => featureMeta?.exampleRowByAstId.has(id));
-    const rowMeta = rowAstId ? featureMeta?.exampleRowByAstId.get(rowAstId) : undefined;
-
-    if (rowMeta) {
-      exampleIndex = rowMeta.index;
-      exampleRow = computeExampleRowId(rowMeta.values);
-    }
-  }
-
-  const entry: PickleEntry = {
-    pickleId: pickle.id,
-    uri: pickle.uri,
-    name: pickle.name,
-    scenarioId,
-    steps,
-    ruleKey: scenarioMeta?.ruleKey,
-    outline,
-    exampleRow,
-    exampleIndex,
-  };
-
-  context.pickleMap.set(pickle.id, entry);
-  bucket.pickles.push(entry);
+  const bucket = getFeatureBucket(context.featureBuckets, parsed.pickle.uri, context.featureAstByUri.get(parsed.pickle.uri)?.name ?? '');
+  context.pickleMap.set(parsed.pickle.pickleId, parsed.pickle);
+  bucket.pickles.push(parsed.pickle);
   return true;
 }
 
@@ -402,18 +225,12 @@ function handleTestCase(envelope: Envelope, context: RecorderContext): boolean {
 
   ensureFeaturePersisted(context.db, bucket);
 
-  const stepIndexByTestStepId = new Map<string, number>();
-  let pickleStepIndex = 0;
-
-  for (const testStep of testCase.testSteps) {
-    if (testStep.pickleStepId !== undefined && testStep.pickleStepId !== '') {
-      stepIndexByTestStepId.set(testStep.id, pickleStepIndex++);
-    }
-  }
+  const parsed = parseTestCase(envelope, context.pickleMap);
+  if (!parsed) return true;
 
   context.testCaseMap.set(testCase.id, {
-    scenarioId: pickleEntry.scenarioId,
-    stepIndexByTestStepId,
+    scenarioId: parsed.scenarioId,
+    stepIndexByTestStepId: parsed.stepIndexByTestStepId,
   });
   return true;
 }
