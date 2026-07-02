@@ -92,7 +92,7 @@ A Cucumber plugin that emits the Cucumber message stream as ordered events for r
 - Always emits `feature_snapshot` first (v1)
 - Emits incremental events (`test_started`, `step_finished`, `attachment`, `test_finished`, `run_finished`)
 - Includes `runId`, `sessionId`, monotonic `seq`, and ISO timestamp per event
-- Uses no-op transport unless endpoint config is provided
+- Stays inert unless endpoint config is provided (or a transport is injected in tests)
 
 ```js
 // cucumber.js

@@ -1,7 +1,24 @@
 import { AttachmentContentEncoding, type Envelope, TestStepResultStatus } from '@cucumber/messages';
 import { v4 as uuidv4 } from 'uuid';
-import { extractFeatureAst, parsePickle, parseTestCase, type AstStep, type FailureInfo, type FeatureAstMeta, type PickleEntry, type TestCaseEntry } from './lib/cucumber-state';
-import type { AttachmentPayload, FeatureSnapshotPayload, StepFinishedPayload, StreamEvent, StreamEventType, TestFinishedPayload, TestStartedPayload } from './lib/stream-events';
+import {
+  extractFeatureAst,
+  parsePickle,
+  parseTestCase,
+  type AstStep,
+  type FailureInfo,
+  type FeatureAstMeta,
+  type PickleEntry,
+  type TestCaseEntry,
+} from './lib/cucumber-state';
+import type {
+  AttachmentPayload,
+  FeatureSnapshotPayload,
+  StepFinishedPayload,
+  StreamEvent,
+  StreamEventType,
+  TestFinishedPayload,
+  TestStartedPayload,
+} from './lib/stream-events';
 import { type StreamTransport, WebSocketTransport } from './lib/transport';
 
 type OnMessage = (key: 'message', handler: (value: Envelope) => void) => void;
@@ -23,6 +40,7 @@ type StreamContext = {
   featureAstByUri: Map<string, FeatureAstMeta>;
   pickleMap: Map<string, PickleEntry>;
   testCaseMap: Map<string, TestCaseEntry>;
+  startedTestCaseMap: Map<string, TestCaseEntry>;
   pendingFailures: Map<string, FailureInfo>;
   featureSent: boolean;
 };
@@ -130,6 +148,10 @@ async function handleTestCaseStarted(envelope: Envelope, context: StreamContext)
   if (!started) return false;
 
   const testCaseEntry = context.testCaseMap.get(started.testCaseId);
+  if (testCaseEntry) {
+    context.startedTestCaseMap.set(started.id, testCaseEntry);
+  }
+
   const payload: TestStartedPayload = {
     testCaseStartedId: started.id,
     testCaseId: started.testCaseId,
@@ -144,7 +166,7 @@ async function handleTestStepFinished(envelope: Envelope, context: StreamContext
   const finished = envelope.testStepFinished;
   if (!finished) return false;
 
-  const testCaseEntry = context.testCaseMap.get(finished.testCaseId);
+  const testCaseEntry = context.startedTestCaseMap.get(finished.testCaseStartedId);
   const stepIndex = testCaseEntry?.stepIndexByTestStepId.get(finished.testStepId);
   const payload: StepFinishedPayload = {
     testCaseStartedId: finished.testCaseStartedId,
@@ -180,9 +202,10 @@ async function handleAttachment(envelope: Envelope, context: StreamContext): Pro
 
   const testCaseStartedId = attachment.testCaseStartedId;
   const testStepId = attachment.testStepId;
-  const testCaseId = envelope.testCase?.id;
   const stepIndex =
-    testCaseId && testStepId ? context.testCaseMap.get(testCaseId)?.stepIndexByTestStepId.get(testStepId) : undefined;
+    testCaseStartedId && testStepId
+      ? context.startedTestCaseMap.get(testCaseStartedId)?.stepIndexByTestStepId.get(testStepId)
+      : undefined;
 
   const payload: AttachmentPayload = {
     testCaseStartedId,
@@ -201,6 +224,7 @@ async function handleTestCaseFinished(envelope: Envelope, context: StreamContext
   const finished = envelope.testCaseFinished;
   if (!finished) return false;
 
+  context.startedTestCaseMap.delete(finished.testCaseStartedId);
   const failure = context.pendingFailures.get(finished.testCaseStartedId);
   context.pendingFailures.delete(finished.testCaseStartedId);
 
@@ -245,12 +269,15 @@ function startStreamRecorder({ on, options }: { on: OnMessage; options?: StreamP
     featureAstByUri: new Map(),
     pickleMap: new Map(),
     testCaseMap: new Map(),
+    startedTestCaseMap: new Map(),
     pendingFailures: new Map(),
     featureSent: false,
   };
 
   on('message', (envelope: Envelope) => {
-    void handleEnvelope(envelope, context).catch(() => {});
+    void handleEnvelope(envelope, context).catch((error) => {
+      console.error('letsrunit stream plugin failed', error);
+    });
   });
 }
 

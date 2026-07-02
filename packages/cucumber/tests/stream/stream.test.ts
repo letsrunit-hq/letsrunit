@@ -34,6 +34,20 @@ describe('stream plugin', () => {
     });
   });
 
+  it('stays inert when no endpoint or transport is configured', () => {
+    let unconfiguredHandler: ((value: Envelope) => void) | undefined;
+
+    streamPlugin.coordinator({
+      operation: 'runCucumber',
+      options: undefined,
+      on: (_key, handler) => {
+        unconfiguredHandler = handler;
+      },
+    });
+
+    expect(unconfiguredHandler).toBeUndefined();
+  });
+
   it('emits feature snapshot first and monotonically increasing seq', async () => {
     onMessage?.({ source: { data: 'Feature: Login\n  Scenario: ok\n    Given I log in', uri: 'features/login.feature' } } as Envelope);
     onMessage?.({ testRunFinished: { success: true } } as Envelope);
@@ -119,5 +133,8 @@ describe('stream plugin', () => {
 
     const seq = transport.events.map((e) => e.seq);
     expect(seq).toEqual([...seq].sort((a, b) => a - b));
+
+    expect(transport.events[2].payload).toMatchObject({ stepIndex: 0 });
+    expect(transport.events[3].payload).toMatchObject({ stepIndex: 0 });
   });
 });
