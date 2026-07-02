@@ -1,6 +1,6 @@
 {
   "name": "@letsrunit/cucumber",
-  "version": "0.24.2",
+  "version": "0.25.0",
   "description": "Cucumber CLI integration for letsrunit BDD step definitions",
   "keywords": [
     "testing",

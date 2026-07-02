@@ -1,6 +1,6 @@
 {
   "name": "@letsrunit/bdd",
-  "version": "0.24.2",
+  "version": "0.25.0",
   "description": "BDD step definitions for browser automation with letsrunit",
   "keywords": [
     "testing",

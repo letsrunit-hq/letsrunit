@@ -1,3 +1,17 @@
+# [0.25.0](https://github.com/letsrunit-hq/letsrunit/compare/v0.24.2...v0.25.0) (2026-07-02)
+
+
+### Bug Fixes
+
+* **cucumber:** harden stream event state handling ([60e7916](https://github.com/letsrunit-hq/letsrunit/commit/60e79167c7132ff3baa38f9fb3d79c5fdeb49d5e))
+* **cucumber:** restore gherkin id helper imports ([c1c5074](https://github.com/letsrunit-hq/letsrunit/commit/c1c5074248c089b088b7be7e658210fcf7e2a90e))
+
+
+### Features
+
+* **cucumber:** add stream plugin and shared parsing lib ([bec7683](https://github.com/letsrunit-hq/letsrunit/commit/bec768332b4fc4e92d50e60f1d6da56e57083ff3))
+* **cucumber:** switch stream plugin transport to websocket ([93fc8b1](https://github.com/letsrunit-hq/letsrunit/commit/93fc8b14da20a55060e943eeed538f08cf48037e))
+
 ## [0.24.2](https://github.com/letsrunit-hq/letsrunit/compare/v0.24.1...v0.24.2) (2026-06-22)
 
 
